@@ -52,7 +52,8 @@ class PlayInternalLayer          ( QWidget                                 ) :
     ##########################################################################
     super ( ) . __init__         ( parent , Qt.FramelessWindowHint           )
     self . setMouseTracking      ( True                                      )
-    self . MoveCallback = None
+    self . MoveCallback  = None
+    self . WheelCallback = None
     ##########################################################################
     PAL  = self   . palette      (                                           )
     PAL  . setColor              ( QPalette . Window , Qt . black            )
@@ -67,6 +68,14 @@ class PlayInternalLayer          ( QWidget                                 ) :
     self      . MoveCallback   (        e                                    )
     ##########################################################################
     return
+  ############################################################################
+  def wheelEvent              ( self , e                                   ) :
+    ##########################################################################
+    super ( ) . wheelEvent    (        e                                     )
+    self      . WheelCallback (        e                                     )
+    ##########################################################################
+    return
+  ############################################################################
 ##############################################################################
 class Player               ( Widget , AttachDock                           ) :
   ############################################################################
@@ -98,6 +107,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . setMouseTracking ( True                                           )
     ##########################################################################
     self . PID        = -1
+    self . Delta      = 3000
     self . Method     = 0
     self . DockAt     = 0
     self . INSTANCE   = vlc . Instance (                                     )
@@ -105,7 +115,8 @@ class Player               ( Widget , AttachDock                           ) :
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
     ##########################################################################
     self . LAYER      = PlayInternalLayer ( self                             )
-    self . LAYER      . MoveCallback = self . MoveCallback
+    self . LAYER      . MoveCallback  = self . MoveCallback
+    self . LAYER      . WheelCallback = self . WheelCallback
     ##########################################################################
     self . AIV        = AiVision (                                           )
     self . BDI        = None
@@ -217,16 +228,25 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self           ,                       Enabled     ) :
     ##########################################################################
+    self . LinkAction ( "Play"         , self . DoPlay       , False         )
+    self . LinkAction ( "Pause"        , self . DoPause      , False         )
+    self . LinkAction ( "Stop"         , self . DoStop       , False         )
+    self . LinkAction ( "Forward"      , self . PlayForward  , False         )
+    self . LinkAction ( "Backward"     , self . PlayBackward , False         )
+    self . LinkAction ( "PlayPrevious" , self . PlayPrevious , False         )
+    self . LinkAction ( "PlayNext"     , self . PlayNext     , False         )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
     ##########################################################################
     return True
   ############################################################################
@@ -268,6 +288,12 @@ class Player               ( Widget , AttachDock                           ) :
   ############################################################################
   def MoveCallback              ( self , e                                 ) :
     ##########################################################################
+    if                          ( self . MEDIA in [ False , None         ] ) :
+      ########################################################################
+      self   . HideTool         (                                            )
+      ########################################################################
+      return
+    ##########################################################################
     H = self . height   ( ) - self . ToolHeight
     Y = e    . position ( ) . y (                                            )
     ##########################################################################
@@ -289,6 +315,27 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     super ( ) . mouseMoveEvent (        e                                    )
     self      . MoveCallback   (        e                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def WheelCallback            ( self , e                                  ) :
+    ##########################################################################
+    Y = e . angleDelta ( ) . y (                                             )
+    ##########################################################################
+    if                         ( Y < 0                                     ) :
+      ########################################################################
+      self . PlayBackward      (                                             )
+      ########################################################################
+    elif                       ( Y > 0                                     ) :
+      ########################################################################
+      self . PlayForward       (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def wheelEvent              ( self , e                                   ) :
+    ##########################################################################
+    super ( ) . wheelEvent    (        e                                     )
+    self      . WheelCallback (        e                                     )
     ##########################################################################
     return
   ############################################################################
@@ -364,71 +411,156 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def DoPlay             ( self                                            ) :
+  def DoPlay ( self                                                        ) :
     ##########################################################################
-    if                   ( self . MEDIA in [ False , None                ] ) :
+    WPLAN  = self . GetPlan (                                                )
+    ##########################################################################
+    if                      ( WPLAN in [ False , None ]                    ) :
       return
     ##########################################################################
-    if                   ( self . isAnalyzing                              ) :
-      self . StoreAnalysis (                                                 )
+    if       ( self . MEDIA in [ False , None                            ] ) :
+      return
     ##########################################################################
-    self . isPause = False
-    self . isAnalyzing = False
+    if                                      ( self . isAnalyzing           ) :
+      self . StoreAnalysis                  (                                )
     ##########################################################################
-    self . PLAYER . play (                                                   )
+    self   . isPause = False
+    self   . isAnalyzing = False
     ##########################################################################
-    self . PANEL . Play     . setEnabled ( True                              )
-    self . PANEL . Play     . hide       (                                   )
-    self . PANEL . Stop     . setEnabled ( True                              )
-    self . PANEL . Pause    . setEnabled ( True                              )
-    self . PANEL . Pause    . show       (                                   )
-    self . PANEL . Analysis . hide       (                                   )
+    self   . PLAYER . play                  (                                )
     ##########################################################################
-    self . CLOCK            . start      (                                   )
+    self   . PANEL  . Play     . setEnabled ( True                           )
+    self   . PANEL  . Play     . hide       (                                )
+    self   . PANEL  . Stop     . setEnabled ( True                           )
+    self   . PANEL  . Pause    . setEnabled ( True                           )
+    self   . PANEL  . Pause    . show       (                                )
+    self   . PANEL  . Analysis . hide       (                                )
+    ##########################################################################
+    WPLAN  . Action ( "Play"         ) . setEnabled ( False                  )
+    WPLAN  . Action ( "Pause"        ) . setEnabled ( True                   )
+    WPLAN  . Action ( "Stop"         ) . setEnabled ( True                   )
+    WPLAN  . Action ( "Forward"      ) . setEnabled ( True                   )
+    WPLAN  . Action ( "Backward"     ) . setEnabled ( True                   )
+    WPLAN  . Action ( "PlayPrevious" ) . setEnabled ( True                   )
+    WPLAN  . Action ( "PlayNext"     ) . setEnabled ( True                   )
+    ##########################################################################
+    self   . CLOCK             . start      (                                )
     ##########################################################################
     return
   ############################################################################
   def DoStop ( self                                                        ) :
     ##########################################################################
-    if                   ( self . MEDIA in [ False , None                ] ) :
+    WPLAN   = self . GetPlan (                                               )
+    ##########################################################################
+    if                       ( WPLAN in [ False , None ]                   ) :
       return
     ##########################################################################
-    if                   ( self . isAnalyzing                              ) :
-      self . StoreAnalysis (                                                 )
+    if       ( self . MEDIA in [ False , None                            ] ) :
+      return
     ##########################################################################
-    self . isPause = False
-    self . isAnalyzing = False
+    if                                      ( self . isAnalyzing           ) :
+      self . StoreAnalysis                  (                                )
     ##########################################################################
-    self . PLAYER . stop (                                                   )
+    self   . isPause = False
+    self   . isAnalyzing = False
     ##########################################################################
-    self . PANEL . Play     . setEnabled ( True                              )
-    self . PANEL . Play     . show       (                                   )
-    self . PANEL . Stop     . setEnabled ( False                             )
-    self . PANEL . Pause    . setEnabled ( True                              )
-    self . PANEL . Pause    . hide       (                                   )
-    self . PANEL . Analysis . hide       (                                   )
+    self   . PLAYER . stop                  (                                )
     ##########################################################################
-    self . CLOCK            . stop       (                                   )
+    self   . PANEL  . Play     . setEnabled ( True                           )
+    self   . PANEL  . Play     . show       (                                )
+    self   . PANEL  . Stop     . setEnabled ( False                          )
+    self   . PANEL  . Pause    . setEnabled ( True                           )
+    self   . PANEL  . Pause    . hide       (                                )
+    self   . PANEL  . Analysis . hide       (                                )
+    ##########################################################################
+    WPLAN  . Action ( "Play"         ) . setEnabled ( True                   )
+    WPLAN  . Action ( "Pause"        ) . setEnabled ( False                  )
+    WPLAN  . Action ( "Stop"         ) . setEnabled ( False                  )
+    WPLAN  . Action ( "Forward"      ) . setEnabled ( False                  )
+    WPLAN  . Action ( "Backward"     ) . setEnabled ( False                  )
+    WPLAN  . Action ( "PlayPrevious" ) . setEnabled ( True                   )
+    WPLAN  . Action ( "PlayNext"     ) . setEnabled ( True                   )
+    ##########################################################################
+    self   . CLOCK             . stop       (                                )
     ##########################################################################
     return
   ############################################################################
-  def DoPause             ( self                                           ) :
+  def DoPause ( self                                                       ) :
     ##########################################################################
-    if                    ( self . MEDIA in [ False , None               ] ) :
+    WPLAN = self . GetPlan (                                                 )
+    ##########################################################################
+    if                     ( WPLAN in [ False , None ]                     ) :
       return
     ##########################################################################
-    self . isPause = True
+    if        ( self . MEDIA in [ False , None                           ] ) :
+      return
     ##########################################################################
-    self . PLAYER . pause (                                                  )
+    self  . isPause = True
     ##########################################################################
-    self . PANEL . Play     . setEnabled ( True                              )
-    self . PANEL . Play     . show       (                                   )
-    self . PANEL . Stop     . setEnabled ( True                              )
-    self . PANEL . Pause    . setEnabled ( True                              )
-    self . PANEL . Pause    . hide       (                                   )
-    self . PANEL . Analysis . show       (                                   )
+    self  . PLAYER . pause                 (                                 )
     ##########################################################################
-    self . CLOCK            . stop       (                                   )
+    self  . PANEL  . Play     . setEnabled ( True                            )
+    self  . PANEL  . Play     . show       (                                 )
+    self  . PANEL  . Stop     . setEnabled ( True                            )
+    self  . PANEL  . Pause    . setEnabled ( True                            )
+    self  . PANEL  . Pause    . hide       (                                 )
+    self  . PANEL  . Analysis . show       (                                 )
+    ##########################################################################
+    WPLAN . Action ( "Play"         ) . setEnabled ( True                    )
+    WPLAN . Action ( "Pause"        ) . setEnabled ( False                   )
+    WPLAN . Action ( "Stop"         ) . setEnabled ( True                    )
+    WPLAN . Action ( "Forward"      ) . setEnabled ( True                    )
+    WPLAN . Action ( "Backward"     ) . setEnabled ( True                    )
+    WPLAN . Action ( "PlayPrevious" ) . setEnabled ( True                    )
+    WPLAN . Action ( "PlayNext"     ) . setEnabled ( True                    )
+    ##########################################################################
+    self  . CLOCK             . stop       (                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def PlayForward                     ( self                               ) :
+    ##########################################################################
+    if                                ( self . MEDIA in [ False , None   ] ) :
+      return
+    ##########################################################################
+    if                                ( self . isStopped (               ) ) :
+      return
+    ##########################################################################
+    T    = self . PLAYER . get_time   (                                      )
+    T    = int                        ( T + self . Delta                     )
+    ##########################################################################
+    if                                ( T >= self . Duration               ) :
+      T  = self . Duration
+    ##########################################################################
+    self . PLAYER . set_time          ( T                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PlayBackward                  ( self                                 ) :
+    ##########################################################################
+    if                              ( self . MEDIA in [ False , None     ] ) :
+      return
+    ##########################################################################
+    if                              ( self . isStopped (                 ) ) :
+      return
+    ##########################################################################
+    T    = self . PLAYER . get_time (                                        )
+    T    = int                      ( T - self . Delta                       )
+    ##########################################################################
+    if                              ( T < 0                                ) :
+      T  = 0
+    ##########################################################################
+    self . PLAYER . set_time        ( T                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def PlayPrevious ( self                                                  ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def PlayNext ( self                                                      ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -632,60 +764,73 @@ class Player               ( Widget , AttachDock                           ) :
   ############################################################################
   def FromPlaylist ( self , FILM                                           ) :
     ##########################################################################
-    self . FilmJSON = FILM
+    WPLAN = self . GetPlan (                                                 )
     ##########################################################################
-    self . PANEL . Play   . setEnabled ( False                               )
-    self . PANEL . Play   . show       (                                     )
-    self . PANEL . Stop   . setEnabled ( False                               )
-    self . PANEL . Pause  . setEnabled ( False                               )
-    self . PANEL . Pause  . hide       (                                     )
+    if                     ( WPLAN in [ False , None ]                     ) :
+      return
     ##########################################################################
-    qApp . processEvents               (                                     )
+    self  . FilmJSON = FILM
+    ##########################################################################
+    self  . PANEL . Play   . setEnabled ( False                              )
+    self  . PANEL . Play   . show       (                                    )
+    self  . PANEL . Stop   . setEnabled ( False                              )
+    self  . PANEL . Pause  . setEnabled ( False                              )
+    self  . PANEL . Pause  . hide       (                                    )
+    ##########################################################################
+    qApp  . processEvents               (                                    )
     ##########################################################################
     Filename = FILM [ "Path"                                                 ]
     TITLE    = FILM [ "Name"                                                 ]
     ##########################################################################
-    self          . setWindowTitle              ( TITLE                      )
+    self          . setWindowTitle               ( TITLE                     )
     ##########################################################################
-    self . Method = 1
-    self . MEDIA  = self . INSTANCE . media_new ( Filename                   )
-    self . PLAYER . set_media                   ( self . MEDIA               )
-    self . MEDIA  . parse                       (                            )
+    self  . Method = 1
+    self  . MEDIA  = self . INSTANCE . media_new ( Filename                  )
+    self  . PLAYER . set_media                   ( self . MEDIA              )
+    self  . MEDIA  . parse                       (                           )
     ##########################################################################
     self          . PLAYER . set_hwnd ( int ( self . LAYER . winId (     ) ) )
     self          . PLAYER . video_set_mouse_input ( False                   )
     self          . PLAYER . video_set_key_input   ( False                   )
     ##########################################################################
-    DURATION        = FILM [ "Duration"                                      ]
-    DURATION        = int  ( DURATION / 1000                                 )
-    self . Duration = DURATION
-    self . Range    = int  ( float ( DURATION + 999 ) / 1000.0               )
-    self . isPause  = False
-    S               = self . toClock   ( DURATION                            )
-    self . PANEL . FLabel . setText    ( S                                   )
-    self . PANEL . Clock  . setMaximum ( self . Range                        )
-    self . PANEL . Clock  . setValue   ( 0                                   )
+    DURATION         = FILM [ "Duration"                                     ]
+    DURATION         = int  ( DURATION / 1000                                )
+    self  . Duration = DURATION
+    self  . Range    = int  ( float ( DURATION + 999 ) / 1000.0              )
+    self  . isPause  = False
+    S                = self . toClock   ( DURATION                           )
+    self  . PANEL . FLabel . setText    ( S                                  )
+    self  . PANEL . Clock  . setMaximum ( self . Range                       )
+    self  . PANEL . Clock  . setValue   ( 0                                  )
     ##########################################################################
-    self . VWidth  = FILM [ "Width"                                          ]
-    self . VHeight = FILM [ "Height"                                         ]
+    self  . VWidth  = FILM [ "Width"                                         ]
+    self  . VHeight = FILM [ "Height"                                        ]
     ##########################################################################
-    self . PANEL . FilmSize . setText ( f"{self.VWidth} x {self.VHeight}"    )
+    self  . PANEL . FilmSize . setText ( f"{self.VWidth} x {self.VHeight}"   )
     ##########################################################################
     self         . PLAYER . play          (                                  )
-    qApp . processEvents               (                                     )
+    qApp  . processEvents              (                                     )
     ##########################################################################
-    self . PANEL . Volume . setValue ( self . PLAYER . audio_get_volume ( )  )
+    self  . PANEL . Volume . setValue ( self . PLAYER . audio_get_volume ( ) )
     ##########################################################################
-    self . PANEL . Play   . setEnabled ( True                                )
-    self . PANEL . Play   . hide       (                                     )
-    self . PANEL . Stop   . setEnabled ( True                                )
-    self . PANEL . Pause  . setEnabled ( True                                )
-    self . PANEL . Pause  . show       (                                     )
+    self  . PANEL . Play   . setEnabled ( True                               )
+    self  . PANEL . Play   . hide       (                                    )
+    self  . PANEL . Stop   . setEnabled ( True                               )
+    self  . PANEL . Pause  . setEnabled ( True                               )
+    self  . PANEL . Pause  . show       (                                    )
     ##########################################################################
-    self . PANEL . raise_              (                                     )
+    WPLAN . Action ( "Play"         ) . setEnabled ( False                   )
+    WPLAN . Action ( "Pause"        ) . setEnabled ( True                    )
+    WPLAN . Action ( "Stop"         ) . setEnabled ( True                    )
+    WPLAN . Action ( "Forward"      ) . setEnabled ( True                    )
+    WPLAN . Action ( "Backward"     ) . setEnabled ( True                    )
+    WPLAN . Action ( "PlayPrevious" ) . setEnabled ( True                    )
+    WPLAN . Action ( "PlayNext"     ) . setEnabled ( True                    )
     ##########################################################################
-    self . CLOCK . start               (                                     )
-    qApp . processEvents               (                                     )
+    self  . PANEL . raise_             (                                     )
+    ##########################################################################
+    self  . CLOCK . start              (                                     )
+    qApp  . processEvents              (                                     )
     ##########################################################################
     return
   ############################################################################
