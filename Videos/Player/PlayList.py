@@ -388,6 +388,8 @@ class PlayList                     ( TreeDock                              ) :
     NITM . setText                    ( 0 , f"{IDX}"                         )
     NITM . setData                    ( 0 , Qt . UserRole , IDX              )
     ##########################################################################
+    self . setCurrentItem             ( CITM                                 )
+    ##########################################################################
     qApp . processEvents              (                                      )
     ##########################################################################
     threading . Thread ( target = self . AwaitRefreshListings              ) \
@@ -425,6 +427,8 @@ class PlayList                     ( TreeDock                              ) :
     NITM . setText                    ( 0 , f"{IDX}"                         )
     NITM . setData                    ( 0 , Qt . UserRole , IDX              )
     ##########################################################################
+    self . setCurrentItem             ( CITM                                 )
+    ##########################################################################
     qApp . processEvents              (                                      )
     ##########################################################################
     threading . Thread ( target = self . AwaitRefreshListings              ) \
@@ -434,6 +438,7 @@ class PlayList                     ( TreeDock                              ) :
   ############################################################################
   def RefreshAll   ( self                                                  ) :
     ##########################################################################
+    self . FID = 0
     self . clear   (                                                         )
     self . startup (                                                         )
     ##########################################################################
@@ -575,7 +580,7 @@ class PlayList                     ( TreeDock                              ) :
     NOW    = StarDate        (                                               )
     NOW    . Now             (                                               )
     ##########################################################################
-    self   . AwaitTS  = NOW . Stardate + 5
+    self   . AwaitTS  = NOW . Stardate + 3
     ##########################################################################
     if                       ( self . Awaiting                             ) :
       return
