@@ -710,6 +710,32 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return f"{HH}:{MM}:{SS}.{DD}"
   ############################################################################
+  def toTicks  ( self                                                      ) :
+    ##########################################################################
+    D =    int ( self . Duration                                             )
+    S =    int ( self . Step                                                 )
+    M =    int ( D + S - 1                                                   )
+    ##########################################################################
+    return int ( M / S                                                       )
+  ############################################################################
+  def toTick   ( self , T                                                  ) :
+    ##########################################################################
+    S =    int ( self . Step                                                 )
+    ##########################################################################
+    return int ( T / S                                                       )
+  ############################################################################
+  def toTimestamp ( self , T                                               ) :
+    ##########################################################################
+    D   = int     ( self . Duration                                          )
+    S   = int     ( self . Step                                              )
+    K   = int     ( T * S                                                    )
+    ##########################################################################
+    if            ( K > D                                                  ) :
+      ########################################################################
+      K = D
+    ##########################################################################
+    return K
+  ############################################################################
   def UpdateINFO ( self                                                    ) :
     ##########################################################################
     if           ( self . MEDIA in [ False , None                        ] ) :
@@ -718,10 +744,9 @@ class Player               ( Widget , AttachDock                           ) :
     if           ( self . Duration <= 0                                    ) :
       return
     ##########################################################################
-    VPOS  = self . PLAYER . get_position (                                   )
-    POS   = int  ( VPOS * float ( self . Range    )                          )
-    T     = int  ( VPOS * float ( self . Duration )                          )
-    S     = self . toClock ( T                                               )
+    VPOS  = self  . PLAYER . get_time   (                                    )
+    POS   = self  . toTick              ( VPOS                               )
+    S     = self  . toClock             ( VPOS                               )
     ##########################################################################
     self  . PANEL . Clock  . setValue   ( POS                                )
     self  . PANEL . Clock  . setToolTip ( S                                  )
@@ -742,8 +767,12 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateAudio ( self ) :
+  def UpdateAudio                            ( self                        ) :
     ##########################################################################
+    V    = self  . PLAYER . audio_get_volume (                               )
+    ##########################################################################
+    self . PANEL . Volume . setToolTip       ( f"{V}%"                       )
+    self . PANEL . Volume . setValue         ( V                             )
     ##########################################################################
     return
   ############################################################################
@@ -751,8 +780,8 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . CLOCK  . stop                  (                                  )
     POS  = self   . PANEL . Clock . value (                                  )
-    RATE = float ( float ( POS ) / float ( self . Range ) )
-    self . PLAYER . set_position          ( RATE                             )
+    RATE = self   . toTimestamp           ( POS                              )
+    self . PLAYER . set_time              ( RATE                             )
     self . CLOCK  . start                 (                                  )
     ##########################################################################
     return
@@ -823,11 +852,11 @@ class Player               ( Widget , AttachDock                           ) :
       ########################################################################
       return
     ##########################################################################
-    self . PLAYER . set_position ( 0.0                                       )
+    self . PLAYER . set_time     ( 0                                         )
     self . PLAYER . stop         (                                           )
     ##########################################################################
     self . Duration = DURATION
-    self . Range    = int        ( float ( DURATION + 999 ) / 1000.0         )
+    self . Range    = self . toTicks (                                       )
     ##########################################################################
     S    = self  . toClock       ( DURATION                                  )
     self . PANEL . FLabel . setText    ( S                                   )
@@ -911,14 +940,14 @@ class Player               ( Widget , AttachDock                           ) :
     self  . PLAYER . set_media                   ( self . MEDIA              )
     self  . MEDIA  . parse                       (                           )
     ##########################################################################
-    self          . PLAYER . set_hwnd ( int ( self . LAYER . winId (     ) ) )
+    self          . PLAYER . set_hwnd   ( int ( self . LAYER . winId (   ) ) )
     self          . PLAYER . video_set_mouse_input ( False                   )
     self          . PLAYER . video_set_key_input   ( False                   )
     ##########################################################################
     DURATION         = FILM [ "Duration"                                     ]
     DURATION         = int  ( DURATION / 1000                                )
     self  . Duration = DURATION
-    self  . Range    = int  ( float ( DURATION + 999 ) / 1000.0              )
+    self  . Range    = self . toTicks   (                                    )
     self  . isPause  = False
     S                = self . toClock   ( DURATION                           )
     self  . PANEL . FLabel . setText    ( S                                  )
@@ -928,12 +957,12 @@ class Player               ( Widget , AttachDock                           ) :
     self  . VWidth  = FILM [ "Width"                                         ]
     self  . VHeight = FILM [ "Height"                                        ]
     ##########################################################################
-    self  . PANEL . FilmSize . setText ( f"{self.VWidth} x {self.VHeight}"   )
+    self  . PANEL . FilmSize . setText  ( f"{self.VWidth} x {self.VHeight}"  )
     ##########################################################################
-    self         . PLAYER . play          (                                  )
-    qApp  . processEvents              (                                     )
+    self         . PLAYER . play        (                                    )
+    qApp  . processEvents               (                                    )
     ##########################################################################
-    self  . PANEL . Volume . setValue ( self . PLAYER . audio_get_volume ( ) )
+    self  . PANEL . Volume . setValue   ( self . PLAYER . audio_get_volume() )
     ##########################################################################
     self  . PANEL . Play   . setEnabled ( True                               )
     self  . PANEL . Play   . hide       (                                    )
