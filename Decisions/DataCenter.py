@@ -6,16 +6,39 @@ import os
 import sys
 import time
 import datetime
-from   threading import Thread
-from   threading import Lock
+import threading
+import json
 ##############################################################################
-class DataCenter (                                                         ) :
+import mysql . connector
+from   mysql . connector              import Error
+##############################################################################
+import AITK
+##############################################################################
+from   AITK  . Calendars . StarDate   import StarDate
+##############################################################################
+from   AITK  . Database  . Query      import Query
+from   AITK  . Database  . Connection import Connection
+from   AITK  . Database  . Pair       import Pair
+from   AITK  . Database  . Columns    import Columns
+##############################################################################
+class DataCenter         (                                                 ) :
   ############################################################################
-  def __init__   ( self                                                    ) :
+  def __init__           ( self                                            ) :
     ##########################################################################
+    self . Settings    = {                                                   }
+    self . DbConf      = {                                                   }
+    self . DbLocker    = threading . Lock (                                  )
+    self . QueryLocker = threading . Lock (                                  )
     ##########################################################################
     return
   ############################################################################
   def __del__ ( self                                                       ) :
+    return
+  ############################################################################
+  def setSettings ( self , SETTINGS , DBCONF                               ) :
+    ##########################################################################
+    self . Settings = SETTINGS
+    self . DbConf   = DBCONF
+    ##########################################################################
     return
 ##############################################################################
