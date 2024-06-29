@@ -31,6 +31,7 @@ class DataCenter         (                                                 ) :
     self . ACTIONs           = {                                             }
     ##########################################################################
     self . Settings          = {                                             }
+    self . Tables            = {                                             }
     self . DbConf            = {                                             }
     ##########################################################################
     self . Handler           = None
@@ -48,9 +49,10 @@ class DataCenter         (                                                 ) :
   def __del__ ( self                                                       ) :
     return
   ############################################################################
-  def setSettings ( self , SETTINGS , DBCONF                               ) :
+  def setSettings ( self , SETTINGS , DBCONF , TABLEs                      ) :
     ##########################################################################
     self . Settings = SETTINGS
+    self . Tables   = TABLEs
     self . DbConf   = DBCONF
     ##########################################################################
     return
