@@ -116,7 +116,7 @@ class FilmCenter         (                                                 ) :
     ##########################################################################
     self  . DbLocker . release           (                                   )
     ##########################################################################
-    HFILE = self . Settings              [ "FilmCenter" ] [ "Played"         ]
+    HFILE = self . Settings              [ "Played"                          ]
     ##########################################################################
     self  . History  = LoadJson          ( HFILE                             )
     self  . HistoryUpdated = 0
@@ -141,7 +141,7 @@ class FilmCenter         (                                                 ) :
     if                      ( XDT < 300                                    ) :
       return
     ##########################################################################
-    HFILE = self . Settings [ "FilmCenter" ] [ "Played"                      ]
+    HFILE = self . Settings [ "Played"                                       ]
     SaveJson                ( HFILE , self . History                         )
     ##########################################################################
     self  . HistoryUpdated = 0
