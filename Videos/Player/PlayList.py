@@ -50,6 +50,7 @@ class PlayList                     ( TreeDock                              ) :
     self . FID                = 0
     self . Awaiting           = False
     self . AwaitTS            = 0
+    self . isContinue         = None
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -550,6 +551,7 @@ class PlayList                     ( TreeDock                              ) :
     LAT    = -1
     ##########################################################################
     JFI [ "Locations" ] =        [ FILE                                      ]
+    JFI [ "Played"    ] = 0
     ##########################################################################
     NAME   = JFI                 [ "Name"                                    ]
     ##########################################################################
