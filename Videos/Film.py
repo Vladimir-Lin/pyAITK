@@ -272,6 +272,30 @@ class Film               ( Columns                                         ) :
                           "Signature"  : self . toSignature ( )            , \
                           "Details"    : self . Details                      }
   ############################################################################
+  def fromJson ( self , JSOX                                               ) :
+    ##########################################################################
+    self . Id         = JSOX [ "Id"                                          ]
+    self . Uuid       = JSOX [ "Uuid"                                        ]
+    self . Used       = JSOX [ "Used"                                        ]
+    self . VType      = JSOX [ "Type"                                        ]
+    self . Name       = JSOX [ "Name"                                        ]
+    self . Path       = JSOX [ "Path"                                        ]
+    self . FileSize   = JSOX [ "FileSize"                                    ]
+    self . Duration   = JSOX [ "Duration"                                    ]
+    self . Width      = JSOX [ "Width"                                       ]
+    self . Height     = JSOX [ "Height"                                      ]
+    self . Frames     = JSOX [ "Frames"                                      ]
+    self . Format     = JSOX [ "Format"                                      ]
+    self . FPS        = JSOX [ "FPS"                                         ]
+    self . vCodec     = JSOX [ "vCodec"                                      ]
+    self . vBitRate   = JSOX [ "vBitRate"                                    ]
+    self . aCodec     = JSOX [ "aCodec"                                      ]
+    self . SampleRate = JSOX [ "SampleRate"                                  ]
+    self . aBitRate   = JSOX [ "aBitRate"                                    ]
+    self . Details    = JSOX [ "Details"                                     ]
+    ##########################################################################
+    return
+  ############################################################################
   def toSignature ( self                                                   ) :
     ##########################################################################
     LN = self . Duration
