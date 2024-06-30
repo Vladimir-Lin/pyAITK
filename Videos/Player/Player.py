@@ -21,9 +21,9 @@ from   pathlib                           import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate    import StarDate    as StarDate
-from   AITK    . Documents . JSON        import Load        as LoadJson
-from   AITK    . Documents . JSON        import Save        as SaveJson
+from   AITK    . Calendars . StarDate    import StarDate     as StarDate
+from   AITK    . Documents . JSON        import Load         as LoadJson
+from   AITK    . Documents . JSON        import Save         as SaveJson
 ##############################################################################
 from   PySide6                           import QtCore
 from   PySide6                           import QtGui
@@ -33,18 +33,19 @@ from   PySide6 . QtGui                   import *
 from   PySide6 . QtWidgets               import *
 from   AITK    . Qt6                     import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager       import MenuManager as MenuManager
-from   AITK    . Qt6 . AttachDock        import AttachDock  as AttachDock
-from   AITK    . Qt6 . Widget            import Widget      as Widget
+from   AITK    . Qt6 . MenuManager       import MenuManager  as MenuManager
+from   AITK    . Qt6 . AttachDock        import AttachDock   as AttachDock
+from   AITK    . Qt6 . Widget            import Widget       as Widget
+from   AITK    . Qt6 . GraphicsView      import GraphicsView as GraphicsView
 ##############################################################################
-from   AITK    . AI  . Pictures . Vision import Vision      as AiVision
+from   AITK    . AI  . Pictures . Vision import Vision       as AiVision
 ##############################################################################
-from   AITK    . Pictures . Picture      import Picture     as PictureItem
-from   AITK    . People . Faces . Face   import Face        as FaceItem
-from   AITK    . People . Body  . Tit    import Tit         as TitItem
-from   AITK    . People . Body  . Body   import Body        as BodyItem
+from   AITK    . Pictures . Picture      import Picture      as PictureItem
+from   AITK    . People . Faces . Face   import Face         as FaceItem
+from   AITK    . People . Body  . Tit    import Tit          as TitItem
+from   AITK    . People . Body  . Body   import Body         as BodyItem
 ##############################################################################
-from                 . Panel             import Panel       as Panel
+from                 . Panel             import Panel        as Panel
 ##############################################################################
 class PlayInternalLayer          ( QWidget                                 ) :
   ############################################################################
@@ -107,6 +108,9 @@ class Player               ( Widget , AttachDock                           ) :
     self . setMouseTracking ( True                                           )
     self . setFocusPolicy   ( Qt . WheelFocus                                )
     ##########################################################################
+    ## self . Scene      = QGraphicsScene (                                     )
+    ## self . setScene         ( self . Scene                                   )
+    ##########################################################################
     self . isContinue = None
     self . CallLogger = None
     self . PID        = -1
@@ -120,6 +124,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . LAYER      = PlayInternalLayer ( self                             )
     self . LAYER      . MoveCallback  = self . MoveCallback
     self . LAYER      . WheelCallback = self . WheelCallback
+    ## self . setViewport           ( self . LAYER                              )
     ##########################################################################
     self . AIV        = AiVision (                                           )
     self . BDI        = None
@@ -176,6 +181,9 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . NextAnalysis . connect ( self . DoAnalysis                        )
     self . FilmViewed   . connect ( self . PANEL . Bar . AcceptFilm          )
+    ##########################################################################
+    ## self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff            )
+    ## self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff            )
     ##########################################################################
     return
   ############################################################################
@@ -492,18 +500,19 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def Relocation               ( self                                      ) :
+  def Relocation                     ( self                                ) :
     ##########################################################################
-    W = self . width           (                                             )
-    H = self . height          (                                             )
+    W = self . width                 (                                       )
+    H = self . height                (                                       )
     T = self . ToolHeight
     X = 0
     Y = self . height ( ) - T
     ##########################################################################
-    self . LAYER . setGeometry ( 0 , 0 , W , H                               )
-    self . PANEL . setGeometry ( X , Y , W , T                               )
+    self . LAYER . setGeometry       ( 0 , 0 , W , H                         )
+    self . PANEL . setGeometry       ( X , Y , W , T                         )
     ##########################################################################
     self . PANEL . WinSize . setText ( f"{W} x {H}"                          )
+    ## self . scene ( ) . setSceneRect  ( 0 , 0 , W , H                         )
     ##########################################################################
     return
   ############################################################################
