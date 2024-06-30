@@ -516,8 +516,6 @@ class PlayList                     ( TreeDock                              ) :
     URL      = f"http://{HOST}:{PORT}"
     CMD      = f"{URL}/Film"
     ##########################################################################
-    self     . LOG              ( CMD                                        )
-    ##########################################################################
     Username = self . Settings  [ "Listener" ] [ "Username"                  ]
     Password = self . Settings  [ "Listener" ] [ "Password"                  ]
     Headers  =                  { "Username" : Username                    , \
