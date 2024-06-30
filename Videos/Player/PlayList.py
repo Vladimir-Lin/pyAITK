@@ -51,6 +51,7 @@ class PlayList                     ( TreeDock                              ) :
     self . Awaiting           = False
     self . AwaitTS            = 0
     self . isContinue         = None
+    self . CallLogger         = None
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -150,6 +151,18 @@ class PlayList                     ( TreeDock                              ) :
     self . AttachActions     ( False                                         )
     self . Closing           (                                               )
     self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def LOG             ( self , MSG                                         ) :
+    ##########################################################################
+    if                ( self . CallLogger in [ False , None              ] ) :
+      return
+    ##########################################################################
+    if                ( len ( MSG ) <= 0                                   ) :
+      return
+    ##########################################################################
+    self . CallLogger ( MSG                                                  )
     ##########################################################################
     return
   ############################################################################
