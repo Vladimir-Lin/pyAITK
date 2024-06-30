@@ -47,7 +47,7 @@ from   AITK    . People . Body  . Body   import Body         as BodyItem
 ##############################################################################
 from                 . Panel             import Panel        as Panel
 ##############################################################################
-class PlayInternalLayer          ( QWidget                                 ) :
+class vlcPlayInternalLayer       ( QWidget                                 ) :
   ############################################################################
   def __init__                   ( self , parent = None                    ) :
     ##########################################################################
@@ -74,6 +74,90 @@ class PlayInternalLayer          ( QWidget                                 ) :
     ##########################################################################
     super ( ) . wheelEvent    (        e                                     )
     self      . WheelCallback (        e                                     )
+    ##########################################################################
+    return
+##############################################################################
+class vlcPlayEditor            ( QWidget                                   ) :
+  ############################################################################
+  DoReflush = Signal           (                                             )
+  ############################################################################
+  def __init__                 ( self , parent = None                      ) :
+    ##########################################################################
+    super ( ) . __init__       ( parent , Qt.FramelessWindowHint             )
+    self . setMouseTracking    ( True                                        )
+    self . MoveCallback  = None
+    self . WheelCallback = None
+    self . IMAGE         = None
+    ##########################################################################
+    self . DoReflush . connect ( self . update                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent           ( self , e                                  ) :
+    ##########################################################################
+    super ( ) . mouseMoveEvent (        e                                    )
+    self      . MoveCallback   (        e                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def wheelEvent              ( self , e                                   ) :
+    ##########################################################################
+    super ( ) . wheelEvent    (        e                                     )
+    self      . WheelCallback (        e                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def paintEvent                   ( self , e                              ) :
+    ##########################################################################
+    WW     = self . width          (                                         )
+    HH     = self . height         (                                         )
+    p      = QPainter              (                                         )
+    ##########################################################################
+    p      . begin                 ( self                                    )
+    p      . fillRect              ( 0,  0 , WW , HH , Qt . black            )
+    ##########################################################################
+    if                             ( self . IMAGE not in [ False , None  ] ) :
+      ########################################################################
+      IW   = self . IMAGE . width  (                                         )
+      IH   = self . IMAGE . height (                                         )
+      ########################################################################
+      RT   = float                 ( float ( IH ) / float ( IW )             )
+      PW   = int                   ( WW                                      )
+      PH   = int                   ( RT           * float ( WW )             )
+      ########################################################################
+      if                           ( PH > HH                               ) :
+        ######################################################################
+        RT = float                 ( float ( IW ) / float ( IH )             )
+        PH = int                   ( HH                                      )
+        PW = int                   ( RT           * float ( HH )             )
+        ######################################################################
+        X  = int                   ( ( WW - PW ) / 2                         )
+        Y  = 0
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        X  = 0
+        Y  = int                   ( ( HH - PH ) / 2                         )
+      ########################################################################
+      DSR  = QRectF                ( X , Y , PW , PH                         )
+      ISR  = QRectF                ( 0 , 0 , IW , IH                         )
+      p    . drawImage             ( DSR , self . IMAGE , ISR                )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    p      . end                   (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignImage           ( self , IMG                                   ) :
+    ##########################################################################
+    self . IMAGE = IMG
+    ##########################################################################
+    self . DoReflush . emit (                                                )
     ##########################################################################
     return
 ##############################################################################
@@ -121,10 +205,14 @@ class Player               ( Widget , AttachDock                           ) :
     self . MEDIA      = None
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
     ##########################################################################
-    self . LAYER      = PlayInternalLayer ( self                             )
+    self . LAYER      = vlcPlayInternalLayer ( self                          )
     self . LAYER      . MoveCallback  = self . MoveCallback
     self . LAYER      . WheelCallback = self . WheelCallback
-    ## self . setViewport           ( self . LAYER                              )
+    ##########################################################################
+    self . EDITOR     = vlcPlayEditor        ( self                          )
+    self . EDITOR     . MoveCallback  = self . MoveCallback
+    self . EDITOR     . WheelCallback = self . WheelCallback
+    self . EDITOR     . hide     (                                           )
     ##########################################################################
     self . AIV        = AiVision (                                           )
     self . BDI        = None
@@ -160,6 +248,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . SWin     . clicked . connect ( self . DockStack           )
     self . PANEL . MWin     . clicked . connect ( self . DockMdi             )
     self . PANEL . Analysis . clicked . connect ( self . RunAnalysis         )
+    self . PANEL . Drawing  . toggled . connect ( self . SwitchEditor        )
     ##########################################################################
     self . PANEL . Clock    . sliderMoved   . connect ( self . setPosition   )
     self . PANEL . Clock    . sliderPressed . connect ( self . setPosition   )
@@ -500,19 +589,19 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def Relocation                     ( self                                ) :
+  def Relocation                      ( self                               ) :
     ##########################################################################
-    W = self . width                 (                                       )
-    H = self . height                (                                       )
+    W = self . width                  (                                      )
+    H = self . height                 (                                      )
     T = self . ToolHeight
     X = 0
     Y = self . height ( ) - T
     ##########################################################################
-    self . LAYER . setGeometry       ( 0 , 0 , W , H                         )
-    self . PANEL . setGeometry       ( X , Y , W , T                         )
+    self . LAYER  . setGeometry       ( 0 , 0 , W , H                        )
+    self . EDITOR . setGeometry       ( 0 , 0 , W , H                        )
+    self . PANEL  . setGeometry       ( X , Y , W , T                        )
     ##########################################################################
-    self . PANEL . WinSize . setText ( f"{W} x {H}"                          )
-    ## self . scene ( ) . setSceneRect  ( 0 , 0 , W , H                         )
+    self . PANEL  . WinSize . setText ( f"{W} x {H}"                         )
     ##########################################################################
     return
   ############################################################################
@@ -556,6 +645,18 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
+  def SwitchEditor         ( self , CHECKED                                ) :
+    ##########################################################################
+    if                     ( CHECKED                                       ) :
+      ########################################################################
+      self . EDITOR . show (                                                 )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . EDITOR . hide (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
   def DoPlay ( self                                                        ) :
     ##########################################################################
     WPLAN  = self . GetPlan (                                                )
@@ -580,6 +681,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . setEnabled ( True                           )
     self   . PANEL  . Pause    . show       (                                )
     self   . PANEL  . Analysis . hide       (                                )
+    self   . PANEL  . Drawing  . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( False                  )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( True                   )
@@ -617,6 +719,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . setEnabled ( True                           )
     self   . PANEL  . Pause    . hide       (                                )
     self   . PANEL  . Analysis . hide       (                                )
+    self   . PANEL  . Drawing  . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( True                   )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( False                  )
@@ -652,6 +755,7 @@ class Player               ( Widget , AttachDock                           ) :
     self  . PANEL  . Pause    . setEnabled ( True                            )
     self  . PANEL  . Pause    . hide       (                                 )
     self  . PANEL  . Analysis . show       (                                 )
+    self  . PANEL  . Drawing  . show       (                                 )
     ##########################################################################
     WPLAN . Action ( "Play"         ) . setEnabled ( True                    )
     WPLAN . Action ( "Pause"        ) . setEnabled ( False                   )
@@ -1160,6 +1264,9 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     TRIGGER = self . Settings [ "Classifier" ] [ "Probability"               ]
     REMOVE  = self . Settings [ "Classifier" ] [ "Remove"                    ]
+    ##########################################################################
+    QIMG  = QImage                      ( FILENAME                           )
+    self  . EDITOR . AssignImage        ( QIMG                               )
     ##########################################################################
     IMG   = self . AIV . Image          ( FILENAME                           )
     ITEMs = self . AIV . Classification ( IMG , TRIGGER                      )

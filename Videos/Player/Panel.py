@@ -104,6 +104,14 @@ class Panel                        ( Widget                                ) :
     self . Analysis . setEnabled    ( True                                   )
     self . Analysis . hide          (                                        )
     ##########################################################################
+    DICO            = QIcon         ( ":/images/drawing.png"                 )
+    self . Drawing  = QPushButton   ( DICO , "" , self                       )
+    self . Drawing  . setIconSize   ( QSize ( 40 , 40                      ) )
+    self . Drawing  . setFlat       ( True                                   )
+    self . Drawing  . setEnabled    ( True                                   )
+    self . Drawing  . setCheckable  ( True                                   )
+    self . Drawing  . hide          (                                        )
+    ##########################################################################
     FNT  = self     . font          (                                        )
     FNT  . setPixelSize             ( 12                                     )
     ##########################################################################
@@ -202,6 +210,7 @@ class Panel                        ( Widget                                ) :
     self . SWin     . setGeometry (     120 , 24 ,  40 , 40                  )
     self . MWin     . setGeometry (     120 , 24 ,  40 , 40                  )
     self . Analysis . setGeometry (     160 , 24 ,  40 , 40                  )
+    self . Drawing  . setGeometry (     200 , 24 ,  40 , 40                  )
     ##########################################################################
     return
   ############################################################################
