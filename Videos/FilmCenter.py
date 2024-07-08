@@ -15,16 +15,18 @@ from   mysql . connector              import Error
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK  . Calendars . StarDate   import StarDate as StarDate
-from   AITK  . Documents . JSON       import Load     as LoadJson
-from   AITK  . Documents . JSON       import Save     as SaveJson
+from   AITK  . Calendars . StarDate   import StarDate       as StarDate
+from   AITK  . Documents . JSON       import Load           as LoadJson
+from   AITK  . Documents . JSON       import Save           as SaveJson
+from   AITK  . Documents . JSON       import JsonToBase64   as JsonToBase64
+from   AITK  . Documents . JSON       import JsonFromBase64 as JsonFromBase64
 ##############################################################################
 from   AITK  . Database  . Query      import Query
 from   AITK  . Database  . Connection import Connection
 from   AITK  . Database  . Pair       import Pair
 from   AITK  . Database  . Columns    import Columns
 ##############################################################################
-from                     . Film       import Film     as FilmItem
+from                     . Film       import Film           as FilmItem
 ##############################################################################
 class FilmCenter         (                                                 ) :
   ############################################################################
