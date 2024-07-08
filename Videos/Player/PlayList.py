@@ -10,6 +10,7 @@ import time
 import requests
 import threading
 import gettext
+import base64
 import json
 import pathlib
 import ffmpeg
@@ -516,6 +517,11 @@ class PlayList                     ( TreeDock                              ) :
     URL      = f"http://{HOST}:{PORT}"
     CMD      = f"{URL}/Film"
     ##########################################################################
+    ## JMSG     = json   . dumps   ( JFI                                        )
+    ## BMSG     = JMSG   . encode  ( "utf-8"                                    )
+    ## JBYTEs   = base64 . b64encode ( BMSG                                     )
+    ## ABYTEs   = JBYTEs . decode  ( "ascii"                                    )
+    ##########################################################################
     Username = self . Settings  [ "Listener" ] [ "Username"                  ]
     Password = self . Settings  [ "Listener" ] [ "Password"                  ]
     Headers  =                  { "Username" : Username                    , \
@@ -542,7 +548,17 @@ class PlayList                     ( TreeDock                              ) :
       ########################################################################
       if                        ( "Film" in J                              ) :
         ######################################################################
-        JFI  = J [ "Film" ]
+        ## KFI  = J                [ "Film"                                     ]
+        ## BFI  = KFI . encode     ( "ascii"                                    )
+        ## DFI  = base64 . b64decode ( BFI                                      )
+        ## ZFI  = DFI . decode     ( "utf-8"                                    )
+        ######################################################################
+        ## try                                                                  :
+        ##   JFI  = json . loads   ( ZFI                                        )
+        ## except                                                               :
+        ##   return JFI
+        ######################################################################
+        JFI  = J                [ "Film"                                     ]
       ########################################################################
     except                                                                   :
       ########################################################################
