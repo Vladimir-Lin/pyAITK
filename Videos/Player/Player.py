@@ -172,6 +172,7 @@ class Player               ( Widget , AttachDock                           ) :
   Clicked         = Signal ( int                                             )
   PlayerCompleted = Signal ( int                                             )
   FilmViewed      = Signal ( dict                                            )
+  FilmStopped     = Signal ( dict                                            )
   NormalWindow    = Signal (                                                 )
   GoMdi           = Signal ( int                                             )
   GoStack         = Signal ( int                                             )
@@ -789,14 +790,25 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     if                                     ( VIEWED                        ) :
       ########################################################################
-      print ( self . Duration , json . dumps ( SEGs ) )
-      print ( "Film Viewed" )
+      PLAYED = int                         ( self . FilmJSON [ "Played"    ] )
+      PLAYED = int                         ( PLAYED + 1                      )
+      ########################################################################
+      self . FilmJSON [ "Played" ] = PLAYED
+      ########################################################################
+      self . Viewed =                      { "Exists"   : False            , \
+                                             "Duration" : self . Duration  , \
+                                             "At"       : -1               , \
+                                             "Bars"     : [                ] }
+      self . FilmJSON [ "Watching" ] = self . Viewed
       ########################################################################
     else                                                                     :
       ########################################################################
-      print ( self . Duration , json . dumps ( SEGs ) )
-    ##########################################################################
-    ##########################################################################
+      SLEN = len                           ( SEGs                            )
+      self . Viewed =                      { "Exists"   : True             , \
+                                             "Duration" : self . Duration  , \
+                                             "At"       : SLEN - 1         , \
+                                             "Bars"     : SEGs               }
+      self . FilmJSON [ "Watching" ] = self . Viewed
     ##########################################################################
     return
   ############################################################################
@@ -877,6 +889,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . AUDIO             . stop       (                                )
     ##########################################################################
     self   . AnalysisViewed                 (                                )
+    self   . FilmStopped . emit             ( self . FilmJSON                )
     ##########################################################################
     return
   ############################################################################

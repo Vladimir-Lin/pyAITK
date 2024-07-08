@@ -176,6 +176,7 @@ class FilmCenter         (                                                 ) :
       HJI  = self . History [ "Films" ] [ SIG                                ]
       FOCs = FJI        [ "Locations"                                        ]
       LOCs = HJI        [ "Locations"                                        ]
+      SEEW = HJI        [ "Watching"                                         ]
       PLAY = HJI        [ "Played"                                           ]
       AAA  = False
       ########################################################################
@@ -191,7 +192,8 @@ class FilmCenter         (                                                 ) :
         FJI [ "Locations" ]   = LOCs
         self . HistoryUpdated = NOW . Stardate
       ########################################################################
-      FJI [ "Played" ] = PLAY
+      FJI [ "Played"   ] = PLAY
+      FJI [ "Watching" ] = SEEW
       ########################################################################
     else                                                                     :
       ########################################################################
