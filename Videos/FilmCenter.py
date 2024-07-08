@@ -7,6 +7,7 @@ import sys
 import time
 import datetime
 import threading
+import base64
 import json
 ##############################################################################
 import mysql . connector

@@ -1355,14 +1355,13 @@ class Player               ( Widget , AttachDock                           ) :
     self  . PANEL . Clock  . setMaximum ( self . Range                       )
     self  . PANEL . Clock  . setValue   ( 0                                  )
     ##########################################################################
-    self  . Viewed  =       { "Exists"   : True                            , \
-                              "Duration" : DURATION                        , \
-                              "At"       : 0                               , \
-                              "Bars"     : [                               ] }
-    self  . FvRange =       { "Start"    : 0                               , \
+    self  . Viewed   = FILM [ "Watching"                                     ]
+    self  . FvRange  =      { "Start"    : 0                               , \
                               "Finish"   : 0                                 }
     ##########################################################################
     self  . Viewed [ "Bars" ] . append ( self  . FvRange                     )
+    ATI   = len             ( self  . Viewed [ "Bars"                      ] )
+    self  . Viewed [ "At"   ] = int    ( ATI - 1                             )
     ##########################################################################
     self  . VWidth  = FILM [ "Width"                                         ]
     self  . VHeight = FILM [ "Height"                                        ]
