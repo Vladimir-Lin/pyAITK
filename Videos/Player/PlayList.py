@@ -519,17 +519,12 @@ class PlayList                     ( TreeDock                              ) :
     URL      = f"http://{HOST}:{PORT}"
     CMD      = f"{URL}/Film"
     ##########################################################################
-    ## JMSG     = json   . dumps   ( JFI                                        )
-    ## BMSG     = JMSG   . encode  ( "utf-8"                                    )
-    ## JBYTEs   = base64 . b64encode ( BMSG                                     )
-    ## ABYTEs   = JBYTEs . decode  ( "ascii"                                    )
-    ##########################################################################
     Username = self . Settings  [ "Listener" ] [ "Username"                  ]
     Password = self . Settings  [ "Listener" ] [ "Password"                  ]
     Headers  =                  { "Username" : Username                    , \
                                   "Password" : Password                      }
     QFILM    =                  { "Action" : "Query"                       , \
-                                  "Film"   : JFI                             }
+                                  "Film"   : JsonToBase64 ( JFI )            }
     ##########################################################################
     try                                                                      :
       ########################################################################
@@ -543,6 +538,7 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     JS       = answer . text
     JS       = JS     . replace ( "'" , "\""                                 )
+    print ( JS )
     ##########################################################################
     try                                                                      :
       ########################################################################
@@ -550,18 +546,8 @@ class PlayList                     ( TreeDock                              ) :
       ########################################################################
       if                        ( "Film" in J                              ) :
         ######################################################################
-        ## KFI  = J                [ "Film"                                     ]
-        ## BFI  = KFI . encode     ( "ascii"                                    )
-        ## DFI  = base64 . b64decode ( BFI                                      )
-        ## ZFI  = DFI . decode     ( "utf-8"                                    )
-        ######################################################################
-        ## try                                                                  :
-        ##   JFI  = json . loads   ( ZFI                                        )
-        ## except                                                               :
-        ##   return JFI
-        ######################################################################
-        JFI  = J                [ "Film"                                     ]
-        print (  )
+        JFI  = JsonFromBase64   ( J [ "Film"                               ] )
+        print ( "Decoded : " , json . dumps ( JFI ) )
       ########################################################################
     except                                                                   :
       ########################################################################
@@ -762,6 +748,8 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     self  . LMutex . release (                                               )
     ##########################################################################
+    self  . StoreListings    (                                               )
+    ##########################################################################
     CNT   = self . topLevelItemCount (                                       )
     AT    = 0
     FOUND = False
@@ -783,17 +771,12 @@ class PlayList                     ( TreeDock                              ) :
     URL      = f"http://{HOST}:{PORT}"
     CMD      = f"{URL}/Film"
     ##########################################################################
-    ## JMSG     = json   . dumps   ( JFI                                        )
-    ## BMSG     = JMSG   . encode  ( "utf-8"                                    )
-    ## JBYTEs   = base64 . b64encode ( BMSG                                     )
-    ## ABYTEs   = JBYTEs . decode  ( "ascii"                                    )
-    ##########################################################################
     Username = self . Settings  [ "Listener" ] [ "Username"                  ]
     Password = self . Settings  [ "Listener" ] [ "Password"                  ]
     Headers  =                  { "Username" : Username                    , \
                                   "Password" : Password                      }
-    QFILM    =                  { "Action" : "Sync"                        , \
-                                  "Film"   : FILM                            }
+    QFILM    =                  { "Action"   : "Sync"                      , \
+                                  "Film"     : JsonToBase64 ( FILM )         }
     ##########################################################################
     try                                                                      :
       ########################################################################
