@@ -289,8 +289,9 @@ class PlayList                     ( TreeDock                              ) :
     DURATION   = film             [ "Duration"                               ]
     W          = film             [ "Width"                                  ]
     H          = film             [ "Height"                                 ]
+    PLAYED     = film             [ "Played"                                 ]
     S          = self . toClock   ( DURATION                                 )
-    T          = f"{W} x {H} / {S}"
+    T          = f"{W} x {H} / {S} / {PLAYED}"
     FID        = int              ( self . FID                               )
     FID        = int              ( FID + 1                                  )
     self . FID = FID
