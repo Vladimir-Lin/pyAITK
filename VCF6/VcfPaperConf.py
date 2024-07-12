@@ -11,28 +11,14 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+import PySide6
+from   PySide6             import QtCore
+from   PySide6             import QtGui
+from   PySide6             import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QRect
-from   PyQt5 . QtCore                 import QRectF
-##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QFont
-from   PyQt5 . QtGui                  import QFontMetricsF
-from   PyQt5 . QtGui                  import QPen
-from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QKeySequence
-##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
+from   PySide6 . QtCore    import *
+from   PySide6 . QtGui     import *
+from   PySide6 . QtWidgets import *
 ##############################################################################
 class VcfPaperConf    (                                                    ) :
   ############################################################################
