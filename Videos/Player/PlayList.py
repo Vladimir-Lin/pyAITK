@@ -288,13 +288,14 @@ class PlayList                     ( TreeDock                              ) :
   def AppendItem                  ( self , film                            ) :
     ##########################################################################
     NAME       = film             [ "Name"                                   ]
+    UUID       = film             [ "Uuid"                                   ]
     SIG        = film             [ "Signature"                              ]
     DURATION   = film             [ "Duration"                               ]
     W          = film             [ "Width"                                  ]
     H          = film             [ "Height"                                 ]
     PLAYED     = film             [ "Played"                                 ]
     S          = self . toClock   ( DURATION                                 )
-    T          = f"{W} x {H} / {S} / {PLAYED}"
+    T          = f"{W} x {H} / {S} / {PLAYED} / {UUID}"
     FID        = int              ( self . FID                               )
     FID        = int              ( FID + 1                                  )
     self . FID = FID
@@ -308,6 +309,15 @@ class PlayList                     ( TreeDock                              ) :
     item       . setData          ( 0 , Qt . UserRole , FID                  )
     item       . setData          ( 1 , Qt . UserRole , SIG                  )
     item       . setData          ( 2 , Qt . UserRole , film                 )
+    ##########################################################################
+    if                            ( UUID <= 0                              ) :
+      ########################################################################
+      item     . setBackground    ( 0 , Qt . red                             )
+    ##########################################################################
+    if                            ( PLAYED >= self . MaxPlayed             ) :
+      ########################################################################
+      item     . setBackground    ( 1 , Qt . yellow                          )
+    ##########################################################################
     self       . addTopLevelItem  ( item                                     )
     ##########################################################################
     return
