@@ -1102,7 +1102,7 @@ class Player               ( Widget , AttachDock                           ) :
     VAT = self . Viewed [ "At"                                               ]
     VNT = len           ( self  . Viewed  [ "Bars" ]                         )
     ##########################################################################
-    if ( VAT < VNT                                                         ) :
+    if                  ( ( VAT >= 0 ) and ( VAT < VNT )                   ) :
       ########################################################################
       self . FvRange [ "Finish" ]         = VPOS
       self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange

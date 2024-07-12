@@ -26,10 +26,10 @@ class SpinBox           ( QSpinBox , VirtualGui                            ) :
   ############################################################################
   def __init__          ( self , parent = None , plan = None               ) :
     ##########################################################################
-    super ( QSpinBox    , self ) . __init__ ( parent                         )
-    super ( VirtualGui  , self ) . __init__ (                                )
-    self . Initialize                       ( self                           )
-    self . setPlanFunction                  ( plan                           )
+    super (                   ) . __init__ ( parent                          )
+    super ( VirtualGui , self ) . __init__ (                                 )
+    self . Initialize                      ( self                            )
+    self . setPlanFunction                 ( plan                            )
     ##########################################################################
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )
     ##########################################################################
