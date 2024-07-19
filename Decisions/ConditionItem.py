@@ -4,11 +4,7 @@
 ##############################################################################
 import os
 import sys
-import getopt
-import time
-import datetime
-import requests
-import threading
+import json
 ##############################################################################
 import mysql . connector
 from   mysql . connector             import Error
@@ -33,61 +29,93 @@ class ConditionItem      ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def Clear          ( self                                                ) :
+  def Clear                ( self                                          ) :
     ##########################################################################
-    self . Columns = [                                                       ]
-    self . Id      = -1
-    self . Uuid    =  0
-    self . Used    =  0
-    self . Group   =  0
-    self . Name    =  ""
-    self . Comment =  ""
-    self . Wiki    =  ""
-    self . ltime   =  0
+    self . Columns       = [                                                 ]
+    self . Id            = -1
+    self . Uuid          =  0
+    self . Used          =  1
+    self . ConditionType =  1
+    self . Form          =  0
+    self . States        =  0
+    self . Value         =  0.0
+    self . Name          =  ""
+    self . Properties    = {                                                 }
+    self . Actions       = [                                                 ]
+    self . Updated       = False
+    self . valueChange   = self . setStates
+    self . SyncSQL       = self . syncStates
+    self . ltime         =  0
     ##########################################################################
     return
   ############################################################################
   def assign ( self , item                                                 ) :
     ##########################################################################
-    self . Columns = item . Columns
-    self . Id      = item . Id
-    self . Uuid    = item . Uuid
-    self . Used    = item . Used
-    self . Group   = item . Group
-    self . Name    = item . Name
-    self . Comment = item . Comment
-    self . Wiki    = item . Wiki
-    self . ltime   = item . ltime
+    self . Columns       = item . Columns
+    self . Id            = item . Id
+    self . Uuid          = item . Uuid
+    self . Used          = item . Used
+    self . ConditionType = item . ConditionType
+    self . Form          = item . Form
+    self . States        = item . States
+    self . Value         = item . Value
+    self . Name          = item . Name
+    self . Properties    = item . Properties
+    self . Actions       = item . Actions
+    self . Updated       = item . Updated
+    self . valueChange   = item . valueChange
+    self . SyncSQL       = item . SyncSQL
+    self . ltime         = item . ltime
     ##########################################################################
     return
   ############################################################################
-  def set            ( self , item , value                                 ) :
+  def set             ( self , item , value                                ) :
     ##########################################################################
-    a = item . lower (                                                       )
+    a = item . lower  (                                                      )
     ##########################################################################
-    if               ( "id"      == a                                      ) :
-      self . Id     = value
+    if                ( "id"      == a                                     ) :
+      self . Id            = value
     ##########################################################################
-    elif             ( "uuid"    == a                                      ) :
-      self . Uuid   = value
+    elif              ( "uuid"    == a                                     ) :
+      self . Uuid          = value
     ##########################################################################
-    elif             ( "used"    == a                                      ) :
-      self . Used   = value
+    elif              ( "used"    == a                                     ) :
+      self . Used          = value
     ##########################################################################
-    elif             ( "group"   == a                                      ) :
-      self . Group  = value
+    elif              ( "type"    == a                                     ) :
+      self . ConditionType = value
     ##########################################################################
-    elif             ( "name"    == a                                      ) :
-      self . Name    = value
+    elif              ( "form"    == a                                     ) :
+      ########################################################################
+      self . Form          = value
+      ########################################################################
+      self . SyncForm (                                                      )
     ##########################################################################
-    elif             ( "comment" == a                                      ) :
-      self . Comment = value
+    elif              ( "states"  == a                                     ) :
+      self . States        = value
     ##########################################################################
-    elif             ( "wiki"    == a                                      ) :
-      self . Wiki = value
+    elif              ( "value"   == a                                     ) :
+      self . Value         = value
     ##########################################################################
-    elif             ( "ltime"   == a                                      ) :
-      self . ltime  = value
+    elif              ( "name"    == a                                     ) :
+      self . Name          = value . decode ( "utf-8"                        )
+    ##########################################################################
+    elif              ( "json"    == a                                     ) :
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        S                  = value . decode ( "utf-8"                        )
+        self . Properties  = json  . loads  ( S                              )
+        ######################################################################
+      except                                                                 :
+        ######################################################################
+        self . Properties  = {                                               }
+    ##########################################################################
+    elif              ( "actions" == a                                     ) :
+      self . Actions       = value
+    ##########################################################################
+    elif              ( "ltime"   == a                                     ) :
+      self . ltime         = value
     ##########################################################################
     return
   ############################################################################
@@ -104,17 +132,26 @@ class ConditionItem      ( Columns                                         ) :
     if               ( "used"    == a                                      ) :
       return self . Used
     ##########################################################################
-    if               ( "group"   == a                                      ) :
-      return self . Group
+    if               ( "type"    == a                                      ) :
+      return self . ConditionType
+    ##########################################################################
+    if               ( "form"    == a                                      ) :
+      return self . Form
+    ##########################################################################
+    if               ( "states"  == a                                      ) :
+      return self . States
+    ##########################################################################
+    if               ( "value"   == a                                      ) :
+      return self . Value
     ##########################################################################
     if               ( "name"    == a                                      ) :
       return self . Name
     ##########################################################################
-    if               ( "comment" == a                                      ) :
-      return self . Comment
+    if               ( "json"    == a                                      ) :
+      return self . Properties
     ##########################################################################
-    if               ( "wiki"    == a                                      ) :
-      return self . Wiki
+    if               ( "actions" == a                                      ) :
+      return self . Actions
     ##########################################################################
     if               ( "ltime"   == a                                      ) :
       return self . ltime
@@ -122,13 +159,15 @@ class ConditionItem      ( Columns                                         ) :
     return ""
   ############################################################################
   def tableItems        ( self                                             ) :
-    return [ "id"                                                            ,
-             "uuid"                                                          ,
-             "used"                                                          ,
-             "group"                                                         ,
-             "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ,
+    return [ "id"                                                          , \
+             "uuid"                                                        , \
+             "used"                                                        , \
+             "type"                                                        , \
+             "form"                                                        , \
+             "states"                                                      , \
+             "value"                                                       , \
+             "name"                                                        , \
+             "json"                                                        , \
              "ltime"                                                         ]
   ############################################################################
   def pair              ( self , item                                      ) :
@@ -136,18 +175,146 @@ class ConditionItem      ( Columns                                         ) :
     return f"`{item}` = {v}"
   ############################################################################
   def valueItems        ( self                                             ) :
-    return [ "used"                                                          ,
-             "group"                                                         ,
-             "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ]
+    return [ "used"                                                        , \
+             "type"                                                        , \
+             "form"                                                        , \
+             "states"                                                      , \
+             "value"                                                       , \
+             "name"                                                        , \
+             "json"                                                          ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"      : self . Id                                       , \
-               "Uuid"    : self . Uuid                                     , \
-               "Used"    : self . Used                                     , \
-               "Group"   : self . Group                                    , \
-               "Name"    : self . Name                                     , \
-               "Comment" : self . Comment                                  , \
-               "Wiki"    : self . Wiki                                       }
+    return   { "Id"         : self . Id                                    , \
+               "Uuid"       : self . Uuid                                  , \
+               "Used"       : self . Used                                  , \
+               "Type"       : self . ConditionType                         , \
+               "Form"       : self . Form                                  , \
+               "States"     : self . States                                , \
+               "Value"      : self . Value                                 , \
+               "Name"       : self . Name                                  , \
+               "Properties" : self . Properties                            , \
+               "Actions"    : self . Actions                               , \
+               "Updated"    : self . Updated                                 }
+  ############################################################################
+  def fromJson ( self , JS                                                 ) :
+    ##########################################################################
+    self . Id            = JS [ "Id"                                         ]
+    self . Uuid          = JS [ "Uuid"                                       ]
+    self . Used          = JS [ "Used"                                       ]
+    self . ConditionType = JS [ "Type"                                       ]
+    self . Form          = JS [ "Form"                                       ]
+    self . States        = JS [ "States"                                     ]
+    self . Value         = JS [ "Value"                                      ]
+    self . Name          = JS [ "Name"                                       ]
+    self . Properties    = JS [ "Properties"                                 ]
+    self . Actions       = JS [ "Actions"                                    ]
+    self . Updated       = JS [ "Updated"                                    ]
+    ##########################################################################
+    self . SyncForm           (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncForm ( self                                                      ) :
+    ##########################################################################
+    if         ( 0 == self . Form                                          ) :
+      ########################################################################
+      self . valueChange = self . setStates
+      self . SyncSQL     = self . syncStates
+      ########################################################################
+    elif       ( 1 == self . Form                                          ) :
+      ########################################################################
+      self . valueChange = self . setValue
+      self . SyncSQL     = self . syncValue
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchActions                   ( self , DB , TABLE                   ) :
+    ##########################################################################
+    UUID = self . Uuid
+    QQ   = f"""select `action` from {TABLE}
+               where ( `condition` = {UUID} )
+                 and ( `adopt` > 0 )
+               group by `action` asc ;"""
+    QQ   = " " . join                 ( QQ . split (                       ) )
+    self . Actions = DB . ObtainUuids ( QQ                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainsAll                     ( self , DB , TABLE , MAPPING         ) :
+    ##########################################################################
+    ITEMs     =                      [                                       ]
+    QQ        = f"""select `uuid` from {TABLE}
+                    where ( `used` > 0 )
+                    order by `id` asc ;"""
+    QQ        = " " . join           ( QQ . split (                        ) )
+    CUIDs     = DB  . ObtainUuids    ( QQ                                    )
+    ##########################################################################
+    for CUID in CUIDs                                                        :
+      ########################################################################
+      COND    = ConditionItem        (                                       )
+      COND    . Uuid = CUID
+      OKAY    = COND . ObtainsByUuid ( DB , TABLE                            )
+      ########################################################################
+      if                             ( OKAY                                ) :
+        ######################################################################
+        COND  . FetchActions         ( DB , MAPPING                          )
+        ITEMs . append               ( COND                                  )
+    ##########################################################################
+    return ITEMs
+  ############################################################################
+  def ToMappers ( self , ALLs                                              ) :
+    ##########################################################################
+    M =         {                                                            }
+    ##########################################################################
+    for C in ALLs                                                            :
+      ########################################################################
+      M [ C . Uuid ] = C
+    ##########################################################################
+    return M
+  ############################################################################
+  def setStates ( self , States                                            ) :
+    ##########################################################################
+    self . States  = States
+    self . Updated = True
+    ##########################################################################
+    return
+  ############################################################################
+  def setValue ( self , Value                                              ) :
+    ##########################################################################
+    self . Value   = Value
+    self . Updated = True
+    ##########################################################################
+    return
+  ############################################################################
+  def syncStates      ( self , DB , TABLE                                  ) :
+    ##########################################################################
+    UUID = self . Uuid
+    STAT = self . States
+    ##########################################################################
+    QQ   = f"""update {TABLE}
+               set `states` = {STAT}
+               where ( `uuid` = {UUID} ) ;"""
+    QQ   = " " . join ( QQ . split (                                       ) )
+    DB   . Query      ( QQ                                                   )
+    ##########################################################################
+    self . Updated = False
+    ##########################################################################
+    return
+  ############################################################################
+  def syncValue        ( self , DB , TABLE                                 ) :
+    ##########################################################################
+    UUID = self . Uuid
+    ##########################################################################
+    QQ   = f"""update {TABLE}
+               set `value` = ?
+               where ( `uuid` = {UUID} ) ;"""
+    QQ   = " " . join  ( QQ . split (                                      ) )
+    DB   . QueryValues ( QQ , ( self . Value , )                             )
+    ##########################################################################
+    self . Updated = False
+    ##########################################################################
+    return
+  ############################################################################
+  def isUpdated ( self                                                     ) :
+    return self . Updated
 ##############################################################################

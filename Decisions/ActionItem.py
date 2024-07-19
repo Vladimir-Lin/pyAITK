@@ -4,20 +4,18 @@
 ##############################################################################
 import os
 import sys
-import getopt
-import time
-import datetime
-import requests
-import threading
+import json
 ##############################################################################
 import mysql . connector
-from   mysql . connector             import Error
+from   mysql . connector              import Error
 ##############################################################################
 import AITK
-from   AITK  . Database . Query      import Query
-from   AITK  . Database . Connection import Connection
-from   AITK  . Database . Pair       import Pair
-from   AITK  . Database . Columns    import Columns
+from   AITK  . Database . Query       import Query
+from   AITK  . Database . Connection  import Connection
+from   AITK  . Database . Pair        import Pair
+from   AITK  . Database . Columns     import Columns
+##############################################################################
+from                    . MappingItem import MappingItem as MappingItem
 ##############################################################################
 class ActionItem         ( Columns                                         ) :
   ############################################################################
@@ -44,6 +42,8 @@ class ActionItem         ( Columns                                         ) :
     self . Name       =  ""
     self . Properties = {                                                    }
     self . Groups     = [                                                    ]
+    self . Conditions = [                                                    ]
+    self . Mappings   = {                                                    }
     self . ltime      =  0
     ##########################################################################
     return
@@ -59,6 +59,8 @@ class ActionItem         ( Columns                                         ) :
     self . Name       = item . Name
     self . Properties = item . Properties
     self . Groups     = item . Groups
+    self . Conditions = item . Conditions
+    self . Mappings   = item . Mappings
     self . ltime      = item . ltime
     ##########################################################################
     return
@@ -67,34 +69,49 @@ class ActionItem         ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"     == a                                       ) :
-      self . Id         = value
+    if               ( "id"         == a                                   ) :
+      self . Id           = value
     ##########################################################################
-    elif             ( "uuid"   == a                                       ) :
-      self . Uuid       = value
+    elif             ( "uuid"       == a                                   ) :
+      self . Uuid         = value
     ##########################################################################
-    elif             ( "used"   == a                                       ) :
-      self . Used       = value
+    elif             ( "used"       == a                                   ) :
+      self . Used         = value
     ##########################################################################
-    elif             ( "type"   == a                                       ) :
-      self . ActionType = value
+    elif             ( "type"       == a                                   ) :
+      self . ActionType   = value
     ##########################################################################
-    elif             ( "states" == a                                       ) :
-      self . States     = value
+    elif             ( "states"     == a                                   ) :
+      self . States       = value
     ##########################################################################
-    elif             ( "name"   == a                                       ) :
-      self . Name       = value
+    elif             ( "name"       == a                                   ) :
+      self . Name         = value . decode ( "utf-8"                         )
     ##########################################################################
-    elif             ( "json"   == a                                       ) :
+    elif             ( "json"       == a                                   ) :
       ########################################################################
-      self . Properties = value
+      try                                                                    :
+        ######################################################################
+        S                 = value . decode ( "utf-8"                         )
+        self . Properties = json  . loads  ( S                               )
+        ######################################################################
+      except                                                                 :
+        ######################################################################
+        self . Properties = {                                                }
     ##########################################################################
-    elif             ( "groups" == a                                       ) :
+    elif             ( "groups"     == a                                   ) :
       ########################################################################
-      self . Groups     = value
+      self . Groups       = value
     ##########################################################################
-    elif             ( "ltime"  == a                                       ) :
-      self . ltime      = value
+    elif             ( "conditions" == a                                   ) :
+      ########################################################################
+      self . Conditions   = value
+    ##########################################################################
+    elif             ( "mappings"   == a                                   ) :
+      ########################################################################
+      self . Mappings     = value
+    ##########################################################################
+    elif             ( "ltime"      == a                                   ) :
+      self . ltime        = value
     ##########################################################################
     return
   ############################################################################
@@ -102,31 +119,37 @@ class ActionItem         ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"     == a                                       ) :
+    if               ( "id"         == a                                   ) :
       return self . Id
     ##########################################################################
-    if               ( "uuid"   == a                                       ) :
+    if               ( "uuid"       == a                                   ) :
       return self . Uuid
     ##########################################################################
-    if               ( "used"   == a                                       ) :
+    if               ( "used"       == a                                   ) :
       return self . Used
     ##########################################################################
-    if               ( "type"   == a                                       ) :
+    if               ( "type"       == a                                   ) :
       return self . ActionType
     ##########################################################################
-    if               ( "states" == a                                       ) :
+    if               ( "states"     == a                                   ) :
       return self . States
     ##########################################################################
-    if               ( "name"   == a                                       ) :
+    if               ( "name"       == a                                   ) :
       return self . Name
     ##########################################################################
-    if               ( "json"   == a                                       ) :
+    if               ( "json"       == a                                   ) :
       return self . Properties
     ##########################################################################
-    if               ( "groups" == a                                       ) :
+    if               ( "groups"     == a                                   ) :
       return self . Groups
     ##########################################################################
-    if               ( "ltime"  == a                                       ) :
+    if               ( "conditions" == a                                   ) :
+      return self . Conditions
+    ##########################################################################
+    if               ( "mappings"   == a                                   ) :
+      return self . Mappings
+    ##########################################################################
+    if               ( "ltime"      == a                                   ) :
       return self . ltime
     ##########################################################################
     return ""
@@ -152,13 +175,165 @@ class ActionItem         ( Columns                                         ) :
              "name"                                                          ,
              "json"                                                          ]
   ############################################################################
-  def toJson ( self                                                        ) :
-    return   { "Id"         : self . Id                                    , \
-               "Uuid"       : self . Uuid                                  , \
-               "Used"       : self . Used                                  , \
-               "Type"       : self . ActionType                            , \
-               "States"     : self . States                                , \
-               "Name"       : self . Name                                  , \
-               "Properties" : self . Properties                            , \
-               "Groups"     : self . Groups                                  }
+  def toJson                     ( self                                    ) :
+    ##########################################################################
+    M =                          {                                           }
+    ##########################################################################
+    for G in self . Groups                                                   :
+      ########################################################################
+      M [ G ] =                  [                                           ]
+      ########################################################################
+      if                         ( G in self . Mappings                    ) :
+        ######################################################################
+        for X in self . Mappings [ G                                       ] :
+          ####################################################################
+          M [ G ] . append       ( X . toJson (                            ) )
+    ##########################################################################
+    return                       { "Id"         : self . Id                , \
+                                   "Uuid"       : self . Uuid              , \
+                                   "Used"       : self . Used              , \
+                                   "Type"       : self . ActionType        , \
+                                   "States"     : self . States            , \
+                                   "Name"       : self . Name              , \
+                                   "Properties" : self . Properties        , \
+                                   "Groups"     : self . Groups            , \
+                                   "Conditions" : self . Conditions        , \
+                                   "Mappings"   : M                          }
+  ############################################################################
+  def fromJson                ( self , JS                                  ) :
+    ##########################################################################
+    self   . Id         = JS  [ "Id"                                         ]
+    self   . Uuid       = JS  [ "Uuid"                                       ]
+    self   . Used       = JS  [ "Used"                                       ]
+    self   . ActionType = JS  [ "Type"                                       ]
+    self   . States     = JS  [ "States"                                     ]
+    self   . Name       = JS  [ "Name"                                       ]
+    self   . Properties = JS  [ "Properties"                                 ]
+    self   . Groups     = JS  [ "Groups"                                     ]
+    self   . Conditions = JS  [ "Conditions"                                 ]
+    ##########################################################################
+    self   . Mappings   =     {                                              }
+    ##########################################################################
+    for G in self . Groups                                                   :
+      ########################################################################
+      self . Mappings [ G ] = [                                              ]
+      ########################################################################
+      if                      ( G in JS [ "Mappings" ]                     ) :
+        ######################################################################
+        for M in JS [ "Mappings" ] [ G ]                                     :
+          ####################################################################
+          MAPI = MappingItem  (                                              )
+          MAPI . fromJson     ( M                                            )
+          ####################################################################
+          self . Mappings [ G ] . append ( MAPI                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchGroups                      ( self , DB , TABLE                 ) :
+    ##########################################################################
+    UUID            = self . Uuid
+    QQ              = f"""select `group` from {TABLE}
+                          where ( `action` = {UUID} )
+                          group by `group` asc ;"""
+    QQ              = " " . join       ( QQ . split (                      ) )
+    self . Groups   = DB . ObtainUuids ( QQ                                  )
+    ##########################################################################
+    self . Mappings =                  {                                     }
+    ##########################################################################
+    for G in self . Groups                                                   :
+      ########################################################################
+      self . Mappings [ G ] =          [                                     ]
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchMappings                      ( self , DB , TABLE , MITEMs      ) :
+    ##########################################################################
+    MAPI              = MappingItem      (                                   )
+    ##########################################################################
+    UUID              = self . Uuid
+    QQ                = f"""select `condition` from {TABLE}
+                            where ( `action` = {UUID} )
+                              and ( `adopt` > 0 )
+                            group by `condition` asc ;"""
+    QQ                = " " . join       ( QQ . split (                    ) )
+    self . Conditions = DB . ObtainUuids ( QQ                                )
+    ##########################################################################
+    ITS               = MAPI . items     (                                   )
+    QQ                = f"""select {ITS} from {TABLE}
+                            where ( `adopt` > 0 )
+                            order by `group`,`id` asc ;"""
+    QQ                = " " . join       ( QQ . split (                    ) )
+    DB                . Execute          ( QQ                                )
+    ALLs              = DB . FetchAll    (                                   )
+    ##########################################################################
+    if                                   ( ALLs in [ False , None ]        ) :
+      return
+    ##########################################################################
+    if                                   ( len ( ALLs ) <= 0               ) :
+      return
+    ##########################################################################
+    for RR in ALLs                                                           :
+      ########################################################################
+      MAPI            = MappingItem      (                                   )
+      MAPI            . obtain           ( RR                                )
+      MAPI            . AssignForm       ( MITEMs                            )
+      ########################################################################
+      if                                 ( MAPI . Group in self . Mappings ) :
+        ######################################################################
+        self . Mappings [ MAPI . Group ] . append ( MAPI                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainsAll                     ( self                                , \
+                                       DB                                  , \
+                                       TABLE                               , \
+                                       MAPPING                             , \
+                                       GROUP                               , \
+                                       MITEMs                              ) :
+    ##########################################################################
+    ITEMs     =                      [                                       ]
+    QQ        = f"select `uuid` from {TABLE} order by `id` asc ;"
+    QQ        = " " . join           ( QQ . split (                        ) )
+    AUIDs     = DB  . ObtainUuids    ( QQ                                    )
+    ##########################################################################
+    for AUID in AUIDs                                                        :
+      ########################################################################
+      ACTI    = ActionItem           (                                       )
+      ACTI    . Uuid = AUID
+      OKAY    = ACTI . ObtainsByUuid ( DB , TABLE                            )
+      ########################################################################
+      if                             ( OKAY                                ) :
+        ######################################################################
+        ACTI  . FetchGroups          ( DB , GROUP                            )
+        ACTI  . FetchMappings        ( DB , MAPPING , MITEMs                 )
+        ITEMs . append               ( ACTI                                  )
+    ##########################################################################
+    return ITEMs
+  ############################################################################
+  def isConditionGroup ( self , Group , CONDITIONs                         ) :
+    ##########################################################################
+    if                 ( Group not in self . Mappings                      ) :
+      return   False
+    ##########################################################################
+    if                 ( len ( self . Mappings [ Group ] ) <= 0            ) :
+      return   False
+    ##########################################################################
+    for G in self . Mappings [ Group ]                                       :
+      ########################################################################
+      if               ( not G . Comparsion ( CONDITIONs )                 ) :
+        return False
+    ##########################################################################
+    return     True
+  ############################################################################
+  def shallRun ( self , CONDITIONs                                         ) :
+    ##########################################################################
+    if         ( len ( self . Groups ) <= 0                                ) :
+      return   False
+    ##########################################################################
+    for G in self . Groups                                                   :
+      ########################################################################
+      if       ( self . isConditionGroup ( G , CONDITIONs )                ) :
+        return True
+    ##########################################################################
+    return     False
 ##############################################################################

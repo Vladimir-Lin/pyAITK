@@ -4,11 +4,7 @@
 ##############################################################################
 import os
 import sys
-import getopt
-import time
-import datetime
-import requests
-import threading
+import json
 ##############################################################################
 import mysql . connector
 from   mysql . connector             import Error
@@ -35,29 +31,37 @@ class MappingItem        ( Columns                                         ) :
   ############################################################################
   def Clear          ( self                                                ) :
     ##########################################################################
-    self . Columns = [                                                       ]
-    self . Id      = -1
-    self . Uuid    =  0
-    self . Used    =  0
-    self . Group   =  0
-    self . Name    =  ""
-    self . Comment =  ""
-    self . Wiki    =  ""
-    self . ltime   =  0
+    self . Columns    = [                                                       ]
+    self . Id         = -1
+    self . Action     =  0
+    self . Condition  =  0
+    self . Group      =  0
+    self . Form       =  0
+    self . Name       =  ""
+    self . Adopt      =  1
+    self . Compare    =  0
+    self . States     =  0
+    self . Value      =  0.0
+    self . Comparsion = self . Int64Equal
+    self . ltime      =  0
     ##########################################################################
     return
   ############################################################################
   def assign ( self , item                                                 ) :
     ##########################################################################
-    self . Columns = item . Columns
-    self . Id      = item . Id
-    self . Uuid    = item . Uuid
-    self . Used    = item . Used
-    self . Group   = item . Group
-    self . Name    = item . Name
-    self . Comment = item . Comment
-    self . Wiki    = item . Wiki
-    self . ltime   = item . ltime
+    self . Columns    = item . Columns
+    self . Id         = item . Id
+    self . Action     = item . Action
+    self . Condition  = item . Condition
+    self . Group      = item . Group
+    self . Form       = item . Form
+    self . Name       = item . Name
+    self . Adopt      = item . Adopt
+    self . Compare    = item . Compare
+    self . States     = item . States
+    self . Value      = item . Value
+    self . Comparsion = item . Comparsion
+    self . ltime      = item . ltime
     ##########################################################################
     return
   ############################################################################
@@ -65,29 +69,39 @@ class MappingItem        ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"      == a                                      ) :
-      self . Id     = value
+    if               ( "id"        == a                                    ) :
+      self . Id        = value
     ##########################################################################
-    elif             ( "uuid"    == a                                      ) :
-      self . Uuid   = value
+    elif             ( "action"    == a                                    ) :
+      self . Action    = value
     ##########################################################################
-    elif             ( "used"    == a                                      ) :
-      self . Used   = value
+    elif             ( "condition" == a                                    ) :
+      self . Condition = value
     ##########################################################################
-    elif             ( "group"   == a                                      ) :
-      self . Group  = value
+    elif             ( "group"     == a                                    ) :
+      self . Group     = value
     ##########################################################################
-    elif             ( "name"    == a                                      ) :
-      self . Name    = value
+    elif             ( "form"      == a                                    ) :
+      self . Form      = value
     ##########################################################################
-    elif             ( "comment" == a                                      ) :
-      self . Comment = value
+    elif             ( "name"      == a                                    ) :
+      self . Name      = value . decode ( "utf-8"                            )
     ##########################################################################
-    elif             ( "wiki"    == a                                      ) :
-      self . Wiki = value
+    elif             ( "adopt"     == a                                    ) :
+      self . Adopt     = value
     ##########################################################################
-    elif             ( "ltime"   == a                                      ) :
-      self . ltime  = value
+    elif             ( "compare"   == a                                    ) :
+      ########################################################################
+      self . Compare   = value
+    ##########################################################################
+    elif             ( "states"    == a                                    ) :
+      self . States    = value
+    ##########################################################################
+    elif             ( "value"     == a                                    ) :
+      self . Value     = value
+    ##########################################################################
+    elif             ( "ltime"     == a                                    ) :
+      self . ltime     = value
     ##########################################################################
     return
   ############################################################################
@@ -95,59 +109,244 @@ class MappingItem        ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"      == a                                      ) :
+    if               ( "id"        == a                                    ) :
       return self . Id
     ##########################################################################
-    if               ( "uuid"    == a                                      ) :
-      return self . Uuid
+    if               ( "action"    == a                                    ) :
+      return self . Action
     ##########################################################################
-    if               ( "used"    == a                                      ) :
-      return self . Used
+    if               ( "condition" == a                                    ) :
+      return self . Condition
     ##########################################################################
-    if               ( "group"   == a                                      ) :
+    if               ( "group"     == a                                    ) :
       return self . Group
     ##########################################################################
-    if               ( "name"    == a                                      ) :
+    if               ( "form"      == a                                    ) :
+      return self . Form
+    ##########################################################################
+    if               ( "name"      == a                                    ) :
       return self . Name
     ##########################################################################
-    if               ( "comment" == a                                      ) :
-      return self . Comment
+    if               ( "adopt"     == a                                    ) :
+      return self . Adopt
     ##########################################################################
-    if               ( "wiki"    == a                                      ) :
-      return self . Wiki
+    if               ( "compare"   == a                                    ) :
+      return self . Compare
     ##########################################################################
-    if               ( "ltime"   == a                                      ) :
+    if               ( "states"    == a                                    ) :
+      return self . States
+    ##########################################################################
+    if               ( "value"     == a                                    ) :
+      return self . Value
+    ##########################################################################
+    if               ( "ltime"     == a                                    ) :
       return self . ltime
     ##########################################################################
     return ""
   ############################################################################
-  def tableItems        ( self                                             ) :
-    return [ "id"                                                            ,
-             "uuid"                                                          ,
-             "used"                                                          ,
-             "group"                                                         ,
-             "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ,
-             "ltime"                                                         ]
+  def tableItems ( self                                                    ) :
+    return       [ "id"                                                    , \
+                   "action"                                                , \
+                   "condition"                                             , \
+                   "group"                                                 , \
+                   "name"                                                  , \
+                   "adopt"                                                 , \
+                   "compare"                                               , \
+                   "states"                                                , \
+                   "value"                                                 , \
+                   "ltime"                                                   ]
   ############################################################################
-  def pair              ( self , item                                      ) :
-    v = self . get      (        item                                        )
+  def pair         ( self , item                                           ) :
+    v = self . get (        item                                             )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems        ( self                                             ) :
-    return [ "used"                                                          ,
-             "group"                                                         ,
-             "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ]
+  def valueItems ( self                                                    ) :
+    return       [ "action"                                                , \
+                   "condition"                                             , \
+                   "group"                                                 , \
+                   "name"                                                  , \
+                   "adopt"                                                 , \
+                   "compare"                                               , \
+                   "states"                                                , \
+                   "value"                                                   ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"      : self . Id                                       , \
-               "Uuid"    : self . Uuid                                     , \
-               "Used"    : self . Used                                     , \
-               "Group"   : self . Group                                    , \
-               "Name"    : self . Name                                     , \
-               "Comment" : self . Comment                                  , \
-               "Wiki"    : self . Wiki                                       }
+    return   { "Id"        : self . Id                                     , \
+               "Action"    : self . Action                                 , \
+               "Condition" : self . Condition                              , \
+               "Group"     : self . Group                                  , \
+               "Form"      : self . Form                                   , \
+               "Name"      : self . Name                                   , \
+               "Adopt"     : self . Adopt                                  , \
+               "Compare"   : self . Compare                                , \
+               "States"    : self . States                                 , \
+               "Value"     : self . Value                                    }
+  ############################################################################
+  def fromJson              ( self , JS                                    ) :
+    ##########################################################################
+    self . Id        = JS   [ "Id"                                           ]
+    self . Action    = JS   [ "Action"                                       ]
+    self . Condition = JS   [ "Condition"                                    ]
+    self . Group     = JS   [ "Group"                                        ]
+    self . Form      = JS   [ "Form"                                         ]
+    self . Name      = JS   [ "Name"                                         ]
+    self . Adopt     = JS   [ "Adopt"                                        ]
+    self . Compare   = JS   [ "Compare"                                      ]
+    self . States    = JS   [ "States"                                       ]
+    self . Value     = JS   [ "Value"                                        ]
+    ##########################################################################
+    self . AssignComparsion (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignComparsion ( self                                              ) :
+    ##########################################################################
+    if                 ( 0 == self . Form                                  ) :
+      ########################################################################
+      if               ( 0 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64Equal
+      ########################################################################
+      elif             ( 1 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64NotEqual
+      ########################################################################
+      elif             ( 2 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64Less
+      ########################################################################
+      elif             ( 3 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64LessEqual
+      ########################################################################
+      elif             ( 4 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64Greater
+      ########################################################################
+      elif             ( 5 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . Int64GreaterEqual
+      ########################################################################
+    elif               ( 1 == self . Form                                  ) :
+      ########################################################################
+      if               ( 0 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleEqual
+      ########################################################################
+      elif             ( 1 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleNotEqual
+      ########################################################################
+      elif             ( 2 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleLess
+      ########################################################################
+      elif             ( 3 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleLessEqual
+      ########################################################################
+      elif             ( 4 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleGreater
+      ########################################################################
+      elif             ( 5 == self . Compare                               ) :
+        ######################################################################
+        self . Comparsion = self . DoubleGreaterEqual
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignForm             ( self , CONDITIONs                           ) :
+    ##########################################################################
+    if                       ( self . Condition not in CONDITIONs          ) :
+      return
+    ##########################################################################
+    self . Form = CONDITIONs [ self . Condition ] . Form
+    ##########################################################################
+    self . AssignComparsion  (                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def Int64Equal ( self , CONDITIONs                                       ) :
+    ##########################################################################
+    if           ( self . Condition not in CONDITIONs                      ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States == self . States       )
+  ############################################################################
+  def Int64NotEqual ( self , CONDITIONs                                    ) :
+    ##########################################################################
+    if              ( self . Condition not in CONDITIONs                   ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States != self . States       )
+  ############################################################################
+  def Int64Less ( self , CONDITIONs                                        ) :
+    ##########################################################################
+    if          ( self . Condition not in CONDITIONs                       ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States <  self . States       )
+  ############################################################################
+  def Int64LessEqual ( self , CONDITIONs                                   ) :
+    ##########################################################################
+    if               ( self . Condition not in CONDITIONs                  ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States <= self . States       )
+  ############################################################################
+  def Int64Greater ( self , CONDITIONs                                     ) :
+    ##########################################################################
+    if             ( self . Condition not in CONDITIONs                    ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States >  self . States       )
+  ############################################################################
+  def Int64GreaterEqual ( self , CONDITIONs                                ) :
+    ##########################################################################
+    if                  ( self . Condition not in CONDITIONs               ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . States >= self . States       )
+  ############################################################################
+  def DoubleEqual ( self , CONDITIONs                                      ) :
+    ##########################################################################
+    if            ( self . Condition not in CONDITIONs                     ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value == self . Value         )
+  ############################################################################
+  def DoubleNotEqual ( self , CONDITIONs                                   ) :
+    ##########################################################################
+    if               ( self . Condition not in CONDITIONs                  ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value != self . Value         )
+  ############################################################################
+  def DoubleLess ( self , CONDITIONs                                       ) :
+    ##########################################################################
+    if           ( self . Condition not in CONDITIONs                      ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value <  self . Value         )
+  ############################################################################
+  def DoubleLessEqual ( self , CONDITIONs                                  ) :
+    ##########################################################################
+    if                ( self . Condition not in CONDITIONs                 ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value <= self . Value         )
+  ############################################################################
+  def DoubleGreater ( self , CONDITIONs                                    ) :
+    ##########################################################################
+    if              ( self . Condition not in CONDITIONs                   ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value >  self . Value         )
+  ############################################################################
+  def DoubleGreaterEqual ( self , CONDITIONs                               ) :
+    ##########################################################################
+    if                   ( self . Condition not in CONDITIONs              ) :
+      return False
+    ##########################################################################
+    return ( CONDITIONs [ self . Condition ] . Value >= self . Value         )
 ##############################################################################
