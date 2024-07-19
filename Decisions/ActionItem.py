@@ -33,31 +33,33 @@ class ActionItem         ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def Clear          ( self                                                ) :
+  def Clear             ( self                                             ) :
     ##########################################################################
-    self . Columns = [                                                       ]
-    self . Id      = -1
-    self . Uuid    =  0
-    self . Used    =  0
-    self . Group   =  0
-    self . Name    =  ""
-    self . Comment =  ""
-    self . Wiki    =  ""
-    self . ltime   =  0
+    self . Columns    = [                                                    ]
+    self . Id         = -1
+    self . Uuid       =  0
+    self . Used       =  1
+    self . ActionType =  1
+    self . States     =  0
+    self . Name       =  ""
+    self . Properties = {                                                    }
+    self . Groups     = [                                                    ]
+    self . ltime      =  0
     ##########################################################################
     return
   ############################################################################
   def assign ( self , item                                                 ) :
     ##########################################################################
-    self . Columns = item . Columns
-    self . Id      = item . Id
-    self . Uuid    = item . Uuid
-    self . Used    = item . Used
-    self . Group   = item . Group
-    self . Name    = item . Name
-    self . Comment = item . Comment
-    self . Wiki    = item . Wiki
-    self . ltime   = item . ltime
+    self . Columns    = item . Columns
+    self . Id         = item . Id
+    self . Uuid       = item . Uuid
+    self . Used       = item . Used
+    self . ActionType = item . ActionType
+    self . States     = item . States
+    self . Name       = item . Name
+    self . Properties = item . Properties
+    self . Groups     = item . Groups
+    self . ltime      = item . ltime
     ##########################################################################
     return
   ############################################################################
@@ -65,29 +67,34 @@ class ActionItem         ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"      == a                                      ) :
-      self . Id     = value
+    if               ( "id"     == a                                       ) :
+      self . Id         = value
     ##########################################################################
-    elif             ( "uuid"    == a                                      ) :
-      self . Uuid   = value
+    elif             ( "uuid"   == a                                       ) :
+      self . Uuid       = value
     ##########################################################################
-    elif             ( "used"    == a                                      ) :
-      self . Used   = value
+    elif             ( "used"   == a                                       ) :
+      self . Used       = value
     ##########################################################################
-    elif             ( "group"   == a                                      ) :
-      self . Group  = value
+    elif             ( "type"   == a                                       ) :
+      self . ActionType = value
     ##########################################################################
-    elif             ( "name"    == a                                      ) :
-      self . Name    = value
+    elif             ( "states" == a                                       ) :
+      self . States     = value
     ##########################################################################
-    elif             ( "comment" == a                                      ) :
-      self . Comment = value
+    elif             ( "name"   == a                                       ) :
+      self . Name       = value
     ##########################################################################
-    elif             ( "wiki"    == a                                      ) :
-      self . Wiki = value
+    elif             ( "json"   == a                                       ) :
+      ########################################################################
+      self . Properties = value
     ##########################################################################
-    elif             ( "ltime"   == a                                      ) :
-      self . ltime  = value
+    elif             ( "groups" == a                                       ) :
+      ########################################################################
+      self . Groups     = value
+    ##########################################################################
+    elif             ( "ltime"  == a                                       ) :
+      self . ltime      = value
     ##########################################################################
     return
   ############################################################################
@@ -95,28 +102,31 @@ class ActionItem         ( Columns                                         ) :
     ##########################################################################
     a = item . lower (                                                       )
     ##########################################################################
-    if               ( "id"      == a                                      ) :
+    if               ( "id"     == a                                       ) :
       return self . Id
     ##########################################################################
-    if               ( "uuid"    == a                                      ) :
+    if               ( "uuid"   == a                                       ) :
       return self . Uuid
     ##########################################################################
-    if               ( "used"    == a                                      ) :
+    if               ( "used"   == a                                       ) :
       return self . Used
     ##########################################################################
-    if               ( "group"   == a                                      ) :
-      return self . Group
+    if               ( "type"   == a                                       ) :
+      return self . ActionType
     ##########################################################################
-    if               ( "name"    == a                                      ) :
+    if               ( "states" == a                                       ) :
+      return self . States
+    ##########################################################################
+    if               ( "name"   == a                                       ) :
       return self . Name
     ##########################################################################
-    if               ( "comment" == a                                      ) :
-      return self . Comment
+    if               ( "json"   == a                                       ) :
+      return self . Properties
     ##########################################################################
-    if               ( "wiki"    == a                                      ) :
-      return self . Wiki
+    if               ( "groups" == a                                       ) :
+      return self . Groups
     ##########################################################################
-    if               ( "ltime"   == a                                      ) :
+    if               ( "ltime"  == a                                       ) :
       return self . ltime
     ##########################################################################
     return ""
@@ -125,10 +135,10 @@ class ActionItem         ( Columns                                         ) :
     return [ "id"                                                            ,
              "uuid"                                                          ,
              "used"                                                          ,
-             "group"                                                         ,
+             "type"                                                          ,
+             "states"                                                        ,
              "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ,
+             "json"                                                          ,
              "ltime"                                                         ]
   ############################################################################
   def pair              ( self , item                                      ) :
@@ -137,17 +147,18 @@ class ActionItem         ( Columns                                         ) :
   ############################################################################
   def valueItems        ( self                                             ) :
     return [ "used"                                                          ,
-             "group"                                                         ,
+             "type"                                                          ,
+             "states"                                                        ,
              "name"                                                          ,
-             "comment"                                                       ,
-             "wiki"                                                          ]
+             "json"                                                          ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"      : self . Id                                       , \
-               "Uuid"    : self . Uuid                                     , \
-               "Used"    : self . Used                                     , \
-               "Group"   : self . Group                                    , \
-               "Name"    : self . Name                                     , \
-               "Comment" : self . Comment                                  , \
-               "Wiki"    : self . Wiki                                       }
+    return   { "Id"         : self . Id                                    , \
+               "Uuid"       : self . Uuid                                  , \
+               "Used"       : self . Used                                  , \
+               "Type"       : self . ActionType                            , \
+               "States"     : self . States                                , \
+               "Name"       : self . Name                                  , \
+               "Properties" : self . Properties                            , \
+               "Groups"     : self . Groups                                  }
 ##############################################################################
