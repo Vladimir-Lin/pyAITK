@@ -29,11 +29,6 @@ class DataCenter         (                                                 ) :
   ############################################################################
   def __init__           ( self                                            ) :
     ##########################################################################
-    self . ConditionListings = [                                             ]
-    self . CONDITIONs        = {                                             }
-    self . ActionListings    = [                                             ]
-    self . ACTIONs           = {                                             }
-    ##########################################################################
     self . ConditionItems    = [                                             ]
     self . ConditionMaps     = {                                             }
     self . ConditionUuids    = [                                             ]
