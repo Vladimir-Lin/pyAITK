@@ -46,6 +46,9 @@ class ConditionItem      ( Columns                                         ) :
     self . Properties     = {                                                }
     self . Actions        = [                                                ]
     self . Updated        = False
+    self . isSync         = False
+    self . Pending        = False
+    self . LastestUpdate  = 0
     self . valueChange    = self . setStates
     self . SyncSQL        = self . syncStates
     self . isChanged      = self . intChanged
@@ -70,6 +73,8 @@ class ConditionItem      ( Columns                                         ) :
     self . Properties     = item . Properties
     self . Actions        = item . Actions
     self . Updated        = item . Updated
+    self . isSync         = item . isSync
+    self . LastestUpdate  = item . LastestUpdate
     self . valueChange    = item . valueChange
     self . SyncSQL        = item . SyncSQL
     self . isChanged      = self . isChanged
@@ -127,6 +132,9 @@ class ConditionItem      ( Columns                                         ) :
       except                                                                 :
         ######################################################################
         self . Properties   = {                                              }
+    ##########################################################################
+    elif              ( "sync"    == a                                     ) :
+      self . isSync         = value
     ##########################################################################
     elif              ( "actions" == a                                     ) :
       self . Actions        = value
@@ -317,19 +325,24 @@ class ConditionItem      ( Columns                                         ) :
   ############################################################################
   def setStates ( self , States                                            ) :
     ##########################################################################
-    self . States  = States
-    self . Updated = True
+    self . PreviousStates = self . States
+    self . States         = States
+    self . Updated        = True
     ##########################################################################
     return
   ############################################################################
   def setValue ( self , Value                                              ) :
     ##########################################################################
-    self . Value   = Value
-    self . Updated = True
+    self . PreviousValue = self . Value
+    self . Value         = Value
+    self . Updated       = True
     ##########################################################################
     return
   ############################################################################
   def syncStates      ( self , DB , TABLE                                  ) :
+    ##########################################################################
+    if                ( not self . shouldSync ( )                          ) :
+      return
     ##########################################################################
     UUID = self . Uuid
     STAT = self . States
@@ -345,6 +358,9 @@ class ConditionItem      ( Columns                                         ) :
     return
   ############################################################################
   def syncValue        ( self , DB , TABLE                                 ) :
+    ##########################################################################
+    if                 ( not self . shouldSync ( )                         ) :
+      return
     ##########################################################################
     UUID = self . Uuid
     ##########################################################################
@@ -371,6 +387,44 @@ class ConditionItem      ( Columns                                         ) :
     ##########################################################################
     return          ( D > self . Difference                                  )
   ############################################################################
+  def setLastest ( self , CURRENT                                          ) :
+    ##########################################################################
+    self . LastestUpdate = CURRENT
+    ##########################################################################
+    return
+  ############################################################################
+  def setPending ( self , pending                                          ) :
+    ##########################################################################
+    self . Pending = True
+    ##########################################################################
+    return
+  ############################################################################
+  def setSync ( self , doSync                                              ) :
+    ##########################################################################
+    if        ( not doSync                                                 ) :
+      ########################################################################
+      self . isSync = False
+    ##########################################################################
+    if        ( self . ConditionType not in [ 2 , 3 ]                      ) :
+      return
+    ##########################################################################
+    self   . isSync = True
+    ##########################################################################
+    return
+  ############################################################################
+  def shouldSync ( self                                                    ) :
+    ##########################################################################
+    if           ( not self . isSync                                       ) :
+      return False
+    ##########################################################################
+    if           ( self . ConditionType not in [ 2 , 3 ]                   ) :
+      return False
+    ##########################################################################
+    return   True
+  ############################################################################
   def isUpdated ( self                                                     ) :
     return self . Updated
+  ############################################################################
+  def isExpired ( self , CURRENT                                           ) :
+    return      ( CURRENT > self . LastestUpdate                             )
 ##############################################################################
