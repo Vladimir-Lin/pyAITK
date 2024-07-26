@@ -220,36 +220,29 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def FlushCaching                ( self                                   ) :
+  def FlushCaching                  ( self                                 ) :
     ##########################################################################
-    CONDs =                       [                                          ]
-    VALs  =                       {                                          }
+    CONDs   =                       [                                        ]
     ##########################################################################
-    NOW   = StarDate              (                                          )
-    NOW   . Now                   (                                          )
-    CDT   = NOW . Stardate
+    NOW     = StarDate              (                                        )
+    NOW     . Now                   (                                        )
+    CDT     = int                   ( NOW . Stardate - 5                     )
     ##########################################################################
-    self  . QueryLocker . acquire (                                          )
+    self    . QueryLocker . acquire (                                        )
     ##########################################################################
-    for CUID in self . ConditionListings                                     :
+    for CUID in self . ConditionUuids                                        :
       ########################################################################
-      UD  = self . CONDITIONs     [ CUID ] [ "update"                        ]
-      CT  = self . CONDITIONs     [ CUID ] [ "type"                          ]
-      SY  = self . CONDITIONs     [ CUID ] [ "sync"                          ]
-      ST  = self . CONDITIONs     [ CUID ] [ "states"                        ]
+      if ( not self . ConditionMaps [ CUID ] . isExpired  ( CDT          ) ) :
+        continue
       ########################################################################
-      if                          ( SY and ( CT in [ 2 , 3 ] )             ) :
-        ######################################################################
-        D = int                   ( CDT - UD                                 )
-        ######################################################################
-        if                        ( D >= 5                                 ) :
-          ####################################################################
-          CONDs . append          ( CUID                                     )
-          VALs [ CUID ] = ST
+      if ( not self . ConditionMaps [ CUID ] . shouldSync (              ) ) :
+        continue
+      ########################################################################
+      CONDs . append                ( CUID                                   )
     ##########################################################################
-    self  . QueryLocker . release (                                          )
+    self    . QueryLocker . release (                                        )
     ##########################################################################
-    self  . Sync                  ( CONDs                                    )
+    self    . Sync                  ( CONDs                                  )
     ##########################################################################
     return
   ############################################################################
@@ -265,38 +258,21 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     self  . QueryLocker . acquire (                                          )
     ##########################################################################
-    for CUID in self . ConditionListings                                     :
+    for CUID in self . ConditionUuids                                        :
       ########################################################################
-      PD  = self . CONDITIONs     [ CUID ] [ "pending"                       ]
+      PD  = self . ConditionMaps  [ CUID ] . Pending
       ########################################################################
       if                          ( PD                                     ) :
         ######################################################################
         CONDs . append            ( CUID                                     )
-        ACTX  = self . CONDITIONs [ CUID ] [ "actions"                       ]
         ######################################################################
-        for ACT in ACTX                                                      :
+        for ACT in self . ConditionMaps [ CUID ] . Actions                   :
           ####################################################################
           if                      ( ACT not in ACTs                        ) :
             ##################################################################
             ACTs . append         ( ACT                                      )
-    ##########################################################################
-    for AUID in ACTs                                                         :
-      ########################################################################
-      CJ =                        {                                          }
-      ########################################################################
-      for CUID in self . ACTIONs [ AUID ] [ "conditions" ]                   :
         ######################################################################
-        CJ [ CUID ] = self . CONDITIONs [ CUID                               ]
-      ########################################################################
-      ACTz [ AUID ] = CJ
-    ##########################################################################
-    for CUID in CONDs                                                        :
-      ########################################################################
-      PD  = self . CONDITIONs     [ CUID ] [ "pending"                       ]
-      ########################################################################
-      if                          ( PD                                     ) :
-        ######################################################################
-        self . CONDITIONs [ CUID ] [ "pending" ] = False
+        self . ConditionMaps [ CUID ] . setPending ( False                   )
     ##########################################################################
     self  . QueryLocker . release (                                          )
     ##########################################################################
@@ -306,9 +282,9 @@ class DataCenter         (                                                 ) :
     if                            ( len ( ACTs ) <= 0                      ) :
       return
     ##########################################################################
-    for ACT in ACTs                                                          :
+    for AUID in ACTs                                                         :
       ########################################################################
-      self . Handler              ( ACT , ACTz [ AUID                      ] )
+      self . Handler              ( AUID , self . ConditionMaps              )
     ##########################################################################
     return
   ############################################################################
@@ -326,24 +302,20 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def ConditionJson               ( self , CUID                            ) :
+  def ConditionJson              ( self , CUID                             ) :
     ##########################################################################
-    if                            ( CUID not in self . ConditionUuids      ) :
-      return                      { "Condition" : CUID                     , \
-                                    "Exists"    : False                    , \
-                                    "State"     : -1                         }
+    if                           ( CUID not in self . ConditionUuids       ) :
+      return                     { "Condition" : CUID                      , \
+                                   "Exists"    : False                     , \
+                                   "State"     : -1                          }
     ##########################################################################
-    self  . QueryLocker . acquire (                                          )
+    STATE = self . ConditionMaps [ CUID ] . States
+    VALUE = self . ConditionMaps [ CUID ] . Value
     ##########################################################################
-    STATE = self . ConditionMaps  [ CUID ] . States
-    VALUE = self . ConditionMaps  [ CUID ] . Value
-    ##########################################################################
-    self  . QueryLocker . release (                                          )
-    ##########################################################################
-    return                        { "Condition" : CUID                     , \
-                                    "Exists"    : True                     , \
-                                    "State"     : STATE                    , \
-                                    "Value"     : VALUE                      }
+    return                       { "Condition" : CUID                      , \
+                                   "Exists"    : True                      , \
+                                   "State"     : STATE                     , \
+                                   "Value"     : VALUE                       }
   ############################################################################
   def UpdateCondition              ( self , CUID , STATE , VALUE           ) :
     ##########################################################################
@@ -375,19 +347,22 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def RpcQueryCondition ( self , J , ADDR                                  ) :
+  def RpcQueryCondition     ( self , J , ADDR                              ) :
     ##########################################################################
-    ANSWER          =   { "Answer" : "Yes" , "IP"       : ADDR               }
-    RESP            =   { "Answer" : 202   , "Response" : ANSWER             }
+    ANSWER              =   { "Answer" : "Yes" , "IP"       : ADDR           }
+    RESP                =   { "Answer" : 202   , "Response" : ANSWER         }
     ##########################################################################
-    if                  ( "Condition" in J                                 ) :
+    if                      ( "Condition" in J                             ) :
       ########################################################################
-      CUID          = J [ "Condition"                                        ]
-      JSOX          = self . ConditionJson ( CUID                            )
+      CUID              = J [ "Condition"                                    ]
+      self              . QueryLocker . acquire (                            )
+      JSOX              = self . ConditionJson  ( CUID                       )
+      self              . QueryLocker . release (                            )
+      ########################################################################
       JSOX [ "Answer" ] = "Yes"
       JSOX [ "IP"     ] = ADDR
       ########################################################################
-      return            { "Answer" : 202   , "Response" : JSOX               }
+      return                { "Answer" : 202   , "Response" : JSOX           }
     ##########################################################################
     return RESP
   ############################################################################
@@ -424,8 +399,11 @@ class DataCenter         (                                                 ) :
       ########################################################################
       TRIGGER         = J [ "Trigger"                                        ]
     ##########################################################################
-    self              . UpdateCondition      ( CUID , STAT , VAL             )
-    JSOX              = self . ConditionJson ( CUID                          )
+    self              . UpdateCondition       ( CUID , STAT , VAL            )
+    self              . QueryLocker . acquire (                              )
+    JSOX              = self . ConditionJson  ( CUID                         )
+    self              . QueryLocker . release (                              )
+    ##########################################################################
     JSOX [ "Answer" ] = "Yes"
     JSOX [ "IP"     ] = ADDR
     ##########################################################################
