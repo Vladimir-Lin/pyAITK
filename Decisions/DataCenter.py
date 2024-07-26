@@ -130,9 +130,9 @@ class DataCenter         (                                                 ) :
     COND       = ConditionItem           (                                   )
     MAPI       = MappingItem             (                                   )
     ##########################################################################
-    CITEMs     = COND . ObtainsAll       ( DB , CNDTAB , MAPTAB              )
+    CITEMs     = COND . ObtainsAll       ( self . DB , CNDTAB , MAPTAB       )
     MITEMs     = COND . ToMappers        ( CITEMs                            )
-    AITEMs     = ACTI . ObtainsAll       ( DB                              , \
+    AITEMs     = ACTI . ObtainsAll       ( self . DB                       , \
                                            ACTTAB                          , \
                                            MAPTAB                          , \
                                            GRPTAB                          , \
@@ -196,7 +196,7 @@ class DataCenter         (                                                 ) :
       ########################################################################
       if                             ( CUID in self . ConditionUuids       ) :
         ######################################################################
-        self . ConditionMaps [ CUID ] . SyncSQL ( DB , CNDTAB                )
+        self . ConditionMaps [ CUID ] . SyncSQL ( self . DB , CNDTAB         )
     ##########################################################################
     self  . DbLocker . release      (                                        )
     ##########################################################################
@@ -454,6 +454,7 @@ class DataCenter         (                                                 ) :
       ########################################################################
       if                              ( ( "State" not in J             ) and \
                                         ( "Value" not in J             )   ) :
+        continue
       ########################################################################
       CUID    = J                     [ "Condition"                          ]
       ########################################################################
