@@ -7,13 +7,15 @@ import time
 import datetime
 import requests
 import threading
+##############################################################################
 import mysql . connector
 from   mysql . connector import Error
-from   . Query           import Query as Query
 ##############################################################################
-class Connection ( )                                                         :
+from         . Query     import Query as Query
+##############################################################################
+class Connection (                                                         ) :
   ############################################################################
-  def __init__ ( self )                                                      :
+  def __init__   ( self                                                    ) :
     ##########################################################################
     self . db      = False
     self . mc      = False

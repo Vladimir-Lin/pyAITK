@@ -29,43 +29,51 @@ class ConditionItem      ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def Clear                ( self                                          ) :
+  def Clear                 ( self                                         ) :
     ##########################################################################
-    self . Columns       = [                                                 ]
-    self . Id            = -1
-    self . Uuid          =  0
-    self . Used          =  1
-    self . ConditionType =  1
-    self . Form          =  0
-    self . States        =  0
-    self . Value         =  0.0
-    self . Name          =  ""
-    self . Properties    = {                                                 }
-    self . Actions       = [                                                 ]
-    self . Updated       = False
-    self . valueChange   = self . setStates
-    self . SyncSQL       = self . syncStates
-    self . ltime         =  0
+    self . Columns        = [                                                ]
+    self . Id             = -1
+    self . Uuid           =  0
+    self . Used           =  1
+    self . ConditionType  =  1
+    self . Form           =  0
+    self . PreviousStates =  0
+    self . States         =  0
+    self . PreviousValue  =  0.0
+    self . Value          =  0.0
+    self . Difference     =  0.00000001
+    self . Name           =  ""
+    self . Properties     = {                                                }
+    self . Actions        = [                                                ]
+    self . Updated        = False
+    self . valueChange    = self . setStates
+    self . SyncSQL        = self . syncStates
+    self . isChanged      = self . intChanged
+    self . ltime          =  0
     ##########################################################################
     return
   ############################################################################
   def assign ( self , item                                                 ) :
     ##########################################################################
-    self . Columns       = item . Columns
-    self . Id            = item . Id
-    self . Uuid          = item . Uuid
-    self . Used          = item . Used
-    self . ConditionType = item . ConditionType
-    self . Form          = item . Form
-    self . States        = item . States
-    self . Value         = item . Value
-    self . Name          = item . Name
-    self . Properties    = item . Properties
-    self . Actions       = item . Actions
-    self . Updated       = item . Updated
-    self . valueChange   = item . valueChange
-    self . SyncSQL       = item . SyncSQL
-    self . ltime         = item . ltime
+    self . Columns        = item . Columns
+    self . Id             = item . Id
+    self . Uuid           = item . Uuid
+    self . Used           = item . Used
+    self . ConditionType  = item . ConditionType
+    self . Form           = item . Form
+    self . PreviousStates = item . PreviousStates
+    self . States         = item . States
+    self . PreviousValue  = item . PreviousValue
+    self . Value          = item . Value
+    self . Difference     = item . Difference
+    self . Name           = item . Name
+    self . Properties     = item . Properties
+    self . Actions        = item . Actions
+    self . Updated        = item . Updated
+    self . valueChange    = item . valueChange
+    self . SyncSQL        = item . SyncSQL
+    self . isChanged      = self . isChanged
+    self . ltime          = item . ltime
     ##########################################################################
     return
   ############################################################################
@@ -74,48 +82,57 @@ class ConditionItem      ( Columns                                         ) :
     a = item . lower  (                                                      )
     ##########################################################################
     if                ( "id"      == a                                     ) :
-      self . Id            = value
+      ########################################################################
+      self . Id             = int   ( value                                  )
     ##########################################################################
     elif              ( "uuid"    == a                                     ) :
-      self . Uuid          = value
+      ########################################################################
+      self . Uuid           = int   ( value                                  )
     ##########################################################################
     elif              ( "used"    == a                                     ) :
-      self . Used          = value
+      ########################################################################
+      self . Used           = int   ( value                                  )
     ##########################################################################
     elif              ( "type"    == a                                     ) :
-      self . ConditionType = value
+      ########################################################################
+      self . ConditionType  = int   ( value                                  )
     ##########################################################################
     elif              ( "form"    == a                                     ) :
       ########################################################################
-      self . Form          = value
+      self . Form           = int   ( value                                  )
       ########################################################################
       self . SyncForm (                                                      )
     ##########################################################################
     elif              ( "states"  == a                                     ) :
-      self . States        = value
+      ########################################################################
+      self . PreviousStates = int   ( value                                  )
+      self . States         = int   ( value                                  )
     ##########################################################################
     elif              ( "value"   == a                                     ) :
-      self . Value         = value
+      ########################################################################
+      self . PreviousValue  = float ( value                                  )
+      self . Value          = float ( value                                  )
     ##########################################################################
     elif              ( "name"    == a                                     ) :
-      self . Name          = value . decode ( "utf-8"                        )
+      ########################################################################
+      self . Name           = value . decode ( "utf-8"                       )
     ##########################################################################
     elif              ( "json"    == a                                     ) :
       ########################################################################
       try                                                                    :
         ######################################################################
-        S                  = value . decode ( "utf-8"                        )
-        self . Properties  = json  . loads  ( S                              )
+        S                   = value . decode ( "utf-8"                       )
+        self . Properties   = json  . loads  ( S                             )
         ######################################################################
       except                                                                 :
         ######################################################################
-        self . Properties  = {                                               }
+        self . Properties   = {                                              }
     ##########################################################################
     elif              ( "actions" == a                                     ) :
-      self . Actions       = value
+      self . Actions        = value
     ##########################################################################
     elif              ( "ltime"   == a                                     ) :
-      self . ltime         = value
+      self . ltime          = value
     ##########################################################################
     return
   ############################################################################
@@ -184,33 +201,47 @@ class ConditionItem      ( Columns                                         ) :
              "json"                                                          ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"         : self . Id                                    , \
-               "Uuid"       : self . Uuid                                  , \
-               "Used"       : self . Used                                  , \
-               "Type"       : self . ConditionType                         , \
-               "Form"       : self . Form                                  , \
-               "States"     : self . States                                , \
-               "Value"      : self . Value                                 , \
-               "Name"       : self . Name                                  , \
-               "Properties" : self . Properties                            , \
-               "Actions"    : self . Actions                               , \
-               "Updated"    : self . Updated                                 }
+    return   { "Id"             : self . Id                                , \
+               "Uuid"           : self . Uuid                              , \
+               "Used"           : self . Used                              , \
+               "Type"           : self . ConditionType                     , \
+               "Form"           : self . Form                              , \
+               "PreviousStates" : self . PreviousStates                    , \
+               "States"         : self . States                            , \
+               "PreviousValue"  : self . PreviousValue                     , \
+               "Value"          : self . Value                             , \
+               "Name"           : self . Name                              , \
+               "Properties"     : self . Properties                        , \
+               "Actions"        : self . Actions                           , \
+               "Updated"        : self . Updated                             }
   ############################################################################
-  def fromJson ( self , JS                                                 ) :
+  def fromJson                    ( self , JS                              ) :
     ##########################################################################
-    self . Id            = JS [ "Id"                                         ]
-    self . Uuid          = JS [ "Uuid"                                       ]
-    self . Used          = JS [ "Used"                                       ]
-    self . ConditionType = JS [ "Type"                                       ]
-    self . Form          = JS [ "Form"                                       ]
-    self . States        = JS [ "States"                                     ]
-    self . Value         = JS [ "Value"                                      ]
-    self . Name          = JS [ "Name"                                       ]
-    self . Properties    = JS [ "Properties"                                 ]
-    self . Actions       = JS [ "Actions"                                    ]
-    self . Updated       = JS [ "Updated"                                    ]
+    self . Id             = int   ( JS [ "Id"                              ] )
+    self . Uuid           = int   ( JS [ "Uuid"                            ] )
+    self . Used           = int   ( JS [ "Used"                            ] )
+    self . ConditionType  = int   ( JS [ "Type"                            ] )
+    self . Form           = int   ( JS [ "Form"                            ] )
+    self . PreviousStates = int   ( JS [ "PreviousStates"                  ] )
+    self . States         = int   ( JS [ "States"                          ] )
+    self . Value          = float ( JS [ "Value"                           ] )
+    self . PreviousValue  = float ( JS [ "PreviousValue"                   ] )
+    self . Name           =         JS [ "Name"                              ]
+    self . Properties     =         JS [ "Properties"                        ]
+    self . Actions        =         JS [ "Actions"                           ]
+    self . Updated        =         JS [ "Updated"                           ]
     ##########################################################################
-    self . SyncForm           (                                              )
+    self . SyncForm               (                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def FromHistory ( self , History                                         ) :
+    ##########################################################################
+    self . PreviousStates  = History . PreviousStates
+    self . States          = History . States
+    self . PreviousValue   = History . PreviousValue
+    self . Value           = History . Value
+    self . Updated         = History . Updated
     ##########################################################################
     return
   ############################################################################
@@ -220,11 +251,13 @@ class ConditionItem      ( Columns                                         ) :
       ########################################################################
       self . valueChange = self . setStates
       self . SyncSQL     = self . syncStates
+      self . isChanged   = self . intChanged
       ########################################################################
     elif       ( 1 == self . Form                                          ) :
       ########################################################################
       self . valueChange = self . setValue
       self . SyncSQL     = self . syncValue
+      self . isChanged   = self . doubleChanged
     ##########################################################################
     return
   ############################################################################
@@ -324,6 +357,19 @@ class ConditionItem      ( Columns                                         ) :
     self . Updated = False
     ##########################################################################
     return
+  ############################################################################
+  def intChanged ( self                                                    ) :
+    return       ( self . PreviousStates != self . States                    )
+  ############################################################################
+  def doubleChanged ( self                                                 ) :
+    ##########################################################################
+    D = float       ( self . PreviousValue - self . Value                    )
+    ##########################################################################
+    if              ( D < 0.0                                              ) :
+      ########################################################################
+      D = -D
+    ##########################################################################
+    return          ( D > self . Difference                                  )
   ############################################################################
   def isUpdated ( self                                                     ) :
     return self . Updated

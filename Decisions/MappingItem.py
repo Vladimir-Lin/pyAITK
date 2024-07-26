@@ -70,35 +70,35 @@ class MappingItem        ( Columns                                         ) :
     a = item . lower (                                                       )
     ##########################################################################
     if               ( "id"        == a                                    ) :
-      self . Id        = value
+      self . Id        = int   ( value                                       )
     ##########################################################################
     elif             ( "action"    == a                                    ) :
-      self . Action    = value
+      self . Action    = int   ( value                                       )
     ##########################################################################
     elif             ( "condition" == a                                    ) :
-      self . Condition = value
+      self . Condition = int   ( value                                       )
     ##########################################################################
     elif             ( "group"     == a                                    ) :
-      self . Group     = value
+      self . Group     = int   ( value                                       )
     ##########################################################################
     elif             ( "form"      == a                                    ) :
-      self . Form      = value
+      self . Form      = int   ( value                                       )
     ##########################################################################
     elif             ( "name"      == a                                    ) :
       self . Name      = value . decode ( "utf-8"                            )
     ##########################################################################
     elif             ( "adopt"     == a                                    ) :
-      self . Adopt     = value
+      self . Adopt     = int   ( value                                       )
     ##########################################################################
     elif             ( "compare"   == a                                    ) :
       ########################################################################
-      self . Compare   = value
+      self . Compare   = int   ( value                                       )
     ##########################################################################
     elif             ( "states"    == a                                    ) :
-      self . States    = value
+      self . States    = int   ( value                                       )
     ##########################################################################
     elif             ( "value"     == a                                    ) :
-      self . Value     = value
+      self . Value     = float ( value                                       )
     ##########################################################################
     elif             ( "ltime"     == a                                    ) :
       self . ltime     = value
@@ -182,20 +182,20 @@ class MappingItem        ( Columns                                         ) :
                "States"    : self . States                                 , \
                "Value"     : self . Value                                    }
   ############################################################################
-  def fromJson              ( self , JS                                    ) :
+  def fromJson               ( self , JS                                   ) :
     ##########################################################################
-    self . Id        = JS   [ "Id"                                           ]
-    self . Action    = JS   [ "Action"                                       ]
-    self . Condition = JS   [ "Condition"                                    ]
-    self . Group     = JS   [ "Group"                                        ]
-    self . Form      = JS   [ "Form"                                         ]
-    self . Name      = JS   [ "Name"                                         ]
-    self . Adopt     = JS   [ "Adopt"                                        ]
-    self . Compare   = JS   [ "Compare"                                      ]
-    self . States    = JS   [ "States"                                       ]
-    self . Value     = JS   [ "Value"                                        ]
+    self . Id        = int   ( JS [ "Id"                                   ] )
+    self . Action    = int   ( JS [ "Action"                               ] )
+    self . Condition = int   ( JS [ "Condition"                            ] )
+    self . Group     = int   ( JS [ "Group"                                ] )
+    self . Form      = int   ( JS [ "Form"                                 ] )
+    self . Name      =         JS [ "Name"                                   ]
+    self . Adopt     = int   ( JS [ "Adopt"                                ] )
+    self . Compare   = int   ( JS [ "Compare"                              ] )
+    self . States    = int   ( JS [ "States"                               ] )
+    self . Value     = float ( JS [ "Value"                                ] )
     ##########################################################################
-    self . AssignComparsion (                                                )
+    self . AssignComparsion  (                                               )
     ##########################################################################
     return
   ############################################################################

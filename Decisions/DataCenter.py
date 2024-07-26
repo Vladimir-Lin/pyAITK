@@ -39,7 +39,7 @@ class DataCenter         (                                                 ) :
     self . ConditionUuids    = [                                             ]
     self . ActionItems       = [                                             ]
     self . ActionMaps        = {                                             }
-    self . ActionUuid        = [                                             ]
+    self . ActionUuids       = [                                             ]
     ##########################################################################
     self . Settings          = {                                             }
     self . Tables            = {                                             }
@@ -115,166 +115,66 @@ class DataCenter         (                                                 ) :
     if                                   ( not OK                          ) :
       return
     ##########################################################################
+    ACTTAB     = "`cios`.`decisionactions`"
+    CNDTAB     = "`cios`.`decisionconditions`"
+    GRPTAB     = "`cios`.`decisionconditiongroups`"
+    MAPTAB     = "`cios`.`decisionmappings`"
+    ##########################################################################
     NOW        = StarDate                (                                   )
     NOW        . Now                     (                                   )
     CDT        = NOW . Stardate
     ##########################################################################
     self . DbLocker . acquire            (                                   )
     ##########################################################################
-    CONDs      =                         [                                   ]
-    MAPPINGs   =                         [                                   ]
-    GROUPs     =                         [                                   ]
+    ACTI       = ActionItem              (                                   )
+    COND       = ConditionItem           (                                   )
+    MAPI       = MappingItem             (                                   )
     ##########################################################################
-    QQ         = """select
-                    `uuid`,`used`,`type`,`states`,`name`,`json`
-                    from `cios`.`decisionconditions`
-                    where ( `used` > 0 )
-                    order by `id` asc ;"""
-    QQ         = QQ  . replace           ( "\r" , " "                        )
-    QQ         = QQ  . replace           ( "\n" , " "                        )
-    QQ         = " " . join              ( QQ . split (                    ) )
-    ##########################################################################
-    ALLs       = self . DB . Run         ( QQ                                )
-    ##########################################################################
-    if                                   ( ALLs not in [ False , None    ] ) :
-      ########################################################################
-      for ITEM in ALLs                                                       :
-        ######################################################################
-        J = { "uuid"    : int            ( ITEM [ 0 ]                    ) , \
-              "actions" :                [                               ] , \
-              "update"  : CDT                                              , \
-              "sync"    : False                                            , \
-              "pending" : False                                            , \
-              "used"    : int            ( ITEM [ 1 ]                    ) , \
-              "type"    : int            ( ITEM [ 2 ]                    ) , \
-              "states"  : int            ( ITEM [ 3 ]                    ) , \
-              "name"    :                  ITEM [ 4 ] . decode ( "utf-8" ) , \
-              "json"    :                  ITEM [ 5 ] . decode ( "utf-8" )   }
-        ######################################################################
-        CONDs . append                   ( J                                 )
-    ##########################################################################
-    QQ         = """select
-                    `action`,`group`
-                    from `cios`.`decisionconditiongroups`
-                    order by `id` asc ;"""
-    QQ         = QQ  . replace           ( "\r" , " "                        )
-    QQ         = QQ  . replace           ( "\n" , " "                        )
-    QQ         = " " . join              ( QQ . split (                    ) )
-    ##########################################################################
-    ALLs       = self . DB . Run         ( QQ                                )
-    ##########################################################################
-    if                                   ( ALLs not in [ False , None    ] ) :
-      ########################################################################
-      for ITEM in ALLs                                                       :
-        ######################################################################
-        J = { "action"    : int          ( ITEM [ 0 ]                    ) , \
-              "group"     : int          ( ITEM [ 1 ]                    )   }
-        ######################################################################
-        GROUPs . append                  ( J                                 )
-    ##########################################################################
-    QQ         = """select
-                    `action`,`condition`,`group`,`name`,`adopt`,`compare`,`states`
-                    from `cios`.`decisionmappings`
-                    order by `id` asc ;"""
-    QQ         = QQ  . replace           ( "\r" , " "                        )
-    QQ         = QQ  . replace           ( "\n" , " "                        )
-    QQ         = " " . join              ( QQ . split (                    ) )
-    ##########################################################################
-    ALLs       = self . DB . Run         ( QQ                                )
-    ##########################################################################
-    if                                   ( ALLs not in [ False , None    ] ) :
-      ########################################################################
-      for ITEM in ALLs                                                       :
-        ######################################################################
-        J = { "action"    : int          ( ITEM [ 0 ]                    ) , \
-              "condition" : int          ( ITEM [ 1 ]                    ) , \
-              "group"     : int          ( ITEM [ 2 ]                    ) , \
-              "name"      :                ITEM [ 3 ] . decode ( "utf-8" ) , \
-              "adopt"     : int          ( ITEM [ 4 ]                    ) , \
-              "compare"   : int          ( ITEM [ 5 ]                    ) , \
-              "states"    : int          ( ITEM [ 6 ]                    )   }
-        ######################################################################
-        MAPPINGs . append                ( J                                 )
+    CITEMs     = COND . ObtainsAll       ( DB , CNDTAB , MAPTAB              )
+    MITEMs     = COND . ToMappers        ( CITEMs                            )
+    AITEMs     = ACTI . ObtainsAll       ( DB                              , \
+                                           ACTTAB                          , \
+                                           MAPTAB                          , \
+                                           GRPTAB                          , \
+                                           MITEMs                            )
     ##########################################################################
     self . DbLocker . release            (                                   )
     ##########################################################################
-    self . BuildUp                       ( CONDs , MAPPINGs , GROUPs         )
+    CMaps                 = COND . ToMappers ( CITEMs                        )
+    AMaps                 = ACTI . ToMappers ( AITEMs                        )
     ##########################################################################
-    return
-  ############################################################################
-  def BuildUp                    ( self , CONDs , MAPPINGs , GROUPs        ) :
-    ##########################################################################
-    CNDz     =                   [                                           ]
-    CNDs     =                   {                                           }
-    ACTz     =                   [                                           ]
-    ACTs     =                   {                                           }
-    ##########################################################################
-    for C in CONDs                                                           :
+    for C in CITEMs                                                          :
       ########################################################################
-      CUID   = C                 [ "uuid"                                    ]
-      ########################################################################
-      if                         ( CUID not in CNDz                        ) :
+      if                                 ( C . Uuid in CMaps               ) :
         ######################################################################
-        CNDz . append            ( CUID                                      )
-        CNDs [ CUID ] = C
+        C . FromHistory                  ( CMaps [ C . Uuid                ] )
     ##########################################################################
-    for G in GROUPs                                                          :
+    for A in AITEMs                                                          :
       ########################################################################
-      AUID   = G                 [ "action"                                  ]
-      GRP    = G                 [ "group"                                   ]
-      ########################################################################
-      if                         ( AUID not in ACTz                        ) :
+      if                                 ( A . Uuid in AMaps               ) :
         ######################################################################
-        ACTz . append            ( AUID                                      )
-        ######################################################################
-        ACTs [ AUID ] =          { "groups"     : [                      ] , \
-                                   "conditions" : [                      ] , \
-                                   "operations" : [                      ]   }
-      ########################################################################
-      if                         ( GRP not in ACTs [ AUID                ] ) :
-        ######################################################################
-        ACTs [ AUID ] [ "groups" ] . append ( GRP                            )
+        A . FromHistory                  ( AMaps [ A . Uuid                ] )
     ##########################################################################
-    for M in MAPPINGs                                                        :
-      ########################################################################
-      AUID   = M                 [ "action"                                  ]
-      CUID   = M                 [ "condition"                               ]
-      GRP    = M                 [ "group"                                   ]
-      ########################################################################
-      if                         ( CUID in CNDs                            ) :
-        ######################################################################
-        if                       ( AUID not in CNDs [ CUID ] [ "actions" ] ) :
-          ####################################################################
-          CNDs [ CUID ] [ "actions" ] . append ( AUID                        )
-      ########################################################################
-      if                         ( AUID in ACTs                            ) :
-        ######################################################################
-        if ( CUID not in ACTs [ AUID ] [ "conditions" ]                    ) :
-          ####################################################################
-          ACTs [ AUID ] [ "conditions" ] . append ( CUID                     )
-        ######################################################################
-        if ( GRP  not in ACTs [ AUID ] [ "groups"     ]                    ) :
-          ####################################################################
-          ACTs [ AUID ] [ "groups"     ] . append ( GRP                      )
-      ########################################################################
-      ACTs     [ AUID ] [ "operations" ] . append ( M                        )
+    self  . QueryLocker    . acquire     (                                   )
     ##########################################################################
-    self . QueryLocker . acquire (                                           )
+    self  . ConditionItems = CITEMs
+    self  . ActionItems    = AITEMs
     ##########################################################################
-    self . ConditionListings = CNDz
-    self . CONDITIONs        = CNDs
-    self . ActionListings    = ACTz
-    self . ACTIONs           = ACTs
+    self  . ConditionUuids = COND . AllToUuids ( CITEMs                      )
+    self  . ActionUuids    = ACTI . AllToUuids ( AITEMs                      )
     ##########################################################################
-    self . QueryLocker . release (                                           )
+    self  . ConditionMaps  = COND . ToMappers  ( CITEMs                      )
+    self  . ActionMaps     = ACTI . ToMappers  ( AITEMs                      )
     ##########################################################################
-    self . Ready             = True
+    self  . QueryLocker    . release     (                                   )
     ##########################################################################
-    CNT  = len                   ( self . ConditionListings                  )
-    ANT  = len                   ( self . ActionListings                     )
+    self  . Ready          = True
     ##########################################################################
-    MSG  = f"Decision Center - {CNT} conditions, {ANT} actions loaded"
-    self . LOG                   ( MSG                                       )
+    CNT   = len                          ( self . ConditionUuids             )
+    ANT   = len                          ( self . ActionUuids                )
+    ##########################################################################
+    MSG   = f"Decision Center - {CNT} conditions, {ANT} actions loaded"
+    self  . LOG                          ( MSG                               )
     ##########################################################################
     return
   ############################################################################
