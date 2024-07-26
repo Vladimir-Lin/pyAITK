@@ -39,11 +39,13 @@ class ActionItem         ( Columns                                         ) :
     self . Used       =  1
     self . ActionType =  1
     self . States     =  0
+    self . Trigger    =  0
     self . Name       =  ""
     self . Properties = {                                                    }
     self . Groups     = [                                                    ]
     self . Conditions = [                                                    ]
     self . Mappings   = {                                                    }
+    self . Status     = {                                                    }
     self . ltime      =  0
     ##########################################################################
     return
@@ -56,11 +58,13 @@ class ActionItem         ( Columns                                         ) :
     self . Used       = item . Used
     self . ActionType = item . ActionType
     self . States     = item . States
+    self . Trigger    = item . Trigger
     self . Name       = item . Name
     self . Properties = item . Properties
     self . Groups     = item . Groups
     self . Conditions = item . Conditions
     self . Mappings   = item . Mappings
+    self . Status     = item . Status
     self . ltime      = item . ltime
     ##########################################################################
     return
@@ -70,19 +74,22 @@ class ActionItem         ( Columns                                         ) :
     a = item . lower (                                                       )
     ##########################################################################
     if               ( "id"         == a                                   ) :
-      self . Id           = value
+      self . Id           = int ( value                                      )
     ##########################################################################
     elif             ( "uuid"       == a                                   ) :
-      self . Uuid         = value
+      self . Uuid         = int ( value                                      )
     ##########################################################################
     elif             ( "used"       == a                                   ) :
-      self . Used         = value
+      self . Used         = int ( value                                      )
     ##########################################################################
     elif             ( "type"       == a                                   ) :
-      self . ActionType   = value
+      self . ActionType   = int ( value                                      )
     ##########################################################################
     elif             ( "states"     == a                                   ) :
-      self . States       = value
+      self . States       = int ( value                                      )
+    ##########################################################################
+    elif             ( "trigger"    == a                                   ) :
+      self . Trigger      = int ( value                                      )
     ##########################################################################
     elif             ( "name"       == a                                   ) :
       self . Name         = value . decode ( "utf-8"                         )
@@ -110,6 +117,10 @@ class ActionItem         ( Columns                                         ) :
       ########################################################################
       self . Mappings     = value
     ##########################################################################
+    elif             ( "status"     == a                                   ) :
+      ########################################################################
+      self . Status       = value
+    ##########################################################################
     elif             ( "ltime"      == a                                   ) :
       self . ltime        = value
     ##########################################################################
@@ -134,6 +145,9 @@ class ActionItem         ( Columns                                         ) :
     if               ( "states"     == a                                   ) :
       return self . States
     ##########################################################################
+    if               ( "trigger"    == a                                   ) :
+      return self . Trigger
+    ##########################################################################
     if               ( "name"       == a                                   ) :
       return self . Name
     ##########################################################################
@@ -149,6 +163,9 @@ class ActionItem         ( Columns                                         ) :
     if               ( "mappings"   == a                                   ) :
       return self . Mappings
     ##########################################################################
+    if               ( "status"     == a                                   ) :
+      return self . Status
+    ##########################################################################
     if               ( "ltime"      == a                                   ) :
       return self . ltime
     ##########################################################################
@@ -160,6 +177,7 @@ class ActionItem         ( Columns                                         ) :
              "used"                                                          ,
              "type"                                                          ,
              "states"                                                        ,
+             "trigger"                                                       ,
              "name"                                                          ,
              "json"                                                          ,
              "ltime"                                                         ]
@@ -172,6 +190,7 @@ class ActionItem         ( Columns                                         ) :
     return [ "used"                                                          ,
              "type"                                                          ,
              "states"                                                        ,
+             "trigger"                                                       ,
              "name"                                                          ,
              "json"                                                          ]
   ############################################################################
@@ -194,23 +213,27 @@ class ActionItem         ( Columns                                         ) :
                                    "Used"       : self . Used              , \
                                    "Type"       : self . ActionType        , \
                                    "States"     : self . States            , \
+                                   "Trigger"    : self . Trigger           , \
                                    "Name"       : self . Name              , \
                                    "Properties" : self . Properties        , \
                                    "Groups"     : self . Groups            , \
                                    "Conditions" : self . Conditions        , \
-                                   "Mappings"   : M                          }
+                                   "Mappings"   : M                        , \
+                                   "Status"     : self . Status              }
   ############################################################################
   def fromJson                ( self , JS                                  ) :
     ##########################################################################
-    self   . Id         = JS  [ "Id"                                         ]
-    self   . Uuid       = JS  [ "Uuid"                                       ]
-    self   . Used       = JS  [ "Used"                                       ]
-    self   . ActionType = JS  [ "Type"                                       ]
-    self   . States     = JS  [ "States"                                     ]
-    self   . Name       = JS  [ "Name"                                       ]
-    self   . Properties = JS  [ "Properties"                                 ]
-    self   . Groups     = JS  [ "Groups"                                     ]
-    self   . Conditions = JS  [ "Conditions"                                 ]
+    self   . Id         = int ( JS [ "Id"                                  ] )
+    self   . Uuid       = int ( JS [ "Uuid"                                ] )
+    self   . Used       = int ( JS [ "Used"                                ] )
+    self   . ActionType = int ( JS [ "Type"                                ] )
+    self   . States     = int ( JS [ "States"                              ] )
+    self   . Trigger    = int ( JS [ "Trigger"                             ] )
+    self   . Name       =       JS [ "Name"                                  ]
+    self   . Properties =       JS [ "Properties"                            ]
+    self   . Groups     =       JS [ "Groups"                                ]
+    self   . Conditions =       JS [ "Conditions"                            ]
+    self   . Status     =       JS [ "Status"                                ]
     ##########################################################################
     self   . Mappings   =     {                                              }
     ##########################################################################
@@ -309,6 +332,26 @@ class ActionItem         ( Columns                                         ) :
         ITEMs . append               ( ACTI                                  )
     ##########################################################################
     return ITEMs
+  ############################################################################
+  def ToMappers ( self , ALLs                                              ) :
+    ##########################################################################
+    M =         {                                                            }
+    ##########################################################################
+    for A in ALLs                                                            :
+      ########################################################################
+      M [ A . Uuid ] = A
+    ##########################################################################
+    return M
+  ############################################################################
+  def AllToUuids ( self , ALLs                                             ) :
+    ##########################################################################
+    U   =        [                                                           ]
+    ##########################################################################
+    for A in ALLs                                                            :
+      ########################################################################
+      U . append ( A . Uuid                                                  )
+    ##########################################################################
+    return U
   ############################################################################
   def isConditionGroup ( self , Group , CONDITIONs                         ) :
     ##########################################################################
