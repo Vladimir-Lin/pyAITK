@@ -279,7 +279,11 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     for AUID in ACTs                                                         :
       ########################################################################
-      self . Handler              ( AUID                                   , \
+      if   ( self . ActionMaps [ AUID ] . shallRun         ( self . ConditionMaps ) ) :
+        ######################################################################
+        if ( self . ActionMaps [ AUID ] . isAllowedTrigger ( self . ConditionMaps ) ) :
+          ####################################################################
+          self . Handler          ( AUID                                   , \
                                     self . ActionMaps [ AUID ]             , \
                                     self . ConditionMaps                     )
     ##########################################################################
