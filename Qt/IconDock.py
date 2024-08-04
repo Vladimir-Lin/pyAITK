@@ -1234,9 +1234,9 @@ class IconDock                      ( ListDock                             ) :
   ############################################################################
   def ShowMenuItemCountStatus ( self , menuItem , CNT                      ) :
     ##########################################################################
-    FMT  = self . getMenuItem ( menuItem                                     )
-    MSG  = FMT  . format      ( CNT                                          )
-    self . ShowStatus         ( MSG                                          )
+    ## FMT  = self . getMenuItem ( menuItem                                     )
+    ## MSG  = FMT  . format      ( CNT                                          )
+    ## self . ShowStatus         ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
