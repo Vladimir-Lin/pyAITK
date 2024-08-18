@@ -227,6 +227,9 @@ class DataCenter         (                                                 ) :
     ##########################################################################
     for CUID in self . ConditionUuids                                        :
       ########################################################################
+      LDT = self . ConditionMaps [ CUID ] . LastestUpdate
+      MSG = f"{CUID} - {CDT} > {LDT}"
+      self . LOG ( MSG )
       if ( not self . ConditionMaps [ CUID ] . isExpired  ( CDT          ) ) :
         continue
       ########################################################################
