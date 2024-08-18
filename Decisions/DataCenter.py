@@ -223,13 +223,16 @@ class DataCenter         (                                                 ) :
     NOW     . Now                   (                                        )
     CDT     = int                   ( NOW . Stardate - 5                     )
     ##########################################################################
+    if ( self . LOG not in [ False , None ] ) :
+      self    . LOG                   ( "FlushCaching" )
     self    . QueryLocker . acquire (                                        )
     ##########################################################################
     for CUID in self . ConditionUuids                                        :
       ########################################################################
       LDT = self . ConditionMaps [ CUID ] . LastestUpdate
       MSG = f"{CUID} - {CDT} > {LDT}"
-      self . LOG ( MSG )
+      if ( self . LOG not in [ False , None ] ) :
+        self . LOG ( MSG )
       if ( not self . ConditionMaps [ CUID ] . isExpired  ( CDT          ) ) :
         continue
       ########################################################################
