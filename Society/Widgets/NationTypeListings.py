@@ -65,16 +65,17 @@ class NationTypeListings           ( TreeDock                              ) :
     self . ClassTag           = "NationTypeListings"
     self . EditAllNames       = None
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    ## self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 8                                       )
+    self . setColumnHidden         ( 6 , True                                )
+    self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -98,7 +99,7 @@ class NationTypeListings           ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 800 , 240 )                       )
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
@@ -132,25 +133,33 @@ class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
   def doubleClicked           ( self , item , column                       ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                        ( column not in [ 0 , 3 , 4 , 5 ]            ) :
       return
     ##########################################################################
     line = self . setLineEdit ( item                                       , \
-                                0                                          , \
+                                column                                     , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , UUID , NAME                           ) :
+  def PrepareItem           ( self , UUID , NAME , TYPE                    ) :
     ##########################################################################
+    SXID = str              ( UUID % 1000                                    )
     UXID = str              ( UUID                                           )
     IT   = QTreeWidgetItem  (                                                )
     IT   . setText          ( 0 , NAME                                       )
     IT   . setToolTip       ( 0 , UXID                                       )
     IT   . setData          ( 0 , Qt . UserRole , UUID                       )
+    IT   . setText          ( 1 , SXID                                       )
     IT   . setTextAlignment ( 1 , Qt.AlignRight                              )
+    IT   . setText          ( 2 , UXID                                       )
+    IT   . setTextAlignment ( 2 , Qt.AlignRight                              )
+    IT   . setText          ( 3 , self . BlobToString ( TYPE [ 0 ] )         )
+    IT   . setText          ( 4 , self . BlobToString ( TYPE [ 1 ] )         )
+    IT   . setText          ( 5 , self . BlobToString ( TYPE [ 2 ] )         )
+    IT   . setTextAlignment ( 6 , Qt.AlignRight                              )
     ##########################################################################
     return IT
   ############################################################################
@@ -181,8 +190,16 @@ class NationTypeListings           ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
+    ##########################################################################
+    if                           ( column in [ 0                         ] ) :
+      ########################################################################
+      self . Go                  ( self . AssureUuidItem                   , \
                                    ( item , uuid , msg , )                   )
+    ##########################################################################
+    if                           ( column in [ 3 , 4 , 5                 ] ) :
+      ########################################################################
+      self . Go                  ( self . AssureUuidColumn                 , \
+                                   ( item , uuid , msg , column )            )
     ##########################################################################
     return
   ############################################################################
@@ -193,10 +210,11 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     UUIDs  = JSON                 [ "UUIDs"                                  ]
     NAMEs  = JSON                 [ "NAMEs"                                  ]
+    TYPEs  = JSON                 [ "TYPEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( U , NAMEs [ U ] , TYPEs [ U ]            )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
@@ -259,7 +277,7 @@ class NationTypeListings           ( TreeDock                              ) :
                   and ( `type` = {TYPE} ) ;"""
       CNT  = DB . GetOne              ( QQ , CNT                             )
       ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 6               )
     ##########################################################################
     self   . GoRelax . emit           (                                      )
     DB     . Close                    (                                      )
@@ -280,6 +298,20 @@ class NationTypeListings           ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    TYPEs   =                         {                                      }
+    TYPTAB  = self . Tables           [ "NationTypes"                        ]
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"""select
+                  `name`,`comment`,`wiki`
+                  from {TYPTAB}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      if ( ( RR is not False ) and ( RR is not None ) )                      :
+        TYPEs [ UUID ] = RR
+    ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax       . emit    (                                      )
     self    . ShowStatus              ( ""                                   )
@@ -292,6 +324,7 @@ class NationTypeListings           ( TreeDock                              ) :
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
+    JSON [ "TYPEs" ] = TYPEs
     ##########################################################################
     self    . emitAllNames  . emit    ( JSON                                 )
     ##########################################################################
@@ -342,7 +375,7 @@ class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 2                              )
+    self . defaultPrepare ( self . ClassTag , 7                              )
     ##########################################################################
     return
   ############################################################################
@@ -365,6 +398,40 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def AssureUuidColumn        ( self , item , uuid , name , column         ) :
+    ##########################################################################
+    try                                                                      :
+      blob = name . encode    ( "utf-8"                                      )
+    except                                                                   :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    TYPTAB = self . Tables    [ "NationTypes"                                ]
+    COLN   = ""
+    ##########################################################################
+    if                        ( 3 == column                                ) :
+      COLN = "name"
+    elif                      ( 4 == column                                ) :
+      COLN = "comment"
+    elif                      ( 5 == column                                ) :
+      COLN = "wiki"
+    ##########################################################################
+    DB     . LockWrites       ( [ TYPTAB                                   ] )
+    ##########################################################################
+    QQ     = f"""update {TYPTAB}
+                 set `{COLN}` = %s
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    DB     . QueryValues      ( QQ , ( blob , )                              )
+    ##########################################################################
+    DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard ( False                                         )
@@ -372,15 +439,15 @@ class NationTypeListings           ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+    return self . DefaultColumnsMenu (        mm , 6                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9007 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
+      if                           ( ( at == 9006 ) and ( hid )            ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
