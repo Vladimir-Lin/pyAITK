@@ -206,7 +206,10 @@ class AbstractGui        (                                                 ) :
                                  "Drop"     : "dropMeridians"              } ,
                                { "Mime"     : "acupuncture/uuids"            ,
                                  "Function" : "acceptAcupuncturesDrop"       ,
-                                 "Drop"     : "dropAcupunctures"           } ]
+                                 "Drop"     : "dropAcupunctures"           } ,
+                               { "Mime"     : "geocontours/uuids"            ,
+                                 "Function" : "acceptGeocontoursDrop"        ,
+                                 "Drop"     : "dropGeocontours"            } ]
     ##########################################################################
     return
   ############################################################################

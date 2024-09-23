@@ -14,6 +14,7 @@ __all__ = [ "AI"                                                           , \
             "Finance"                                                      , \
             "Foundation"                                                   , \
             "Games"                                                        , \
+            "Geography"                                                    , \
             "Google"                                                       , \
             "Graphics"                                                     , \
             "Linguistics"                                                  , \

@@ -38,6 +38,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
@@ -63,6 +64,10 @@ class GeocontourListings           ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . ClassTag           = "GeocontourListings"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . SortOrder          = "desc"
     self . EditAllNames       = None
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
@@ -73,7 +78,6 @@ class GeocontourListings           ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 8                                       )
-    self . setColumnHidden         ( 6 , True                                )
     self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -86,7 +90,6 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -98,11 +101,12 @@ class GeocontourListings           ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 800 , 240 )                       )
+    return self . SizeSuggestion ( QSize ( 1280 , 640 )                      )
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
@@ -130,35 +134,40 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                        ( column not in [ 0 , 3 , 4 , 5 ]            ) :
+    if                          ( column not in [ 0 , 1 , 2 , 4 , 5 , 6  ] ) :
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                column                                     , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    if                          ( column     in [ 0 ,         4 , 5 , 6  ] ) :
+      ########################################################################
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , UUID , NAME , TYPE                    ) :
+  def PrepareItem              ( self , UUID , NAME , TYPE                 ) :
     ##########################################################################
-    SXID = str              ( UUID % 1000                                    )
-    UXID = str              ( UUID                                           )
-    IT   = QTreeWidgetItem  (                                                )
-    IT   . setText          ( 0 , NAME                                       )
-    IT   . setToolTip       ( 0 , UXID                                       )
-    IT   . setData          ( 0 , Qt . UserRole , UUID                       )
-    IT   . setText          ( 1 , SXID                                       )
-    IT   . setTextAlignment ( 1 , Qt.AlignRight                              )
-    IT   . setText          ( 2 , UXID                                       )
-    IT   . setTextAlignment ( 2 , Qt.AlignRight                              )
-    IT   . setText          ( 3 , self . BlobToString ( TYPE [ 0 ] )         )
-    IT   . setText          ( 4 , self . BlobToString ( TYPE [ 1 ] )         )
-    IT   . setText          ( 5 , self . BlobToString ( TYPE [ 2 ] )         )
-    IT   . setTextAlignment ( 6 , Qt.AlignRight                              )
+    TRX  = self . Translations [ self . ClassTag                             ]
+    UXID = str                 ( UUID                                        )
+    GTYP = str                 ( TYPE [ 0                                  ] )
+    PUBL = str                 ( TYPE [ 1                                  ] )
+    PTS  = str                 ( TYPE [ 2                                  ] )
+    ##########################################################################
+    IT   = QTreeWidgetItem     (                                             )
+    IT   . setText             ( 0 , NAME                                    )
+    IT   . setToolTip          ( 0 , UXID                                    )
+    IT   . setData             ( 0 , Qt . UserRole , UUID                    )
+    IT   . setText             ( 1 , TRX [ "Types"  ] [ GTYP ] )
+    IT   . setText             ( 2 , TRX [ "Public" ] [ PUBL ] )
+    IT   . setText             ( 3 , PTS                                     )
+    IT   . setTextAlignment    ( 3 , Qt.AlignRight                           )
+    IT   . setText             ( 4 , self . BlobToString ( TYPE [ 3      ] ) )
+    IT   . setText             ( 5 , self . BlobToString ( TYPE [ 4      ] ) )
+    IT   . setText             ( 6 , self . BlobToString ( TYPE [ 5      ] ) )
     ##########################################################################
     return IT
   ############################################################################
@@ -195,7 +204,7 @@ class GeocontourListings           ( TreeDock                              ) :
       self . Go                  ( self . AssureUuidItem                   , \
                                    ( item , uuid , msg , )                   )
     ##########################################################################
-    if                           ( column in [ 3 , 4 , 5                 ] ) :
+    if                           ( column in [ 4 , 5 , 6                 ] ) :
       ########################################################################
       self . Go                  ( self . AssureUuidColumn                 , \
                                    ( item , uuid , msg , column )            )
@@ -244,45 +253,6 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  @pyqtSlot                           (        str  , int     , int          )
-  def AssignAmounts                   ( self , UUID , Amounts , Column     ) :
-    ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
-      return
-    ##########################################################################
-    IT . setText                      ( Column , str ( Amounts )             )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
-    ##########################################################################
-    time   . sleep                    ( 1.0                                  )
-    ##########################################################################
-    TABLE  = self . Tables            [ "Countries"                          ]
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( self . NotOkay ( DB )              ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit           (                                      )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      CNT  = 0
-      TYPE = int                      ( UUID % 10000                         )
-      QQ   = f"""select count(*) from {TABLE}
-                  where ( `used` = 1 )
-                  and ( `type` = {TYPE} ) ;"""
-      CNT  = DB . GetOne              ( QQ , CNT                             )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 6               )
-    ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
-    ##########################################################################
-    return
-  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -298,11 +268,11 @@ class GeocontourListings           ( TreeDock                              ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     TYPEs   =                         {                                      }
-    TYPTAB  = self . Tables           [ "NationTypes"                        ]
+    TYPTAB  = self . Tables           [ "Contours"                           ]
     for UUID in UUIDs                                                        :
       ########################################################################
       QQ    = f"""select
-                  `name`,`comment`,`wiki`
+                  `type`,`public`,`points`,`name`,`comment`,`wiki`
                   from {TYPTAB}
                   where ( `uuid` = {UUID} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
@@ -327,11 +297,6 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     self    . emitAllNames  . emit    ( JSON                                 )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      ########################################################################
-      VAL   =                         ( UUIDs ,                              )
-      self  . Go                      ( self . ReportBelongings , VAL        )
-    ##########################################################################
     return
   ############################################################################
   @pyqtSlot          (                                                       )
@@ -344,33 +309,26 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+  def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    TABLE = self . Tables        [ "NationTypes"                             ]
+    TABLE = self . Tables   [ "Contours"                                     ]
     ##########################################################################
     QQ    = f"select `uuid` from {TABLE} order by `id` asc ;"
     ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return DB . ObtainUuids ( QQ , 0                                         )
   ############################################################################
-  def TranslateAll              ( self                                     ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
+    CTRTAB = self . Tables          [ "Contours"                             ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                       )
     ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
+    QQ     = f"""select `uuid` from {CTRTAB}
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    DB    . Close               (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainUuidsQuery    ( self                                           ) :
-    ##########################################################################
-    TABLE = self . Tables [ "NationTypes"                                    ]
-    ##########################################################################
-    return f"select `uuid` from {TABLE} order by `id` asc ;"
+    return " " . join               ( QQ . split ( )                        )
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
@@ -384,11 +342,18 @@ class GeocontourListings           ( TreeDock                              ) :
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
+    CTRTAB = self . Tables    [ "Contours"                                   ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    DB     . LockWrites       ( [ CTRTAB , NAMTAB                          ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
+    ##########################################################################
+    if                        ( uuid <= 0                                  ) :
+      ########################################################################
+      uuid = DB . LastUuid    ( CTRTAB , "uuid" , 4840000000000000000        )
+      DB   . AppendUuid       ( CTRTAB , uuid                                )
+    ##########################################################################
     if                        ( uuid > 0                                   ) :
       self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
@@ -408,19 +373,19 @@ class GeocontourListings           ( TreeDock                              ) :
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    TYPTAB = self . Tables    [ "NationTypes"                                ]
+    CTRTAB = self . Tables    [ "Contours"                                   ]
     COLN   = ""
     ##########################################################################
-    if                        ( 3 == column                                ) :
+    if                        ( 4 == column                                ) :
       COLN = "name"
-    elif                      ( 4 == column                                ) :
-      COLN = "comment"
     elif                      ( 5 == column                                ) :
+      COLN = "comment"
+    elif                      ( 6 == column                                ) :
       COLN = "wiki"
     ##########################################################################
-    DB     . LockWrites       ( [ TYPTAB                                   ] )
+    DB     . LockWrites       ( [ CTRTAB                                   ] )
     ##########################################################################
-    QQ     = f"""update {TYPTAB}
+    QQ     = f"""update {CTRTAB}
                  set `{COLN}` = %s
                  where ( `uuid` = {uuid} ) ;"""
     QQ     = " " . join       ( QQ . split (                               ) )
@@ -431,6 +396,130 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                   (                                              )
+  def InsertItem              ( self                                       ) :
+    ##########################################################################
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . insertTopLevelItem ( 0 , item                                     )
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadFileContent        ( self , Filename                             ) :
+    ##########################################################################
+    TEXT     = ""
+    BODY     = ""
+    ##########################################################################
+    try                                                                      :
+      with open              ( Filename , "rb" ) as File                     :
+        TEXT = File . read   (                                               )
+    except                                                                   :
+      return "" , False
+    ##########################################################################
+    try                                                                      :
+      BODY   = TEXT . decode ( "utf-8"                                       )
+    except                                                                   :
+      return "" , False
+    ##########################################################################
+    return BODY , True
+  ############################################################################
+  def DecodeKml           ( self , BODY                                    ) :
+    ##########################################################################
+    LINEs  = BODY . split ( " "                                              )
+    KMLs   =              [                                                  ]
+    ##########################################################################
+    for L in LINEs                                                           :
+      ########################################################################
+      if                  ( len ( L ) <= 0                                 ) :
+        continue
+      ########################################################################
+      P    = L . split    ( ","                                              )
+      ########################################################################
+      if                  ( 3 != len ( P )                                 ) :
+        continue
+      ########################################################################
+      A    = float        ( P [ 0                                          ] )
+      B    = float        ( P [ 1                                          ] )
+      C    = float        ( P [ 2                                          ] )
+      ########################################################################
+      KMLs . append       ( [ A , B , C                                    ] )
+    ##########################################################################
+    return KMLs
+  ############################################################################
+  def LoadFromFilename                   ( self , uuid , Filename          ) :
+    ##########################################################################
+    if                                   ( len ( Filename ) <= 0           ) :
+      self      . Notify                 ( 1                                 )
+      return
+    ##########################################################################
+    BODY , OKAY = self . LoadFileContent ( Filename                          )
+    ##########################################################################
+    if                                   ( not OKAY                        ) :
+      self      . Notify                 ( 1                                 )
+      return
+    ##########################################################################
+    LNAME       = Filename . lower       (                                   )
+    SPOTs       =                        [                                   ]
+    ##########################################################################
+    if                                   ( "txt" in LNAME                  ) :
+      ########################################################################
+      SPOTs     = self . DecodeKml       ( BODY                              )
+    ##########################################################################
+    POINTs      = len                    ( SPOTs                             )
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      name      = json . dumps           ( SPOTs                             )
+      name      = name . replace         ( " " , ""                          )
+      blob      = name . encode          ( "utf-8"                           )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
+    DB          = self . ConnectDB       (                                   )
+    if                                   ( self . NotOkay ( DB )           ) :
+      return
+    ##########################################################################
+    CTRTAB      = self . Tables          [ "Contours"                        ]
+    ##########################################################################
+    DB          . LockWrites             ( [ CTRTAB                        ] )
+    ##########################################################################
+    QQ          = f"""update {CTRTAB}
+                      set `spots` = %s , `points` = {POINTs}
+                      where ( `uuid` = {uuid} ) ;"""
+    QQ          = " " . join             ( QQ . split (                    ) )
+    DB          . QueryValues            ( QQ , ( blob , )                   )
+    ##########################################################################
+    DB          . Close                  (                                   )
+    ##########################################################################
+    self        . loading                (                                   )
+    self        . Notify                 ( 5                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportKml                   ( self , uuid                            ) :
+    ##########################################################################
+    Filters  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    self     . Go                 ( self . LoadFromFilename                , \
+                                    ( uuid , Name , )                        )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard ( False                                         )
@@ -438,77 +527,101 @@ class GeocontourListings           ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 6                         )
+    return self . DefaultColumnsMenu (        mm , 7                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at >= 9001 ) and ( at <= 9007 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9006 ) and ( hid )            ) :
-        ######################################################################
-        self . restart             (                                         )
-        ######################################################################
+      ########################################################################
       return True
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                              ( not self . isPrepared ( )            ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                 ( 0                                      )
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
+    mm     = self . AmountIndexMenu ( mm                                     )
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    self   . AppendInsertAction     ( mm , 1011                              )
     ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
+    if                              ( uuid > 0                             ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "Import"                               )
+      mm   . addAction              ( 2001 , msg                             )
     ##########################################################################
-    mm     . addSeparator          (                                         )
-    ## mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
-    ## mm     . addSeparator          (                                         )
+    if                              ( len ( items ) == 1                   ) :
+      if                            ( self . EditAllNames != None          ) :
+        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
     ##########################################################################
-    self   . ColumnsMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    mm     . addSeparator           (                                        )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    self   . ColumnsMenu            ( mm                                     )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self   . RunAmountIndexMenu ( )      ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       return True
     ##########################################################################
-    if                             ( self . RunColumnsMenu     ( at )      ) :
+    if                              ( self . RunColumnsMenu     ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . restart               (                                         )
+    if                              ( self . RunSortingMenu     ( at )     ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "NationTypes" , uuid , NAM       )
+    if                              ( at == 1001                           ) :
+      self . restart                (                                        )
       return True
     ##########################################################################
-    ## if                             ( at == 3001                            ) :
-    ##   self . Go                    ( self . TranslateAll                     )
-    ##   return True
+    if                              ( at == 1011                           ) :
+      self . InsertItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 2001                           ) :
+      self . ImportKml              ( uuid                                   )
+      return True
+    ##########################################################################
+    if                              ( at == 1601                           ) :
+      ########################################################################
+      uuid = self . itemUuid        ( items [ 0 ] , 0                        )
+      NAM  = self . Tables          [ "NamesEditing"                         ]
+      self . EditAllNames           ( self , "Contours" , uuid , NAM         )
+      ########################################################################
+      return True
     ##########################################################################
     return True
 ##############################################################################
