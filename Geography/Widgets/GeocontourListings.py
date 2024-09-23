@@ -72,7 +72,7 @@ class GeocontourListings           ( TreeDock                              ) :
     self . SortOrder          = "desc"
     self . EditAllNames       = None
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -103,7 +103,7 @@ class GeocontourListings           ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 1280 , 640 )                      )
+    return self . SizeSuggestion ( QSize ( 1280 , 480 )                      )
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
