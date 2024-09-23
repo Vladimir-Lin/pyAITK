@@ -96,7 +96,7 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     self . setDragEnabled          ( False                                   )
     self . setAcceptDrops          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
     ##########################################################################
     return
   ############################################################################
@@ -134,18 +134,50 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 1 , 2 , 4 , 5 , 6  ] ) :
+    if                           ( column not in [ 0 , 1 , 2 , 4 , 5 , 6 ] ) :
       return
     ##########################################################################
-    if                          ( column     in [ 0 ,         4 , 5 , 6  ] ) :
+    if                           ( column     in [ 0 ,         4 , 5 , 6 ] ) :
       ########################################################################
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
+    ##########################################################################
+    TRX    = self . Translations [ self . ClassTag                           ]
+    ##########################################################################
+    if                           ( column in [ 1                         ] ) :
+      ########################################################################
+      LL   = TRX                 [ "Types"                                   ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . comboChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 2                         ] ) :
+      ########################################################################
+      LL   = TRX                 [ "Public"                                  ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . comboChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
@@ -161,8 +193,10 @@ class GeocontourListings           ( TreeDock                              ) :
     IT   . setText             ( 0 , NAME                                    )
     IT   . setToolTip          ( 0 , UXID                                    )
     IT   . setData             ( 0 , Qt . UserRole , UUID                    )
-    IT   . setText             ( 1 , TRX [ "Types"  ] [ GTYP ] )
-    IT   . setText             ( 2 , TRX [ "Public" ] [ PUBL ] )
+    IT   . setText             ( 1 , TRX [ "Types"  ] [ GTYP ]               )
+    IT   . setData             ( 1 , Qt . UserRole , GTYP                    )
+    IT   . setText             ( 2 , TRX [ "Public" ] [ PUBL ]               )
+    IT   . setData             ( 2 , Qt . UserRole , PUBL                    )
     IT   . setText             ( 3 , PTS                                     )
     IT   . setTextAlignment    ( 3 , Qt.AlignRight                           )
     IT   . setText             ( 4 , self . BlobToString ( TYPE [ 3      ] ) )
@@ -208,6 +242,48 @@ class GeocontourListings           ( TreeDock                              ) :
       ########################################################################
       self . Go                  ( self . AssureUuidColumn                 , \
                                    ( item , uuid , msg , column )            )
+    ##########################################################################
+    return
+  ############################################################################
+  def comboChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    TRX    = self . Translations [ self . ClassTag                           ]
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = item . data         ( column , Qt . UserRole                    )
+    v      = int                 ( v                                         )
+    nv     = sb   . itemData     ( sb . currentIndex ( )                     )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    name   = ""
+    na     = ""
+    ##########################################################################
+    if                           ( column in [ 1 ]                         ) :
+      ########################################################################
+      name = TRX [ "Types"  ]    [ nv                                        ]
+      na   = "type"
+      ########################################################################
+    elif                         ( column in [ 2 ]                         ) :
+      ########################################################################
+      name = TRX [ "Public" ]    [ nv                                        ]
+      na   = "public"
+    ##########################################################################
+    if                           ( v == nv                                 ) :
+      ########################################################################
+      item . setText             ( column , name                             )
+      self . removeParked        (                                           )
+      return
+    ##########################################################################
+    self . Go                    ( self . UpdateItemValue                  , \
+                                   ( uuid , na , nv , )                      )
+    ##########################################################################
+    item . setText               ( column , name                             )
+    item . setData               ( column , Qt . UserRole , nv               )
+    self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -309,6 +385,19 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "geocontours/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
     TABLE = self . Tables   [ "Contours"                                     ]
@@ -393,6 +482,28 @@ class GeocontourListings           ( TreeDock                              ) :
     ##########################################################################
     DB     . Close            (                                              )
     self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateItemValue         ( self , uuid , item , value                 ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    CTRTAB = self . Tables    [ "Contours"                                   ]
+    ##########################################################################
+    DB     . LockWrites       ( [ CTRTAB                                   ] )
+    ##########################################################################
+    uuid   = int              ( uuid                                         )
+    ##########################################################################
+    QQ     = f"""update {CTRTAB}
+                 set `{item}` = {value}
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . Close            (                                              )
     ##########################################################################
     return
   ############################################################################
