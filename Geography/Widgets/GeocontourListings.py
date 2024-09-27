@@ -341,12 +341,18 @@ class GeocontourListings           ( TreeDock                              ) :
     self    . OnBusy        . emit    (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
+    TYPTAB  = self . Tables           [ "Contours"                           ]
+    QQ      = f"select count(*) from {TYPTAB} ;"
+    DB      . Query                   ( QQ                                   )
+    RR      = DB . FetchOne           (                                      )
+    if ( ( RR is not False ) and ( RR is not None ) )                        :
+      self  . Total = int              ( RR [ 0                            ] )
+    ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     TYPEs   =                         {                                      }
-    TYPTAB  = self . Tables           [ "Contours"                           ]
     for UUID in UUIDs                                                        :
       ########################################################################
       QQ    = f"""select
