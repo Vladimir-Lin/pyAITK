@@ -444,6 +444,7 @@ class GeocontourListings           ( TreeDock                              ) :
       ########################################################################
       uuid = DB . LastUuid    ( CTRTAB , "uuid" , 4840000000000000000        )
       DB   . AppendUuid       ( CTRTAB , uuid                                )
+      item . setData          ( 0 , Qt . UserRole , str ( uuid )             )
     ##########################################################################
     if                        ( uuid > 0                                   ) :
       self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
