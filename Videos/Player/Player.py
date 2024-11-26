@@ -218,12 +218,13 @@ class Player               ( Widget , AttachDock                           ) :
     self . AIV        = AiVision (                                           )
     self . BDI        = None
     ##########################################################################
-    self . ToolHeight  = 64
+    self . ToolHeight  = 80
     self . Duration    = -1
     self . Range       = 1000
     self . Step        = 250
     self . VWidth      = 640
     self . VHeight     = 480
+    self . FineRange   = 3000
     self . ShowPanel   = False
     self . isPause     = False
     self . isAnalyzing = False
@@ -254,6 +255,10 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . PANEL . Clock    . sliderMoved   . connect ( self . setPosition   )
     self . PANEL . Clock    . sliderPressed . connect ( self . setPosition   )
+    ##########################################################################
+    self . PANEL . FineTune . sliderMoved    . connect ( self . setFineTune  )
+    self . PANEL . FineTune . sliderPressed  . connect ( self . setFineTune  )
+    self . PANEL . FineTune . sliderReleased . connect ( self . releaseFineTune  )
     ##########################################################################
     AVL  = self  . PLAYER . audio_get_volume (                               )
     self . PANEL . Volume . setValue         ( AVL                           )
@@ -842,6 +847,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . show       (                                )
     self   . PANEL  . Analysis . hide       (                                )
     self   . PANEL  . Drawing  . hide       (                                )
+    self   . PANEL  . FineTune . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( False                  )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( True                   )
@@ -880,6 +886,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . hide       (                                )
     self   . PANEL  . Analysis . hide       (                                )
     self   . PANEL  . Drawing  . hide       (                                )
+    self   . PANEL  . FineTune . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( True                   )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( False                  )
@@ -930,6 +937,45 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self  . FinishFilmBar                  (                                 )
     self  . CLOCK             . stop       (                                 )
+    ##########################################################################
+    self  . EnableFineTune                 (                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def EnableFineTune                     ( self                            ) :
+    ##########################################################################
+    self . PANEL . FineTune . show       (                                   )
+    self . PANEL . FineTune . setEnabled ( True                              )
+    self . AdjustFineTune                (                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def AdjustFineTune                          ( self                       ) :
+    ##########################################################################
+    CTS     = self  . PLAYER . get_time       (                              )
+    FRV     = int                             ( self . FineRange             )
+    MRV     = int                             ( CTS - int ( FRV / 2 )        )
+    ##########################################################################
+    if                                        ( MRV < 0                    ) :
+      ########################################################################
+      MRV   = 0
+    ##########################################################################
+    ERV     = int                             ( MRV + FRV                    )
+    ##########################################################################
+    if                                        ( ERV >= self . Duration     ) :
+      ########################################################################
+      ERV   = self . Duration
+      MRV   = int                             ( ERV - FRV                    )
+      ########################################################################
+      if                                      ( MRV < 0                    ) :
+        ######################################################################
+        MRV = 0
+    ##########################################################################
+    self    . PANEL . FineTune . blockSignals ( True                         )
+    self    . PANEL . FineTune . setMinimum   ( MRV                          )
+    self    . PANEL . FineTune . setMaximum   ( ERV                          )
+    self    . PANEL . FineTune . setValue     ( CTS                          )
+    self    . PANEL . FineTune . blockSignals ( False                        )
     ##########################################################################
     return
   ############################################################################
@@ -1184,6 +1230,8 @@ class Player               ( Widget , AttachDock                           ) :
       ########################################################################
       self . BarMutex . release             (                                )
       ########################################################################
+      self . AdjustFineTune                 (                                )
+      ########################################################################
       return
     ##########################################################################
     self   . BarMutex . acquire             (                                )
@@ -1217,6 +1265,36 @@ class Player               ( Widget , AttachDock                           ) :
     self   . BarMutex . acquire             (                                )
     ##########################################################################
     self   . CalculateFilmBar               (                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def setFineTune ( self                                                   ) :
+    ##########################################################################
+    self . CLOCK  . stop                      (                              )
+    RATE = self   . PANEL  . FineTune . value (                              )
+    CPOS = self   . toTick                    ( RATE                         )
+    self . PLAYER . set_time                  ( RATE                         )
+    self . CLOCK  . start                     (                              )
+    ##########################################################################
+    self . BarMutex . acquire                 (                              )
+    ##########################################################################
+    VAT                                 = self . Viewed [ "At"               ]
+    self . FvRange [ "Start"  ]         = RATE
+    self . FvRange [ "Finish" ]         = RATE
+    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self . BarMutex . release                 (                              )
+    ##########################################################################
+    self . PANEL  . Clock . blockSignals      ( True                         )
+    self . PANEL  . Clock . setValue          ( CPOS                         )
+    self . PANEL  . Clock . value             (                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def releaseFineTune     ( self                                           ) :
+    ##########################################################################
+    self . setFineTune    (                                                  )
+    self . AdjustFineTune (                                                  )
     ##########################################################################
     return
   ############################################################################

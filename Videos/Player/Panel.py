@@ -112,6 +112,12 @@ class Panel                        ( Widget                                ) :
     self . Drawing  . setCheckable  ( True                                   )
     self . Drawing  . hide          (                                        )
     ##########################################################################
+    self . FineTune = QSlider       ( Qt . Horizontal , self                 )
+    self . FineTune . setMaximum    ( 3000                                   )
+    self . FineTune . setSingleStep ( 1                                      )
+    self . FineTune . hide          (                                        )
+    self . FineTune . setEnabled    ( False                                  )
+    ##########################################################################
     FNT  = self     . font          (                                        )
     FNT  . setPixelSize             ( 12                                     )
     ##########################################################################
@@ -211,6 +217,8 @@ class Panel                        ( Widget                                ) :
     self . MWin     . setGeometry (     120 , 24 ,  40 , 40                  )
     self . Analysis . setGeometry (     160 , 24 ,  40 , 40                  )
     self . Drawing  . setGeometry (     200 , 24 ,  40 , 40                  )
+    ##########################################################################
+    self . FineTune . setGeometry (       0 , 64 ,   W , 16                  )
     ##########################################################################
     return
   ############################################################################
