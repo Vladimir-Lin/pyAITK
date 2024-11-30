@@ -54,6 +54,8 @@ from   AITK   . Calendars  . StarDate       import StarDate       as StarDate
 from   AITK   . Calendars  . Periode        import Periode        as Periode
 from   AITK   . Essentials . Relation       import Relation       as Relation
 ##############################################################################
+ALBUMVERSION = "2024-12-01-04-21"
+##############################################################################
 def FileStringToWindowsCommand ( FILENAME                                  ) :
   ############################################################################
   F = FILENAME
@@ -238,6 +240,8 @@ def GenerateAlbumFolder  ( DIR                                             ) :
 ##############################################################################
 def OpenMovieAlbumJson ( DIR                                               ) :
   ############################################################################
+  global ALBUMVERSION
+  ############################################################################
   if                   ( not Path ( DIR ) . is_dir ( )                     ) :
     return ""
   ############################################################################
@@ -245,7 +249,24 @@ def OpenMovieAlbumJson ( DIR                                               ) :
   ############################################################################
   AlbumJson = f"{DIR}/album.json"
   ############################################################################
-  print ( AlbumJson )
+  if                   ( os . path . exists ( AlbumJson                  ) ) :
+    return AlbumJson
+  ############################################################################
+  NOW       = StarDate (                                                     )
+  NOW       . Now      (                                                     )
+  FOLDER    = os . path . basename ( DIR                                     )
+  JFV       =          { "Version"   : ALBUMVERSION                        , \
+                         "Album"     : ""                                  , \
+                         "Names"     : { "en-US" : ""                      , \
+                                         "ja-JP" : ""                      , \
+                                         "zh-TW" : ""                    } , \
+                         "Directory" : DIR                                 , \
+                         "Folder"    : FOLDER                              , \
+                         "Language"  : "zh-TW"                             , \
+                         "File"      : AlbumJson                           , \
+                         "Timestamp" : NOW . Stardate                        }
+  ############################################################################
+  SaveJson             ( AlbumJson , JFV                                     )
   ############################################################################
   return AlbumJson
 ##############################################################################
