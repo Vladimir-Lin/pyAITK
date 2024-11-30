@@ -13,28 +13,64 @@ import gettext
 import binascii
 import hashlib
 import base64
-import pathlib
-import ffmpeg
-##############################################################################
+import tempfile
+import shutil
 import glob
-from   PIL                                import Image
+import json
+import ffmpeg
+import vlc
+##############################################################################
+from   random                               import seed
+from   random                               import randint
+from   random                               import randrange
+##############################################################################
+import urllib
+import urllib . parse
+from   urllib                               import parse
+##############################################################################
+import pathlib
+from   pathlib                              import Path
+##############################################################################
+from   io                                   import BytesIO
+from   wand   . image                       import Image
+from   PIL                                  import Image          as Pillow
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK . Database   . Query          import Query
-from   AITK . Database   . Connection     import Connection
-from   AITK . Database   . Pair           import Pair
-from   AITK . Database   . Columns        import Columns
+from   AITK   . Database   . Query          import Query
+from   AITK   . Database   . Connection     import Connection
+from   AITK   . Database   . Pair           import Pair
+from   AITK   . Database   . Columns        import Columns
 ##############################################################################
-from   AITK . Documents  . Name           import Name           as NameItem
-from   AITK . Documents  . Name           import Naming         as Naming
-from   AITK . Documents  . Notes          import Notes          as NoteItem
-from   AITK . Documents  . Variables      import Variables      as VariableItem
-from   AITK . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
+from   AITK   . Documents  . JSON           import Load           as LoadJson
+from   AITK   . Documents  . JSON           import Save           as SaveJson
+from   AITK   . Documents  . Name           import Name           as NameItem
+from   AITK   . Documents  . Name           import Naming         as Naming
+from   AITK   . Documents  . Notes          import Notes          as NoteItem
+from   AITK   . Documents  . Variables      import Variables      as VariableItem
+from   AITK   . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   AITK . Calendars  . StarDate       import StarDate       as StarDate
-from   AITK . Calendars  . Periode        import Periode        as Periode
-from   AITK . Essentials . Relation       import Relation       as Relation
+from   AITK   . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK   . Calendars  . Periode        import Periode        as Periode
+from   AITK   . Essentials . Relation       import Relation       as Relation
+##############################################################################
+def FileStringToWindowsCommand ( FILENAME                                  ) :
+  ############################################################################
+  F = FILENAME
+  F = F . replace              ( "/"  , "\\"                                 )
+  F = F . replace              ( "\\" , "\\\\"                               )
+  F = F . replace              ( "\"" , "\\\""                               )
+  ############################################################################
+  return f"\"{F}\""
+##############################################################################
+def FileStringToWindowsFile ( FILENAME                                     ) :
+  ############################################################################
+  F = FILENAME
+  F = F . replace            ( "\\" , "/"                                    )
+  F = F . replace            ( " "  , "\ "                                   )
+  F = F . replace            ( "\"" , "\\\""                                 )
+  ############################################################################
+  return F
 ##############################################################################
 def M3UtoFilms                    ( M3U                                    ) :
   ############################################################################
@@ -132,8 +168,8 @@ def MergeCoverPosters               ( JPEG                                 ) :
   ############################################################################
   CoverFile   = f"{PDIR}/Cover.jpg"
   ############################################################################
-  leftImage   = Image . open        ( LeftFile                               )
-  rightImage  = Image . open        ( RightFile                              )
+  leftImage   = Pillow . open       ( LeftFile                               )
+  rightImage  = Pillow . open       ( RightFile                              )
   ############################################################################
   leftSize    = leftImage  . size
   rightSize   = rightImage . size
@@ -144,10 +180,88 @@ def MergeCoverPosters               ( JPEG                                 ) :
   if                                ( leftSize [ 1 ] != rightSize [ 1 ]    ) :
     return
   ############################################################################
-  newImage    = Image . new         ( 'RGB' , ( w , h ) , ( 255,255,255 )    )
+  newImage    = Pillow . new        ( 'RGB' , ( w , h ) , ( 255,255,255 )    )
   newImage    . paste               ( leftImage  , (            0   , 0    ) )
   newImage    . paste               ( rightImage , ( leftSize [ 0 ] , 0    ) )
   newImage    . save                ( CoverFile  , "JPEG"                    )
   ############################################################################
   return
+##############################################################################
+def GenerateAlbumFolder  ( DIR                                             ) :
+  ############################################################################
+  if                     ( not Path ( DIR ) . is_dir ( )                   ) :
+    return
+  ############################################################################
+  ROOTs    =             [ "DP"                                            , \
+                           "Features"                                      , \
+                           "images"                                        , \
+                           "projects"                                      , \
+                           "roles"                                         , \
+                           "scripts"                                       , \
+                           "subtitles"                                     , \
+                           "videos"                                          ]
+  SUBs     =             [ "CN" , "EN" , "JP" , "TW"                         ]
+  ############################################################################
+  for F in ROOTs                                                             :
+    ##########################################################################
+    D      = f"{DIR}/{F}"
+    ##########################################################################
+    if                   ( not Path ( D ) . is_dir ( )                     ) :
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        os . makedirs    ( D                                                 )
+        ######################################################################
+      except                                                                 :
+        ######################################################################
+        pass
+  ############################################################################
+  ST       = f"{DIR}/subtitles"
+  ############################################################################
+  if                     ( Path ( ST ) . is_dir ( )                        ) :
+    ##########################################################################
+    for S in SUBs                                                            :
+      ########################################################################
+      Z    = f"{ST}/{S}"
+      ########################################################################
+      if                 ( not Path ( Z ) . is_dir ( )                     ) :
+        ######################################################################
+        try                                                                  :
+          ####################################################################
+          os . makedirs  ( Z                                                 )
+          ####################################################################
+        except                                                               :
+          ####################################################################
+          pass
+  ############################################################################
+  return
+##############################################################################
+def OpenMovieAlbumJson ( DIR                                               ) :
+  ############################################################################
+  if                   ( not Path ( DIR ) . is_dir ( )                     ) :
+    return ""
+  ############################################################################
+  GenerateAlbumFolder  ( DIR                                                 )
+  ############################################################################
+  AlbumJson = f"{DIR}/album.json"
+  ############################################################################
+  print ( AlbumJson )
+  ############################################################################
+  return AlbumJson
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
+##############################################################################
 ##############################################################################
