@@ -264,6 +264,7 @@ def OpenMovieAlbumJson ( DIR                                               ) :
                          "Folder"    : FOLDER                              , \
                          "Language"  : "zh-TW"                             , \
                          "File"      : AlbumJson                           , \
+                         "Edited"    : False                               , \
                          "Timestamp" : NOW . Stardate                        }
   ############################################################################
   SaveJson             ( AlbumJson , JFV                                     )
