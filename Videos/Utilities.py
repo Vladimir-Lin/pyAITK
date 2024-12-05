@@ -238,36 +238,47 @@ def GenerateAlbumFolder  ( DIR                                             ) :
   ############################################################################
   return
 ##############################################################################
-def OpenMovieAlbumJson ( DIR                                               ) :
+def OpenMovieAlbumJson    ( DIR                                            ) :
   ############################################################################
   global ALBUMVERSION
   ############################################################################
-  if                   ( not Path ( DIR ) . is_dir ( )                     ) :
+  if                      ( not Path ( DIR ) . is_dir ( )                  ) :
     return ""
   ############################################################################
-  GenerateAlbumFolder  ( DIR                                                 )
+  GenerateAlbumFolder     ( DIR                                              )
+  ############################################################################
+  CWD       = os . getcwd (                                                  )
+  os        . chdir       ( DIR                                              )
+  os        . system      ( "move /y *.mp4 videos"                           )
+  os        . system      ( "move /y *.avi videos"                           )
+  os        . system      ( "move /y *.wmv videos"                           )
+  os        . system      ( "move /y *.mpg videos"                           )
+  os        . system      ( "move /y *.jpg images"                           )
+  os        . system      ( "move /y *.jpeg images"                          )
+  os        . system      ( "move /y *.nfo scripts"                          )
+  os        . chdir       ( CWD                                              )
   ############################################################################
   AlbumJson = f"{DIR}/album.json"
   ############################################################################
-  if                   ( os . path . exists ( AlbumJson                  ) ) :
+  if                      ( os . path . exists ( AlbumJson               ) ) :
     return AlbumJson
   ############################################################################
-  NOW       = StarDate (                                                     )
-  NOW       . Now      (                                                     )
+  NOW       = StarDate    (                                                  )
+  NOW       . Now         (                                                  )
   FOLDER    = os . path . basename ( DIR                                     )
-  JFV       =          { "Version"   : ALBUMVERSION                        , \
-                         "Album"     : ""                                  , \
-                         "Names"     : { "en-US" : ""                      , \
-                                         "ja-JP" : ""                      , \
-                                         "zh-TW" : ""                    } , \
-                         "Directory" : DIR                                 , \
-                         "Folder"    : FOLDER                              , \
-                         "Language"  : "zh-TW"                             , \
-                         "File"      : AlbumJson                           , \
-                         "Edited"    : False                               , \
-                         "Timestamp" : NOW . Stardate                        }
+  JFV       =             { "Version"   : ALBUMVERSION                     , \
+                            "Album"     : ""                               , \
+                            "Names"     : { "en-US" : ""                   , \
+                                            "ja-JP" : ""                   , \
+                                            "zh-TW" : ""                 } , \
+                            "Directory" : DIR                              , \
+                            "Folder"    : FOLDER                           , \
+                            "Language"  : "zh-TW"                          , \
+                            "File"      : AlbumJson                        , \
+                            "Edited"    : False                            , \
+                            "Timestamp" : NOW . Stardate                     }
   ############################################################################
-  SaveJson             ( AlbumJson , JFV                                     )
+  SaveJson                ( AlbumJson , JFV                                  )
   ############################################################################
   return AlbumJson
 ##############################################################################
