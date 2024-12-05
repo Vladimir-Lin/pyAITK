@@ -37,7 +37,10 @@ from   AITK    . People     . People   import People      as PeopleItem
 class TreeDock         ( TreeWidget , AttachDock                           ) :
   ############################################################################
   attachNone  = Signal ( QWidget                                             )
-  attachDock  = Signal ( QWidget , str , int , int                           )
+  attachDock  = Signal ( QWidget                                           , \
+                         str                                               , \
+                         Qt . DockWidgetArea                               , \
+                         Qt . DockWidgetAreas                                )
   attachMdi   = Signal ( QWidget , int                                       )
   Clicked     = Signal ( int                                                 )
   emitRestart = Signal (                                                     )

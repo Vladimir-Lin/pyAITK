@@ -104,9 +104,14 @@ class AttachDock         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def toAllowAreas ( self , AREAS ) :
+    ##########################################################################
+    ##########################################################################
+    return 0
+  ############################################################################
   def getAllowArea ( self , AREAS , areas , area                           ) :
     ##########################################################################
-    if             ( ( areas & area ) == area                              ) :
+    if             ( ( areas & area ) == area                            ) :
       AREAS = AREAS | area
     ##########################################################################
     return AREAS
@@ -230,7 +235,9 @@ class AttachDock         (                                                 ) :
     self     . Dock . setWindowTitle ( title                                 )
     self     . Dock . setWidget      ( widget                                )
     self     . Dock . setToolTip     ( title                                 )
+    ##########################################################################
     Main     . addDockWidget         ( area , self . Dock                    )
+    ##########################################################################
     widget   . setWindowTitle        ( title                                 )
     self     . DockLimits [ 2 ] = widget . minimumSize (                     )
     self     . DockLimits [ 3 ] = widget . maximumSize (                     )
