@@ -11,6 +11,3 @@ SOURCES += $${PWD}/*.rb
 SOURCES += $${PWD}/*.rs
 SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
-
-include ($${PWD}/Commons/Commons.pri)
-include ($${PWD}/Commons6/Commons6.pri)
