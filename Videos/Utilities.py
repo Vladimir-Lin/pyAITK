@@ -250,6 +250,7 @@ def OpenMovieAlbumJson    ( DIR                                            ) :
   CWD       = os . getcwd (                                                  )
   os        . chdir       ( DIR                                              )
   os        . system      ( "move /y *.mp4 videos"                           )
+  os        . system      ( "move /y *.mkv videos"                           )
   os        . system      ( "move /y *.avi videos"                           )
   os        . system      ( "move /y *.wmv videos"                           )
   os        . system      ( "move /y *.mpg videos"                           )
