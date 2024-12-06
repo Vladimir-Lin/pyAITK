@@ -14,6 +14,7 @@ SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/documents/documents.pri)
 include ($${PWD}/Widgets/Widgets.pri)
+include ($${PWD}/Widgets6/Widgets6.pri)
 include ($${PWD}/Acupunctures/Acupunctures.pri)
 include ($${PWD}/Body/Body.pri)
 include ($${PWD}/Bones/Bones.pri)

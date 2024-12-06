@@ -12,7 +12,4 @@ SOURCES += $${PWD}/*.rs
 SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
-include ($${PWD}/Widgets/Widgets.pri)
-include ($${PWD}/Widgets6/Widgets6.pri)
-include ($${PWD}/Player/Player.pri)
-include ($${PWD}/Synopsis/Synopsis.pri)
+include ($${PWD}/documents/documents.pri)
