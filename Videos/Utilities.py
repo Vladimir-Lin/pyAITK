@@ -256,7 +256,9 @@ def OpenMovieAlbumJson    ( DIR                                            ) :
   os        . system      ( "move /y *.mpg videos"                           )
   os        . system      ( "move /y *.jpg images"                           )
   os        . system      ( "move /y *.jpeg images"                          )
+  os        . system      ( "move /y *.png images"                           )
   os        . system      ( "move /y *.nfo scripts"                          )
+  os        . system      ( "move /y *.torrent scripts"                      )
   os        . chdir       ( CWD                                              )
   ############################################################################
   AlbumJson = f"{DIR}/album.json"
