@@ -11,47 +11,12 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                          import OpenCC
-from   googletrans                     import Translator
-##############################################################################
-from   PyQt5                           import QtCore
-from   PyQt5                           import QtGui
-from   PyQt5                           import QtWidgets
-##############################################################################
-from   PyQt5 . QtCore                  import QObject
-from   PyQt5 . QtCore                  import pyqtSignal
-from   PyQt5 . QtCore                  import pyqtSlot
-from   PyQt5 . QtCore                  import Qt
-from   PyQt5 . QtCore                  import QPoint
-from   PyQt5 . QtCore                  import QPointF
-from   PyQt5 . QtCore                  import QSize
-from   PyQt5 . QtCore                  import QTimer
-from   PyQt5 . QtCore                  import QMutex
-from   PyQt5 . QtCore                  import QMutexLocker
-from   PyQt5 . QtCore                  import QDateTime
-##############################################################################
-from   PyQt5 . QtGui                   import QIcon
-from   PyQt5 . QtGui                   import QCursor
-from   PyQt5 . QtGui                   import QKeySequence
-from   PyQt5 . QtGui                   import QPen
-from   PyQt5 . QtGui                   import QBrush
-from   PyQt5 . QtGui                   import QPainter
-##############################################################################
-from   PyQt5 . QtWidgets               import QApplication
-from   PyQt5 . QtWidgets               import QWidget
-from   PyQt5 . QtWidgets               import qApp
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAction
-from   PyQt5 . QtWidgets               import QShortcut
-from   PyQt5 . QtWidgets               import QSizePolicy
-from   PyQt5 . QtWidgets               import QAbstractItemView
-from   PyQt5 . QtWidgets               import QTreeWidget
-from   PyQt5 . QtWidgets               import QTreeWidgetItem
-from   PyQt5 . QtWidgets               import QLineEdit
-from   PyQt5 . QtWidgets               import QComboBox
-from   PyQt5 . QtWidgets               import QSpinBox
-from   PyQt5 . QtWidgets               import QProgressBar
-from   PyQt5 . QtWidgets               import QToolButton
+from   PySide6             import QtCore
+from   PySide6             import QtGui
+from   PySide6             import QtWidgets
+from   PySide6 . QtCore    import *
+from   PySide6 . QtGui     import *
+from   PySide6 . QtWidgets import *
 ##############################################################################
 class ProgressIndicator   ( QWidget                                        ) :
   ############################################################################
@@ -66,8 +31,8 @@ class ProgressIndicator   ( QWidget                                        ) :
     self . m_count                = 15
     self . m_factor               = 0.50
     self . m_displayedWhenStopped = False
-    self . m_color                = Qt . black
-    self . hint                   = QSize ( 20 , 20                          )
+    self . m_color                = QColor ( Qt . black                      )
+    self . hint                   = QSize  ( 20 , 20                         )
     ##########################################################################
     self . setSizePolicy  ( QSizePolicy . Fixed , QSizePolicy . Fixed        )
     self . setFocusPolicy ( Qt . NoFocus                                     )
@@ -206,15 +171,17 @@ class ProgressIndicator   ( QWidget                                        ) :
     ##########################################################################
     gap            = self . m_count
     angle          = float     ( 360.0        / gap                          )
+    qbh            = QBrush    (                                             )
     ##########################################################################
     for i in range             ( 0 , gap                                   ) :
       ########################################################################
       color = self . m_color
       alpha = float            ( 1.0 - float ( float ( i ) / float ( gap ) ) )
       color . setAlphaF        ( alpha                                       )
+      qbh   . setColor         ( color                                       )
       ########################################################################
       p     . setPen           ( Qt . NoPen                                  )
-      p     . setBrush         ( QBrush ( color )                            )
+      p     . setBrush         ( qbh                                         )
       p     . save             (                                             )
       p     . translate        ( self . rect ( ) . center ( )                )
       p     . rotate           ( self . m_angle - ( float ( i ) * angle )    )

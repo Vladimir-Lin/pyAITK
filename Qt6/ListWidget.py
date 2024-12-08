@@ -511,31 +511,37 @@ class ListWidget               ( QListWidget , VirtualGui                  ) :
     ##########################################################################
     if                        ( clicks == 1                                ) :
       ########################################################################
-      try                                                                    :
+      IDCS = "itemClicked(QListWidgetItem *)"
+      IDCC = QtCore . SIGNAL  ( IDCS                                         )
+      ########################################################################
+      if                      ( self . receivers ( IDCC ) > 0              ) :
         self . itemClicked       . disconnect (                              )
-      except                                                                 :
-        pass
-      self   . itemClicked       .    connect ( self . singleClicked         )
+      ########################################################################
+      self   . connect        ( self , IDCC , self . singleClicked           )
       ########################################################################
       return
     ##########################################################################
     if                        ( clicks == 2                                ) :
       ########################################################################
-      try                                                                    :
+      IDCS = "itemDoubleClicked(QListWidgetItem *)"
+      IDCC = QtCore . SIGNAL  ( IDCS                                         )
+      ########################################################################
+      if                      ( self . receivers ( IDCC ) > 0              ) :
         self . itemDoubleClicked . disconnect (                              )
-      except                                                                 :
-        pass
-      self   . itemDoubleClicked .    connect ( self . doubleClicked         )
+      ########################################################################
+      self   . connect        ( self , IDCC , self . doubleClicked           )
       ########################################################################
       return
     ##########################################################################
     if                        ( clicks == 9                                ) :
       ########################################################################
-      try                                                                    :
+      IDCS = "itemChanged(QListWidgetItem *)"
+      IDCC = QtCore . SIGNAL  ( IDCS                                         )
+      ########################################################################
+      if                      ( self . receivers ( IDCC ) > 0              ) :
         self . itemChanged       . disconnect (                              )
-      except                                                                 :
-        pass
-      self   . itemChanged       .    connect ( self . stateChanged          )
+      ########################################################################
+      self   . connect        ( self , IDCC , self . stateChanged            )
       ########################################################################
       return
     ##########################################################################

@@ -108,6 +108,10 @@ class VideoAlbumsView              ( IconDock                              ) :
     ## self . Grouping           = "Reverse"
     ##########################################################################
     self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea                  | \
+                                Qt . LeftDockWidgetArea                    | \
+                                Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "Album"                                 )

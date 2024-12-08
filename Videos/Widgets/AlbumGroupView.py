@@ -69,22 +69,24 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
-    self . GTYPE        = 76
-    self . SortOrder    = "asc"
-    self . PrivateIcon  = True
-    self . PrivateGroup = True
-    self . ExtraINFOs   = True
-    self . dockingPlace = Qt . RightDockWidgetArea
+    self . GTYPE         = 76
+    self . SortOrder     = "asc"
+    self . PrivateIcon   = True
+    self . PrivateGroup  = True
+    self . ExtraINFOs    = True
+    self . dockingPlace  = Qt . BottomDockWidgetArea
+    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
+                           Qt . BottomDockWidgetArea                       | \
+                           Qt . LeftDockWidgetArea                         | \
+                           Qt . RightDockWidgetArea
     ##########################################################################
-    self . Grouping     = "Tag"
-    self . OldGrouping  = "Tag"
-    ## self . Grouping     = "Catalog"
-    ## self . Grouping     = "Subgroup"
-    ## self . Grouping     = "Reverse"
+    self . Grouping      = "Tag"
+    self . OldGrouping   = "Tag"
+    ## self . Grouping      = "Catalog"
+    ## self . Grouping      = "Subgroup"
+    ## self . Grouping      = "Reverse"
     ##########################################################################
     self . FetchTableKey = "AlbumGroupView"
-    ##########################################################################
-    self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )

@@ -26,7 +26,10 @@ from           . ListWidget import ListWidget as ListWidget
 class ListDock        ( ListWidget , AttachDock                            ) :
   ############################################################################
   attachNone = Signal ( QWidget                                              )
-  attachDock = Signal ( QWidget , str , int , int                            )
+  attachDock = Signal ( QWidget                                            , \
+                        str                                                , \
+                        Qt . DockWidgetArea                                , \
+                        Qt . DockWidgetAreas                                 )
   attachMdi  = Signal ( QWidget , int                                        )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
