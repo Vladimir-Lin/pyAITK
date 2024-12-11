@@ -84,10 +84,9 @@ class Plan                      ( PurePlan                                 ) :
     if                           ( a == None                               ) :
       return None
     ##########################################################################
-    try                                                                      :
+    ics = QMetaMethod . fromSignal ( a . triggered                           )
+    if                           ( a . isSignalConnected ( ics )           ) :
       a . triggered . disconnect (                                           )
-    except                                                                   :
-      pass
     ##########################################################################
     a   . triggered . connect    ( method                                    )
     a   . setEnabled             ( enable                                    )
@@ -100,10 +99,9 @@ class Plan                      ( PurePlan                                 ) :
     if                           ( a == None                               ) :
       return None
     ##########################################################################
-    try                                                                      :
+    ics = QMetaMethod . fromSignal ( a . triggered                           )
+    if                           ( a . isSignalConnected ( ics )           ) :
       a . triggered . disconnect (                                           )
-    except                                                                   :
-      pass
     ##########################################################################
     a   . setEnabled             ( False                                     )
     ##########################################################################

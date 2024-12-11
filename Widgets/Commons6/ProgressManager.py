@@ -11,67 +11,36 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                          import OpenCC
-from   googletrans                     import Translator
+from   PySide6                     import QtCore
+from   PySide6                     import QtGui
+from   PySide6                     import QtWidgets
+from   PySide6 . QtCore            import *
+from   PySide6 . QtGui             import *
+from   PySide6 . QtWidgets         import *
+from   AITK    . Qt6               import *
 ##############################################################################
-from   PyQt5                           import QtCore
-from   PyQt5                           import QtGui
-from   PyQt5                           import QtWidgets
+from   AITK    . Qt6 . VirtualGui  import VirtualGui  as VirtualGui
+from   AITK    . Qt6 . MenuManager import MenuManager as MenuManager
+from   AITK    . Qt6 . TreeWidget  import TreeWidget  as TreeWidget
+from   AITK    . Qt6 . TreeDock    import TreeDock    as TreeDock
 ##############################################################################
-from   PyQt5 . QtCore                  import QObject
-from   PyQt5 . QtCore                  import pyqtSignal
-from   PyQt5 . QtCore                  import pyqtSlot
-from   PyQt5 . QtCore                  import Qt
-from   PyQt5 . QtCore                  import QPoint
-from   PyQt5 . QtCore                  import QPointF
-from   PyQt5 . QtCore                  import QSize
-from   PyQt5 . QtCore                  import QTimer
-from   PyQt5 . QtCore                  import QMutex
-from   PyQt5 . QtCore                  import QMutexLocker
-from   PyQt5 . QtCore                  import QDateTime
-##############################################################################
-from   PyQt5 . QtGui                   import QIcon
-from   PyQt5 . QtGui                   import QCursor
-from   PyQt5 . QtGui                   import QKeySequence
-##############################################################################
-from   PyQt5 . QtWidgets               import QApplication
-from   PyQt5 . QtWidgets               import QWidget
-from   PyQt5 . QtWidgets               import qApp
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAction
-from   PyQt5 . QtWidgets               import QShortcut
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAbstractItemView
-from   PyQt5 . QtWidgets               import QTreeWidget
-from   PyQt5 . QtWidgets               import QTreeWidgetItem
-from   PyQt5 . QtWidgets               import QLineEdit
-from   PyQt5 . QtWidgets               import QComboBox
-from   PyQt5 . QtWidgets               import QSpinBox
-from   PyQt5 . QtWidgets               import QProgressBar
-from   PyQt5 . QtWidgets               import QToolButton
-##############################################################################
-from   AITK  . Qt        . VirtualGui  import VirtualGui  as VirtualGui
-from   AITK  . Qt        . MenuManager import MenuManager as MenuManager
-from   AITK  . Qt        . TreeWidget  import TreeWidget  as TreeWidget
-from   AITK  . Qt        . TreeDock    import TreeDock    as TreeDock
-##############################################################################
-class ProgressManager           ( TreeDock                                 ) :
+class ProgressManager    ( TreeDock                                        ) :
   ############################################################################
-  HavingMenu       = 1371434312
-  AutoCleanId      = 1212001160
-  RunningId        = 1212001161
-  FittingId        = 1212001164
-  TimerPeriodId    = 1212001271
-  TimeoutId        = 1212001301
+  HavingMenu    = 1371434312
+  AutoCleanId   = 1212001160
+  RunningId     = 1212001161
+  FittingId     = 1212001164
+  TimerPeriodId = 1212001271
+  TimeoutId     = 1212001301
   ############################################################################
-  Requesting       = pyqtSignal (                                            )
-  LocalRequest     = pyqtSignal (                                            )
-  EmitTimer        = pyqtSignal (                                            )
-  Hidden           = pyqtSignal ( QWidget                                    )
+  Requesting    = Signal (                                                   )
+  LocalRequest  = Signal (                                                   )
+  EmitTimer     = Signal (                                                   )
+  Hidden        = Signal ( QWidget                                           )
   ############################################################################
-  def __init__                  ( self , parent = None , plan = None       ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( ) . __init__        ( parent , plan                              )
+    super ( ) . __init__ ( parent , plan                                     )
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -195,14 +164,12 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return False
   ############################################################################
-  @pyqtSlot                    (                                             )
   def Accepting                ( self                                      ) :
     ##########################################################################
     self . LocalRequest . emit (                                             )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                            (                                     )
   def EnsureTimer                      ( self                              ) :
     ##########################################################################
     if                                 ( self . Timer == None              ) :
@@ -292,7 +259,6 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -637,7 +603,6 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (                                          )
   def LocalAccept                 ( self                                   ) :
     ##########################################################################
     if                            ( self . LimitValue ( 1212001162 ) > 0   ) :

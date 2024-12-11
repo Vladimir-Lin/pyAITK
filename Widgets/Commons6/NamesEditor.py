@@ -11,57 +11,35 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                          import OpenCC
-from   googletrans                     import Translator
+from   opencc                            import OpenCC
+from   googletrans                       import Translator
 ##############################################################################
-from   PyQt5                           import QtCore
-from   PyQt5                           import QtGui
-from   PyQt5                           import QtWidgets
+from   PySide6                           import QtCore
+from   PySide6                           import QtGui
+from   PySide6                           import QtWidgets
+from   PySide6 . QtCore                  import *
+from   PySide6 . QtGui                   import *
+from   PySide6 . QtWidgets               import *
+from   AITK    . Qt6                     import *
 ##############################################################################
-from   PyQt5 . QtCore                  import QObject
-from   PyQt5 . QtCore                  import pyqtSignal
-from   PyQt5 . QtCore                  import pyqtSlot
-from   PyQt5 . QtCore                  import Qt
-from   PyQt5 . QtCore                  import QPoint
-from   PyQt5 . QtCore                  import QPointF
-from   PyQt5 . QtCore                  import QSize
+from   AITK    . Qt6       . VirtualGui  import VirtualGui  as VirtualGui
+from   AITK    . Qt6       . MenuManager import MenuManager as MenuManager
+from   AITK    . Qt6       . TreeWidget  import TreeWidget  as TreeWidget
+from   AITK    . Qt6       . TreeDock    import TreeDock    as TreeDock
 ##############################################################################
-from   PyQt5 . QtGui                   import QIcon
-from   PyQt5 . QtGui                   import QCursor
-from   PyQt5 . QtGui                   import QKeySequence
+from   AITK    . Documents . Name        import Name        as NameItem
 ##############################################################################
-from   PyQt5 . QtWidgets               import QApplication
-from   PyQt5 . QtWidgets               import QWidget
-from   PyQt5 . QtWidgets               import qApp
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAction
-from   PyQt5 . QtWidgets               import QShortcut
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAbstractItemView
-from   PyQt5 . QtWidgets               import QTreeWidget
-from   PyQt5 . QtWidgets               import QTreeWidgetItem
-from   PyQt5 . QtWidgets               import QLineEdit
-from   PyQt5 . QtWidgets               import QComboBox
-from   PyQt5 . QtWidgets               import QSpinBox
-##############################################################################
-from   AITK  . Qt        . VirtualGui  import VirtualGui  as VirtualGui
-from   AITK  . Qt        . MenuManager import MenuManager as MenuManager
-from   AITK  . Qt        . TreeWidget  import TreeWidget  as TreeWidget
-from   AITK  . Qt        . TreeDock    import TreeDock    as TreeDock
-##############################################################################
-from   AITK  . Documents . Name        import Name        as NameItem
-##############################################################################
-class NamesEditor              ( TreeDock , NameItem                       ) :
+class NamesEditor          ( TreeDock , NameItem                           ) :
   ############################################################################
   HavingMenu      = 1371434312
   ############################################################################
-  emitNamesShow   = pyqtSignal (                                             )
-  emitAllNames    = pyqtSignal ( list                                        )
-  emitNewItem     = pyqtSignal ( list                                        )
-  emitRefreshItem = pyqtSignal ( QTreeWidgetItem , list                      )
-  CloseMyself     = pyqtSignal ( QWidget , int                               )
+  emitNamesShow   = Signal (                                                 )
+  emitAllNames    = Signal ( list                                            )
+  emitNewItem     = Signal ( list                                            )
+  emitRefreshItem = Signal ( QTreeWidgetItem , list                          )
+  CloseMyself     = Signal ( QWidget , str                                   )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
@@ -246,7 +224,6 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
   def stateChanged               ( self , item , column                    ) :
     return
   ############################################################################
-  @pyqtSlot()
   def nameChanged               ( self                                     ) :
     ##########################################################################
     if                          ( not self . isItemPicked ( )              ) :
@@ -707,7 +684,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
   def TryClose                   ( self                                    ) :
     ##########################################################################
     self . setPrepared           ( False                                     )
-    self . CloseMyself . emit    ( self , int ( self . get ( "uuid" ) )      )
+    self . CloseMyself . emit    ( self , str ( self . get ( "uuid" ) )      )
     self . Leave       . emit    ( self                                      )
     ##########################################################################
     return True
@@ -1046,7 +1023,6 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
