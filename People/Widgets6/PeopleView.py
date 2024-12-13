@@ -11,83 +11,51 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                               import QtCore
-from   PyQt5                               import QtGui
-from   PyQt5                               import QtWidgets
+from   PySide6                               import QtCore
+from   PySide6                               import QtGui
+from   PySide6                               import QtWidgets
+from   PySide6 . QtCore                      import *
+from   PySide6 . QtGui                       import *
+from   PySide6 . QtWidgets                   import *
+from   AITK    . Qt6                         import *
 ##############################################################################
-from   PyQt5 . QtCore                      import QObject
-from   PyQt5 . QtCore                      import pyqtSignal
-from   PyQt5 . QtCore                      import pyqtSlot
-from   PyQt5 . QtCore                      import Qt
-from   PyQt5 . QtCore                      import QPoint
-from   PyQt5 . QtCore                      import QPointF
-from   PyQt5 . QtCore                      import QSize
-from   PyQt5 . QtCore                      import QMimeData
-from   PyQt5 . QtCore                      import QByteArray
+from   AITK    . Qt6        . IconDock       import IconDock       as IconDock
 ##############################################################################
-from   PyQt5 . QtGui                       import QIcon
-from   PyQt5 . QtGui                       import QPixmap
-from   PyQt5 . QtGui                       import QImage
-from   PyQt5 . QtGui                       import QCursor
-from   PyQt5 . QtGui                       import QKeySequence
-from   PyQt5 . QtGui                       import QMouseEvent
-from   PyQt5 . QtGui                       import QDrag
+from   AITK    . Qt6        . MenuManager    import MenuManager    as MenuManager
+from   AITK    . Qt6        . LineEdit       import LineEdit       as LineEdit
+from   AITK    . Qt6        . ComboBox       import ComboBox       as ComboBox
+from   AITK    . Qt6        . SpinBox        import SpinBox        as SpinBox
 ##############################################################################
-from   PyQt5 . QtWidgets                   import QApplication
-from   PyQt5 . QtWidgets                   import QWidget
-from   PyQt5 . QtWidgets                   import qApp
-from   PyQt5 . QtWidgets                   import QMenu
-from   PyQt5 . QtWidgets                   import QAction
-from   PyQt5 . QtWidgets                   import QShortcut
-from   PyQt5 . QtWidgets                   import QToolTip
-from   PyQt5 . QtWidgets                   import QMenu
-from   PyQt5 . QtWidgets                   import QAbstractItemView
-from   PyQt5 . QtWidgets                   import QListWidget
-from   PyQt5 . QtWidgets                   import QListWidgetItem
-from   PyQt5 . QtWidgets                   import QTreeWidget
-from   PyQt5 . QtWidgets                   import QTreeWidgetItem
-from   PyQt5 . QtWidgets                   import QLineEdit
-from   PyQt5 . QtWidgets                   import QComboBox
-from   PyQt5 . QtWidgets                   import QSpinBox
-from   PyQt5 . QtWidgets                   import QFileDialog
+from   AITK    . Essentials . Relation       import Relation       as Relation
+from   AITK    . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK    . Calendars  . Periode        import Periode        as Periode
+from   AITK    . Documents  . Variables      import Variables      as VariableItem
+from   AITK    . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   AITK  . Qt . IconDock               import IconDock       as IconDock
+from   AITK    . Pictures   . Gallery        import Gallery        as GalleryItem
+from   AITK    . People     . People         import People         as PeopleItem
 ##############################################################################
-from   AITK  . Qt . MenuManager            import MenuManager    as MenuManager
-from   AITK  . Qt . LineEdit               import LineEdit       as LineEdit
-from   AITK  . Qt . ComboBox               import ComboBox       as ComboBox
-from   AITK  . Qt . SpinBox                import SpinBox        as SpinBox
-##############################################################################
-from   AITK  . Essentials . Relation       import Relation       as Relation
-from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
-from   AITK  . Calendars  . Periode        import Periode        as Periode
-from   AITK  . Documents  . Variables      import Variables      as VariableItem
-from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
-##############################################################################
-from   AITK  . Pictures   . Gallery        import Gallery        as GalleryItem
-from   AITK  . People     . People         import People         as PeopleItem
-##############################################################################
-class PeopleView                     ( IconDock                            ) :
+class PeopleView                 ( IconDock                                ) :
   ############################################################################
   HavingMenu            = 1371434312
   ############################################################################
-  ShowPersonalGallery   = pyqtSignal ( str , int , str  ,       QIcon        )
-  ShowPersonalIcons     = pyqtSignal ( str , int , str  , str , QIcon        )
-  ShowPersonalFaces     = pyqtSignal ( str , str                             )
-  ShowGalleries         = pyqtSignal ( str , int , str  ,       QIcon        )
-  ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
-  ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
-  ShowWebPages          = pyqtSignal ( str , int , str  , str , QIcon        )
-  OwnedOccupation       = pyqtSignal ( str , int , str  , str , QIcon        )
-  OpenVariantTables     = pyqtSignal ( str , str , int  , str , dict         )
-  ShowLodListings       = pyqtSignal ( str , str              , QIcon        )
-  OpenLogHistory        = pyqtSignal ( str , str , str  , str , str          )
-  OpenBodyShape         = pyqtSignal ( str , str , dict                      )
-  emitOpenSmartNote     = pyqtSignal ( str                                   )
+  ShowPersonalGallery   = Signal ( str , int , str  ,       QIcon            )
+  ShowPersonalIcons     = Signal ( str , int , str  , str , QIcon            )
+  ShowPersonalFaces     = Signal ( str , str                                 )
+  ShowGalleries         = Signal ( str , int , str  ,       QIcon            )
+  ShowGalleriesRelation = Signal ( str , int , str  , str , QIcon            )
+  ShowVideoAlbums       = Signal ( str , int , str  ,       QIcon            )
+  ShowWebPages          = Signal ( str , int , str  , str , QIcon            )
+  OwnedOccupation       = Signal ( str , int , str  , str , QIcon            )
+  OpenVariantTables     = Signal ( str , str , int  , str , dict             )
+  ShowLodListings       = Signal ( str , str              , QIcon            )
+  OpenLogHistory        = Signal ( str , str , str  , str , str              )
+  OpenBodyShape         = Signal ( str , str , dict                          )
+  emitOpenSmartNote     = Signal ( str                                       )
   ############################################################################
-  def __init__                       ( self , parent = None , plan = None  ) :
+  def __init__                   ( self , parent = None , plan = None      ) :
     ##########################################################################
-    super ( ) . __init__             (        parent        , plan           )
+    super ( ) . __init__         (        parent        , plan               )
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
