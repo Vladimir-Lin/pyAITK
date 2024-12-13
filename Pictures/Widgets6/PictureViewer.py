@@ -14,53 +14,33 @@ import binascii
 import hashlib
 import base64
 ##############################################################################
-from   io           import BytesIO
-from   wand . image import Image
-from   PIL          import Image as Pillow
+from   io                                 import BytesIO
+from   wand . image                       import Image
+from   PIL                                import Image       as Pillow
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PySide6                            import QtCore
+from   PySide6                            import QtGui
+from   PySide6                            import QtWidgets
+from   PySide6 . QtCore                   import *
+from   PySide6 . QtGui                    import *
+from   PySide6 . QtWidgets                import *
+from   AITK    . Qt6                      import *
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
+from   AITK    . Qt6        . VirtualGui  import VirtualGui  as VirtualGui
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   AITK    . Essentials . Relation    import Relation
+from   AITK    . Calendars  . StarDate    import StarDate
+from   AITK    . Calendars  . Periode     import Periode
+from   AITK    . Pictures   . Picture     import Picture     as Picture
+from   AITK    . Pictures   . Gallery     import Gallery     as GalleryItem
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QScrollArea
-from   PyQt5 . QtWidgets              import QLabel
-##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . VirtualGui        import VirtualGui  as VirtualGui
-##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-from   AITK  . Calendars  . StarDate  import StarDate
-from   AITK  . Calendars  . Periode   import Periode
-from   AITK  . Pictures   . Picture   import Picture     as Picture
-from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
-##############################################################################
-class PictureViewer               ( QScrollArea , VirtualGui               ) :
+class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   ############################################################################
-  AssignImage   = pyqtSignal      ( QImage                                   )
-  AssignGallery = pyqtSignal      ( list                                     )
+  AssignImage   = Signal ( QImage                                            )
+  AssignGallery = Signal ( list                                              )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
     super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
@@ -189,7 +169,6 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot             ( QImage                                             )
   def setImage          ( self , image                                     ) :
     ##########################################################################
     self . Image = image
@@ -197,7 +176,6 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                   ( list                                         )
   def setGallery              ( self , Pictures                            ) :
     ##########################################################################
     WW      = 0
