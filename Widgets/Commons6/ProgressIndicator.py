@@ -172,6 +172,7 @@ class ProgressIndicator   ( QWidget                                        ) :
     gap            = self . m_count
     angle          = float     ( 360.0        / gap                          )
     qbh            = QBrush    (                                             )
+    qbp            = QPen      (                                             )
     ##########################################################################
     for i in range             ( 0 , gap                                   ) :
       ########################################################################
@@ -179,8 +180,9 @@ class ProgressIndicator   ( QWidget                                        ) :
       alpha = float            ( 1.0 - float ( float ( i ) / float ( gap ) ) )
       color . setAlphaF        ( alpha                                       )
       qbh   . setColor         ( color                                       )
+      qbp   . setColor         ( color                                       )
       ########################################################################
-      p     . setPen           ( Qt . NoPen                                  )
+      p     . setPen           ( qbp                                         )
       p     . setBrush         ( qbh                                         )
       p     . save             (                                             )
       p     . translate        ( self . rect ( ) . center ( )                )

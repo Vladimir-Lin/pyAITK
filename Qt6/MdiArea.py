@@ -64,6 +64,8 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     self . tiledAction    = None
     self . closeAll       = None
     ##########################################################################
+    self . NoWindowNow    = ""
+    ##########################################################################
     """
     WidgetClass                   ;
     addIntoWidget ( parent,this ) ;
@@ -473,17 +475,23 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     asw     = self . activeSubWindow (                                       )
     swlists = self . subWindowList   (                                       )
     ##########################################################################
+    if                               ( len ( swlists ) <= 0                ) :
+      ########################################################################
+      menu . addAction               ( self . NoWindowNow                    )
+      ########################################################################
+      return
+    ##########################################################################
     for w in swlists                                                         :
       ########################################################################
-      s     = w    . widget       (                                          )
-      a     = menu . addAction    ( s . windowTitle  ( )                     )
-      a     . setData             ( w                                        )
-      a     . setCheckable        ( True                                     )
+      s     = w    . widget          (                                       )
+      a     = menu . addAction       ( s . windowTitle  ( )                  )
+      a     . setData                ( w                                     )
+      a     . setCheckable           ( True                                  )
       ########################################################################
-      if                          ( w == asw                               ) :
-        a   . setChecked          ( True                                     )
+      if                             ( w == asw                            ) :
+        a   . setChecked             ( True                                  )
       ########################################################################
-      group . addAction           ( a                                        )
+      group . addAction              ( a                                     )
     ##########################################################################
     return
   ############################################################################
