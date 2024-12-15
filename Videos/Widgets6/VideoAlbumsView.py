@@ -53,6 +53,7 @@ class VideoAlbumsView          ( IconDock                                  ) :
   ShowWebPages        = Signal ( str , int , str , str , QIcon               )
   OpenVariantTables   = Signal ( str , str , int , str , dict                )
   emitOpenSmartNote   = Signal ( str                                         )
+  emitLog             = Signal ( str                                         )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -115,6 +116,17 @@ class VideoAlbumsView          ( IconDock                                  ) :
     self . LinkAction ( "PageDown"   , self . PageDown     , Enabled         )
     self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
     self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    ##########################################################################
+    if                ( self . Grouping in [ "Subordination" ]             ) :
+      ########################################################################
+      T    = self . windowTitle (                                            )
+      M    = self . getMenuItem ( "ViewAlbumParameter"                       )
+      F    = self . Relation . First
+      W    = self . Relation . T1
+      R    = self . Relation . Relation
+      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
+      ########################################################################
+      self . emitLog . emit  ( L                                             )
     ##########################################################################
     return
   ############################################################################

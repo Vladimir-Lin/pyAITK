@@ -288,7 +288,7 @@ class CommandInterface    ( TextEdit                                       ) :
     if                                          ( len ( C ) <= 0           ) :
       return
     ##########################################################################
-    M    = f"Command -> {C}"
+    M    = f":-> {C}"
     ##########################################################################
     self . emitLog     . emit                   ( M                          )
     self . emitCommand . emit                   ( C                          )
