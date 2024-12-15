@@ -50,6 +50,7 @@ class VideoAlbumsView          ( IconDock                                  ) :
   OwnedPeopleGroup    = Signal ( str , int , str                             )
   ShowPersonalGallery = Signal ( str , int , str , QIcon                     )
   GalleryGroup        = Signal ( str , int , str                             )
+  emitConnectAlbum    = Signal ( str                                         )
   ShowWebPages        = Signal ( str , int , str , str , QIcon               )
   OpenVariantTables   = Signal ( str , str , int , str , dict                )
   emitOpenSmartNote   = Signal ( str                                         )
@@ -1717,6 +1718,9 @@ class VideoAlbumsView          ( IconDock                                  ) :
     MSG   = self . getMenuItem   ( "UpdateAlbum"                             )
     mm    . addActionFromMenu    ( LOM , 34635102 , MSG                      )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "ConnectAlbum"                            )
+    mm    . addActionFromMenu    ( LOM , 34635103 , MSG                      )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "AssignIdentifier"                        )
@@ -1757,6 +1761,12 @@ class VideoAlbumsView          ( IconDock                                  ) :
     if                             ( at == 34635102                        ) :
       ########################################################################
       self . UpdateAlbum           ( uuid , item . text ( )                  )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34635103                        ) :
+      ########################################################################
+      self . emitConnectAlbum . emit ( str ( uuid )                          )
       ########################################################################
       return True
     ##########################################################################
