@@ -42,6 +42,7 @@ class GalleriesView            ( IconDock                                  ) :
   OpenVariantTables   = Signal ( str , str , int , str , dict                )
   emitOpenSmartNote   = Signal ( str                                         )
   OpenLogHistory      = Signal ( str , str , str , str , str                 )
+  emitLog             = Signal ( str                                         )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -210,6 +211,17 @@ class GalleriesView            ( IconDock                                  ) :
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    if                ( self . Grouping in [ "Subordination" ]             ) :
+      ########################################################################
+      T    = self . windowTitle (                                            )
+      M    = self . getMenuItem ( "GalleriesViewParameter"                   )
+      F    = self . Relation . First
+      W    = self . Relation . T1
+      R    = self . Relation . Relation
+      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
+      ########################################################################
+      self . emitLog . emit  ( L                                             )
     ##########################################################################
     return
   ############################################################################

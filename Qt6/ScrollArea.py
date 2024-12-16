@@ -23,9 +23,16 @@ from   PySide6 . QtWidgets  import *
 from           . VirtualGui import VirtualGui as VirtualGui
 from           . AttachDock import AttachDock as AttachDock
 ##############################################################################
-class ScrollArea                ( QScrollArea , VirtualGui , AttachDock    ) :
+class ScrollArea      ( QScrollArea , VirtualGui , AttachDock              ) :
   ############################################################################
-  def __init__                  ( self , parent = None , plan = None       ) :
+  attachNone = Signal ( QWidget                                              )
+  attachDock = Signal ( QWidget                                            , \
+                        str                                                , \
+                        Qt . DockWidgetArea                                , \
+                        Qt . DockWidgetAreas                                 )
+  attachMdi  = Signal ( QWidget , int                                        )
+  ############################################################################
+  def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
     super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )

@@ -33,6 +33,7 @@ from . TableDock       import TableDock       as TableDock
 from . GraphicsView    import GraphicsView    as GraphicsView
 from . TextEdit        import TextEdit        as TextEdit
 from . PlainTextEdit   import PlainTextEdit   as PlainTextEdit
+from . ScrollArea      import ScrollArea      as ScrollArea
 from . MajorListings   import MajorListings   as MajorListings
 from . InputTreeWidget import InputTreeWidget as InputTreeWidget
 from . MainWindow      import MainWindow      as MainWindow
@@ -70,6 +71,7 @@ __all__ = [ "Font"                                                           ,
             "GraphicsView"                                                   ,
             "TextEdit"                                                       ,
             "PlainTextEdit"                                                  ,
+            "ScrollArea"                                                     ,
             "MajorListings"                                                  ,
             "InputTreeWidget"                                                ,
             "MainWindow"                                                     ]
