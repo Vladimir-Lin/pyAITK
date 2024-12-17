@@ -28,6 +28,7 @@ class Plan                      ( PurePlan                                 ) :
     super ( ) . __init__        (                                            )
     ##########################################################################
     self . Actions            = {                                            }
+    self . PrivateMenus       = {                                            }
     self . Shortcuts          = {                                            }
     self . SystemVariables    = {                                            }
     self . Stacked            = None
@@ -65,6 +66,18 @@ class Plan                      ( PurePlan                                 ) :
   ############################################################################
   def getMdi               ( self                                          ) :
     return self . Mdi
+  ############################################################################
+  def addMenu              ( self , Id , menu                              ) :
+    self . PrivateMenus [ Id ] = menu
+    return len             ( self . PrivateMenus                             )
+  ############################################################################
+  def getMenu                  ( self , Id                                 ) :
+    if                         ( Id not in self . PrivateMenus             ) :
+      return None
+    return self . PrivateMenus [ Id                                          ]
+  ############################################################################
+  def hasMenu              ( self , Id                                     ) :
+    return                 ( Id in self . PrivateMenus                       )
   ############################################################################
   def addAction            ( self , Id , action                            ) :
     self . Actions [ Id ] = action
