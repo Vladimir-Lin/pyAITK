@@ -36,6 +36,8 @@ from   AITK    . Qt6 . MenuManager       import MenuManager as MenuManager
 from   AITK    . Qt6 . AttachDock        import AttachDock  as AttachDock
 from   AITK    . Qt6 . Widget            import Widget      as Widget
 ##############################################################################
+from                 . Episode           import Episode     as Episode
+##############################################################################
 class EpisodeEditor      ( ScrollArea                                      ) :
   ############################################################################
   def           __init__ ( self , parent = None , plan = None              ) :
