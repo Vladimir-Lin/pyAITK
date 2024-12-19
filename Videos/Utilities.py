@@ -254,7 +254,7 @@ def GenerateAlbumFolder  ( DIR                                             ) :
   ############################################################################
   return
 ##############################################################################
-def OpenMovieAlbumJson    ( DIR , VUID = ""                                ) :
+def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
   ############################################################################
   global ALBUMVERSION
   ############################################################################
@@ -301,16 +301,21 @@ def OpenMovieAlbumJson    ( DIR , VUID = ""                                ) :
   ############################################################################
   NOW       = StarDate    (                                                  )
   NOW       . Now         (                                                  )
+  CFDT      = NOW . toDateTimeString ( TZ , " " , "%Y-%m-%d" , "%H:%M:%S"    )
+  ############################################################################
   FOLDER    = os . path . basename ( DIR                                     )
-  JFV       =             { "Version"   : ALBUMVERSION                     , \
-                            "Album"     : VXID                             , \
-                            "Names"     : {                              } , \
-                            "Directory" : DIR                              , \
-                            "Folder"    : FOLDER                           , \
-                            "Language"  : "zh-TW"                          , \
-                            "File"      : AlbumJson                        , \
-                            "Edited"    : False                            , \
-                            "Timestamp" : NOW . Stardate                     }
+  JFV       =             { "Version"      : ALBUMVERSION                  , \
+                            "Album"        : VXID                          , \
+                            "Names"        : {                           } , \
+                            "Directory"    : DIR                           , \
+                            "Folder"       : FOLDER                        , \
+                            "Language"     : "zh-TW"                       , \
+                            "File"         : AlbumJson                     , \
+                            "Edited"       : False                         , \
+                            "TimeZone"     : TZ                            , \
+                            "Creation"     : CFDT                          , \
+                            "Modification" : CFDT                          , \
+                            "Timestamp"    : NOW . Stardate                  }
   ############################################################################
   SaveJson                ( AlbumJson , JFV                                  )
   ############################################################################

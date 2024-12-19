@@ -44,9 +44,10 @@ class EpisodeEditor              ( ScrollArea                              ) :
     ##########################################################################
     super ( ) . __init__         (        parent        , plan               )
     ##########################################################################
-    self . vlayout = QVBoxLayout (                                           )
+    self . cwidget = QWidget     (                                           )
+    self . vlayout = QVBoxLayout ( self . cwidget                            )
     self . setMinimumHeight      ( 60                                        )
-    self . setWidget             ( self . vlayout                            )
+    self . setWidget             ( self . cwidget                            )
     ##########################################################################
     return
   ############################################################################
