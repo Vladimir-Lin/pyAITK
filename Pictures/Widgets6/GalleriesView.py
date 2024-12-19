@@ -54,6 +54,10 @@ class GalleriesView            ( IconDock                                  ) :
     self . SortOrder    = "asc"
     self . SortByName   = False
     ##########################################################################
+    self . SearchLine   = None
+    self . SearchKey    = ""
+    self . UUIDs        = [                                                  ]
+    ##########################################################################
     self . Grouping     = "Original"
     self . OldGrouping  = "Original"
     ## self . Grouping     = "Subordination"
@@ -172,6 +176,9 @@ class GalleriesView            ( IconDock                                  ) :
     return                     [                                             ]
   ############################################################################
   def ObtainsItemUuids                      ( self , DB                    ) :
+    ##########################################################################
+    if                                      ( self . isSearching (       ) ) :
+      return self . UUIDs
     ##########################################################################
     if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
@@ -710,21 +717,41 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def BlocMenu               ( self , mm , item                            ) :
+  def BlocMenu                 ( self , mm , item , uuid                   ) :
     ##########################################################################
-    MSG = self . getMenuItem ( "Bloc"                                        )
-    LOM = mm   . addMenu     ( MSG                                           )
+    MSG   = self . getMenuItem ( "Bloc"                                      )
+    LOM   = mm   . addMenu     ( MSG                                         )
     ##########################################################################
-    MSG = self . getMenuItem ( "ExportUUIDs"                                 )
-    mm  . addActionFromMenu  ( LOM , 8831001 , MSG                           )
+    MSG   = self . getMenuItem ( "ExportUUIDs"                               )
+    mm    . addActionFromMenu  ( LOM , 8831001 , MSG                         )
+    ##########################################################################
+    if                         ( uuid > 0                                  ) :
+      ########################################################################
+      MSG = self . getMenuItem ( "CopyGalleryUuid"                           )
+      mm  . addActionFromMenu  ( LOM , 8831101 , MSG                         )
+      ########################################################################
+      MSG = self . getMenuItem ( "CopyGalleryName"                           )
+      mm  . addActionFromMenu  ( LOM , 8831102 , MSG                         )
     ##########################################################################
     return mm
   ############################################################################
-  def RunBlocMenu ( self , at , item                                       ) :
+  def RunBlocMenu ( self , at , item , uuid                                ) :
     ##########################################################################
     if            ( at == 8831001                                          ) :
       ########################################################################
       self . Go   ( self . ExportUUIDs                                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( at == 8831101                                          ) :
+      ########################################################################
+      qApp . clipboard ( ) . setText ( f"{uuid}"                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( at == 8831102                                          ) :
+      ########################################################################
+      qApp . clipboard ( ) . setText ( item . text ( )                       )
       ########################################################################
       return True
     ##########################################################################
@@ -848,6 +875,11 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    if                              ( self . isSearching ( )               ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "NotSearch"                            )
+      mm   . addAction              ( 7401 , msg                             )
+    ##########################################################################
     self   . StopIconMenu           ( mm                                     )
     self   . AmountIndexMenu        ( mm                                     )
     self   . AppendRefreshAction    ( mm , 1001                              )
@@ -871,7 +903,7 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
-    self   . BlocMenu               ( mm , atItem                            )
+    self   . BlocMenu               ( mm , atItem , uuid                     )
     self   . PropertiesMenu         ( mm , atItem                            )
     self   . SortingMenu            ( mm                                     )
     self   . LocalityMenu           ( mm                                     )
@@ -899,7 +931,7 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunBlocMenu     ( at , atItem                            )
+    OKAY   = self . RunBlocMenu     ( at , atItem , uuid                     )
     if                              ( OKAY                                 ) :
       return True
     ##########################################################################
@@ -951,6 +983,14 @@ class GalleriesView            ( IconDock                                  ) :
     if                              ( at == 1601                           ) :
       NAM  = self . Tables          [ "Names"                                ]
       self . EditAllNames           ( self , "Gallery" , uuid , NAM          )
+      return True
+    ##########################################################################
+    if                              ( at == 7401                           ) :
+      ########################################################################
+      self . Grouping = self . OldGrouping
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
     return True
