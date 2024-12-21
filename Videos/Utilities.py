@@ -311,6 +311,7 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
                             "Folder"       : FOLDER                        , \
                             "Language"     : "zh-TW"                       , \
                             "File"         : AlbumJson                     , \
+                            "Vendors"      : [                           ] , \
                             "Edited"       : False                         , \
                             "TimeZone"     : TZ                            , \
                             "Creation"     : CFDT                          , \
