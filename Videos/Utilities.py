@@ -315,6 +315,7 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
                             "TimeZone"     : TZ                            , \
                             "Creation"     : CFDT                          , \
                             "Modification" : CFDT                          , \
+                            "Updated"      : NOW . Stardate                , \
                             "Timestamp"    : NOW . Stardate                  }
   ############################################################################
   SaveJson                ( AlbumJson , JFV                                  )
