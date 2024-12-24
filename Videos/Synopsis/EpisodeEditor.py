@@ -16,34 +16,39 @@ import math
 import cv2
 ##############################################################################
 import pathlib
-from   pathlib                           import Path
+from   pathlib                               import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate    import StarDate    as StarDate
-from   AITK    . Documents . JSON        import Load        as LoadJson
-from   AITK    . Documents . JSON        import Save        as SaveJson
+from   AITK    . Calendars . StarDate        import StarDate            as StarDate
+from   AITK    . Documents . JSON            import Load                as LoadJson
+from   AITK    . Documents . JSON            import Save                as SaveJson
 ##############################################################################
-from   PySide6                           import QtCore
-from   PySide6                           import QtGui
-from   PySide6                           import QtWidgets
-from   PySide6 . QtCore                  import *
-from   PySide6 . QtGui                   import *
-from   PySide6 . QtWidgets               import *
-from   AITK    . Qt6                     import *
+from   PySide6                               import QtCore
+from   PySide6                               import QtGui
+from   PySide6                               import QtWidgets
+from   PySide6 . QtCore                      import *
+from   PySide6 . QtGui                       import *
+from   PySide6 . QtWidgets                   import *
+from   AITK    . Qt6                         import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager       import MenuManager as MenuManager
-from   AITK    . Qt6 . AttachDock        import AttachDock  as AttachDock
-from   AITK    . Qt6 . Widget            import Widget      as Widget
+from   AITK    . Qt6    . MenuManager        import MenuManager         as MenuManager
+from   AITK    . Qt6    . AttachDock         import AttachDock          as AttachDock
+from   AITK    . Qt6    . Widget             import Widget              as Widget
 ##############################################################################
-from                 . Episode           import Episode     as Episode
+from   AITK    . Videos . Utilities          import SilentRun           as SilentRun
 ##############################################################################
+from                    . Episode            import Episode             as Episode
+##############################################################################
+from                    . UiEpisodeEstablish import Ui_EpisodeEstablish as Ui_EpisodeEstablish
 ##############################################################################
 ##############################################################################
 ##############################################################################
 ##############################################################################
 ##############################################################################
 class EpisodeEditor       ( ScrollArea                                     ) :
+  ############################################################################
+  emitEstablish = Signal  (                                                  )
   ############################################################################
   def           __init__  ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -55,15 +60,21 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 640 , 480 )                       )
   ############################################################################
-  def Configure                   ( self                                   ) :
+  def Configure                       ( self                               ) :
     ##########################################################################
-    self . cwidget  = QWidget     (                                          )
-    self . vlayout  = QVBoxLayout ( self . cwidget                           )
-    self . setMinimumHeight       ( 60                                       )
-    self . setWidget              ( self . cwidget                           )
+    self . cwidget   = QWidget        (                                      )
+    self . vlayout   = QVBoxLayout    ( self . cwidget                       )
+    self . cwidget . setMinimumWidth  ( 480                                  )
+    self . cwidget . setMinimumHeight ( 120                                  )
+    ## self           . setMinimumWidth  ( 480                                  )
+    self           . setMinimumHeight ( 60                                   )
+    self . setWidget                  ( self . cwidget                       )
     ##########################################################################
-    self . JsonFile = ""
-    self . DIR      = ""
+    self . AlbumJson =                {                                      }
+    self . JsonFile  = ""
+    self . DIR       = ""
+    ##########################################################################
+    self . emitEstablish . connect    ( self . DoEstablish                   )
     ##########################################################################
     return
   ############################################################################
@@ -72,16 +83,69 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  def DoEstablish ( self                                                   ) :
+    ##########################################################################
+    ## self . EstablishWidget      = QWidget ( self . cwidget                   )
+    self . EstablishWidget      = QWidget (                                  )
+    self . EstablishWidget . ui = Ui_EpisodeEstablish (                      )
+    self . EstablishWidget . ui . setupUi ( self . EstablishWidget           )
+    self . EstablishWidget . ui . Start . clicked . connect ( self . DoEstablishAlbum )
+    self . EstablishWidget . ui . Close . clicked . connect ( self . CloseThis        )
+    ##########################################################################
+    self . vlayout         . addWidget    ( self . EstablishWidget           )
+    ## self . setWidget ( self . EstablishWidget )
+    ## self . EstablishWidget . move         ( 0 , 0                            )
+    self . EstablishWidget . show         (                                  )
+    ##########################################################################
+    return
   ############################################################################
+  def EstablishAlbum ( self                                                ) :
+    ##########################################################################
+    print ( "EstablishAlbum" )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoEstablishAlbum ( self                                              ) :
+    ##########################################################################
+    self . Go          ( self . EstablishAlbum                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def RefreshJson                 ( self                                   ) :
+    ##########################################################################
+    self . AlbumJson = LoadJson   ( self . JsonFile                          )
+    ##########################################################################
+    if                            ( "Version" not in self . AlbumJson      ) :
+      return
+    if                            ( "Edited"  not in self . AlbumJson      ) :
+      return
+    ##########################################################################
+    EDITED = self . AlbumJson     [ "Edited"                                 ]
+    ##########################################################################
+    if                            ( not EDITED                             ) :
+      ########################################################################
+      self . emitEstablish . emit (                                          )
+      ########################################################################
+      return
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   def startup ( self , JsonFile , DIR                                      ) :
     ##########################################################################
     self . JsonFile = JsonFile
     self . DIR      = DIR
     ##########################################################################
+    self . Go ( self . RefreshJson                                           )
     ##########################################################################
     return
   ############################################################################
+  def CloseThis ( self                                                     ) :
+    ##########################################################################
+    print ( "CloseThis" )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

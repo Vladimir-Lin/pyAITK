@@ -54,7 +54,18 @@ from   AITK   . Calendars  . StarDate       import StarDate       as StarDate
 from   AITK   . Calendars  . Periode        import Periode        as Periode
 from   AITK   . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-ALBUMVERSION = "2024-12-01-04-21"
+ALBUMVERSION = "2024-12-25-02-10"
+##############################################################################
+def CurrentAlbumVersion (                                                  ) :
+  return ALBUMVERSION
+##############################################################################
+def SilentRun        ( CMD                                                 ) :
+  ############################################################################
+  p = os . popen     ( CMD , "r"                                             )
+  L = p  . readlines (                                                       )
+  p . close          (                                                       )
+  ############################################################################
+  return L
 ##############################################################################
 def FileStringToWindowsCommand ( FILENAME                                  ) :
   ############################################################################
@@ -265,16 +276,16 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
   ############################################################################
   CWD       = os . getcwd (                                                  )
   os        . chdir       ( DIR                                              )
-  os        . system      ( "move /y *.mp4 videos"                           )
-  os        . system      ( "move /y *.mkv videos"                           )
-  os        . system      ( "move /y *.avi videos"                           )
-  os        . system      ( "move /y *.wmv videos"                           )
-  os        . system      ( "move /y *.mpg videos"                           )
-  os        . system      ( "move /y *.jpg images"                           )
-  os        . system      ( "move /y *.jpeg images"                          )
-  os        . system      ( "move /y *.png images"                           )
-  os        . system      ( "move /y *.nfo scripts"                          )
-  os        . system      ( "move /y *.torrent scripts"                      )
+  SilentRun               ( "move /y *.mp4 videos"                           )
+  SilentRun               ( "move /y *.mkv videos"                           )
+  SilentRun               ( "move /y *.avi videos"                           )
+  SilentRun               ( "move /y *.wmv videos"                           )
+  SilentRun               ( "move /y *.mpg videos"                           )
+  SilentRun               ( "move /y *.jpg images"                           )
+  SilentRun               ( "move /y *.jpeg images"                          )
+  SilentRun               ( "move /y *.png images"                           )
+  SilentRun               ( "move /y *.nfo scripts"                          )
+  SilentRun               ( "move /y *.torrent scripts"                      )
   os        . chdir       ( CWD                                              )
   ############################################################################
   AlbumJson = f"{DIR}/album.json"
@@ -310,6 +321,7 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
                             "Directory"    : DIR                           , \
                             "Folder"       : FOLDER                        , \
                             "Language"     : "zh-TW"                       , \
+                            "Locality"     : {                           } , \
                             "File"         : AlbumJson                     , \
                             "Vendors"      : [                           ] , \
                             "Edited"       : False                         , \
@@ -362,13 +374,18 @@ def GenerateCollectionDirectory      ( DIR , TZ = "Asia/Taipei"            ) :
   ############################################################################
   JSN = RetrieveDirectoryInformation ( DIR                                   )
   ############################################################################
-  if                                 ( "Collection" in JSN                 ) :
+  if                                 ( "Multimedia" in JSN                 ) :
     return
   ############################################################################
+  BNAME = os . path . basename       ( DIR                                   )
+  ############################################################################
+  if                                 ( "Directory" not in JSN              ) :
+    JSN [ "Directory"  ] = BNAME
+  ############################################################################
+  if                                 ( "Multimedia" not in JSN             ) :
+    JSN [ "Multimedia" ] =           { "Directories" : [                   ] }
+  ############################################################################
   DJSON = f"{DIR}/Directory.json"
-  ############################################################################
-  JSN [ "Collection" ] =             { "Directories" : [                   ] }
-  ############################################################################
   SaveJson                           ( DJSON , JSN                           )
   ############################################################################
   return
@@ -377,35 +394,47 @@ def GenerateCollectionDirectory      ( DIR , TZ = "Asia/Taipei"            ) :
 ##############################################################################
 def GenerateVendorDirectory ( DIR , CUID = "" , TZ = "Asia/Taipei"         ) :
   ############################################################################
-  JSN = RetrieveDirectoryInformation ( DIR                                   )
+  JSN   = RetrieveDirectoryInformation ( DIR                                 )
   ############################################################################
-  if                                 ( "Vendor" in JSN                     ) :
+  if                                   ( "Vendor" in JSN                   ) :
     return
   ############################################################################
+  BNAME = os . path . basename         ( DIR                                 )
+  ############################################################################
+  if                                   ( "Directory" not in JSN            ) :
+    JSN [ "Directory" ] = BNAME
+  ############################################################################
+  if                                   ( "Vendor" not in JSN               ) :
+    JSN [ "Vendor"    ] =              { "Name"        : BNAME             , \
+                                         "Names"       : {               } , \
+                                         "Directories" : [               ]   }
+  ############################################################################
   DJSON = f"{DIR}/Directory.json"
-  ############################################################################
-  JSN [ "Vendor" ] =                 { "Name"  : ""                        , \
-                                       "Names" : {                         } }
-  ############################################################################
-  SaveJson                           ( DJSON , JSN                           )
+  SaveJson                             ( DJSON , JSN                         )
   ############################################################################
   return
 ##############################################################################
 ## 產生影片系列目錄資訊
 ##############################################################################
-def GenerateVideoSeriesDirectory ( DIR , TZ = "Asia/Taipei"                ) :
+def GenerateVideoSeriesDirectory       ( DIR , TZ = "Asia/Taipei"          ) :
   ############################################################################
-  JSN = RetrieveDirectoryInformation ( DIR                                   )
+  JSN   = RetrieveDirectoryInformation ( DIR                                 )
   ############################################################################
-  if                                 ( "Series" in JSN                     ) :
+  if                                   ( "Series" in JSN                   ) :
     return
   ############################################################################
+  BNAME = os . path . basename         ( DIR                                 )
+  ############################################################################
+  if                                   ( "Directory" not in JSN            ) :
+    JSN [ "Directory" ] = BNAME
+  ############################################################################
+  if                                   ( "Series" not in JSN               ) :
+    JSN [ "Series"    ] =              { "Name"        : BNAME             , \
+                                         "Names"       : {               } , \
+                                         "Directories" : [               ]   }
+  ############################################################################
   DJSON = f"{DIR}/Directory.json"
-  ############################################################################
-  JSN [ "Series" ] =                 { "Name"  : ""                        , \
-                                       "Names" : {                         } }
-  ############################################################################
-  SaveJson                           ( DJSON , JSN                           )
+  SaveJson                             ( DJSON , JSN                         )
   ############################################################################
   return
 ##############################################################################
