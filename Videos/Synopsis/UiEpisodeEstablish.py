@@ -22,16 +22,18 @@ class Ui_EpisodeEstablish(object):
     def setupUi(self, EpisodeEstablish):
         if not EpisodeEstablish.objectName():
             EpisodeEstablish.setObjectName(u"EpisodeEstablish")
-        EpisodeEstablish.resize(400, 90)
+        EpisodeEstablish.resize(400, 120)
+        EpisodeEstablish.setMinimumSize(QSize(400, 120))
         self.label = QLabel(EpisodeEstablish)
         self.label.setObjectName(u"label")
         self.label.setGeometry(QRect(12, 12, 380, 28))
+        self.label.setAlignment(Qt.AlignCenter)
         self.Start = QPushButton(EpisodeEstablish)
         self.Start.setObjectName(u"Start")
-        self.Start.setGeometry(QRect(40, 48, 120, 28))
+        self.Start.setGeometry(QRect(40, 60, 140, 32))
         self.Close = QPushButton(EpisodeEstablish)
         self.Close.setObjectName(u"Close")
-        self.Close.setGeometry(QRect(240, 48, 120, 28))
+        self.Close.setGeometry(QRect(220, 60, 140, 32))
 
         self.retranslateUi(EpisodeEstablish)
 

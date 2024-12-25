@@ -62,17 +62,18 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   ############################################################################
   def Configure                       ( self                               ) :
     ##########################################################################
-    self . cwidget   = QWidget        (                                      )
-    self . vlayout   = QVBoxLayout    ( self . cwidget                       )
-    self . cwidget . setMinimumWidth  ( 480                                  )
-    self . cwidget . setMinimumHeight ( 120                                  )
+    ## self . cwidget   = QWidget        (                                      )
+    ## self . vlayout   = QVBoxLayout    ( self . cwidget                       )
+    ## self . cwidget . setMinimumWidth  ( 480                                  )
+    ## self . cwidget . setMinimumHeight ( 120                                  )
     ## self           . setMinimumWidth  ( 480                                  )
     self           . setMinimumHeight ( 60                                   )
-    self . setWidget                  ( self . cwidget                       )
+    ## self . setWidget                  ( self . cwidget                       )
     ##########################################################################
     self . AlbumJson =                {                                      }
     self . JsonFile  = ""
     self . DIR       = ""
+    self . Method    = "Nothing"
     ##########################################################################
     self . emitEstablish . connect    ( self . DoEstablish                   )
     ##########################################################################
@@ -92,10 +93,12 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EstablishWidget . ui . Start . clicked . connect ( self . DoEstablishAlbum )
     self . EstablishWidget . ui . Close . clicked . connect ( self . CloseThis        )
     ##########################################################################
-    self . vlayout         . addWidget    ( self . EstablishWidget           )
-    ## self . setWidget ( self . EstablishWidget )
+    ## self . vlayout         . addWidget    ( self . EstablishWidget           )
+    self . setWidget ( self . EstablishWidget                                )
     ## self . EstablishWidget . move         ( 0 , 0                            )
     self . EstablishWidget . show         (                                  )
+    ##########################################################################
+    self . Method    = "Establish"
     ##########################################################################
     return
   ############################################################################
