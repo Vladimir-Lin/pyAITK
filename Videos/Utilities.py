@@ -54,7 +54,7 @@ from   AITK   . Calendars  . StarDate       import StarDate       as StarDate
 from   AITK   . Calendars  . Periode        import Periode        as Periode
 from   AITK   . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-ALBUMVERSION = "2024-12-25-02-10"
+ALBUMVERSION = "2024-12-25-21-11"
 ##############################################################################
 def CurrentAlbumVersion (                                                  ) :
   return ALBUMVERSION

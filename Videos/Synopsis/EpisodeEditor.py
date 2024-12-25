@@ -49,6 +49,9 @@ from                    . UiEpisodeEstablish import Ui_EpisodeEstablish as Ui_Ep
 class EpisodeEditor       ( ScrollArea                                     ) :
   ############################################################################
   emitEstablish = Signal  (                                                  )
+  emitEditing   = Signal  (                                                  )
+  emitLog       = Signal  ( str                                              )
+  Leave         = Signal  ( QWidget                                          )
   ############################################################################
   def           __init__  ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -60,25 +63,24 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 640 , 480 )                       )
   ############################################################################
-  def Configure                       ( self                               ) :
+  def Configure                      ( self                                ) :
     ##########################################################################
-    ## self . cwidget   = QWidget        (                                      )
-    ## self . vlayout   = QVBoxLayout    ( self . cwidget                       )
-    ## self . cwidget . setMinimumWidth  ( 480                                  )
-    ## self . cwidget . setMinimumHeight ( 120                                  )
-    ## self           . setMinimumWidth  ( 480                                  )
-    self           . setMinimumHeight ( 60                                   )
-    ## self . setWidget                  ( self . cwidget                       )
+    self          . setMinimumHeight ( 60                                    )
     ##########################################################################
-    self . AlbumJson =                {                                      }
-    self . JsonFile  = ""
-    self . DIR       = ""
-    self . Method    = "Nothing"
+    self . ALBUM  = Episode          (                                       )
+    self . ALBUM  . LogFunc = self . addLog
+    self . Method = "Nothing"
     ##########################################################################
-    self . emitEstablish . connect    ( self . DoEstablish                   )
+    self . emitEstablish . connect   ( self . DoEstablish                    )
+    self . emitEditing   . connect   ( self . DoEditing                      )
     ##########################################################################
     return
   ############################################################################
+  def addLog              ( self , MSG                                     ) :
+    ##########################################################################
+    self . emitLog . emit (        MSG                                       )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -90,6 +92,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EstablishWidget      = QWidget (                                  )
     self . EstablishWidget . ui = Ui_EpisodeEstablish (                      )
     self . EstablishWidget . ui . setupUi ( self . EstablishWidget           )
+    self . EstablishWidget . ui . Scanning . hide (                          )
     self . EstablishWidget . ui . Start . clicked . connect ( self . DoEstablishAlbum )
     self . EstablishWidget . ui . Close . clicked . connect ( self . CloseThis        )
     ##########################################################################
@@ -102,28 +105,82 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def EstablishAlbum ( self                                                ) :
+  def EstablishAlbum            ( self                                     ) :
     ##########################################################################
-    print ( "EstablishAlbum" )
+    HNAME  = self . DB          [ "hostname"                                 ]
+    CDMSG  = self . getMenuItem ( "ConnectDB"                                )
+    MSG    = f"{CDMSG}{HNAME}"
+    self   . addLog             ( MSG                                        )
+    ##########################################################################
+    self . ALBUM . Settings     = self . Settings
+    self . ALBUM . Translations = self . Translations
+    self . ALBUM . Messages     = self . Translations [ "Episode"            ]
+    self . ALBUM . Tables       = self . Tables
+    ##########################################################################
+    self   . LoopRunning = False
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      self . LoopRunning = True
+      return
+    ##########################################################################
+    self   . ALBUM . Establish  ( DB                                         )
+    ##########################################################################
+    DB     . Close              (                                            )
+    ##########################################################################
+    self   . LoopRunning = True
+    ##########################################################################
+    self   . Notify             ( 5                                          )
+    self   . emitEditing . emit (                                            )
     ##########################################################################
     return
   ############################################################################
   def DoEstablishAlbum ( self                                              ) :
     ##########################################################################
+    self . EstablishWidget . ui . Start    . hide (                          )
+    self . EstablishWidget . ui . Close    . hide (                          )
+    self . EstablishWidget . ui . NotReady . hide (                          )
+    self . EstablishWidget . ui . Scanning . show (                          )
+    ##########################################################################
     self . Go          ( self . EstablishAlbum                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def NormalAlbum ( self                                                   ) :
+    ##########################################################################
+    ## self . cwidget   = QWidget        (                                      )
+    ## self . vlayout   = QVBoxLayout    ( self . cwidget                       )
+    ## self . cwidget . setMinimumWidth  ( 480                                  )
+    ## self . cwidget . setMinimumHeight ( 120                                  )
+    ## self           . setMinimumWidth  ( 480                                  )
+    ## self . setWidget                  ( self . cwidget                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoEditing            ( self                                          ) :
+    ##########################################################################
+    self  . Method = "Editing"
+    TITLE = self . ALBUM . Album [ "Names" ] [ "Default"                     ]
+    ##########################################################################
+    self  . setWindowTitle ( TITLE                                           )
+    self  . setWidget      ( QWidget (                                     ) )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
   def RefreshJson                 ( self                                   ) :
     ##########################################################################
-    self . AlbumJson = LoadJson   ( self . JsonFile                          )
+    self . ALBUM . LoadFromFile   (                                          )
     ##########################################################################
-    if                            ( "Version" not in self . AlbumJson      ) :
+    if                            ( not self . ALBUM . Exists ( "Version") ) :
       return
-    if                            ( "Edited"  not in self . AlbumJson      ) :
+    if                            ( not self . ALBUM . Exists ( "Edited" ) ) :
       return
     ##########################################################################
-    EDITED = self . AlbumJson     [ "Edited"                                 ]
+    EDITED = self . ALBUM . Album [ "Edited"                                 ]
     ##########################################################################
     if                            ( not EDITED                             ) :
       ########################################################################
@@ -131,22 +188,22 @@ class EpisodeEditor       ( ScrollArea                                     ) :
       ########################################################################
       return
     ##########################################################################
-    ##########################################################################
+    self   . emitEditing   . emit (                                          )
     ##########################################################################
     return
   ############################################################################
   def startup ( self , JsonFile , DIR                                      ) :
     ##########################################################################
-    self . JsonFile = JsonFile
-    self . DIR      = DIR
+    self . ALBUM . Filename = JsonFile
+    self . ALBUM . DIR      = DIR
     ##########################################################################
     self . Go ( self . RefreshJson                                           )
     ##########################################################################
     return
   ############################################################################
-  def CloseThis ( self                                                     ) :
+  def CloseThis         ( self                                             ) :
     ##########################################################################
-    print ( "CloseThis" )
+    self . Leave . emit ( self                                               )
     ##########################################################################
     return
   ############################################################################
