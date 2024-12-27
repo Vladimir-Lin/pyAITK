@@ -22,6 +22,7 @@ from   AITK . Documents . JSON      import Save                            as Sa
 ##############################################################################
 from   AITK . Videos    . Utilities import SilentRun                       as SilentRun
 from   AITK . Videos    . Utilities import M3UtoFilms                      as M3UtoFilms
+from   AITK . Videos    . Utilities import MergeCoverPosters               as MergeCoverPosters
 from   AITK . Videos    . Utilities import GetFilmsInCurrentDirectory      as GetFilmsInCurrentDirectory
 from   AITK . Videos    . Utilities import GetImagesInCurrentDirectory     as GetImagesInCurrentDirectory
 from   AITK . Videos    . Utilities import GetAssInCurrentDirectory        as GetAssInCurrentDirectory
@@ -119,6 +120,16 @@ class Episode    (                                                         ) :
   def Exists ( self , KEY                                                  ) :
     return   ( KEY in self . Album                                           )
   ############################################################################
+  def isCover ( self                                                       ) :
+    return    ( len ( self . Album [ "Images" ] [ "Cover" ] ) > 0            )
+  ############################################################################
+  def CoverFile ( self                                                     ) :
+    ##########################################################################
+    D = self . DIR
+    C = self . Album [ "Images" ] [ "Cover"                                  ]
+    ##########################################################################
+    return f"{D}/images/{C}"
+  ############################################################################
   def Establish                    ( self , DB                             ) :
     ##########################################################################
     if                             ( self . Uuid > 0                       ) :
@@ -145,6 +156,7 @@ class Episode    (                                                         ) :
     self   . ScanAlbumClips        (                                         )
     self   . ScanAlbumDPs          (                                         )
     self   . ScanAlbumFeatures     (                                         )
+    self   . ScanAlbumDocuments    (                                         )
     self   . ScanAlbumTranslations (                                         )
     ##########################################################################
     ##########################################################################
@@ -173,6 +185,26 @@ class Episode    (                                                         ) :
     ##########################################################################
     self  . Album [ "Images" ] [ "Folder"      ] = FILEs
     self  . Album [ "Images" ] [ "Directories" ] = DIRs
+    ##########################################################################
+    if                                  ( len ( FILEs ) > 0                ) :
+      if                                ( "Cover.jpg" not in FILEs         ) :
+        ######################################################################
+        ADE = ""
+        ######################################################################
+        for F in FILEs                                                       :
+          ####################################################################
+          if                            ( F . endswith ( "h.jpg"         ) ) :
+            ADE = F
+          elif                          ( F . endswith ( "bh.jpg"        ) ) :
+            ADE = F
+        ######################################################################
+        if                              ( len ( ADE ) > 0                  ) :
+          ####################################################################
+          MergeCoverPosters             ( f"{PWD}/{F}"                       )
+          FILEs = GetImagesInCurrentDirectory (                              )
+          self  . Album [ "Images" ] [ "Folder" ] = FILEs
+          ####################################################################
+          self  . logMessage            ( "CreateAlbumCover"                 )
     ##########################################################################
     if ( "Cover" not in self  . Album [ "Images" ] )                         :
       ########################################################################
@@ -302,6 +334,36 @@ class Episode    (                                                         ) :
     ##########################################################################
     self  . Album [ "Videos" ] [ "Features" ] = { "Clips" : FILEs          , \
                                                   "Order" : DPs              }
+    ##########################################################################
+    return
+  ############################################################################
+  def ScanAlbumDocuments ( self                                            ) :
+    ##########################################################################
+    self . logMessage    ( "ScanDocuments..."                                )
+    ##########################################################################
+    DDD  = self . DIR
+    ##########################################################################
+    ## 影集片段描述
+    ##########################################################################
+    FFF  = "scripts/Chapters.txt"
+    SSS  = f"{DDD}/{FFF}"
+    ##########################################################################
+    PPP  = Path          ( SSS                                               )
+    ##########################################################################
+    if                   ( PPP . is_file (                               ) ) :
+      ########################################################################
+      self . Album [ "Documents" ] [ "Chapters" ] = FFF
+    ##########################################################################
+    ## 影集整體描述
+    ##########################################################################
+    FFF  = "subtitles/Description.txt"
+    SSS  = f"{DDD}/{FFF}"
+    ##########################################################################
+    PPP  = Path          ( SSS                                               )
+    ##########################################################################
+    if                   ( PPP . is_file (                               ) ) :
+      ########################################################################
+      self . Album [ "Documents" ] [ "Description" ] = FFF
     ##########################################################################
     return
   ############################################################################
