@@ -377,6 +377,7 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
                             "Videos"       : {                           } , \
                             "Clips"        : {                           } , \
                             "Roles"        : {                           } , \
+                            "Links"        : {                           } , \
                             "Documents"    : {                           } , \
                             "Translations" : {                           } , \
                             "Edited"       : False                         , \

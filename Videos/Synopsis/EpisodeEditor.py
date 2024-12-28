@@ -66,6 +66,13 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   ############################################################################
   def Configure                      ( self                                ) :
     ##########################################################################
+    self . dockingOrientation = 0
+    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea                  | \
+                                Qt . LeftDockWidgetArea                    | \
+                                Qt . RightDockWidgetArea
+    ##########################################################################
     self          . setMinimumHeight ( 60                                    )
     self          . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff   )
     ##########################################################################
@@ -222,6 +229,14 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ICON = QIcon ( QPixmap ( ":/images/Menu.png"                           ) )
     MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
     ##########################################################################
+    MSG  = self . getMenuItem                 ( "DockMenu"                   )
+    ICON = QIcon ( QPixmap ( ":/images/hidespeech.png"                     ) )
+    MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
+    MACT . triggered . connect ( self . DoDockMenu                           )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
     ##########################################################################
     ##########################################################################
     self . EditingWidget . addWidget ( self . EditingWidget . ToolBar        )
@@ -348,6 +363,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ## PEOW . emitOpenSmartNote     . connect ( self . assignSmartNote          )
     PEOW  . emitLog              . connect ( self . MAIN . appendLog         )
     ##########################################################################
+    self  . setAllFont        ( PEOW , self . font (                       ) )
     PEOW  . PrepareForActions (                                              )
     ##########################################################################
     self . EditingWidget . PeopleView = PEOW
@@ -421,6 +437,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . ChaptersText = TEXT
     self . EditingWidget . ChaptersTool = TOOL
     ##########################################################################
+    self . setAllFont ( self . EditingWidget . ChaptersText , self . font ( ) )
     self . EditingWidget . addWidget ( self . EditingWidget . ChaptersTool   )
     self . EditingWidget . addWidget ( self . EditingWidget . ChaptersText   )
     ##########################################################################
@@ -475,6 +492,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . DescriptionText = TEXT
     self . EditingWidget . DescriptionTool = TOOL
     ##########################################################################
+    self . setAllFont ( self . EditingWidget . DescriptionText , self . font ( ) )
     self . EditingWidget . addWidget ( self . EditingWidget . DescriptionTool )
     self . EditingWidget . addWidget ( self . EditingWidget . DescriptionText )
     ##########################################################################
@@ -520,6 +538,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . addWidget ( self . EditingWidget . Tail           )
     ##########################################################################
     self . EditingWidget . setMinimumHeight ( self . EditingWidget . BaseHeight )
+    self . EditingWidget . setFont ( self . font (                         ) )
     self . setWidget          ( self . EditingWidget                         )
     self . setWidgetResizable ( True                                         )
     self . ResizeEditing      (                                              )
@@ -631,6 +650,94 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . Leave . emit ( self                                               )
     ##########################################################################
     return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def DockIn        ( self , shown                                         ) :
+    ##########################################################################
+    self . ShowDock (        shown                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def Visible        ( self , visible                                      ) :
+    ##########################################################################
+    self . Visiblity (        visible                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def Docking            ( self , Main , title , area , areas              ) :
+    ##########################################################################
+    super ( )  . Docking (        Main , self ,  title , area , areas        )
+    if                   ( self . Dock == None                             ) :
+      return
+    ##########################################################################
+    self . Dock . visibilityChanged . connect ( self . Visible               )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoDockMenu                 ( self                                    ) :
+    ##########################################################################
+    MSGs   = self . Translations [ "EpisodeEditor" ] [ "Docking"             ]
+    ##########################################################################
+    p      = self . parentWidget (                                           )
+    S      = False
+    D      = False
+    M      = False
+    ##########################################################################
+    if                           ( p == None                               ) :
+      S    = True
+    else                                                                     :
+      ########################################################################
+      if                         ( self . isDocking ( )                    ) :
+        D  = True
+      else                                                                   :
+        M  = True
+    ##########################################################################
+    mm     = MenuManager         ( self                                      )
+    ##########################################################################
+    if                           (     S or D                              ) :
+      MSG  = MSGs                [ "MDI"                                     ]
+      mm   . addAction           ( 1001  , MSG                               )
+    ##########################################################################
+    if                           (     S or M                              ) :
+      MSG  = MSGs                [ "Dock"                                    ]
+      mm   . addAction           ( 1002 , MSG                                )
+    ##########################################################################
+    if                           ( not S                                   ) :
+      MSG  = MSGs                [ "None"                                    ]
+      mm   . addAction           ( 1003 , MSG                                )
+    ##########################################################################
+    mm     . setFont             ( self    . menuFont ( )                    )
+    aa     = mm . exec_          ( QCursor . pos      ( )                    )
+    at     = mm . at             ( aa                                        )
+    ##########################################################################
+    if                           ( at == 1001                              ) :
+      self . attachMdi  . emit   ( self , self . dockingOrientation          )
+      return
+    ##########################################################################
+    if                           ( at == 1002                              ) :
+      self . attachDock . emit   ( self                                    , \
+                                   self . windowTitle ( )                  , \
+                                   self . dockingPlace                     , \
+                                   self . dockingPlaces                      )
+      return
+    ##########################################################################
+    if                           ( at == 1003                              ) :
+      self . attachNone . emit   ( self                                      )
+      return
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
