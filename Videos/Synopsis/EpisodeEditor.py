@@ -19,30 +19,31 @@ from   pathlib                                    import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate                    import StarDate            as StarDate
-from   AITK    . Documents . JSON                        import Load                as LoadJson
-from   AITK    . Documents . JSON                        import Save                as SaveJson
+from   AITK    . Calendars . StarDate                      import StarDate            as StarDate
+from   AITK    . Documents . JSON                          import Load                as LoadJson
+from   AITK    . Documents . JSON                          import Save                as SaveJson
 ##############################################################################
-from   PySide6                                           import QtCore
-from   PySide6                                           import QtGui
-from   PySide6                                           import QtWidgets
-from   PySide6 . QtCore                                  import *
-from   PySide6 . QtGui                                   import *
-from   PySide6 . QtWidgets                               import *
-from   AITK    . Qt6                                     import *
+from   PySide6                                             import QtCore
+from   PySide6                                             import QtGui
+from   PySide6                                             import QtWidgets
+from   PySide6 . QtCore                                    import *
+from   PySide6 . QtGui                                     import *
+from   PySide6 . QtWidgets                                 import *
+from   AITK    . Qt6                                       import *
 ##############################################################################
-from   AITK    . Qt6     . MenuManager                   import MenuManager         as MenuManager
-from   AITK    . Qt6     . AttachDock                    import AttachDock          as AttachDock
-from   AITK    . Qt6     . Widget                        import Widget              as Widget
+from   AITK    . Qt6     . MenuManager                     import MenuManager         as MenuManager
+from   AITK    . Qt6     . AttachDock                      import AttachDock          as AttachDock
+from   AITK    . Qt6     . Widget                          import Widget              as Widget
 ##############################################################################
-from   AITK    . Widgets . Commons6 . NamesEditor        import NamesEditor
-from   AITK    . People  . Widgets6 . PeopleView         import PeopleView
-from   AITK    . Finance . Widgets6 . IdentifierListings import IdentifierListings
-from   AITK    . Videos  . Utilities                     import SilentRun           as SilentRun
+from   AITK    . Widgets . Commons6 . NamesEditor          import NamesEditor
+from   AITK    . People  . Widgets6 . PeopleView           import PeopleView
+from   AITK    . Finance . Widgets6 . IdentifierListings   import IdentifierListings
+from   AITK    . Society . Widgets6 . OrganizationListings import OrganizationListings
+from   AITK    . Videos  . Utilities                       import SilentRun           as SilentRun
 ##############################################################################
-from                     . Episode                       import Episode             as Episode
+from                     . Episode                         import Episode             as Episode
 ##############################################################################
-from                     . UiEpisodeEstablish            import Ui_EpisodeEstablish as Ui_EpisodeEstablish
+from                     . UiEpisodeEstablish              import Ui_EpisodeEstablish as Ui_EpisodeEstablish
 ##############################################################################
 ##############################################################################
 ##############################################################################
@@ -160,23 +161,26 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def DoEstablish ( self                                                   ) :
+  def DoEstablish               ( self                                     ) :
     ##########################################################################
-    ## self . EstablishWidget      = QWidget ( self . cwidget                   )
-    self . EstablishWidget      = QWidget (                                  )
-    self . EstablishWidget . ui = Ui_EpisodeEstablish (                      )
-    self . EstablishWidget . ui . setupUi ( self . EstablishWidget           )
-    self . EstablishWidget . ui . Scanning . hide (                          )
-    self . EstablishWidget . ui . Start . clicked . connect ( self . DoEstablishAlbum )
-    self . EstablishWidget . ui . Close . clicked . connect ( self . CloseThis        )
+    self   . EstablishWidget      = QWidget (                                )
+    self   . EstablishWidget . ui = Ui_EpisodeEstablish (                    )
+    self   . EstablishWidget . ui . setupUi ( self . EstablishWidget         )
+    self   . EstablishWidget . ui . Scanning . hide (                        )
+    self   . EstablishWidget . ui . Start . clicked . connect ( self . DoEstablishAlbum )
+    self   . EstablishWidget . ui . Close . clicked . connect ( self . CloseThis        )
     ##########################################################################
-    ## self . vlayout         . addWidget    ( self . EstablishWidget           )
-    self . setWidget ( self . EstablishWidget                                )
-    self . setWidgetResizable ( True )
-    ## self . EstablishWidget . move         ( 0 , 0                            )
-    ## self . EstablishWidget . show         (                                  )
+    if                          ( "Font" in self . Settings                ) :
+      ########################################################################
+      fnt  = QFont              (                                            )
+      fnt  . fromString         ( self . Settings [ "Font" ]                 )
+      ########################################################################
+      self . setAllFont         ( self . EstablishWidget , fnt               )
     ##########################################################################
-    self . Method    = "Establish"
+    self   . setWidget          ( self . EstablishWidget                     )
+    self   . setWidgetResizable ( True                                       )
+    ##########################################################################
+    self   . Method = "Establish"
     ##########################################################################
     return
   ############################################################################
@@ -273,19 +277,39 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def addAlbumTitle ( self                                                 ) :
+  def addAlbumTitle         ( self                                         ) :
     ##########################################################################
     self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 32
     ##########################################################################
-    TITLE = self . ALBUM . Album [ "Names" ] [ "Default"                     ]
+    TITLE  = self . ALBUM . Album [ "Names" ] [ "Default"                    ]
+    UUID   = self . ALBUM . Uuid
+    UXID   = ""
     ##########################################################################
-    self  . EditingWidget . TitleEditor = QLineEdit      (                   )
-    self  . EditingWidget . TitleEditor . setGeometry    ( 0 , 0 , 400 , 28  )
-    self  . EditingWidget . TitleEditor . setMinimumSize ( 400 , 28          )
-    self  . EditingWidget . TitleEditor . setText        ( TITLE             )
-    self  . EditingWidget . TitleEditor . editingFinished . connect ( self . AlbumTitleChanged )
+    if                      ( UUID > 0                                     ) :
+      UXID = f"{UUID}"
     ##########################################################################
-    self  . EditingWidget . addWidget ( self . EditingWidget . TitleEditor   )
+    SPLT   = QSplitter      ( Qt . Horizontal                                )
+    TEDIT  = QLineEdit      (                                                )
+    UEDIT  = QLineEdit      (                                                )
+    ##########################################################################
+    TEDIT  . setGeometry    ( 0 , 0 , 400 , 28                               )
+    TEDIT  . setMinimumSize ( 240 , 28                                       )
+    TEDIT  . setText        ( TITLE                                          )
+    TEDIT  . editingFinished . connect ( self . AlbumTitleChanged            )
+    ##########################################################################
+    UEDIT  . setGeometry    ( 0 , 0 , 240 , 28                               )
+    UEDIT  . setMinimumSize ( 120 , 28                                       )
+    UEDIT  . setText        ( UXID                                           )
+    UEDIT  . setReadOnly    ( True                                           )
+    ##########################################################################
+    SPLT   . addWidget      ( TEDIT                                          )
+    SPLT   . addWidget      ( UEDIT                                          )
+    ##########################################################################
+    self   . EditingWidget . TitleSplit  = SPLT
+    self   . EditingWidget . TitleEditor = TEDIT
+    self   . EditingWidget . UuidEditor  = UEDIT
+    ##########################################################################
+    self   . EditingWidget . addWidget ( self . EditingWidget . TitleSplit   )
     ##########################################################################
     return
   ############################################################################
@@ -363,6 +387,60 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . addWidget ( self . EditingWidget . NamesEditor    )
     ##########################################################################
     TNE   . startup                 (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def addOrganizations                 ( self                              ) :
+    ##########################################################################
+    self   . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
+    ##########################################################################
+    DKEY   = "OrganizationListings"
+    ORGS   = OrganizationListings      ( None , self . PlanFunc              )
+    ORGS   . setMinimumHeight          ( 120                                 )
+    ORGS   . resize                    ( 400 , 240                           )
+    ##########################################################################
+    ORGS   . Hosts        = { "Database" : self . Settings [ "Database" ]  , \
+                              "Oriphase" : self . Settings [ "Oriphase" ]    }
+    ORGS   . DB           = self . DB
+    ORGS   . Settings     = self . Settings
+    ORGS   . Translations = self . Translations
+    ORGS   . Tables       = self . Tables [ DKEY                             ]
+    ##########################################################################
+    ORGS   . Relation . set            ( "second" , self . ALBUM . Uuid      )
+    ORGS   . Relation . set            ( "t2"     , 76                       )
+    ORGS   . Relation . setT1          ( "Organization"                      )
+    ORGS   . Relation . setRelation    ( "Subordination"                     )
+    ORGS   . setGrouping               ( "Reverse"                           )
+    ##########################################################################
+    LANGZ  = self . Translations       [ DKEY ] [ "Languages"                ]
+    MENUZ  = self . Translations       [ DKEY ] [ "Menus"                    ]
+    ##########################################################################
+    ORGS   . PrepareMessages           (                                     )
+    ##########################################################################
+    ORGS   . setLocality               ( self . getLocality ( )              )
+    ORGS   . setLanguages              ( LANGZ                               )
+    ORGS   . setMenus                  ( MENUZ                               )
+    ##########################################################################
+    if                                 ( "Font" in self . Settings         ) :
+      fnt  = QFont                     (                                     )
+      fnt  . fromString                ( self . Settings [ "Font" ]          )
+      ORGS . setFont                   ( fnt                                 )
+    ##########################################################################
+    ORGS   . PrepareForActions         (                                     )
+    ##########################################################################
+    ## ORGS . PeopleGroup       . connect ( self . ShowPeopleGroup              )
+    ## ORGS . AlbumGroup        . connect ( self . OpenAlbumGroup               )
+    ## ORGS . OpenVariantTables . connect ( self . OpenVariantTables            )
+    ## ORGS . ShowWebPages      . connect ( self . ShowWebPages                 )
+    ## ORGS . OpenLogHistory    . connect ( self . OpenLogHistory               )
+    ## ORGS . OpenIdentifiers   . connect ( self . OpenIdentifiers              )
+    ## ORGS . emitLog           . connect ( self . appendLog                    )
+    ##########################################################################
+    self   . EditingWidget . Organizations = ORGS
+    ##########################################################################
+    self   . EditingWidget . addWidget ( self . EditingWidget . Organizations )
+    ##########################################################################
+    ORGS   . startup                   (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -602,13 +680,15 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . addAlbumTitle           (                                         )
     self . addAlbumCoverSection    (                                         )
     ##########################################################################
-    self . EditingWidget . NamesEditor = None
-    self . EditingWidget . Identifiers = None
-    self . EditingWidget . PeopleView  = None
+    self . EditingWidget . NamesEditor   = None
+    self . EditingWidget . Organizations = None
+    self . EditingWidget . Identifiers   = None
+    self . EditingWidget . PeopleView    = None
     ##########################################################################
     if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
       self . addNamesEditor        (                                         )
+      self . addOrganizations      (                                         )
       self . addAlbumIdentifiers   (                                         )
       self . addPeopleView         (                                         )
     ##########################################################################
@@ -668,23 +748,28 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     ##########################################################################
     ##########################################################################
-    if ( self . EditingWidget . NamesEditor not in [ False , None ]        ) :
+    if ( self . EditingWidget . NamesEditor   not in [ False , None ]      ) :
       ########################################################################
       TH   = self . EditingWidget . NamesEditor     . height (               )
       self .        EditingWidget . NamesEditor     . resize ( WW , TH       )
     ##########################################################################
-    if ( self . EditingWidget . Identifiers not in [ False , None ]        ) :
+    if ( self . EditingWidget . Organizations not in [ False , None ]      ) :
+      ########################################################################
+      TH   = self . EditingWidget . Organizations   . height (               )
+      self .        EditingWidget . Organizations   . resize ( WW , TH       )
+    ##########################################################################
+    if ( self . EditingWidget . Identifiers   not in [ False , None ]      ) :
       ########################################################################
       TH   = self . EditingWidget . Identifiers     . height (               )
       self .        EditingWidget . Identifiers     . resize ( WW , TH       )
     ##########################################################################
-    if ( self . EditingWidget . PeopleView  not in [ False , None ]        ) :
+    if ( self . EditingWidget . PeopleView    not in [ False , None ]      ) :
       ########################################################################
       TH   = self . EditingWidget . PeopleView      . height (               )
       self .        EditingWidget . PeopleView      . resize ( WW , TH       )
     ##########################################################################
-    TH     = self . EditingWidget . TitleEditor     . height (               )
-    self   .        EditingWidget . TitleEditor     . resize ( WW , TH       )
+    TH     = self . EditingWidget . TitleSplit      . height (               )
+    self   .        EditingWidget . TitleSplit      . resize ( WW , TH       )
     ##########################################################################
     TH     = self . EditingWidget . SketchText      . height (               )
     self   .        EditingWidget . SketchText      . resize ( WW , TH       )

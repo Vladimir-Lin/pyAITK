@@ -152,7 +152,7 @@ class IdentifierListings ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def twiceClicked            ( self , item , column                       ) :
     ##########################################################################
     if                        ( column not in [ 2 ]                        ) :
       return

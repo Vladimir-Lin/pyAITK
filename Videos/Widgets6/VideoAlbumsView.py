@@ -43,18 +43,19 @@ from   AITK    . People     . People     import People      as PeopleItem
 from   AITK    . Videos     . Album      import Album       as AlbumItem
 from   AITK    . Videos     . Film       import Film        as FilmItem
 ##############################################################################
-class VideoAlbumsView          ( IconDock                                  ) :
+class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu             = 1371434312
   ############################################################################
-  OwnedPeopleGroup    = Signal ( str , int , str                             )
-  ShowPersonalGallery = Signal ( str , int , str , QIcon                     )
-  GalleryGroup        = Signal ( str , int , str                             )
-  emitConnectAlbum    = Signal ( str                                         )
-  ShowWebPages        = Signal ( str , int , str , str , QIcon               )
-  OpenVariantTables   = Signal ( str , str , int , str , dict                )
-  emitOpenSmartNote   = Signal ( str                                         )
-  emitLog             = Signal ( str                                         )
+  OwnedPeopleGroup       = Signal ( str , int , str                          )
+  ShowPersonalGallery    = Signal ( str , int , str , QIcon                  )
+  GalleryGroup           = Signal ( str , int , str                          )
+  OwnedOrganizationGroup = Signal ( str , int , str , str , QIcon            )
+  emitConnectAlbum       = Signal ( str                                      )
+  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
+  OpenVariantTables      = Signal ( str , str , int , str , dict             )
+  emitOpenSmartNote      = Signal ( str                                      )
+  emitLog                = Signal ( str                                      )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -1726,8 +1727,11 @@ class VideoAlbumsView          ( IconDock                                  ) :
     MSG   = self . getMenuItem   ( "AssignIdentifier"                        )
     mm    . addActionFromMenu    ( LOM , 34635201 , MSG                      )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "Crowds"                                  )
+    MSG   = self . getMenuItem   ( "Vendors"                                 )
     mm    . addActionFromMenu    ( LOM , 34635202 , MSG                      )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "Crowds"                                  )
+    mm    . addActionFromMenu    ( LOM , 34635203 , MSG                      )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -1777,6 +1781,21 @@ class VideoAlbumsView          ( IconDock                                  ) :
       return True
     ##########################################################################
     if                             ( at == 34635202                        ) :
+      ########################################################################
+      text = item . text           (                                         )
+      icon = item . icon           (                                         )
+      xsid = str                   ( uuid                                    )
+      ########################################################################
+      self . OwnedOrganizationGroup . emit                                 ( \
+                                     text                                  , \
+                                     76                                    , \
+                                     xsid                                  , \
+                                     "Subordination"                       , \
+                                     icon                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34635203                        ) :
       ########################################################################
       text = item . text           (                                         )
       xsid = str                   ( uuid                                    )
