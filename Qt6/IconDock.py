@@ -935,14 +935,16 @@ class IconDock                 ( ListDock                                  ) :
     OCPTAB  = self . Tables           [ Main                                 ]
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
-    LIKE    = f"%{name}%"
+    LNAME   = name
+    LNAME   = LNAME . tolower         (                                      )
+    LIKE    = f"%{LNAME}%"
     UUIDs   =                         [                                      ]
     ##########################################################################
     RQ      = f"select `uuid` from {OCPTAB} where ( `used` > 0 )"
     QQ      = f"""select `uuid` from {NAMTAB}
                   where ( `locality` = {LIC} )
                   and ( `uuid` in ( {RQ} ) )
-                  and ( `name` like %s )
+                  and ( lower ( convert ( `name` using utf8 ) ) like %s )
                   group by `uuid` asc ;"""
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
@@ -992,14 +994,16 @@ class IconDock                 ( ListDock                                  ) :
     OCPTAB  = self . Tables           [ Main                                 ]
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
-    LIKE    = f"%{name}%"
+    LNAME   = name
+    LNAME   = LNAME . tolower         (                                      )
+    LIKE    = f"%{LNAME}%"
     UUIDs   =                         [                                      ]
     ##########################################################################
     RQ      = f"select `uuid` from {OCPTAB} where ( `used` > 0 )"
     QQ      = f"""select `uuid` from {NAMTAB}
                   where ( `locality` = {LIC} )
                   and ( `uuid` in ( {RQ} ) )
-                  and ( `name` like %s )
+                  and ( lower ( convert ( `name` using utf8 ) ) like %s )
                   group by `uuid` asc ;"""
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
