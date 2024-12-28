@@ -9,5 +9,6 @@ __all__ = [ "Album"                                                          ,
             "FilmCenter"                                                     ,
             "Player"                                                         ,
             "Synopsis"                                                       ,
-            "Widgets"                                                        ]
+            "Widgets"                                                        ,
+            "Widgets6"                                                       ]
 ##############################################################################

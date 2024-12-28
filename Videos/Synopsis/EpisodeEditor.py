@@ -19,29 +19,30 @@ from   pathlib                                    import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate             import StarDate            as StarDate
-from   AITK    . Documents . JSON                 import Load                as LoadJson
-from   AITK    . Documents . JSON                 import Save                as SaveJson
+from   AITK    . Calendars . StarDate                    import StarDate            as StarDate
+from   AITK    . Documents . JSON                        import Load                as LoadJson
+from   AITK    . Documents . JSON                        import Save                as SaveJson
 ##############################################################################
-from   PySide6                                    import QtCore
-from   PySide6                                    import QtGui
-from   PySide6                                    import QtWidgets
-from   PySide6 . QtCore                           import *
-from   PySide6 . QtGui                            import *
-from   PySide6 . QtWidgets                        import *
-from   AITK    . Qt6                              import *
+from   PySide6                                           import QtCore
+from   PySide6                                           import QtGui
+from   PySide6                                           import QtWidgets
+from   PySide6 . QtCore                                  import *
+from   PySide6 . QtGui                                   import *
+from   PySide6 . QtWidgets                               import *
+from   AITK    . Qt6                                     import *
 ##############################################################################
-from   AITK    . Qt6     . MenuManager            import MenuManager         as MenuManager
-from   AITK    . Qt6     . AttachDock             import AttachDock          as AttachDock
-from   AITK    . Qt6     . Widget                 import Widget              as Widget
+from   AITK    . Qt6     . MenuManager                   import MenuManager         as MenuManager
+from   AITK    . Qt6     . AttachDock                    import AttachDock          as AttachDock
+from   AITK    . Qt6     . Widget                        import Widget              as Widget
 ##############################################################################
-from   AITK    . Widgets . Commons6 . NamesEditor import NamesEditor
-from   AITK    . People  . Widgets6 . PeopleView  import PeopleView
-from   AITK    . Videos  . Utilities              import SilentRun           as SilentRun
+from   AITK    . Widgets . Commons6 . NamesEditor        import NamesEditor
+from   AITK    . People  . Widgets6 . PeopleView         import PeopleView
+from   AITK    . Finance . Widgets6 . IdentifierListings import IdentifierListings
+from   AITK    . Videos  . Utilities                     import SilentRun           as SilentRun
 ##############################################################################
-from                     . Episode                import Episode             as Episode
+from                     . Episode                       import Episode             as Episode
 ##############################################################################
-from                     . UiEpisodeEstablish     import Ui_EpisodeEstablish as Ui_EpisodeEstablish
+from                     . UiEpisodeEstablish            import Ui_EpisodeEstablish as Ui_EpisodeEstablish
 ##############################################################################
 ##############################################################################
 ##############################################################################
@@ -80,6 +81,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . ALBUM  . LogFunc = self . addLog
     self . Method = "Nothing"
     ##########################################################################
+    self . CLI             = None
     self . EstablishWidget = None
     self . EditingWidget   = None
     ##########################################################################
@@ -120,6 +122,12 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return self . addLog     ( MSG                                           )
   ############################################################################
+  def AssignCLI ( self , CLI                                               ) :
+    ##########################################################################
+    self . CLI = CLI
+    ##########################################################################
+    return
+  ############################################################################
   def LoadDocument           ( self , Filename                             ) :
     ##########################################################################
     if                       ( not os . path . isfile ( Filename )         ) :
@@ -144,6 +152,11 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return   True
   ############################################################################
+  def SaveAlbumJson           ( self                                       ) :
+    ##########################################################################
+    self . ALBUM . SaveToFile (                                              )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -229,6 +242,16 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ICON = QIcon ( QPixmap ( ":/images/Menu.png"                           ) )
     MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
     ##########################################################################
+    MSG  = self . getMenuItem                 ( "SaveJson"                   )
+    ICON = QIcon ( QPixmap ( ":/images/save.png"                           ) )
+    MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
+    MACT . triggered . connect ( self . SaveAlbumJson                        )
+    ##########################################################################
+    MSG  = self . getMenuItem                 ( "SyncDatabase"               )
+    ICON = QIcon ( QPixmap ( ":/images/importdatabase.png"                 ) )
+    MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
+    ## MACT . triggered . connect ( self . SaveAlbumJson                        )
+    ##########################################################################
     MSG  = self . getMenuItem                 ( "DockMenu"                   )
     ICON = QIcon ( QPixmap ( ":/images/hidespeech.png"                     ) )
     MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
@@ -240,6 +263,29 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     ##########################################################################
     self . EditingWidget . addWidget ( self . EditingWidget . ToolBar        )
+    ##########################################################################
+    return
+  ############################################################################
+  def AlbumTitleChanged ( self                                             ) :
+    ##########################################################################
+    TITLE = self . EditingWidget . TitleEditor . text ( )
+    self  . ALBUM . Album [ "Names" ] [ "Default" ] = TITLE
+    ##########################################################################
+    return
+  ############################################################################
+  def addAlbumTitle ( self                                                 ) :
+    ##########################################################################
+    self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 32
+    ##########################################################################
+    TITLE = self . ALBUM . Album [ "Names" ] [ "Default"                     ]
+    ##########################################################################
+    self  . EditingWidget . TitleEditor = QLineEdit      (                   )
+    self  . EditingWidget . TitleEditor . setGeometry    ( 0 , 0 , 400 , 28  )
+    self  . EditingWidget . TitleEditor . setMinimumSize ( 400 , 28          )
+    self  . EditingWidget . TitleEditor . setText        ( TITLE             )
+    self  . EditingWidget . TitleEditor . editingFinished . connect ( self . AlbumTitleChanged )
+    ##########################################################################
+    self  . EditingWidget . addWidget ( self . EditingWidget . TitleEditor   )
     ##########################################################################
     return
   ############################################################################
@@ -317,6 +363,45 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . addWidget ( self . EditingWidget . NamesEditor    )
     ##########################################################################
     TNE   . startup                 (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def addAlbumIdentifiers              ( self                              ) :
+    ##########################################################################
+    self   . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
+    ##########################################################################
+    DKEY   = "IdentifierListings"
+    IDFW   = IdentifierListings        ( None , self . PlanFunc              )
+    IDFW   . setMinimumHeight          ( 120                                 )
+    IDFW   . resize                    ( 400 , 240                           )
+    ##########################################################################
+    IDFW   . setUuidMethod             ( self . ALBUM . Uuid , 76            )
+    IDFW   . Hosts        = { "Database" : self . Settings [ "Database" ]  , \
+                              "Oriphase" : self . Settings [ "Oriphase" ]    }
+    IDFW   . DB           = self . DB
+    IDFW   . Settings     = self . Settings
+    IDFW   . Translations = self . Translations
+    IDFW   . Tables       = self . Tables [ DKEY                             ]
+    ##########################################################################
+    LANGZ  = self . Translations       [ DKEY ] [ "Languages"                ]
+    MENUZ  = self . Translations       [ DKEY ] [ "Menus"                    ]
+    ##########################################################################
+    IDFW   . PrepareMessages           (                                     )
+    ##########################################################################
+    IDFW   . setLocality               ( self . getLocality ( )              )
+    IDFW   . setLanguages              ( LANGZ                               )
+    IDFW   . setMenus                  ( MENUZ                               )
+    ##########################################################################
+    if                                 ( "Font" in self . Settings         ) :
+      fnt  = QFont                     (                                     )
+      fnt  . fromString                ( self . Settings [ "Font" ]          )
+      IDFW . setFont                   ( fnt                                 )
+    ##########################################################################
+    self   . EditingWidget . Identifiers = IDFW
+    ##########################################################################
+    self   . EditingWidget . addWidget ( self . EditingWidget . Identifiers  )
+    ##########################################################################
+    IDFW   . startup                   (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -498,14 +583,14 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def DoEditing            ( self                                          ) :
+  def DoEditing                    ( self                                  ) :
     ##########################################################################
-    self  . logMessage     ( "OpenEpisodeDetails"                            )
+    self  . logMessage             ( "OpenEpisodeDetails"                    )
     ##########################################################################
     self  . Method = "Editing"
     TITLE = self . ALBUM . Album [ "Names" ] [ "Default"                     ]
     ##########################################################################
-    self  . setWindowTitle ( TITLE                                           )
+    self  . setWindowTitle         ( TITLE                                   )
     ##########################################################################
     self . EditingWidget = QSplitter ( Qt . Vertical                         )
     self . EditingWidget . BaseHeight = 600
@@ -513,23 +598,26 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ## self . EditingWidget . setHandleWidth   ( 5                              )
     self . EditingWidget . Tick = datetime . datetime . now ( ) . timestamp ( ) - 1.0
     ##########################################################################
-    self . addEditingTools      (                                            )
-    self . addAlbumCoverSection (                                            )
+    self . addEditingTools         (                                         )
+    self . addAlbumTitle           (                                         )
+    self . addAlbumCoverSection    (                                         )
     ##########################################################################
     self . EditingWidget . NamesEditor = None
+    self . EditingWidget . Identifiers = None
     self . EditingWidget . PeopleView  = None
     ##########################################################################
-    if                          ( self . ALBUM . Uuid > 0                  ) :
+    if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
-      self . addNamesEditor     (                                            )
-      self . addPeopleView      (                                            )
+      self . addNamesEditor        (                                         )
+      self . addAlbumIdentifiers   (                                         )
+      self . addPeopleView         (                                         )
     ##########################################################################
     ##########################################################################
     ##########################################################################
     ##########################################################################
-    self . addSketch            (                                            )
-    self . addAlbumChapters     (                                            )
-    self . addAlbumDescription  (                                            )
+    self . addSketch               (                                         )
+    self . addAlbumChapters        (                                         )
+    self . addAlbumDescription     (                                         )
     ##########################################################################
     self . EditingWidget . Tail = QWidget (                                  )
     self . EditingWidget . Tail . resize           ( 100 , 5                 )
@@ -539,9 +627,9 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     self . EditingWidget . setMinimumHeight ( self . EditingWidget . BaseHeight )
     self . EditingWidget . setFont ( self . font (                         ) )
-    self . setWidget          ( self . EditingWidget                         )
-    self . setWidgetResizable ( True                                         )
-    self . ResizeEditing      (                                              )
+    self . setWidget               ( self . EditingWidget                    )
+    self . setWidgetResizable      ( True                                    )
+    self . ResizeEditing           (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -585,10 +673,18 @@ class EpisodeEditor       ( ScrollArea                                     ) :
       TH   = self . EditingWidget . NamesEditor     . height (               )
       self .        EditingWidget . NamesEditor     . resize ( WW , TH       )
     ##########################################################################
+    if ( self . EditingWidget . Identifiers not in [ False , None ]        ) :
+      ########################################################################
+      TH   = self . EditingWidget . Identifiers     . height (               )
+      self .        EditingWidget . Identifiers     . resize ( WW , TH       )
+    ##########################################################################
     if ( self . EditingWidget . PeopleView  not in [ False , None ]        ) :
       ########################################################################
       TH   = self . EditingWidget . PeopleView      . height (               )
       self .        EditingWidget . PeopleView      . resize ( WW , TH       )
+    ##########################################################################
+    TH     = self . EditingWidget . TitleEditor     . height (               )
+    self   .        EditingWidget . TitleEditor     . resize ( WW , TH       )
     ##########################################################################
     TH     = self . EditingWidget . SketchText      . height (               )
     self   .        EditingWidget . SketchText      . resize ( WW , TH       )

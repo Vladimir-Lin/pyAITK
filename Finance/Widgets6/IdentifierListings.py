@@ -11,57 +11,36 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PySide6                            import QtCore
+from   PySide6                            import QtGui
+from   PySide6                            import QtWidgets
+from   PySide6 . QtCore                   import *
+from   PySide6 . QtGui                    import *
+from   PySide6 . QtWidgets                import *
+from   AITK    . Qt6                      import *
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
+from   AITK    . Qt6        . TreeDock    import TreeDock    as TreeDock
+from   AITK    . Qt6        . LineEdit    import LineEdit    as LineEdit
+from   AITK    . Qt6        . ComboBox    import ComboBox    as ComboBox
+from   AITK    . Qt6        . SpinBox     import SpinBox     as SpinBox
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   AITK    . Essentials . Relation    import Relation    as Relation
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
+from   AITK    . Calendars  . StarDate    import StarDate    as StarDate
+from   AITK    . Calendars  . Periode     import Periode     as Periode
+from   AITK    . Documents  . Identifier  import Identifier  as IdentifierItem
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
-##############################################################################
-from   AITK  . Essentials . Relation  import Relation    as Relation
-##############################################################################
-from   AITK  . Calendars . StarDate   import StarDate    as StarDate
-from   AITK  . Calendars . Periode    import Periode     as Periode
-from   AITK  . Documents . Identifier import Identifier  as IdentifierItem
-##############################################################################
-class IdentifierListings     ( TreeDock                                    ) :
+class IdentifierListings ( TreeDock                                        ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal (                                               )
-  emitAllNames  = pyqtSignal ( list                                          )
+  emitNamesShow = Signal (                                                   )
+  emitAllNames  = Signal ( list                                              )
   ############################################################################
-  def __init__               ( self , parent = None , plan = None          ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( ) . __init__     (        parent        , plan                   )
+    super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
     self . EditAllNames       = None
     self . ProductType        = 0
@@ -212,7 +191,6 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                     (                                            )
   def InsertItem                ( self                                     ) :
     ##########################################################################
     if                          ( not self . isUuidMethod ( )              ) :
@@ -234,14 +212,12 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                   (                                              )
   def DeleteItems             ( self                                       ) :
     ##########################################################################
     self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
   def RenameItem                 ( self                                    ) :
     ##########################################################################
     IT = self . currentItem      (                                           )
@@ -252,7 +228,6 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
   def nameChanged                ( self                                    ) :
     ##########################################################################
     if                           ( not self . isItemPicked ( )             ) :
@@ -277,7 +252,6 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        list                              )
   def refresh                     ( self , LISTS                           ) :
     ##########################################################################
     self   . clear                (                                          )
@@ -500,13 +474,12 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def startup                    ( self                                    ) :
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
@@ -624,17 +597,17 @@ class IdentifierListings     ( TreeDock                                    ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                          ( self , pos                          ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                     )
-    if                              ( not doMenu                          ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                     )
+    self   . Notify                 ( 0                                      )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager            ( self                                  )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
