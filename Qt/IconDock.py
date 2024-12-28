@@ -974,7 +974,7 @@ class IconDock                      ( ListDock                             ) :
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
     LNAME   = name
-    LNAME   = LNAME . tolower         (                                      )
+    LNAME   = LNAME . lower           (                                      )
     LIKE    = f"%{LNAME}%"
     UUIDs   =                         [                                      ]
     ##########################################################################
@@ -1033,7 +1033,7 @@ class IconDock                      ( ListDock                             ) :
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
     LNAME   = name
-    LNAME   = LNAME . tolower         (                                      )
+    LNAME   = LNAME . lower           (                                      )
     LIKE    = f"%{LNAME}%"
     UUIDs   =                         [                                      ]
     ##########################################################################
