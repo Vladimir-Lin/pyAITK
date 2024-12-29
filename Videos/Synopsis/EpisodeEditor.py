@@ -15,35 +15,37 @@ import math
 import cv2
 ##############################################################################
 import pathlib
-from   pathlib                                    import Path
+from   pathlib                                              import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate                      import StarDate            as StarDate
-from   AITK    . Documents . JSON                          import Load                as LoadJson
-from   AITK    . Documents . JSON                          import Save                as SaveJson
+from   AITK    . Calendars . StarDate                       import StarDate            as StarDate
+from   AITK    . Documents . JSON                           import Load                as LoadJson
+from   AITK    . Documents . JSON                           import Save                as SaveJson
 ##############################################################################
-from   PySide6                                             import QtCore
-from   PySide6                                             import QtGui
-from   PySide6                                             import QtWidgets
-from   PySide6 . QtCore                                    import *
-from   PySide6 . QtGui                                     import *
-from   PySide6 . QtWidgets                                 import *
-from   AITK    . Qt6                                       import *
+from   PySide6                                              import QtCore
+from   PySide6                                              import QtGui
+from   PySide6                                              import QtWidgets
+from   PySide6 . QtCore                                     import *
+from   PySide6 . QtGui                                      import *
+from   PySide6 . QtWidgets                                  import *
+from   AITK    . Qt6                                        import *
 ##############################################################################
-from   AITK    . Qt6     . MenuManager                     import MenuManager         as MenuManager
-from   AITK    . Qt6     . AttachDock                      import AttachDock          as AttachDock
-from   AITK    . Qt6     . Widget                          import Widget              as Widget
+from   AITK    . Qt6      . MenuManager                     import MenuManager         as MenuManager
+from   AITK    . Qt6      . AttachDock                      import AttachDock          as AttachDock
+from   AITK    . Qt6      . Widget                          import Widget              as Widget
 ##############################################################################
-from   AITK    . Widgets . Commons6 . NamesEditor          import NamesEditor
-from   AITK    . People  . Widgets6 . PeopleView           import PeopleView
-from   AITK    . Finance . Widgets6 . IdentifierListings   import IdentifierListings
-from   AITK    . Society . Widgets6 . OrganizationListings import OrganizationListings
-from   AITK    . Videos  . Utilities                       import SilentRun           as SilentRun
+from   AITK    . Widgets  . Commons6 . NamesEditor          import NamesEditor
+from   AITK    . People   . Widgets6 . PeopleView           import PeopleView
+from   AITK    . Finance  . Widgets6 . IdentifierListings   import IdentifierListings
+from   AITK    . Society  . Widgets6 . OrganizationListings import OrganizationListings
+from   AITK    . Pictures . Widgets6 . GalleriesView        import GalleriesView
+from   AITK    . Pictures . Widgets6 . PicturesView         import PicturesView
+from   AITK    . Videos   . Utilities                       import SilentRun           as SilentRun
 ##############################################################################
-from                     . Episode                         import Episode             as Episode
+from                      . Episode                         import Episode             as Episode
 ##############################################################################
-from                     . UiEpisodeEstablish              import Ui_EpisodeEstablish as Ui_EpisodeEstablish
+from                      . UiEpisodeEstablish              import Ui_EpisodeEstablish as Ui_EpisodeEstablish
 ##############################################################################
 ##############################################################################
 ##############################################################################
@@ -615,6 +617,55 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     ##########################################################################
     self . EditingWidget . addWidget ( self . EditingWidget . PeopleView     )
     ##########################################################################
+    PEOW . startup            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def addAlbumGallery         ( self                                       ) :
+    ##########################################################################
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 320
+    ##########################################################################
+    PSVW  = PicturesView      ( None , self . PlanFunc                       )
+    ##########################################################################
+    PSVW  . setMinimumHeight  ( 160                                          )
+    PSVW  . resize            ( 400 , 320                                    )
+    ##########################################################################
+    KEY   = "PicturesView"
+    PSVW  . DB           = self . DB
+    PSVW  . Hosts        = { "Database" : self . Settings [ "Database" ]   , \
+                             "Oriphase" : self . Settings [ "Oriphase" ]     }
+    PSVW  . Settings     = self . Settings
+    PSVW  . Translations = self . Translations
+    PSVW  . Tables       = self . Tables [ KEY                               ]
+    PSVW  . EditAllNames = None
+    PSVW  . Relation . set    ( "first" , int ( self . ALBUM . Uuid )        )
+    PSVW  . Relation . set    ( "t1"     , 76                                )
+    PSVW  . Relation . setRelation ( "Subordination"                         )
+    PSVW  . setGrouping       ( "Subordination"                              )
+    ##########################################################################
+    LANGZ = self . Translations [ KEY ] [ "Languages"                        ]
+    MENUZ = self . Translations [ KEY ] [ "Menus"                            ]
+    ##########################################################################
+    PSVW  . PrepareMessages   (                                              )
+    PSVW  . setLocality       ( self . getLocality ( )                       )
+    PSVW  . setLanguages      ( LANGZ                                        )
+    PSVW  . setMenus          ( MENUZ                                        )
+    ##########################################################################
+    PSVW  . ShowPicture       . connect ( self . MAIN . ShowPicture          )
+    ## PSVW  . OpenPictureEditor . connect ( self . MAIN . OpenPictureEditor    )
+    PSVW  . OpenVariantTables . connect ( self . MAIN . OpenVariantTables    )
+    PSVW  . OpenLogHistory    . connect ( self . MAIN . OpenLogHistory       )
+    ##########################################################################
+    self  . setAllFont        ( PSVW , self . font (                       ) )
+    PSVW  . PrepareForActions (                                              )
+    ##########################################################################
+    self  . EditingWidget . GalleryViewer = PSVW
+    ##########################################################################
+    self  . EditingWidget . addWidget ( self . EditingWidget . GalleryViewer )
+    ##########################################################################
+    PSVW  . PrepareRelateType      ( "Subordination"                         )
+    PSVW  . startup                (                                         )
+    ##########################################################################
     return
   ############################################################################
   def addSketch                      ( self                                ) :
@@ -769,11 +820,10 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     ##########################################################################
     if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
-      ## self . addNamesEditor        (                                         )
-      ## self . addOrganizations      (                                         )
       self . addCompanyAndNames    (                                         )
       self . addAlbumIdentifiers   (                                         )
       self . addPeopleView         (                                         )
+      self . addAlbumGallery       (                                         )
     ##########################################################################
     ##########################################################################
     ##########################################################################
@@ -845,6 +895,11 @@ class EpisodeEditor        ( ScrollArea                                    ) :
       ########################################################################
       TH   = self . EditingWidget . PeopleView      . height (               )
       self .        EditingWidget . PeopleView      . resize ( WW , TH       )
+    ##########################################################################
+    if ( self . EditingWidget . GalleryViewer not in [ False , None ]      ) :
+      ########################################################################
+      TH   = self . EditingWidget . GalleryViewer   . height (               )
+      self .        EditingWidget . GalleryViewer   . resize ( WW , TH       )
     ##########################################################################
     TH     = self . EditingWidget . TitleSplit      . height (               )
     self   .        EditingWidget . TitleSplit      . resize ( WW , TH       )
