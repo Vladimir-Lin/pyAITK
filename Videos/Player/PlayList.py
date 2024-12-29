@@ -655,6 +655,11 @@ class PlayList                     ( TreeDock                              ) :
     self . Probing = True
     PROBE          = True
     APPENDED       = False
+    FFPROBE        = "ffprobe"
+    ##########################################################################
+    if                                 ( "FFprobe" in self . Settings      ) :
+      ########################################################################
+      FFPROBE      = self . Settings   [ "FFprobe"                           ]
     ##########################################################################
     while                              ( PROBE                             ) :
       ########################################################################
@@ -663,7 +668,7 @@ class PlayList                     ( TreeDock                              ) :
       if                               ( E                                 ) :
         ######################################################################
         VFI        = FilmItem          (                                     )
-        VJI        = VFI . Probe       ( F                                   )
+        VJI        = VFI . Probe       ( F , FFPROBE                         )
         self       . LocateFilm        ( F , VJI                             )
         ######################################################################
         APPENDED   = True
