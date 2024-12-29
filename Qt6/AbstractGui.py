@@ -11,33 +11,35 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                            import OpenCC
-from   googletrans                       import Translator
+from   opencc                              import OpenCC
+from   googletrans                         import Translator
 ##############################################################################
 import PySide6
-from   PySide6                           import QtCore
-from   PySide6                           import QtGui
-from   PySide6                           import QtWidgets
+from   PySide6                             import QtCore
+from   PySide6                             import QtGui
+from   PySide6                             import QtWidgets
 ##############################################################################
-from   PySide6 . QtCore                  import *
-from   PySide6 . QtGui                   import *
-from   PySide6 . QtWidgets               import *
+from   PySide6 . QtCore                    import *
+from   PySide6 . QtGui                     import *
+from   PySide6 . QtWidgets                 import *
 ##############################################################################
 import mysql . connector
-from   mysql . connector                 import Error
+from   mysql . connector                   import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query          import Query
-from   AITK . Database  . Connection     import Connection
-from   AITK . Database  . Pair           import Pair
-from   AITK . Database  . Columns        import Columns
+from   AITK . Database    . Query          import Query
+from   AITK . Database    . Connection     import Connection
+from   AITK . Database    . Pair           import Pair
+from   AITK . Database    . Columns        import Columns
 ##############################################################################
-from   AITK . Documents . Name           import Name           as NameItem
-from   AITK . Documents . Name           import Naming         as Naming
-from   AITK . Documents . ParameterQuery import ParameterQuery as ParameterQuery
-from   AITK . Documents . Variables      import Variables      as VariableItem
+from   AITK . Linguistics . Translator     import Translate
 ##############################################################################
-from   AITK . Calendars . StarDate       import StarDate
+from   AITK . Documents   . Name           import Name           as NameItem
+from   AITK . Documents   . Name           import Naming         as Naming
+from   AITK . Documents   . ParameterQuery import ParameterQuery as ParameterQuery
+from   AITK . Documents   . Variables      import Variables      as VariableItem
+##############################################################################
+from   AITK . Calendars   . StarDate       import StarDate
 ##############################################################################
 class AbstractGui            (                                             ) :
   ############################################################################
@@ -1213,12 +1215,7 @@ class AbstractGui            (                                             ) :
         continue
       ########################################################################
       LC       = self . LocalityToGoogleLC ( L                               )
-      target   = ""
-      ########################################################################
-      try                                                                    :
-        target = gt . translate ( TN , src = zhTW , dest = LC ) . text
-      except                                                                 :
-        continue
+      target   = Translate                 ( TN , zhTW , LC                  )
       ########################################################################
       if                                  ( len ( target ) <= 0            ) :
         continue
@@ -1256,12 +1253,7 @@ class AbstractGui            (                                             ) :
         continue
       ########################################################################
       LC       = self . LocalityToGoogleLC ( L                               )
-      target   = ""
-      ########################################################################
-      try                                                                    :
-        target = gt . translate ( EN , src = enUS , dest = LC ) . text
-      except                                                                 :
-        continue
+      target   = Translate                 ( EN , enUS , LC                  )
       ########################################################################
       if                                  ( len ( target ) <= 0            ) :
         continue
@@ -1284,14 +1276,11 @@ class AbstractGui            (                                             ) :
     ##########################################################################
     return
   ############################################################################
-  def DoAutoTranslation        ( self , DB , TABLE , UUID , FMT , interval ) :
+  def DoAutoTranslation      ( self , DB , TABLE , UUID , FMT , interval   ) :
     ##########################################################################
-    GURL = "translate.googleapis.com"
-    gt   = Translator          ( service_urls = [ GURL ]                     )
-    ##########################################################################
-    MSG  = FMT . format        ( UUID                                        )
-    self . ShowStatus          ( MSG                                         )
-    self . AutoTranslateUUID   ( gt , interval , DB , TABLE , UUID           )
+    MSG  = FMT . format      ( UUID                                          )
+    self . ShowStatus        ( MSG                                           )
+    self . AutoTranslateUUID ( None , interval , DB , TABLE , UUID           )
     ##########################################################################
     return
   ############################################################################
@@ -1301,9 +1290,6 @@ class AbstractGui            (                                             ) :
     if                             ( len ( UUIDs ) <= 0                    ) :
       return
     ##########################################################################
-    GURL       = "translate.googleapis.com"
-    gt         = Translator                ( service_urls = [ GURL ]         )
-    ##########################################################################
     ## DB     . LockWrites            ( [ TABLE ]                               )
     ##########################################################################
     for UUID in UUIDs                                                        :
@@ -1311,7 +1297,7 @@ class AbstractGui            (                                             ) :
       MSG  = FMT . format          ( UUID                                    )
       self . ShowStatus            ( MSG                                     )
       ########################################################################
-      self . AutoTranslateUUID     ( gt , interval , DB , TABLE , UUID       )
+      self . AutoTranslateUUID     ( None , interval , DB , TABLE , UUID     )
     ##########################################################################
     ## DB     . UnlockTables          (                                         )
     ##########################################################################

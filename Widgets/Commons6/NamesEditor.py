@@ -11,23 +11,24 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                            import OpenCC
-from   googletrans                       import Translator
+from   opencc                              import OpenCC
 ##############################################################################
-from   PySide6                           import QtCore
-from   PySide6                           import QtGui
-from   PySide6                           import QtWidgets
-from   PySide6 . QtCore                  import *
-from   PySide6 . QtGui                   import *
-from   PySide6 . QtWidgets               import *
-from   AITK    . Qt6                     import *
+from   PySide6                             import QtCore
+from   PySide6                             import QtGui
+from   PySide6                             import QtWidgets
+from   PySide6 . QtCore                    import *
+from   PySide6 . QtGui                     import *
+from   PySide6 . QtWidgets                 import *
+from   AITK    . Qt6                       import *
 ##############################################################################
-from   AITK    . Qt6       . VirtualGui  import VirtualGui  as VirtualGui
-from   AITK    . Qt6       . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6       . TreeWidget  import TreeWidget  as TreeWidget
-from   AITK    . Qt6       . TreeDock    import TreeDock    as TreeDock
+from   AITK    . Linguistics . Translator  import Translate
 ##############################################################################
-from   AITK    . Documents . Name        import Name        as NameItem
+from   AITK    . Qt6         . VirtualGui  import VirtualGui  as VirtualGui
+from   AITK    . Qt6         . MenuManager import MenuManager as MenuManager
+from   AITK    . Qt6         . TreeWidget  import TreeWidget  as TreeWidget
+from   AITK    . Qt6         . TreeDock    import TreeDock    as TreeDock
+##############################################################################
+from   AITK    . Documents   . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor          ( TreeDock , NameItem                           ) :
   ############################################################################
@@ -495,14 +496,12 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     if                                 ( len ( txt ) <= 0                  ) :
       return True
     ##########################################################################
-    gt     = Translator     ( service_urls = [ "translate.googleapis.com" ]  )
+    target = Translate                 ( txt , SRC , DEST                    )
+    UTF8   = len                       ( target                              )
     ##########################################################################
-    try                                                                      :
-      target = gt . translate ( txt , src = SRC , dest = DEST ) . text
-    except                                                                   :
+    if                                 ( UTF8 <= 0                         ) :
       return True
     ##########################################################################
-    UTF8   = len                       ( target                              )
     LENZ   = 0
     ##########################################################################
     try                                                                      :

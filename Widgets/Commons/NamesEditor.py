@@ -11,45 +11,46 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                          import OpenCC
-from   googletrans                     import Translator
+from   opencc                            import OpenCC
 ##############################################################################
-from   PyQt5                           import QtCore
-from   PyQt5                           import QtGui
-from   PyQt5                           import QtWidgets
+from   PyQt5                             import QtCore
+from   PyQt5                             import QtGui
+from   PyQt5                             import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                  import QObject
-from   PyQt5 . QtCore                  import pyqtSignal
-from   PyQt5 . QtCore                  import pyqtSlot
-from   PyQt5 . QtCore                  import Qt
-from   PyQt5 . QtCore                  import QPoint
-from   PyQt5 . QtCore                  import QPointF
-from   PyQt5 . QtCore                  import QSize
+from   PyQt5 . QtCore                    import QObject
+from   PyQt5 . QtCore                    import pyqtSignal
+from   PyQt5 . QtCore                    import pyqtSlot
+from   PyQt5 . QtCore                    import Qt
+from   PyQt5 . QtCore                    import QPoint
+from   PyQt5 . QtCore                    import QPointF
+from   PyQt5 . QtCore                    import QSize
 ##############################################################################
-from   PyQt5 . QtGui                   import QIcon
-from   PyQt5 . QtGui                   import QCursor
-from   PyQt5 . QtGui                   import QKeySequence
+from   PyQt5 . QtGui                     import QIcon
+from   PyQt5 . QtGui                     import QCursor
+from   PyQt5 . QtGui                     import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets               import QApplication
-from   PyQt5 . QtWidgets               import QWidget
-from   PyQt5 . QtWidgets               import qApp
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAction
-from   PyQt5 . QtWidgets               import QShortcut
-from   PyQt5 . QtWidgets               import QMenu
-from   PyQt5 . QtWidgets               import QAbstractItemView
-from   PyQt5 . QtWidgets               import QTreeWidget
-from   PyQt5 . QtWidgets               import QTreeWidgetItem
-from   PyQt5 . QtWidgets               import QLineEdit
-from   PyQt5 . QtWidgets               import QComboBox
-from   PyQt5 . QtWidgets               import QSpinBox
+from   PyQt5 . QtWidgets                 import QApplication
+from   PyQt5 . QtWidgets                 import QWidget
+from   PyQt5 . QtWidgets                 import qApp
+from   PyQt5 . QtWidgets                 import QMenu
+from   PyQt5 . QtWidgets                 import QAction
+from   PyQt5 . QtWidgets                 import QShortcut
+from   PyQt5 . QtWidgets                 import QMenu
+from   PyQt5 . QtWidgets                 import QAbstractItemView
+from   PyQt5 . QtWidgets                 import QTreeWidget
+from   PyQt5 . QtWidgets                 import QTreeWidgetItem
+from   PyQt5 . QtWidgets                 import QLineEdit
+from   PyQt5 . QtWidgets                 import QComboBox
+from   PyQt5 . QtWidgets                 import QSpinBox
 ##############################################################################
-from   AITK  . Qt        . VirtualGui  import VirtualGui  as VirtualGui
-from   AITK  . Qt        . MenuManager import MenuManager as MenuManager
-from   AITK  . Qt        . TreeWidget  import TreeWidget  as TreeWidget
-from   AITK  . Qt        . TreeDock    import TreeDock    as TreeDock
+from   AITK  . Linguistics . Translator  import Translate
 ##############################################################################
-from   AITK  . Documents . Name        import Name        as NameItem
+from   AITK  . Qt          . VirtualGui  import VirtualGui  as VirtualGui
+from   AITK  . Qt          . MenuManager import MenuManager as MenuManager
+from   AITK  . Qt          . TreeWidget  import TreeWidget  as TreeWidget
+from   AITK  . Qt          . TreeDock    import TreeDock    as TreeDock
+##############################################################################
+from   AITK  . Documents   . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor              ( TreeDock , NameItem                       ) :
   ############################################################################
@@ -518,14 +519,12 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     if                                 ( len ( txt ) <= 0                  ) :
       return True
     ##########################################################################
-    gt     = Translator     ( service_urls = [ "translate.googleapis.com" ]  )
+    target = Translate                 ( txt , SRC , DEST                    )
+    UTF8   = len                       ( target                              )
     ##########################################################################
-    try                                                                      :
-      target = gt . translate ( txt , src = SRC , dest = DEST ) . text
-    except                                                                   :
+    if                                 ( UTF8 <= 0                         ) :
       return True
     ##########################################################################
-    UTF8   = len                       ( target                              )
     LENZ   = 0
     ##########################################################################
     try                                                                      :

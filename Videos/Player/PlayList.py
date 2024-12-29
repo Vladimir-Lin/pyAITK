@@ -38,13 +38,15 @@ from   AITK    . Videos . Film        import Film           as FilmItem
 ##############################################################################
 class PlayList                     ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu      = 1371434312
   ############################################################################
-  playFilm      = Signal           ( dict                                    )
-  appendFilm    = Signal           ( dict                                    )
-  FilmsAppended = Signal           (                                         )
-  HistoryLoaded = Signal           (                                         )
-  ToggleActions = Signal           (                                         )
+  playFilm        = Signal         ( dict                                    )
+  appendFilm      = Signal         ( dict                                    )
+  FilmsAppended   = Signal         (                                         )
+  HistoryLoaded   = Signal         (                                         )
+  ToggleActions   = Signal         (                                         )
+  emitProgress    = Signal         (                                         )
+  emitStopWaiting = Signal         (                                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -87,6 +89,11 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     self . WMutex     = threading . Lock (                                   )
     self . Waiting    =                  [                                   ]
+    self . WaitingWT  = None
+    self . WaitingSB  = None
+    self . WaitingBT  = None
+    self . WaitingTotal = 0
+    self . WaitingIndex = 0
     ##########################################################################
     self . Probing    = False
     self . LMutex     = threading . Lock (                                   )
@@ -96,8 +103,10 @@ class PlayList                     ( TreeDock                              ) :
     self . IMutex     = threading . Lock (                                   )
     self . IDCs       =                  {                                   }
     ##########################################################################
-    self . appendFilm    . connect       ( self . AppendItem                 )
-    self . ToggleActions . connect       ( self . SwitchActions              )
+    self . appendFilm      . connect     ( self . AppendItem                 )
+    self . ToggleActions   . connect     ( self . SwitchActions              )
+    self . emitProgress    . connect     ( self . WaitingStatus              )
+    self . emitStopWaiting . connect     ( self . StopWaitingQueue           )
     ##########################################################################
     return
   ############################################################################
@@ -510,42 +519,119 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GetWaiting              ( self                                       ) :
+  def ForceStopWaiting      ( self                                         ) :
+    ##########################################################################
+    self . WMutex . acquire (                                                )
+    ##########################################################################
+    self . Waiting      =   [                                                ]
+    self . WaitingIndex = self . WaitingTotal
+    ##########################################################################
+    self . WMutex . release (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def WaitingStatus ( self                                                 ) :
+    ##########################################################################
+    if                 ( self . WaitingSB     in [ False , None ]          ) :
+      ########################################################################
+      TOTAL = int      ( self . WaitingTotal - self   . WaitingIndex         )
+      ########################################################################
+      if               ( TOTAL < 100                                       ) :
+        return
+      ########################################################################
+      WPLAN = self . GetPlan (                                               )
+      ########################################################################
+      if                     ( WPLAN in [ False , None ]                   ) :
+        return
+      ########################################################################
+      self . WaitingSB = QProgressBar        (                               )
+      ########################################################################
+      self . WaitingSB . setFormat           ( "%v / %m"                     )
+      self . WaitingSB . setMinimumWidth     ( 320                           )
+      self . WaitingSB . setMaximumWidth     ( 320                           )
+      ########################################################################
+      self . WaitingBT = QToolButton         (                               )
+      self . WaitingBT . setAutoRaise        ( True                          )
+      self . WaitingBT . setText             ( "Stop"                        )
+      self . WaitingBT . setToolButtonStyle  ( Qt . ToolButtonIconOnly       )
+      PIX              = QPixmap             ( ":/images/stoprecord.png"     )
+      ICON             = QIcon               ( PIX                           )
+      self . WaitingBT . setIcon             ( ICON                          )
+      self . WaitingBT . clicked . connect   ( self . ForceStopWaiting       )
+      ########################################################################
+      WPLAN . statusBar . addPermanentWidget ( self . WaitingBT              )
+      WPLAN . statusBar . addPermanentWidget ( self . WaitingSB              )
+    ##########################################################################
+    if                 ( self . WaitingSB     in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . WaitingSB . setRange ( 0 , self . WaitingTotal                    )
+    self . WaitingSB . setValue (     self . WaitingIndex                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def StopWaitingQueue ( self                                              ) :
+    ##########################################################################
+    if                 ( self . WaitingSB     in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self   . WaitingSB    . deleteLater (                                    )
+    ##########################################################################
+    if                 ( self . WaitingBT not in [ False , None ]          ) :
+      ########################################################################
+      self . WaitingBT    . deleteLater (                                    )
+    ##########################################################################
+    self   . WaitingWT    = None
+    self   . WaitingSB    = None
+    self   . WaitingBT    = None
+    self   . WaitingTotal = 0
+    self   . WaitingIndex = 0
+    ##########################################################################
+    return
+  ############################################################################
+  def GetWaiting                 ( self                                    ) :
     ##########################################################################
     E      = False
     F      = ""
     ##########################################################################
-    self   . WMutex . acquire (                                              )
+    self   . WMutex . acquire    (                                           )
     ##########################################################################
-    if                        ( len ( self . Waiting ) > 0                 ) :
+    if                           ( len ( self . Waiting ) > 0              ) :
       ########################################################################
       E    = True
-      F    = self . Waiting   [ 0                                            ]
-      self . Waiting . pop    ( 0                                            )
+      F    = self . Waiting      [ 0                                         ]
+      self . Waiting . pop       ( 0                                         )
+      ########################################################################
+      self . WaitingIndex = self . WaitingIndex + 1
     ##########################################################################
-    self   . WMutex . release (                                              )
+    self   . WMutex . release    (                                           )
     ##########################################################################
-    return                    ( E , F ,                                      )
+    self   . emitProgress . emit (                                           )
+    ##########################################################################
+    return                       ( E , F ,                                   )
   ############################################################################
-  def AddWaiting                ( self , FILEs                             ) :
+  def AddWaiting                 ( self , FILEs                            ) :
     ##########################################################################
     CNT  = 0
     ##########################################################################
-    self . WMutex . acquire     (                                            )
+    self . WMutex . acquire      (                                           )
     ##########################################################################
     for F in FILEs                                                           :
       ########################################################################
-      if                        ( F not in self . Waiting                  ) :
+      if                         ( F not in self . Waiting                 ) :
         ######################################################################
-        self . Waiting . append ( F                                          )
+        self . Waiting . append  ( F                                         )
+        ######################################################################
+        self . WaitingTotal = self . WaitingTotal + 1
     ##########################################################################
-    CNT  = len                  ( self . Waiting                             )
+    CNT  = len                   ( self . Waiting                            )
     ##########################################################################
-    self . WMutex . release     (                                            )
+    self . WMutex . release      (                                           )
     ##########################################################################
-    if                          ( CNT > 0                                  ) :
+    if                           ( CNT > 0                                 ) :
       ########################################################################
-      self . Go                 ( self . ProbeWaitings                       )
+      self . Go                  ( self . ProbeWaitings                      )
+      self . emitProgress . emit (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -678,6 +764,8 @@ class PlayList                     ( TreeDock                              ) :
         PROBE      = False
     ##########################################################################
     self . Probing = False
+    ##########################################################################
+    self . emitStopWaiting . emit      (                                     )
     ##########################################################################
     if                                 ( APPENDED                          ) :
       ########################################################################
