@@ -80,7 +80,8 @@ class VideoAlbumsView                 ( IconDock                           ) :
   HavingMenu             = 1371434312
   ############################################################################
   OwnedPeopleGroup       = pyqtSignal ( str , int , str                      )
-  ShowPersonalGallery    = pyqtSignal ( str , int , str , QIcon              )
+  ShowPersonalGallery    = pyqtSignal ( str , int , str ,       QIcon        )
+  ShowPersonalIcons      = pyqtSignal ( str , int , str , str , QIcon        )
   GalleryGroup           = pyqtSignal ( str , int , str                      )
   OwnedOrganizationGroup = pyqtSignal ( str , int , str , str , QIcon        )
   ShowWebPages           = pyqtSignal ( str , int , str , str , QIcon        )
@@ -1818,6 +1819,12 @@ class VideoAlbumsView                 ( IconDock                           ) :
     ##########################################################################
     if                             ( at == 1201                            ) :
       ########################################################################
+      text = item . text           (                                         )
+      icon = item . icon           (                                         )
+      xsid = str                   ( uuid                                    )
+      relz = "Using"
+      ########################################################################
+      self . ShowPersonalIcons . emit ( text , 76 , relz , xsid , icon       )
       ########################################################################
       return True
     ##########################################################################

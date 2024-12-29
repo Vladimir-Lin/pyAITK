@@ -369,7 +369,7 @@ def OpenMovieAlbumJson    ( DIR , VUID = "" , TZ = "Asia/Taipei"           ) :
                             "Names"        : {                           } , \
                             "Directory"    : DIR                           , \
                             "Folder"       : FOLDER                        , \
-                            "Language"     : "zh-TW"                       , \
+                            "Language"     : 1001                          , \
                             "Locality"     : {                           } , \
                             "File"         : AlbumJson                     , \
                             "Vendors"      : [                           ] , \

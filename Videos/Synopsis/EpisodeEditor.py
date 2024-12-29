@@ -49,17 +49,18 @@ from                     . UiEpisodeEstablish              import Ui_EpisodeEsta
 ##############################################################################
 ##############################################################################
 ##############################################################################
-class EpisodeEditor       ( ScrollArea                                     ) :
+class EpisodeEditor        ( ScrollArea                                    ) :
   ############################################################################
-  emitEstablish = Signal  (                                                  )
-  emitEditing   = Signal  (                                                  )
-  emitLog       = Signal  ( str                                              )
-  Leave         = Signal  ( QWidget                                          )
+  emitEstablish   = Signal (                                                 )
+  emitEditing     = Signal (                                                 )
+  emitInformation = Signal ( str , str                                       )
+  emitLog         = Signal ( str                                             )
+  Leave           = Signal ( QWidget                                         )
   ############################################################################
-  def           __init__  ( self , parent = None , plan = None             ) :
+  def           __init__   ( self , parent = None , plan = None            ) :
     ##########################################################################
-    super ( ) . __init__  (        parent        , plan                      )
-    self      . Configure (                                                  )
+    super ( ) . __init__   (        parent        , plan                     )
+    self      . Configure  (                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -88,6 +89,7 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     self . emitEstablish   . connect ( self . DoEstablish                    )
     self . emitEditing     . connect ( self . DoEditing                      )
+    self . emitInformation . connect ( self . OpenInformation                )
     ##########################################################################
     return
   ############################################################################
@@ -156,6 +158,12 @@ class EpisodeEditor       ( ScrollArea                                     ) :
   def SaveAlbumJson           ( self                                       ) :
     ##########################################################################
     self . ALBUM . SaveToFile (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenInformation         ( self , title , msg                         ) :
+    ##########################################################################
+    QMessageBox . information ( self , title , msg                           )
     ##########################################################################
     return
   ############################################################################
@@ -277,6 +285,14 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     return
   ############################################################################
+  def AlbumLanguageChanged ( self , IDX                                    ) :
+    ##########################################################################
+    LCID = int ( self . EditingWidget . LanguageEditor . itemData ( IDX )    )
+    ##########################################################################
+    self . ALBUM . Album [ "Language" ] = LCID
+    ##########################################################################
+    return
+  ############################################################################
   def addAlbumTitle         ( self                                         ) :
     ##########################################################################
     self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 32
@@ -289,8 +305,34 @@ class EpisodeEditor       ( ScrollArea                                     ) :
       UXID = f"{UUID}"
     ##########################################################################
     SPLT   = QSplitter      ( Qt . Horizontal                                )
+    LEDIT  = QComboBox      (                                                )
     TEDIT  = QLineEdit      (                                                )
     UEDIT  = QLineEdit      (                                                )
+    ##########################################################################
+    LOCs   = self . Translations  [ "EpisodeEditor" ] [ "Languages"          ]
+    LANG   = self . ALBUM . Album [ "Language"                               ]
+    KEYs   = LOCs . keys    (                                                )
+    LCAT   = -1
+    LCNT   = 0
+    LEDIT  . setGeometry    ( 0 , 0 , 120 , 28                               )
+    LEDIT  . setMinimumSize ( 120 , 28                                       )
+    LEDIT  . setMaximumSize ( 120 , 28                                       )
+    ##########################################################################
+    for ID in KEYs                                                           :
+      ########################################################################
+      LEDIT . addItem       ( LOCs [ ID ] , ID                               )
+      ########################################################################
+      if                    ( LANG == int ( ID )                           ) :
+        ######################################################################
+        LCAT = LCNT
+      ########################################################################
+      LCNT  = LCNT + 1
+    ##########################################################################
+    if                      ( LCAT >= 0                                    ) :
+      ########################################################################
+      LEDIT . setCurrentIndex ( LCAT)
+    ##########################################################################
+    LEDIT  . currentIndexChanged . connect ( self . AlbumLanguageChanged     )
     ##########################################################################
     TEDIT  . setGeometry    ( 0 , 0 , 400 , 28                               )
     TEDIT  . setMinimumSize ( 240 , 28                                       )
@@ -302,14 +344,80 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     UEDIT  . setText        ( UXID                                           )
     UEDIT  . setReadOnly    ( True                                           )
     ##########################################################################
+    SPLT   . addWidget      ( LEDIT                                          )
     SPLT   . addWidget      ( TEDIT                                          )
     SPLT   . addWidget      ( UEDIT                                          )
     ##########################################################################
-    self   . EditingWidget . TitleSplit  = SPLT
-    self   . EditingWidget . TitleEditor = TEDIT
-    self   . EditingWidget . UuidEditor  = UEDIT
+    self   . EditingWidget . TitleSplit     = SPLT
+    self   . EditingWidget . LanguageEditor = LEDIT
+    self   . EditingWidget . TitleEditor    = TEDIT
+    self   . EditingWidget . UuidEditor     = UEDIT
     ##########################################################################
     self   . EditingWidget . addWidget ( self . EditingWidget . TitleSplit   )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignCoverImageToToolButton   ( self                                ) :
+    ##########################################################################
+    TCW   = 640
+    TCH   = 360
+    CF    = self . ALBUM . CoverFile (                                       )
+    CIM   = QImage                   ( CF                                    )
+    ##########################################################################
+    if                               ( CIM . width  ( ) > TCW              ) :
+      ########################################################################
+      TTH = int ( int ( TCW * CIM . height ( ) ) / CIM . width (           ) )
+      CIM = CIM . scaled             ( TCW , TTH , Qt . KeepAspectRatio      )
+    ##########################################################################
+    if                               ( CIM . height ( ) > TCH              ) :
+      ########################################################################
+      TTW = int ( int ( TCH * CIM . width ( ) ) / CIM . height (           ) )
+      CIM = CIM . scaled             ( TTW , TCH , Qt . KeepAspectRatio      )
+    ##########################################################################
+    if                               ( CIM . width  ( ) > TCW              ) :
+      ########################################################################
+      TTH = int ( int ( TCW * CIM . height ( ) ) / CIM . width (           ) )
+      CIM = CIM . scaled             ( TCW , TTH , Qt . KeepAspectRatio      )
+    ##########################################################################
+    PIX   = QPixmap                  (                                       )
+    ##########################################################################
+    if                               ( PIX . convertFromImage( CIM       ) ) :
+      ########################################################################
+      ICN = QIcon                    ( PIX                                   )
+      self  . EditingWidget . Cover . setIconSize ( CIM . size (           ) )
+      self  . EditingWidget . Cover . setIcon     ( ICN                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def ChangeCoverImage           ( self                                    ) :
+    ##########################################################################
+    Title   = self . getMenuItem ( "AssignCoverImage"                        )
+    Filters = self . getMenuItem ( "CoverImageFilters"                       )
+    ROOT    = self . ALBUM . DIR
+    ROOT    = f"{ROOT}/images"
+    ##########################################################################
+    ( PFILE , filter ) = QFileDialog . getOpenFileName                       (
+                           self                                            , \
+                           Title                                           , \
+                           ROOT                                            , \
+                           Filters                                           )
+    ##########################################################################
+    if                           ( len ( PFILE ) <= 0                      ) :
+      return
+    ##########################################################################
+    PROOT   = f"{ROOT}/"
+    ##########################################################################
+    if                           ( PROOT not in PFILE                      ) :
+      ########################################################################
+      MSG   = self . getMenuItem ( "CoverImageNotInPlace"                    )
+      self  . OpenInformation    ( Title , MSG                               )
+      ########################################################################
+      return
+    ##########################################################################
+    CFILE   = PFILE . replace    ( PROOT , ""                                )
+    self    . ALBUM . Album [ "Images" ] [ "Cover" ] = CFILE
+    ##########################################################################
+    self    . AssignCoverImageToToolButton (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -322,52 +430,30 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     self . EditingWidget . Cover = QToolButton (                             )
     self . EditingWidget . Cover . setGeometry ( QRect ( 0 , 0 , TCW , TCH ) )
     self . EditingWidget . Cover . setMinimumSize ( 128 , 128                )
+    self . EditingWidget . Cover . clicked . connect ( self . ChangeCoverImage )
     ##########################################################################
-    self . EditingWidget . addWidget ( self . EditingWidget . Cover          )
+    self . EditingWidget . addWidget    ( self . EditingWidget . Cover       )
     ##########################################################################
-    if                              ( not self . ALBUM . isCover (       ) ) :
+    if                                  ( not self . ALBUM . isCover (   ) ) :
       return
     ##########################################################################
-    CF  = self . ALBUM . CoverFile (                                         )
-    CIM = QImage                  ( CF                                       )
-    ##########################################################################
-    if                            ( CIM . width  ( ) > TCW                 ) :
-      ########################################################################
-      TTH = int ( int ( TCW * CIM . height ( ) ) / CIM . width (           ) )
-      CIM = CIM . scaled          ( TCW , TTH , Qt . KeepAspectRatio         )
-    ##########################################################################
-    if                            ( CIM . height ( ) > TCH                 ) :
-      ########################################################################
-      TTW = int ( int ( TCH * CIM . width ( ) ) / CIM . height (           ) )
-      CIM = CIM . scaled          ( TTW , TCH , Qt . KeepAspectRatio         )
-    ##########################################################################
-    if                            ( CIM . width  ( ) > TCW                 ) :
-      ########################################################################
-      TTH = int ( int ( TCW * CIM . height ( ) ) / CIM . width (           ) )
-      CIM = CIM . scaled          ( TCW , TTH , Qt . KeepAspectRatio         )
-    ##########################################################################
-    PIX   = QPixmap               (                                          )
-    ##########################################################################
-    if                            ( PIX . convertFromImage( CIM          ) ) :
-      ########################################################################
-      ICN = QIcon                 ( PIX                                      )
-      self  . EditingWidget . Cover . setIconSize ( CIM . size (           ) )
-      self  . EditingWidget . Cover . setIcon     ( ICN                      )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
+    self . AssignCoverImageToToolButton (                                    )
     ##########################################################################
     return
   ############################################################################
-  def addNamesEditor ( self                                                ) :
+  def addCompanyAndNames            ( self                                 ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 360
+    self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
+    ##########################################################################
+    SPLT  = QSplitter               ( Qt . Horizontal                        )
+    SPLT  . setMinimumHeight        ( 120                                    )
+    SPLT  . setMaximumHeight        ( 400                                    )
     ##########################################################################
     TNE   = NamesEditor             ( None , self . PlanFunc                 )
+    TNE   . setMinimumWidth         ( 240                                    )
     TNE   . setMinimumHeight        ( 120                                    )
-    TNE   . resize                  ( 400 , 320                              )
+    TNE   . setMaximumHeight        ( 400                                    )
+    TNE   . resize                  ( 400 , 240                              )
     ##########################################################################
     TNE   . DB           = self . DB
     TNE   . Settings     = self . Settings
@@ -382,22 +468,12 @@ class EpisodeEditor       ( ScrollArea                                     ) :
       fnt . fromString              ( self . Settings [ "Font" ]             )
       TNE . setFont                 ( fnt                                    )
     ##########################################################################
-    self . EditingWidget . NamesEditor = TNE
-    ##########################################################################
-    self . EditingWidget . addWidget ( self . EditingWidget . NamesEditor    )
-    ##########################################################################
-    TNE   . startup                 (                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def addOrganizations                 ( self                              ) :
-    ##########################################################################
-    self   . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
-    ##########################################################################
     DKEY   = "OrganizationListings"
-    ORGS   = OrganizationListings      ( None , self . PlanFunc              )
-    ORGS   . setMinimumHeight          ( 120                                 )
-    ORGS   . resize                    ( 400 , 240                           )
+    ORGS   = OrganizationListings   ( None , self . PlanFunc                 )
+    ORGS   . setMinimumWidth        ( 160                                    )
+    ORGS   . setMinimumHeight       ( 120                                    )
+    ORGS   . setMaximumHeight       ( 400                                    )
+    ORGS   . resize                 ( 400 , 240                              )
     ##########################################################################
     ORGS   . Hosts        = { "Database" : self . Settings [ "Database" ]  , \
                               "Oriphase" : self . Settings [ "Oriphase" ]    }
@@ -406,40 +482,46 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ORGS   . Translations = self . Translations
     ORGS   . Tables       = self . Tables [ DKEY                             ]
     ##########################################################################
-    ORGS   . Relation . set            ( "second" , self . ALBUM . Uuid      )
-    ORGS   . Relation . set            ( "t2"     , 76                       )
-    ORGS   . Relation . setT1          ( "Organization"                      )
-    ORGS   . Relation . setRelation    ( "Subordination"                     )
-    ORGS   . setGrouping               ( "Reverse"                           )
+    ORGS   . Relation . set         ( "second" , self . ALBUM . Uuid         )
+    ORGS   . Relation . set         ( "t2"     , 76                          )
+    ORGS   . Relation . setT1       ( "Organization"                         )
+    ORGS   . Relation . setRelation ( "Subordination"                        )
+    ORGS   . setGrouping            ( "Reverse"                              )
     ##########################################################################
-    LANGZ  = self . Translations       [ DKEY ] [ "Languages"                ]
-    MENUZ  = self . Translations       [ DKEY ] [ "Menus"                    ]
+    LANGZ  = self . Translations    [ DKEY ] [ "Languages"                   ]
+    MENUZ  = self . Translations    [ DKEY ] [ "Menus"                       ]
     ##########################################################################
-    ORGS   . PrepareMessages           (                                     )
+    ORGS   . PrepareMessages        (                                        )
     ##########################################################################
-    ORGS   . setLocality               ( self . getLocality ( )              )
-    ORGS   . setLanguages              ( LANGZ                               )
-    ORGS   . setMenus                  ( MENUZ                               )
+    ORGS   . setLocality            ( self . getLocality ( )                 )
+    ORGS   . setLanguages           ( LANGZ                                  )
+    ORGS   . setMenus               ( MENUZ                                  )
     ##########################################################################
-    if                                 ( "Font" in self . Settings         ) :
-      fnt  = QFont                     (                                     )
-      fnt  . fromString                ( self . Settings [ "Font" ]          )
-      ORGS . setFont                   ( fnt                                 )
+    if                              ( "Font" in self . Settings            ) :
+      fnt  = QFont                  (                                        )
+      fnt  . fromString             ( self . Settings [ "Font" ]             )
+      ORGS . setFont                ( fnt                                    )
     ##########################################################################
-    ORGS   . PrepareForActions         (                                     )
+    ORGS   . PrepareForActions      (                                        )
     ##########################################################################
-    ## ORGS . PeopleGroup       . connect ( self . ShowPeopleGroup              )
-    ## ORGS . AlbumGroup        . connect ( self . OpenAlbumGroup               )
-    ## ORGS . OpenVariantTables . connect ( self . OpenVariantTables            )
-    ## ORGS . ShowWebPages      . connect ( self . ShowWebPages                 )
-    ## ORGS . OpenLogHistory    . connect ( self . OpenLogHistory               )
-    ## ORGS . OpenIdentifiers   . connect ( self . OpenIdentifiers              )
-    ## ORGS . emitLog           . connect ( self . appendLog                    )
+    ORGS   . PeopleGroup       . connect ( self . MAIN . ShowPeopleGroup     )
+    ORGS   . AlbumGroup        . connect ( self . MAIN . OpenAlbumGroup      )
+    ORGS   . OpenVariantTables . connect ( self . MAIN . OpenVariantTables   )
+    ## ORGS   . ShowWebPages      . connect ( self . MAIN . ShowWebPages        )
+    ORGS   . OpenLogHistory    . connect ( self . MAIN . OpenLogHistory      )
+    ORGS   . OpenIdentifiers   . connect ( self . MAIN . OpenIdentifiers     )
+    ORGS   . emitLog           . connect ( self . MAIN . appendLog           )
     ##########################################################################
-    self   . EditingWidget . Organizations = ORGS
+    SPLT   .                 addWidget ( TNE                                 )
+    SPLT   .                 addWidget ( ORGS                                )
     ##########################################################################
-    self   . EditingWidget . addWidget ( self . EditingWidget . Organizations )
+    self   . EditingWidget . CompanyAndNames = SPLT
+    self   . EditingWidget . NamesEditor     = TNE
+    self   . EditingWidget . Organizations   = ORGS
     ##########################################################################
+    self   . EditingWidget . addWidget ( SPLT                                )
+    ##########################################################################
+    TNE    . startup                   (                                     )
     ORGS   . startup                   (                                     )
     ##########################################################################
     return
@@ -687,8 +769,9 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
-      self . addNamesEditor        (                                         )
-      self . addOrganizations      (                                         )
+      ## self . addNamesEditor        (                                         )
+      ## self . addOrganizations      (                                         )
+      self . addCompanyAndNames    (                                         )
       self . addAlbumIdentifiers   (                                         )
       self . addPeopleView         (                                         )
     ##########################################################################
@@ -748,15 +831,10 @@ class EpisodeEditor       ( ScrollArea                                     ) :
     ##########################################################################
     ##########################################################################
     ##########################################################################
-    if ( self . EditingWidget . NamesEditor   not in [ False , None ]      ) :
+    if ( self . EditingWidget . CompanyAndNames not in [ False , None ]    ) :
       ########################################################################
-      TH   = self . EditingWidget . NamesEditor     . height (               )
-      self .        EditingWidget . NamesEditor     . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . Organizations not in [ False , None ]      ) :
-      ########################################################################
-      TH   = self . EditingWidget . Organizations   . height (               )
-      self .        EditingWidget . Organizations   . resize ( WW , TH       )
+      TH   = self . EditingWidget . CompanyAndNames . height (               )
+      self .        EditingWidget . CompanyAndNames . resize ( WW , TH       )
     ##########################################################################
     if ( self . EditingWidget . Identifiers   not in [ False , None ]      ) :
       ########################################################################

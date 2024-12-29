@@ -48,7 +48,8 @@ class VideoAlbumsView             ( IconDock                               ) :
   HavingMenu             = 1371434312
   ############################################################################
   OwnedPeopleGroup       = Signal ( str , int , str                          )
-  ShowPersonalGallery    = Signal ( str , int , str , QIcon                  )
+  ShowPersonalGallery    = Signal ( str , int , str ,       QIcon            )
+  ShowPersonalIcons      = Signal ( str , int , str , str , QIcon            )
   GalleryGroup           = Signal ( str , int , str                          )
   OwnedOrganizationGroup = Signal ( str , int , str , str , QIcon            )
   emitConnectAlbum       = Signal ( str                                      )
@@ -1806,6 +1807,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     if                             ( at == 1201                            ) :
       ########################################################################
+      text = item . text           (                                         )
+      icon = item . icon           (                                         )
+      xsid = str                   ( uuid                                    )
+      relz = "Using"
+      ########################################################################
+      self . ShowPersonalIcons . emit ( text , 76 , relz , xsid , icon       )
       ########################################################################
       return True
     ##########################################################################
