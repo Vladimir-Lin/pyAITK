@@ -527,13 +527,14 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     ORGS   . PrepareForActions      (                                        )
     ##########################################################################
-    ORGS   . PeopleGroup       . connect ( self . MAIN . ShowPeopleGroup     )
-    ORGS   . AlbumGroup        . connect ( self . MAIN . OpenAlbumGroup      )
-    ORGS   . OpenVariantTables . connect ( self . MAIN . OpenVariantTables   )
-    ## ORGS   . ShowWebPages      . connect ( self . MAIN . ShowWebPages        )
-    ORGS   . OpenLogHistory    . connect ( self . MAIN . OpenLogHistory      )
-    ORGS   . OpenIdentifiers   . connect ( self . MAIN . OpenIdentifiers     )
-    ORGS   . emitLog           . connect ( self . MAIN . appendLog           )
+    ORGS   . PeopleGroup         . connect ( self . MAIN . ShowPeopleGroup       )
+    ORGS   . AlbumGroup          . connect ( self . MAIN . OpenAlbumGroup        )
+    ORGS   . OpenVariantTables   . connect ( self . MAIN . OpenVariantTables     )
+    ## ORGS   . ShowWebPages        . connect ( self . MAIN . ShowWebPages          )
+    ORGS   . OpenLogHistory      . connect ( self . MAIN . OpenLogHistory        )
+    ORGS   . OpenIdentifiers     . connect ( self . MAIN . OpenIdentifiers       )
+    ORGS   . emitVendorDirectory . connect ( self . MAIN . CreateVendorDirectory )
+    ORGS   . emitLog             . connect ( self . MAIN . appendLog             )
     ##########################################################################
     SPLT   .                 addWidget ( TNE                                 )
     SPLT   .                 addWidget ( ORGS                                )

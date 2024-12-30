@@ -31,24 +31,25 @@ from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . People     . People   import People
 ##############################################################################
-class OrganizationListings   ( TreeDock                                    ) :
+class OrganizationListings     ( TreeDock                                  ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow     = Signal (                                               )
-  emitAllNames      = Signal ( dict                                          )
-  emitAssignAmounts = Signal ( str , int , int                               )
-  PeopleGroup       = Signal ( str , int , str                               )
-  AlbumGroup        = Signal ( str , int , str                               )
-  ShowWebPages      = Signal ( str , int , str , str , QIcon                 )
-  OpenVariantTables = Signal ( str , str , int , str , dict                  )
-  OpenLogHistory    = Signal ( str , str , str , str , str                   )
-  OpenIdentifiers   = Signal ( str , str , int                               )
-  emitLog           = Signal ( str                                           )
+  emitNamesShow       = Signal (                                             )
+  emitAllNames        = Signal ( dict                                        )
+  emitAssignAmounts   = Signal ( str , int , int                             )
+  PeopleGroup         = Signal ( str , int , str                             )
+  AlbumGroup          = Signal ( str , int , str                             )
+  ShowWebPages        = Signal ( str , int , str , str , QIcon               )
+  OpenVariantTables   = Signal ( str , str , int , str , dict                )
+  OpenLogHistory      = Signal ( str , str , str , str , str                 )
+  OpenIdentifiers     = Signal ( str , str , int                             )
+  emitVendorDirectory = Signal ( str                                         )
+  emitLog             = Signal ( str                                         )
   ############################################################################
-  def __init__               ( self , parent = None , plan = None          ) :
+  def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
-    super ( ) . __init__     (        parent        , plan                   )
+    super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -1411,8 +1412,11 @@ class OrganizationListings   ( TreeDock                                    ) :
     ICON = QIcon                ( ":/images/video.png"                       )
     mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CollectFilms"                             )
+    msg  = self . getMenuItem   ( "CreateVendorDirectory"                    )
     mm   . addActionFromMenu    ( COL , 38521004 , msg                       )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "CollectFilms"                             )
+    mm   . addActionFromMenu    ( COL , 38521005 , msg                       )
     ##########################################################################
     mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
@@ -1468,6 +1472,14 @@ class OrganizationListings   ( TreeDock                                    ) :
       return True
     ##########################################################################
     if                             ( at == 38521004                        ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      self . emitVendorDirectory . emit ( str ( uuid )                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38521005                        ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
