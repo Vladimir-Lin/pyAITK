@@ -51,18 +51,19 @@ from                      . UiEpisodeEstablish              import Ui_EpisodeEst
 ##############################################################################
 ##############################################################################
 ##############################################################################
-class EpisodeEditor        ( ScrollArea                                    ) :
+class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
-  emitEstablish   = Signal (                                                 )
-  emitEditing     = Signal (                                                 )
-  emitInformation = Signal ( str , str                                       )
-  emitLog         = Signal ( str                                             )
-  Leave           = Signal ( QWidget                                         )
+  emitEstablish     = Signal (                                               )
+  emitEditing       = Signal (                                               )
+  emitCoversChanged = Signal (                                               )
+  emitInformation   = Signal ( str , str                                     )
+  emitLog           = Signal ( str                                           )
+  Leave             = Signal ( QWidget                                       )
   ############################################################################
-  def           __init__   ( self , parent = None , plan = None            ) :
+  def           __init__     ( self , parent = None , plan = None          ) :
     ##########################################################################
-    super ( ) . __init__   (        parent        , plan                     )
-    self      . Configure  (                                                 )
+    super ( ) . __init__     (        parent        , plan                   )
+    self      . Configure    (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -81,17 +82,19 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     self          . setMinimumHeight ( 60                                    )
     self          . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff   )
     ##########################################################################
-    self . ALBUM  = Episode          (                                       )
+    self . LoopRunning      = True
+    self . ALBUM            = Episode (                                      )
     self . ALBUM  . LogFunc = self . addLog
     self . Method = "Nothing"
     ##########################################################################
-    self . CLI             = None
-    self . EstablishWidget = None
-    self . EditingWidget   = None
+    self . CLI              = None
+    self . EstablishWidget  = None
+    self . EditingWidget    = None
     ##########################################################################
-    self . emitEstablish   . connect ( self . DoEstablish                    )
-    self . emitEditing     . connect ( self . DoEditing                      )
-    self . emitInformation . connect ( self . OpenInformation                )
+    self . emitEstablish     . connect ( self . DoEstablish                  )
+    self . emitEditing       . connect ( self . DoEditing                    )
+    self . emitCoversChanged . connect ( self . DoCoversChanged              )
+    self . emitInformation   . connect ( self . OpenInformation              )
     ##########################################################################
     return
   ############################################################################
@@ -169,7 +172,31 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     ##########################################################################
     return
   ############################################################################
-  ############################################################################
+  def PrepareForDB              ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . LoopRunning                   ) :
+      return None
+    ##########################################################################
+    HNAME  = self . DB          [ "hostname"                                 ]
+    CDMSG  = self . getMenuItem ( "ConnectDB"                                )
+    MSG    = f"{CDMSG}{HNAME}"
+    self   . addLog             ( MSG                                        )
+    ##########################################################################
+    self   . ALBUM . Settings         = self . Settings
+    self   . ALBUM . Translations     = self . Translations
+    self   . ALBUM . Messages         = self . Translations [ "Episode"      ]
+    self   . ALBUM . Tables           = self . Tables
+    self   . ALBUM . CoverOpts        = self . CLI . CLI [ "Tables" ] [ "CoverOptions" ]
+    self   . ALBUM . AlbumCoverTables = self . CLI . CLI [ "Tables" ] [ "AlbumCovers"  ]
+    ##########################################################################
+    self   . LoopRunning = False
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      self . LoopRunning = True
+      return None
+    ##########################################################################
+    return DB
   ############################################################################
   def DoEstablish               ( self                                     ) :
     ##########################################################################
@@ -194,33 +221,20 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def EstablishAlbum            ( self                                     ) :
+  def EstablishAlbum           ( self                                      ) :
     ##########################################################################
-    HNAME  = self . DB          [ "hostname"                                 ]
-    CDMSG  = self . getMenuItem ( "ConnectDB"                                )
-    MSG    = f"{CDMSG}{HNAME}"
-    self   . addLog             ( MSG                                        )
-    ##########################################################################
-    self . ALBUM . Settings     = self . Settings
-    self . ALBUM . Translations = self . Translations
-    self . ALBUM . Messages     = self . Translations [ "Episode"            ]
-    self . ALBUM . Tables       = self . Tables
-    ##########################################################################
-    self   . LoopRunning = False
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      self . LoopRunning = True
+    DB   = self . PrepareForDB (                                             )
+    if                         ( DB in [ False , None ]                    ) :
       return
     ##########################################################################
-    self   . ALBUM . Establish  ( DB                                         )
+    self . ALBUM . Establish   ( DB                                          )
     ##########################################################################
-    DB     . Close              (                                            )
+    DB   . Close               (                                             )
     ##########################################################################
-    self   . LoopRunning = True
+    self . LoopRunning = True
     ##########################################################################
-    self   . Notify             ( 5                                          )
-    self   . emitEditing . emit (                                            )
+    self . Notify              ( 5                                           )
+    self . emitEditing . emit  (                                             )
     ##########################################################################
     return
   ############################################################################
@@ -255,6 +269,7 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     MSG  = self . getMenuItem                 ( "MainMenu"                   )
     ICON = QIcon ( QPixmap ( ":/images/Menu.png"                           ) )
     MACT = self . EditingWidget . ToolBar . addAction ( ICON , MSG           )
+    MACT . triggered . connect ( self . DoMainMenu                           )
     ##########################################################################
     MSG  = self . getMenuItem                 ( "SaveJson"                   )
     ICON = QIcon ( QPixmap ( ":/images/save.png"                           ) )
@@ -636,7 +651,7 @@ class EpisodeEditor        ( ScrollArea                                    ) :
                              "Oriphase" : self . Settings [ "Oriphase" ]     }
     PSVW  . Settings     = self . Settings
     PSVW  . Translations = self . Translations
-    PSVW  . Tables       = self . Tables [ KEY                               ]
+    PSVW  . Tables       = self . CLI . CLI [ "Tables" ] [ "AlbumCovers"     ]
     PSVW  . EditAllNames = None
     PSVW  . Relation . set    ( "first" , int ( self . ALBUM . Uuid )        )
     PSVW  . Relation . set    ( "t1"     , 76                                )
@@ -971,7 +986,40 @@ class EpisodeEditor        ( ScrollArea                                    ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  def ScanCoversWithinDirectories  ( self                                  ) :
+    ##########################################################################
+    self . ALBUM . ScanAlbumImages (                                         )
+    self . logMessage              ( "ExecuteCompleted"                      )
+    ##########################################################################
+    return
   ############################################################################
+  def DoCoversChanged ( self                                               ) :
+    ##########################################################################
+    if ( self . EditingWidget . GalleryViewer in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . EditingWidget . GalleryViewer . startup (                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncCoversToDatabase                ( self                           ) :
+    ##########################################################################
+    DB   = self . PrepareForDB            (                                  )
+    if                                    ( DB in [ False , None ]         ) :
+      return
+    ##########################################################################
+    self . ALBUM . SyncCoversToDatabase   ( DB                               )
+    self . ALBUM . SyncCoversFromDatabase ( DB                               )
+    ##########################################################################
+    DB   . Close                          (                                  )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                         ( 5                                )
+    self . logMessage                     ( "ExecuteCompleted"               )
+    self . emitCoversChanged . emit       (                                  )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -1050,11 +1098,31 @@ class EpisodeEditor        ( ScrollArea                                    ) :
     ##########################################################################
     return
   ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
+  def DoMainMenu                ( self                                     ) :
+    ##########################################################################
+    mm     = MenuManager        ( self                                       )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "ScanCovers"                               )
+    mm     . addAction          ( 1001  , MSG                                )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "SyncCovers"                               )
+    mm     . addAction          ( 1002  , MSG                                )
+    ##########################################################################
+    mm     . setFont            ( self    . menuFont ( )                     )
+    aa     = mm . exec_         ( QCursor . pos      ( )                     )
+    at     = mm . at            ( aa                                         )
+    ##########################################################################
+    if                          ( at == 1001                               ) :
+      ########################################################################
+      self . Go                 ( self . ScanCoversWithinDirectories         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1002                               ) :
+      ########################################################################
+      self . Go                 ( self . SyncCoversToDatabase                )
+      ########################################################################
+      return
+    ##########################################################################
+    return
 ##############################################################################

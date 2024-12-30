@@ -12,21 +12,26 @@ import shutil
 import glob
 ##############################################################################
 import pathlib
-from   pathlib                      import Path
+from   pathlib                       import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK . Calendars . StarDate  import StarDate                        as StarDate
-from   AITK . Documents . JSON      import Load                            as LoadJson
-from   AITK . Documents . JSON      import Save                            as SaveJson
+from   AITK . Essentials . Relation  import Relation                        as Relation
+from   AITK . Calendars  . StarDate  import StarDate                        as StarDate
+from   AITK . Calendars  . Periode   import Periode                         as Periode
+from   AITK . Documents  . JSON      import Load                            as LoadJson
+from   AITK . Documents  . JSON      import Save                            as SaveJson
 ##############################################################################
-from   AITK . Videos    . Utilities import SilentRun                       as SilentRun
-from   AITK . Videos    . Utilities import M3UtoFilms                      as M3UtoFilms
-from   AITK . Videos    . Utilities import MergeCoverPosters               as MergeCoverPosters
-from   AITK . Videos    . Utilities import GetFilmsInCurrentDirectory      as GetFilmsInCurrentDirectory
-from   AITK . Videos    . Utilities import GetImagesInCurrentDirectory     as GetImagesInCurrentDirectory
-from   AITK . Videos    . Utilities import GetAssInCurrentDirectory        as GetAssInCurrentDirectory
-from   AITK . Videos    . Utilities import GetSubfoldersInCurrentDirectory as GetSubfoldersInCurrentDirectory
+from   AITK . Pictures   . Picture   import Picture                         as PictureItem
+from   AITK . Pictures   . Gallery   import Gallery                         as GalleryItem
+##############################################################################
+from   AITK . Videos     . Utilities import SilentRun                       as SilentRun
+from   AITK . Videos     . Utilities import M3UtoFilms                      as M3UtoFilms
+from   AITK . Videos     . Utilities import MergeCoverPosters               as MergeCoverPosters
+from   AITK . Videos     . Utilities import GetFilmsInCurrentDirectory      as GetFilmsInCurrentDirectory
+from   AITK . Videos     . Utilities import GetImagesInCurrentDirectory     as GetImagesInCurrentDirectory
+from   AITK . Videos     . Utilities import GetAssInCurrentDirectory        as GetAssInCurrentDirectory
+from   AITK . Videos     . Utilities import GetSubfoldersInCurrentDirectory as GetSubfoldersInCurrentDirectory
 ##############################################################################
 class Episode    (                                                         ) :
   ############################################################################
@@ -39,18 +44,46 @@ class Episode    (                                                         ) :
   def __del__ ( self                                                       ) :
     return
   ############################################################################
-  def Clear               ( self                                           ) :
+  def Clear                   ( self                                       ) :
     ##########################################################################
-    self . Album        = {                                                  }
-    self . Settings     = {                                                  }
-    self . Translations = {                                                  }
-    self . Messages     = {                                                  }
-    self . Tables       = {                                                  }
-    self . Uuid         = 0
-    self . LogFunc      = None
-    self . Filename     = ""
-    self . DIR          = ""
-    self . TZ           = "Asia/Taipei"
+    self . Album            = {                                              }
+    self . Settings         = {                                              }
+    self . Translations     = {                                              }
+    self . Messages         = {                                              }
+    self . Tables           = {                                              }
+    self . CoverOpts        = { "Base"       : 3800700000000000001                   , \
+                                "Prefer"     : 0                                     , \
+                                "Master"     : "`cios`.`pictures_covers`"            , \
+                                "Depot"      : "`cios`.`pictures_depot_covers`"      , \
+                                "Thumb"      : "`cios`.`thumbs_covers`"              , \
+                                "ThumbDepot" : "`cios`.`thumbs_depot_covers`"        , \
+                                "Hash"       : "`cios`.`pictureproperties_hash`"     , \
+                                "Histogram"  : "`cios`.`pictureproperties_statistics`" }
+    self . AlbumCoverTables = { "Pictures"          : "`cios`.`pictureorders`"            , \
+                                "Information"       : "`cios`.`pictures_covers`"          , \
+                                "Depot"             : "`cios`.`pictures_depot_covers`"    , \
+                                "Galleries"         : "`cios`.`galleries`"                , \
+                                "Contours"          : "`cios`.`contours`"                 , \
+                                "Parameters"        : "`cios`.`parameters`"               , \
+                                "Variables"         : "`cios`.`variables`"                , \
+                                "Names"             : "`cios`.`names_others`"             , \
+                                "NamesEditing"      : "`appellations`.`names_others_0013`" , \
+                                "Notes"             : "`cios`.`notes_materials`"          , \
+                                "ThumbsInformation" : "`cios`.`thumbs_covers`"            , \
+                                "Thumb"             : "`cios`.`thumbs_depot_covers`"      , \
+                                "Relation"          : "`cios`.`relations`"                , \
+                                "RelationPeople"    : "`cios`.`relations_people`"         , \
+                                "RelationPictures"  : "`cios`.`relations_pictures`"       , \
+                                "RelationVideos"    : "`affiliations`.`relations_videos_0003`" , \
+                                "RelationCovers"    : "`affiliations`.`relations_videos_0007`" , \
+                                "PictureHash"       : "`cios`.`pictureproperties_hash`"   , \
+                                "PictureStatistics" : "`cios`.`pictureproperties_statistics`" , \
+                                "BaseUuid"          : "3800700000000000001"                 }
+    self . Uuid             = 0
+    self . LogFunc          = None
+    self . Filename         = ""
+    self . DIR              = ""
+    self . TZ               = "Asia/Taipei"
     ##########################################################################
     return
   ############################################################################
@@ -614,7 +647,7 @@ class Episode    (                                                         ) :
                  where ( `first` = {UUID} )
                    and ( `t1` = 76 )
                    and ( `t2` = 208 )
-                   and ( `relation` = 1 )
+                   and ( `relation` = 10 )
                  order by `id` asc ;"""
     UUIDs  = DB . ObtainUuids  ( " " . join ( QQ . split (               ) ) )
     ##########################################################################
@@ -647,7 +680,7 @@ class Episode    (                                                         ) :
         ######################################################################
         continue
       ########################################################################
-      if                       ( "adultdvdempire.com" in LURL              ) :
+      if ( "https://www.adultdvdempire.com/" in LURL                       ) :
         ######################################################################
         LINKs [ "AdultDvdEmpire" ] = True
         ######################################################################
@@ -687,6 +720,67 @@ class Episode    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
+  def SyncCoversFromDatabase ( self , DB                                   ) :
+    ##########################################################################
+    self . logMessage        ( "PullCovers..."                               )
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncCoversToDatabase ( self , DB                                     ) :
+    ##########################################################################
+    self . logMessage      ( "SyncCovers..."                                 )
+    ##########################################################################
+    if                     ( "Images" not in self . Album                  ) :
+      return
+    ##########################################################################
+    if                     ( "Folder" not in self . Album [ "Images" ]     ) :
+      return
+    ##########################################################################
+    FOLDERs = self . Album [ "Images" ] [ "Folder"                           ]
+    COVER   = self . Album [ "Images" ] [ "Cover"                            ]
+    ##########################################################################
+    if                     ( len ( FOLDERs ) <= 0                          ) :
+      return
+    ##########################################################################
+    if                     ( len ( COVER ) > 0                             ) :
+      if                   ( COVER not in FOLDERs                          ) :
+        return
+    ##########################################################################
+    DDIR    = self . DIR
+    OPTS    = self . CoverOpts
+    TABs    = self . AlbumCoverTables
+    ##########################################################################
+    VIDTAB  = TABs         [ "RelationVideos"                                ]
+    CVRTAB  = TABs         [ "RelationCovers"                                ]
+    PUIDs   =              [                                                 ]
+    IMGs    =              { "Cover"    : 0                                , \
+                             "Pictures" : [                                ] }
+    ##########################################################################
+    print ( VIDTAB , CVRTAB )
+    ##########################################################################
+    for F in FOLDERs                                                         :
+      ########################################################################
+      ########################################################################
+      ########################################################################
+      ########################################################################
+      ########################################################################
+      ########################################################################
+      if                   ( F == COVER                                    ) :
+        ######################################################################
+        ######################################################################
+        ######################################################################
+        ######################################################################
+        print ( "Cover" )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    self . Album [ "Images" ] [ "Database" ] = IMGs
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

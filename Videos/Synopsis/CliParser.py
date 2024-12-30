@@ -66,9 +66,51 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def Load                ( self , Filename                                ) :
+  def Load                  ( self , Filename                              ) :
     ##########################################################################
-    self . CLI = LoadJson (        Filename                                  )
+    self   . CLI = LoadJson (        Filename                                )
+    ##########################################################################
+    if ( "Tables"      not in self . CLI                                   ) :
+      ########################################################################
+      self . CLI [ "Tables" ] = {                                            }
+    ##########################################################################
+    if ( "CoverOptions" not in self . CLI [ "Tables" ]                     ) :
+      ########################################################################
+      CVOPTs = { "Base"       : 3800700000000000001                        , \
+                 "Prefer"     : 0                                          , \
+                 "Master"     : "`cios`.`pictures_covers`"                 , \
+                 "Depot"      : "`cios`.`pictures_depot_covers`"           , \
+                 "Thumb"      : "`cios`.`thumbs_covers`"                   , \
+                 "ThumbDepot" : "`cios`.`thumbs_depot_covers`"             , \
+                 "Hash"       : "`cios`.`pictureproperties_hash`"          , \
+                 "Histogram"  : "`cios`.`pictureproperties_statistics`"      }
+      ########################################################################
+      self . CLI [ "Tables" ] [ "CoverOptions" ] = CVOPTs
+    ##########################################################################
+    if ( "AlbumCovers" not in self . CLI [ "Tables" ]                      ) :
+      ########################################################################
+      ACTABs = { "Pictures"          : "`cios`.`pictureorders`"            , \
+                 "Information"       : "`cios`.`pictures_covers`"          , \
+                 "Depot"             : "`cios`.`pictures_depot_covers`"    , \
+                 "Galleries"         : "`cios`.`galleries`"                , \
+                 "Contours"          : "`cios`.`contours`"                 , \
+                 "Parameters"        : "`cios`.`parameters`"               , \
+                 "Variables"         : "`cios`.`variables`"                , \
+                 "Names"             : "`cios`.`names_others`"             , \
+                 "NamesEditing"      : "`appellations`.`names_others_0013`" , \
+                 "Notes"             : "`cios`.`notes_materials`"          , \
+                 "ThumbsInformation" : "`cios`.`thumbs_covers`"            , \
+                 "Thumb"             : "`cios`.`thumbs_depot_covers`"      , \
+                 "Relation"          : "`cios`.`relations`"                , \
+                 "RelationPeople"    : "`cios`.`relations_people`"         , \
+                 "RelationPictures"  : "`cios`.`relations_pictures`"       , \
+                 "RelationVideos"    : "`affiliations`.`relations_videos_0003`" , \
+                 "RelationCovers"    : "`affiliations`.`relations_videos_0007`" , \
+                 "PictureHash"       : "`cios`.`pictureproperties_hash`"   , \
+                 "PictureStatistics" : "`cios`.`pictureproperties_statistics`" , \
+                 "BaseUuid"          : "3800700000000000001"                 }
+      ########################################################################
+      self . CLI [ "Tables" ] [ "AlbumCovers" ] = ACTABs
     ##########################################################################
     return
   ############################################################################
