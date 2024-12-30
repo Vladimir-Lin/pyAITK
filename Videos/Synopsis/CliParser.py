@@ -112,6 +112,26 @@ class CliParser  (                                                         ) :
       ########################################################################
       self . CLI [ "Tables" ] [ "AlbumCovers" ] = ACTABs
     ##########################################################################
+    if ( "PeopleView" not in self . CLI [ "Tables" ]                       ) :
+      ########################################################################
+      PETABs = { "People"            : "`leagues`.`people_av`"             , \
+                 "Parameters"        : "`cios`.`parameters`"               , \
+                 "Variables"         : "`cios`.`variables`"                , \
+                 "Names"             : "`cios`.`names`"                    , \
+                 "NamesEditing"      : "`appellations`.`names_people`"     , \
+                 "Notes"             : "`cios`.`notes_descriptions`"       , \
+                 "Information"       : "`cios`.`pictures`"                 , \
+                 "Depot"             : "`cios`.`picturedepot`"             , \
+                 "ThumbsInformation" : "`cios`.`thumbs`"                   , \
+                 "Thumb"             : "`cios`.`thumbdepot`"               , \
+                 "FaceRegions"       : "`cios`.`faceregions`"              , \
+                 "FaceRecognitions"  : "`cios`.`facerecognitions`"         , \
+                 "Relation"          : "`cios`.`relations`"                , \
+                 "RelationPeople"    : "`affiliations`.`relations_videos`" , \
+                 "RelationPictures"  : "`cios`.`relations_pictures`"         }
+      ########################################################################
+      self . CLI [ "Tables" ] [ "PeopleView" ] = PETABs
+    ##########################################################################
     return
   ############################################################################
   def Save   ( self , Filename                                             ) :

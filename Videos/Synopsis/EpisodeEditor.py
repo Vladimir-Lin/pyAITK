@@ -188,6 +188,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     self   . ALBUM . Tables           = self . Tables
     self   . ALBUM . CoverOpts        = self . CLI . CLI [ "Tables" ] [ "CoverOptions" ]
     self   . ALBUM . AlbumCoverTables = self . CLI . CLI [ "Tables" ] [ "AlbumCovers"  ]
+    self   . ALBUM . PeopleViewTables = self . CLI . CLI [ "Tables" ] [ "PeopleView"   ]
     ##########################################################################
     self   . LoopRunning = False
     ##########################################################################
@@ -307,6 +308,11 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     LCID = int ( self . EditingWidget . LanguageEditor . itemData ( IDX )    )
     ##########################################################################
     self . ALBUM . Album [ "Language" ] = LCID
+    ##########################################################################
+    if ( self . EditingWidget . PeopleView not in [ False , None ] )         :
+      ########################################################################
+      self . EditingWidget . PeopleView . setLocality ( LCID                 )
+      self . EditingWidget . PeopleView . startup     (                      )
     ##########################################################################
     return
   ############################################################################
@@ -597,7 +603,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
                              "Oriphase" : self . Settings [ "Oriphase" ]     }
     PEOW  . Settings     = self . Settings
     PEOW  . Translations = self . Translations
-    PEOW  . Tables       = self . Tables [ KEY                     ]
+    PEOW  . Tables       = self . CLI . CLI [ "Tables" ] [ "PeopleView"      ]
     PEOW  . Relation . set    ( "second" , int ( self . ALBUM . Uuid )       )
     PEOW  . Relation . set    ( "t2"     , 76                                )
     PEOW  . setGrouping       ( "Reverse"                                    )
@@ -606,23 +612,23 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     MENUZ = self . Translations [ KEY ] [ "Menus"                            ]
     ##########################################################################
     PEOW  . PrepareMessages   (                                              )
-    PEOW  . setLocality       ( self . getLocality ( )                       )
+    PEOW  . setLocality       ( int ( self . ALBUM . Album [ "Language" ] )  )
     PEOW  . setLanguages      ( LANGZ                                        )
     PEOW  . setMenus          ( MENUZ                                        )
     ##########################################################################
-    ## PEOW . ShowGalleries         . connect ( self . ShowGalleries            )
-    ## PEOW . ShowGalleriesRelation . connect ( self . ShowGalleriesRelation    )
-    ## PEOW . ShowPersonalGallery   . connect ( self . ShowPersonalGallery      )
-    ## PEOW . ShowPersonalIcons     . connect ( self . ShowPersonalIcons        )
-    ## PEOW . ShowPersonalFaces     . connect ( self . ShowFaceViewByPeople     )
-    ## PEOW . ShowVideoAlbums       . connect ( self . ShowVideoAlbums          )
-    ## PEOW . ShowWebPages          . connect ( self . ShowWebPages             )
-    ## PEOW . OwnedOccupation       . connect ( self . OwnedOccupationSubgroups )
-    ## PEOW . OpenVariantTables     . connect ( self . OpenVariantTables        )
-    ## PEOW . ShowLodListings       . connect ( self . ShowLodListings          )
-    ## PEOW . OpenLogHistory        . connect ( self . OpenLogHistory           )
-    ## PEOW . OpenBodyShape         . connect ( self . OpenBodyShape            )
-    ## PEOW . emitOpenSmartNote     . connect ( self . assignSmartNote          )
+    PEOW  . ShowGalleries         . connect ( self . MAIN . ShowGalleries            )
+    PEOW  . ShowGalleriesRelation . connect ( self . MAIN . ShowGalleriesRelation    )
+    PEOW  . ShowPersonalGallery   . connect ( self . MAIN . ShowPersonalGallery      )
+    PEOW  . ShowPersonalIcons     . connect ( self . MAIN . ShowPersonalIcons        )
+    ## PEOW  . ShowPersonalFaces     . connect ( self . MAIN . ShowFaceViewByPeople     )
+    PEOW  . ShowVideoAlbums       . connect ( self . MAIN . ShowVideoAlbums          )
+    ## PEOW  . ShowWebPages          . connect ( self . MAIN . ShowWebPages             )
+    PEOW  . OwnedOccupation       . connect ( self . MAIN . OwnedOccupationSubgroups )
+    PEOW  . OpenVariantTables     . connect ( self . MAIN . OpenVariantTables        )
+    ## PEOW  . ShowLodListings       . connect ( self . MAIN . ShowLodListings          )
+    PEOW  . OpenLogHistory        . connect ( self . MAIN . OpenLogHistory           )
+    ## PEOW  . OpenBodyShape         . connect ( self . MAIN . OpenBodyShape            )
+    PEOW  . emitOpenSmartNote     . connect ( self . MAIN . assignSmartNote          )
     PEOW  . emitLog              . connect ( self . MAIN . appendLog         )
     ##########################################################################
     self  . setAllFont        ( PEOW , self . font (                       ) )
@@ -1021,6 +1027,22 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def SyncActorsFromDatabase              ( self                           ) :
+    ##########################################################################
+    DB   = self . PrepareForDB            (                                  )
+    if                                    ( DB in [ False , None ]         ) :
+      return
+    ##########################################################################
+    self . ALBUM . SyncActorsFromDatabase ( DB                               )
+    ##########################################################################
+    DB   . Close                          (                                  )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                         ( 5                                )
+    self . logMessage                     ( "ExecuteCompleted"               )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   def DockIn        ( self , shown                                         ) :
@@ -1108,6 +1130,9 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     MSG    = self . getMenuItem ( "SyncCovers"                               )
     mm     . addAction          ( 1002  , MSG                                )
     ##########################################################################
+    MSG    = self . getMenuItem ( "SyncActors"                               )
+    mm     . addAction          ( 1003  , MSG                                )
+    ##########################################################################
     mm     . setFont            ( self    . menuFont ( )                     )
     aa     = mm . exec_         ( QCursor . pos      ( )                     )
     at     = mm . at            ( aa                                         )
@@ -1121,6 +1146,12 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     if                          ( at == 1002                               ) :
       ########################################################################
       self . Go                 ( self . SyncCoversToDatabase                )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1003                               ) :
+      ########################################################################
+      self . Go                 ( self . SyncActorsFromDatabase              )
       ########################################################################
       return
     ##########################################################################

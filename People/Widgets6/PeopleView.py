@@ -552,15 +552,24 @@ class PeopleView                 ( IconDock                                ) :
     RELTAB = self . Tables     [ "RelationPeople"                            ]
     ##########################################################################
     DB     . LockWrites        ( [ RELTAB                                  ] )
-    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
     ##########################################################################
-    LUID   = PUIDs             [ -1                                          ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100         )
+    if                         ( self . isSubordination (                ) ) :
+      ########################################################################
+      self  . Relation  . Joins ( DB , RELTAB , UUIDs                        )
+      OPTS  = f"order by `position` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
+      ########################################################################
+      LUID  = PUIDs             [ -1                                         ]
+      LAST  = self . GetLastestPosition ( DB     , LUID                      )
+      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
+      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
+      ########################################################################
+    elif                       ( self . isReverse (                      ) ) :
+      ########################################################################
+      self  . Relation  . JoinsFirst ( DB , RELTAB , UUIDs                   )
+      OPTS  = f"order by `reverse` asc"
+      PUIDs = self . Relation . GetOwners ( DB , RELTAB , OPTS               )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )
