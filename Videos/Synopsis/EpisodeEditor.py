@@ -41,6 +41,10 @@ from   AITK    . Finance  . Widgets6 . IdentifierListings   import IdentifierLis
 from   AITK    . Society  . Widgets6 . OrganizationListings import OrganizationListings
 from   AITK    . Pictures . Widgets6 . GalleriesView        import GalleriesView
 from   AITK    . Pictures . Widgets6 . PicturesView         import PicturesView
+##############################################################################
+from   AITK    . Videos   . Album                           import Album               as AlbumItem
+from   AITK    . Videos   . Film                            import Film                as FilmItem
+##############################################################################
 from   AITK    . Videos   . Utilities                       import SilentRun           as SilentRun
 ##############################################################################
 from                      . Episode                         import Episode             as Episode
@@ -58,6 +62,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   emitCoversChanged = Signal (                                               )
   emitInformation   = Signal ( str , str                                     )
   emitLog           = Signal ( str                                           )
+  emitPlay          = Signal ( QWidget                                       )
   Leave             = Signal ( QWidget                                       )
   ############################################################################
   def           __init__     ( self , parent = None , plan = None          ) :
@@ -84,6 +89,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     self . LoopRunning      = True
     self . ALBUM            = Episode (                                      )
+    self . PLAYER           =         {                                      }
     self . ALBUM  . LogFunc = self . addLog
     self . Method = "Nothing"
     ##########################################################################
@@ -530,7 +536,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ORGS   . PeopleGroup         . connect ( self . MAIN . ShowPeopleGroup       )
     ORGS   . AlbumGroup          . connect ( self . MAIN . OpenAlbumGroup        )
     ORGS   . OpenVariantTables   . connect ( self . MAIN . OpenVariantTables     )
-    ## ORGS   . ShowWebPages        . connect ( self . MAIN . ShowWebPages          )
+    ORGS   . ShowWebPages        . connect ( self . MAIN . ShowWebPages          )
     ORGS   . OpenLogHistory      . connect ( self . MAIN . OpenLogHistory        )
     ORGS   . OpenIdentifiers     . connect ( self . MAIN . OpenIdentifiers       )
     ORGS   . emitVendorDirectory . connect ( self . MAIN . CreateVendorDirectory )
@@ -625,7 +631,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     PEOW  . ShowPersonalIcons     . connect ( self . MAIN . ShowPersonalIcons        )
     ## PEOW  . ShowPersonalFaces     . connect ( self . MAIN . ShowFaceViewByPeople     )
     PEOW  . ShowVideoAlbums       . connect ( self . MAIN . ShowVideoAlbums          )
-    ## PEOW  . ShowWebPages          . connect ( self . MAIN . ShowWebPages             )
+    PEOW  . ShowWebPages          . connect ( self . MAIN . ShowWebPages             )
     PEOW  . OwnedOccupation       . connect ( self . MAIN . OwnedOccupationSubgroups )
     PEOW  . OpenVariantTables     . connect ( self . MAIN . OpenVariantTables        )
     ## PEOW  . ShowLodListings       . connect ( self . MAIN . ShowLodListings          )
@@ -1049,6 +1055,73 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def SyncClipsFromDatabase              ( self                            ) :
+    ##########################################################################
+    DB   = self . PrepareForDB           (                                   )
+    if                                   ( DB in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . ALBUM . SyncClipsFromDatabase ( DB                                )
+    ##########################################################################
+    DB   . Close                         (                                   )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                        ( 5                                 )
+    self . logMessage                    ( "ExecuteCompleted"                )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendClipsToDatabase              ( self                            ) :
+    ##########################################################################
+    DB   = self . PrepareForDB           (                                   )
+    if                                   ( DB in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . ALBUM . AppendClipsToDatabase ( DB                                )
+    ##########################################################################
+    DB   . Close                         (                                   )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                        ( 5                                 )
+    self . logMessage                    ( "ExecuteCompleted"                )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateClipsToDatabase              ( self                            ) :
+    ##########################################################################
+    DB   = self . PrepareForDB           (                                   )
+    if                                   ( DB in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . ALBUM . UpdateClipsToDatabase ( DB                                )
+    ##########################################################################
+    DB   . Close                         (                                   )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                        ( 5                                 )
+    self . logMessage                    ( "ExecuteCompleted"                )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateClipsToGroups                ( self                            ) :
+    ##########################################################################
+    DB   = self . PrepareForDB           (                                   )
+    if                                   ( DB in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . ALBUM . UpdateClipsToGroups ( DB                                )
+    ##########################################################################
+    DB   . Close                         (                                   )
+    ##########################################################################
+    self . LoopRunning = True
+    ##########################################################################
+    self . Notify                        ( 5                                 )
+    self . logMessage                    ( "ExecuteCompleted"                )
+    ##########################################################################
+    return
   ############################################################################
   def DockIn        ( self , shown                                         ) :
     ##########################################################################
@@ -1138,6 +1211,18 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     MSG    = self . getMenuItem ( "SyncActors"                               )
     mm     . addAction          ( 1003  , MSG                                )
     ##########################################################################
+    MSG    = self . getMenuItem ( "SyncClips"                                )
+    mm     . addAction          ( 1004  , MSG                                )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "AppendClips"                              )
+    mm     . addAction          ( 1005  , MSG                                )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "UpdateClips"                              )
+    mm     . addAction          ( 1006  , MSG                                )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "ClipsJoinGroups"                          )
+    mm     . addAction          ( 1007  , MSG                                )
+    ##########################################################################
     mm     . setFont            ( self    . menuFont ( )                     )
     aa     = mm . exec_         ( QCursor . pos      ( )                     )
     at     = mm . at            ( aa                                         )
@@ -1157,6 +1242,30 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . Go                 ( self . SyncActorsFromDatabase              )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1004                               ) :
+      ########################################################################
+      self . Go                 ( self . SyncClipsFromDatabase               )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1005                               ) :
+      ########################################################################
+      self . Go                 ( self . AppendClipsToDatabase               )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1006                               ) :
+      ########################################################################
+      self . Go                 ( self . UpdateClipsToDatabase               )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( at == 1007                               ) :
+      ########################################################################
+      self . Go                 ( self . UpdateClipsToGroups                 )
       ########################################################################
       return
     ##########################################################################

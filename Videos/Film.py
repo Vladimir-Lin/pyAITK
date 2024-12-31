@@ -583,6 +583,45 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     return                   ( self . Uuid > 0                               )
   ############################################################################
+  def Sync             ( self , DB , VIDTAB                                ) :
+    ##########################################################################
+    if                 ( self . Uuid <= 0                                  ) :
+      return False
+    ##########################################################################
+    UUID = self . Uuid
+    FMT  = self . Format
+    DUR  = self . Duration
+    VFS  = self . FileSize
+    VW   = self . Width
+    VH   = self . Height
+    VCO  = self . vCodec
+    FPS  = self . FPS
+    FRS  = self . Frames
+    VBR  = self . vBitRate
+    ACO  = self . aCodec
+    ASR  = self . SampleRate
+    ABR  = self . aBitRate
+    ##########################################################################
+    QQ   = f"""update {VIDTAB}
+               set `filesize` = {VFS} ,
+                   `duration` = {DUR} ,
+                      `width` = {VW} ,
+                     `height` = {VH} ,
+                     `frames` = {FRS} ,
+                     `format` = '{FMT}' ,
+                        `fps` = '{FPS}' ,
+                     `vcodec` = '{VCO}' ,
+                   `vbitrate` = {VBR} ,
+                     `acodec` = '{ACO}' ,
+                 `samplerate` = {ASR} ,
+                   `abitrate` = {ABR}
+               where ( `uuid` = {UUID} )  ;"""
+    ##########################################################################
+    QQ   =  " " . join ( QQ . split ( )                                      )
+    DB   . Query       ( QQ                                                  )
+    ##########################################################################
+    return True
+  ############################################################################
   def Assure             ( self , DB , VIDTAB                              ) :
     ##########################################################################
     if                   ( self . FileSize <= 0                            ) :
