@@ -359,44 +359,56 @@ class Episode    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def ScanAlbumClips                        ( self                         ) :
+  def ScanAlbumClips                          ( self                       ) :
     ##########################################################################
-    self  . logMessage                      ( "ScanAlbumClips..."            )
+    self    . logMessage                      ( "ScanAlbumClips..."          )
     ##########################################################################
-    PWD   = self . DIR
-    PWD   = f"{PWD}/videos"
+    PWD     = self . DIR
+    PWD     = f"{PWD}/videos"
     ##########################################################################
-    CWD   = os . getcwd                     (                                )
-    os    . chdir                           ( PWD                            )
+    CWD     = os . getcwd                     (                              )
+    os      . chdir                           ( PWD                          )
     ##########################################################################
-    FILEs = GetFilmsInCurrentDirectory      (                                )
-    DIRs  = GetSubfoldersInCurrentDirectory (                                )
+    FILEs   = GetFilmsInCurrentDirectory      (                              )
+    DIRs    = GetSubfoldersInCurrentDirectory (                              )
     ##########################################################################
-    self  . Album [ "Videos" ] [ "Clips"       ] = FILEs
-    self  . Album [ "Videos" ] [ "Directories" ] = DIRs
-    self  . Album [ "Videos" ] [ "Subfolders"  ] = {                         }
+    self    . Album [ "Videos" ] [ "Clips"       ] = FILEs
+    self    . Album [ "Videos" ] [ "Subfolders"  ] = {                       }
+    ##########################################################################
+    XDIRs   =                                 [                              ]
+    IGNs    =                                 [ "ignore" , "ignores"         ]
     ##########################################################################
     for D in DIRs                                                            :
       ########################################################################
-      F   = f"{PWD}/{D}"
-      M3U = f"{F}/Album.m3u"
-      SPs =                                 [                                ]
+      DL    = D
+      DL    = DL . lower                      (                              )
       ########################################################################
-      os  . chdir                           ( D                              )
+      if                                      ( DL in IGNs                 ) :
+        continue
       ########################################################################
-      FILEs = GetFilmsInCurrentDirectory    (                                )
-      M3UPF = Path                          ( M3U                            )
+      XDIRs . append                          ( D                            )
       ########################################################################
-      if                                    ( M3UPF . is_file (          ) ) :
+      F     = f"{PWD}/{D}"
+      M3U   = f"{F}/Album.m3u"
+      SPs   =                                 [                              ]
+      ########################################################################
+      os    . chdir                           ( D                            )
+      ########################################################################
+      FILEs = GetFilmsInCurrentDirectory      (                              )
+      M3UPF = Path                            ( M3U                          )
+      ########################################################################
+      if                                      ( M3UPF . is_file (        ) ) :
         ######################################################################
-        SPs = M3UtoFilms                    ( M3U , False                    )
+        SPs = M3UtoFilms                      ( M3U , False                  )
       ########################################################################
-      FVs   =                               { "Clips" : FILEs              , \
-                                              "Order" : SPs                  }
+      FVs   =                                 { "Clips" : FILEs            , \
+                                                "Order" : SPs                }
       ########################################################################
       self  . Album [ "Videos" ] [ "Subfolders" ] [ D ] = FVs
     ##########################################################################
-    os    . chdir                           ( CWD                            )
+    os      . chdir                           ( CWD                          )
+    ##########################################################################
+    self    . Album [ "Videos" ] [ "Directories" ] = XDIRs
     ##########################################################################
     return
   ############################################################################
@@ -695,7 +707,7 @@ class Episode    (                                                         ) :
       self . Album [ "Vendors" ] = [                                         ]
       return
     ##########################################################################
-    NAMTAB = self . Tables     [ "OrganizationListings" ] [ "NamesEditing"   ]
+    NAMTAB = self . PeopleViewTables [ "Names"                               ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
@@ -1014,7 +1026,7 @@ class Episode    (                                                         ) :
     self   . logMessage              ( "PullActors..."                       )
     ##########################################################################
     RELTAB = self . PeopleViewTables [ "RelationPeople"                      ]
-    NAMTAB = self . PeopleViewTables [ "NamesEditing"                        ]
+    NAMTAB = self . PeopleViewTables [ "Names"                               ]
     VUID   = self . Uuid
     DDIR   = self . DIR
     self   . Album [ "Roles" ] =     {                                       }
