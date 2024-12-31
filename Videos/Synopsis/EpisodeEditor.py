@@ -89,7 +89,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     self . LoopRunning      = True
     self . ALBUM            = Episode (                                      )
-    self . PLAYER           =         {                                      }
+    self . PLAYER           =         { "Connection" : False               , \
+                                        "Method"     : ""                    }
     self . ALBUM  . LogFunc = self . addLog
     self . Method = "Nothing"
     ##########################################################################
