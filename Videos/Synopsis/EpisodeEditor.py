@@ -595,6 +595,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     PEOW  = PeopleView        ( None , self . PlanFunc                       )
     ##########################################################################
+    dIcon = QIcon             ( ":/images/buddy.png"                         )
+    PEOW  . setDefaultIcon    ( dIcon                                        )
     PEOW  . setMinimumHeight  ( 160                                          )
     PEOW  . resize            ( 400 , 320                                    )
     ##########################################################################
@@ -649,6 +651,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     PSVW  = PicturesView      ( None , self . PlanFunc                       )
     ##########################################################################
+    dIcon = QIcon             ( ":/images/pictures.png"                      )
+    PSVW  . setDefaultIcon    ( dIcon                                        )
     PSVW  . setMinimumHeight  ( 160                                          )
     PSVW  . resize            ( 400 , 320                                    )
     ##########################################################################
