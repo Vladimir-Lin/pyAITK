@@ -48,6 +48,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   HavingMenu             = 1371434312
   ############################################################################
   OwnedPeopleGroup       = Signal ( str , int , str                          )
+  OwnedPeopleGroupRelate = Signal ( str , int , str , str                    )
   ShowPersonalGallery    = Signal ( str , int , str ,       QIcon            )
   ShowPersonalIcons      = Signal ( str , int , str , str , QIcon            )
   GalleryGroup           = Signal ( str , int , str                          )
@@ -1734,6 +1735,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     MSG   = self . getMenuItem   ( "Crowds"                                  )
     mm    . addActionFromMenu    ( LOM , 34635203 , MSG                      )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "PossibleCrowds"                          )
+    mm    . addActionFromMenu    ( LOM , 34635204 , MSG                      )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "IconGroups"                              )
@@ -1802,6 +1806,16 @@ class VideoAlbumsView             ( IconDock                               ) :
       xsid = str                   ( uuid                                    )
       ########################################################################
       self . OwnedPeopleGroup . emit ( text , 76 , xsid                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34635204                        ) :
+      ########################################################################
+      text = item . text           (                                         )
+      xsid = str                   ( uuid                                    )
+      rele = "Candidate"
+      ########################################################################
+      self . OwnedPeopleGroupRelate . emit ( text , 76 , xsid , rele         )
       ########################################################################
       return True
     ##########################################################################
