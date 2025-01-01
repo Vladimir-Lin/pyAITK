@@ -54,6 +54,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   GalleryGroup           = Signal ( str , int , str                          )
   OwnedOrganizationGroup = Signal ( str , int , str , str , QIcon            )
   emitConnectAlbum       = Signal ( str                                      )
+  emitOpenVideoGroup     = Signal ( str , int , str , str , QIcon            )
   ShowWebPages           = Signal ( str , int , str , str , QIcon            )
   OpenVariantTables      = Signal ( str , str , int , str , dict             )
   emitOpenSmartNote      = Signal ( str                                      )
@@ -1864,6 +1865,46 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return False
   ############################################################################
+  def VideosMenu               ( self , mm , uuid , item                   ) :
+    ##########################################################################
+    if                         ( uuid <= 0                                 ) :
+      return mm
+    ##########################################################################
+    TRX   = self . Translations
+    TRM   = TRX                [ "VideoAlbumsView" ] [ "ContainsVideos"      ]
+    NAME  = item . text        (                                             )
+    MSG   = self . getMenuItem ( "VideoGroups"                               )
+    LOM   = mm   . addMenu     ( MSG                                         )
+    ##########################################################################
+    KEYs  = TRM . keys         (                                             )
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      KXD = int                ( K                                           )
+      MSG = TRM                [ K                                           ]
+      mm  . addActionFromMenu  ( LOM , int ( 34670000 + KXD ) , MSG          )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunVideosMenu                    ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at <  34670001                    ) :
+      return False
+    ##########################################################################
+    if                                 ( at >= 34680000                    ) :
+      return False
+    ##########################################################################
+    KXD    = int                       ( at -  34670000                      )
+    text   = item . text               (                                     )
+    icon   = item . icon               (                                     )
+    xsid   = str                       ( uuid                                )
+    REL    = Relation                  (                                     )
+    relate = REL . GetRelationName     ( KXD                                 )
+    ##########################################################################
+    self   . emitOpenVideoGroup . emit ( text , 76 , xsid , relate , icon    )
+    ##########################################################################
+    return   True
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
@@ -1895,6 +1936,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
     self   . GroupsMenu            ( mm , uuid , atItem                      )
+    self   . VideosMenu            ( mm , uuid , atItem                      )
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
@@ -1915,6 +1957,10 @@ class VideoAlbumsView             ( IconDock                               ) :
       return True
     ##########################################################################
     OKAY   = self . RunGroupsMenu  ( at , uuid , atItem                      )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunVideosMenu  ( at , uuid , atItem                      )
     if                             ( OKAY                                  ) :
       return True
     ##########################################################################

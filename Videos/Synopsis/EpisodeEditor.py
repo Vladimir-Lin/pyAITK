@@ -19,9 +19,11 @@ from   pathlib                                              import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate                       import StarDate            as StarDate
-from   AITK    . Documents . JSON                           import Load                as LoadJson
-from   AITK    . Documents . JSON                           import Save                as SaveJson
+from   AITK    . Essentials . Relation                      import Relation
+from   AITK    . Calendars  . StarDate                      import StarDate            as StarDate
+from   AITK    . Calendars  . Periode                       import Periode
+from   AITK    . Documents  . JSON                          import Load                as LoadJson
+from   AITK    . Documents  . JSON                          import Save                as SaveJson
 ##############################################################################
 from   PySide6                                              import QtCore
 from   PySide6                                              import QtGui
@@ -42,6 +44,7 @@ from   AITK    . Society  . Widgets6 . OrganizationListings import OrganizationL
 from   AITK    . Pictures . Widgets6 . GalleriesView        import GalleriesView
 from   AITK    . Pictures . Widgets6 . PicturesView         import PicturesView
 ##############################################################################
+from   AITK    . Videos   . Widgets6 . VideoListings        import VideoListings
 from   AITK    . Videos   . Album                           import Album               as AlbumItem
 from   AITK    . Videos   . Film                            import Film                as FilmItem
 ##############################################################################
@@ -63,6 +66,9 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   emitInformation   = Signal ( str , str                                     )
   emitLog           = Signal ( str                                           )
   emitPlay          = Signal ( QWidget                                       )
+  QueueOneVideo     = Signal ( str                                           )
+  OnBusy            = Signal (                                               )
+  GoRelax           = Signal (                                               )
   Leave             = Signal ( QWidget                                       )
   ############################################################################
   def           __init__     ( self , parent = None , plan = None          ) :
@@ -87,21 +93,25 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     self          . setMinimumHeight ( 60                                    )
     self          . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff   )
     ##########################################################################
-    self . LoopRunning      = True
-    self . ALBUM            = Episode (                                      )
-    self . PLAYER           =         { "Connection" : False               , \
-                                        "Method"     : ""                    }
-    self . ALBUM  . LogFunc = self . addLog
+    self . LoopRunning        = True
+    self . ALBUM              = Episode (                                    )
+    self . PLAYER             =         { "Connection" : False             , \
+                                          "Method"     : ""                  }
+    self . ALBUM  . LogFunc   = self . addLog
+    self . ALBUM  . BusyFunc  = self . RunBusy
+    self . ALBUM  . RelaxFunc = self . RunRelax
     self . Method = "Nothing"
     ##########################################################################
-    self . CLI              = None
-    self . EstablishWidget  = None
-    self . EditingWidget    = None
+    self . CLI                = None
+    self . EstablishWidget    = None
+    self . EditingWidget      = None
     ##########################################################################
     self . emitEstablish     . connect ( self . DoEstablish                  )
     self . emitEditing       . connect ( self . DoEditing                    )
     self . emitCoversChanged . connect ( self . DoCoversChanged              )
     self . emitInformation   . connect ( self . OpenInformation              )
+    self . OnBusy            . connect ( self . AtBusy                       )
+    self . GoRelax           . connect ( self . OnRelax                      )
     ##########################################################################
     return
   ############################################################################
@@ -119,6 +129,30 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     super ( ) . showEvent ( event                                            )
     self . Relocation     (                                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunBusy            ( self                                            ) :
+    ##########################################################################
+    self . OnBusy . emit (                                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunRelax            ( self                                           ) :
+    ##########################################################################
+    self . GoRelax . emit (                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -453,7 +487,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
   def addAlbumCoverSection ( self                                          ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 400
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 320
     ##########################################################################
     TCW  = 640
     TCH  = 360
@@ -511,6 +545,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ORGS   . Settings     = self . Settings
     ORGS   . Translations = self . Translations
     ORGS   . Tables       = self . Tables [ DKEY                             ]
+    ORGS   . EditAllNames = self . MAIN . CallNamesEditor
     ##########################################################################
     ORGS   . Relation . set         ( "second" , self . ALBUM . Uuid         )
     ORGS   . Relation . set         ( "t2"     , 76                          )
@@ -559,12 +594,12 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
   def addAlbumIdentifiers              ( self                              ) :
     ##########################################################################
-    self   . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
+    self   . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 200
     ##########################################################################
     DKEY   = "IdentifierListings"
     IDFW   = IdentifierListings        ( None , self . PlanFunc              )
     IDFW   . setMinimumHeight          ( 120                                 )
-    IDFW   . resize                    ( 400 , 240                           )
+    IDFW   . resize                    ( 400 , 200                           )
     ##########################################################################
     IDFW   . setUuidMethod             ( self . ALBUM . Uuid , 76            )
     IDFW   . Hosts        = { "Database" : self . Settings [ "Database" ]  , \
@@ -598,7 +633,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
   def addPeopleView           ( self                                       ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 320
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 280
     ##########################################################################
     PEOW  = PeopleView        ( None , self . PlanFunc                       )
     ##########################################################################
@@ -614,6 +649,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     PEOW  . Settings     = self . Settings
     PEOW  . Translations = self . Translations
     PEOW  . Tables       = self . CLI . CLI [ "Tables" ] [ "PeopleView"      ]
+    PEOW  . EditAllNames = self . MAIN . CallNamesEditor
     PEOW  . Relation . set    ( "second" , int ( self . ALBUM . Uuid )       )
     PEOW  . Relation . set    ( "t2"     , 76                                )
     PEOW  . setGrouping       ( "Reverse"                                    )
@@ -652,9 +688,67 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def addCandidateView        ( self                                       ) :
+    ##########################################################################
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 280
+    ##########################################################################
+    PEOW  = PeopleView        ( None , self . PlanFunc                       )
+    ##########################################################################
+    dIcon = QIcon             ( ":/images/buddy.png"                         )
+    PEOW  . setDefaultIcon    ( dIcon                                        )
+    PEOW  . setMinimumHeight  ( 160                                          )
+    PEOW  . resize            ( 400 , 320                                    )
+    ##########################################################################
+    KEY   = "PeopleView"
+    PEOW  . DB           = self . DB
+    PEOW  . Hosts        = { "Database" : self . Settings [ "Database" ]   , \
+                             "Oriphase" : self . Settings [ "Oriphase" ]     }
+    PEOW  . Settings     = self . Settings
+    PEOW  . Translations = self . Translations
+    PEOW  . Tables       = self . CLI . CLI [ "Tables" ] [ "PeopleView"      ]
+    PEOW  . EditAllNames = self . MAIN . CallNamesEditor
+    PEOW  . Relation . set    ( "second" , int ( self . ALBUM . Uuid )       )
+    PEOW  . Relation . set    ( "t2"     , 76                                )
+    PEOW  . Relation . setRelation ( "Candidate"                             )
+    PEOW  . setGrouping       ( "Reverse"                                    )
+    ##########################################################################
+    LANGZ = self . Translations [ KEY ] [ "Languages"                        ]
+    MENUZ = self . Translations [ KEY ] [ "Menus"                            ]
+    ##########################################################################
+    PEOW  . PrepareMessages   (                                              )
+    PEOW  . setLocality       ( int ( self . ALBUM . Album [ "Language" ] )  )
+    PEOW  . setLanguages      ( LANGZ                                        )
+    PEOW  . setMenus          ( MENUZ                                        )
+    ##########################################################################
+    PEOW  . ShowGalleries         . connect ( self . MAIN . ShowGalleries            )
+    PEOW  . ShowGalleriesRelation . connect ( self . MAIN . ShowGalleriesRelation    )
+    PEOW  . ShowPersonalGallery   . connect ( self . MAIN . ShowPersonalGallery      )
+    PEOW  . ShowPersonalIcons     . connect ( self . MAIN . ShowPersonalIcons        )
+    ## PEOW  . ShowPersonalFaces     . connect ( self . MAIN . ShowFaceViewByPeople     )
+    PEOW  . ShowVideoAlbums       . connect ( self . MAIN . ShowVideoAlbums          )
+    PEOW  . ShowWebPages          . connect ( self . MAIN . ShowWebPages             )
+    PEOW  . OwnedOccupation       . connect ( self . MAIN . OwnedOccupationSubgroups )
+    PEOW  . OpenVariantTables     . connect ( self . MAIN . OpenVariantTables        )
+    ## PEOW  . ShowLodListings       . connect ( self . MAIN . ShowLodListings          )
+    PEOW  . OpenLogHistory        . connect ( self . MAIN . OpenLogHistory           )
+    ## PEOW  . OpenBodyShape         . connect ( self . MAIN . OpenBodyShape            )
+    PEOW  . emitOpenSmartNote     . connect ( self . MAIN . assignSmartNote          )
+    PEOW  . emitLog              . connect ( self . MAIN . appendLog         )
+    ##########################################################################
+    self  . setAllFont        ( PEOW , self . font (                       ) )
+    PEOW  . PrepareForActions (                                              )
+    ##########################################################################
+    self . EditingWidget . CandidateView = PEOW
+    ##########################################################################
+    self . EditingWidget . addWidget ( self . EditingWidget . CandidateView  )
+    ##########################################################################
+    PEOW . startup            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def addAlbumGallery         ( self                                       ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 320
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 240
     ##########################################################################
     PSVW  = PicturesView      ( None , self . PlanFunc                       )
     ##########################################################################
@@ -670,7 +764,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     PSVW  . Settings     = self . Settings
     PSVW  . Translations = self . Translations
     PSVW  . Tables       = self . CLI . CLI [ "Tables" ] [ "AlbumCovers"     ]
-    PSVW  . EditAllNames = None
+    PSVW  . EditAllNames = self . MAIN . CallNamesEditor
     PSVW  . Relation . set    ( "first" , int ( self . ALBUM . Uuid )        )
     PSVW  . Relation . set    ( "t1"     , 76                                )
     PSVW  . Relation . setRelation ( "Subordination"                         )
@@ -701,14 +795,216 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def DoAddToPlayList ( self , UUID                                        ) :
+    ##########################################################################
+    VNAME = self . ALBUM . GetVideoFileByUuid ( UUID                         )
+    ##########################################################################
+    if                ( len ( VNAME ) <= 0                                 ) :
+      return
+    ##########################################################################
+    self . QueueOneVideo . emit ( VNAME                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoCreateAnalysis ( self , UUID                                       ) :
+    ##########################################################################
+    VNAME = self . ALBUM . GetVideoFileByUuid ( UUID                         )
+    ##########################################################################
+    if                ( len ( VNAME ) <= 0                                 ) :
+      return
+    ##########################################################################
+    ## print ( VNAME )
+    ## print ( UUID )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoPlayAnalysis ( self , UUID                                         ) :
+    ##########################################################################
+    VNAME = self . ALBUM . GetVideoFileByUuid ( UUID                         )
+    ##########################################################################
+    if                ( len ( VNAME ) <= 0                                 ) :
+      return
+    ##########################################################################
+    ## print ( VNAME )
+    ## print ( UUID )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoJoinCurrentEditor ( self , UUID                                    ) :
+    ##########################################################################
+    VNAME = self . ALBUM . GetVideoFileByUuid ( UUID                         )
+    ##########################################################################
+    if                ( len ( VNAME ) <= 0                                 ) :
+      return
+    ##########################################################################
+    ## print ( VNAME )
+    ## print ( UUID )
+    ##########################################################################
+    return
+  ############################################################################
+  def CreateVideoComboBox      ( self , ATID                               ) :
+    ##########################################################################
+    TRM     = self . Translations [ "EpisodeEditor" ] [ "ContainsVideos"     ]
+    QC      = QComboBox        (                                             )
+    KEYs    = TRM . keys       (                                             )
+    AIT     = -1
+    CNT     = 0
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      ID    = int              ( K                                           )
+      ########################################################################
+      QC    . addItem          ( TRM [ K ] , ID                              )
+      ########################################################################
+      if                       ( ID == ATID                                ) :
+        AIT = CNT
+      ########################################################################
+      CNT   = CNT + 1
+    ##########################################################################
+    if                         ( AIT >= 0                                  ) :
+      QC    . setCurrentIndex  ( AIT                                         )
+    ##########################################################################
+    QC      . setMinimumHeight ( 32                                          )
+    QC      . setMaximumHeight ( 32                                          )
+    QC      . setMinimumWidth  ( 200                                         )
+    QC      . setMaximumWidth  ( 200                                         )
+    ##########################################################################
+    return QC
+  ############################################################################
+  def MainVideoTypeChanged      ( self , AT                                ) :
+    ##########################################################################
+    RR   = Relation             (                                            )
+    ID   = int ( self . EditingWidget . MainVideoCombo . itemData ( AT )     )
+    NN   = RR . GetRelationName ( ID                                         )
+    ##########################################################################
+    self . EditingWidget . MainVideos . Relation . setRelation ( NN          )
+    self . EditingWidget . MainVideos . restart (                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def addMainVideos           ( self                                       ) :
+    ##########################################################################
+    self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 280
+    ##########################################################################
+    QCA   = self . CreateVideoComboBox ( 1                                   )
+    self  . EditingWidget . MainVideoCombo = QCA
+    self  . EditingWidget . addWidget  ( QCA                                 )
+    QCA   . currentIndexChanged . connect ( self . MainVideoTypeChanged      )
+    ##########################################################################
+    VIDS  = VideoListings     ( None , self . PlanFunc                       )
+    VIDS  . setMinimumHeight  ( 160                                          )
+    VIDS  . resize            ( 400 , 200                                    )
+    ##########################################################################
+    KEY   = "VideoListings"
+    VIDS  . DB           = self . DB
+    VIDS  . Hosts        = { "Database" : self . Settings [ "Database" ]   , \
+                             "Oriphase" : self . Settings [ "Oriphase" ]     }
+    VIDS  . Settings     = self . Settings
+    VIDS  . Translations = self . Translations
+    VIDS  . Tables       = self . Tables [ KEY                               ]
+    VIDS  . EditAllNames = self . MAIN . CallNamesEditor
+    VIDS  . Method       = "Embedded"
+    VIDS  . Relation . set    ( "first" , int ( self . ALBUM . Uuid )        )
+    VIDS  . Relation . set    ( "t1"     , 76                                )
+    VIDS  . Relation . setRelation ( "Subordination"                         )
+    VIDS  . setGrouping       ( "Subordination"                              )
+    ##########################################################################
+    LANGZ = self . Translations [ KEY ] [ "Languages"                        ]
+    MENUZ = self . Translations [ KEY ] [ "Menus"                            ]
+    ##########################################################################
+    VIDS  . PrepareMessages   (                                              )
+    VIDS  . setLocality       ( self . getLocality ( )                       )
+    VIDS  . setLanguages      ( LANGZ                                        )
+    VIDS  . setMenus          ( MENUZ                                        )
+    ##########################################################################
+    VIDS  . AddToPlayList     . connect ( self . DoAddToPlayList             )
+    VIDS  . CreateAnalysis    . connect ( self . DoCreateAnalysis            )
+    VIDS  . PlayAnalysis      . connect ( self . DoPlayAnalysis              )
+    VIDS  . JoinCurrentEditor . connect ( self . DoJoinCurrentEditor         )
+    VIDS  . OpenLogHistory    . connect ( self . MAIN . OpenLogHistory       )
+    ##########################################################################
+    self  . setAllFont        ( VIDS , self . font (                       ) )
+    VIDS  . PrepareForActions (                                              )
+    ##########################################################################
+    self  . EditingWidget . MainVideos = VIDS
+    ##########################################################################
+    self  . EditingWidget . addWidget ( self . EditingWidget . MainVideos    )
+    ##########################################################################
+    VIDS  . startup                (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def SecondVideoTypeChanged    ( self , AT                                ) :
+    ##########################################################################
+    RR   = Relation             (                                            )
+    ID   = int ( self . EditingWidget . SecondVideoCombo . itemData ( AT )   )
+    NN   = RR . GetRelationName ( ID                                         )
+    ##########################################################################
+    self . EditingWidget . SecondVideos . Relation . setRelation ( NN        )
+    self . EditingWidget . SecondVideos . restart (                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def addSecondVideos         ( self                                       ) :
+    ##########################################################################
+    self  . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 280
+    ##########################################################################
+    QCA   = self . CreateVideoComboBox ( 15                                  )
+    self  . EditingWidget . SecondVideoCombo = QCA
+    self  . EditingWidget . addWidget  ( QCA                                 )
+    QCA   . currentIndexChanged . connect ( self . SecondVideoTypeChanged    )
+    ##########################################################################
+    VIDS  = VideoListings     ( None , self . PlanFunc                       )
+    VIDS  . setMinimumHeight  ( 160                                          )
+    VIDS  . resize            ( 400 , 200                                    )
+    ##########################################################################
+    KEY   = "VideoListings"
+    VIDS  . DB           = self . DB
+    VIDS  . Hosts        = { "Database" : self . Settings [ "Database" ]   , \
+                             "Oriphase" : self . Settings [ "Oriphase" ]     }
+    VIDS  . Settings     = self . Settings
+    VIDS  . Translations = self . Translations
+    VIDS  . Tables       = self . Tables [ KEY                               ]
+    VIDS  . EditAllNames = self . MAIN . CallNamesEditor
+    VIDS  . Method       = "Embedded"
+    VIDS  . Relation . set    ( "first" , int ( self . ALBUM . Uuid )        )
+    VIDS  . Relation . set    ( "t1"     , 76                                )
+    VIDS  . Relation . setRelation ( "Capable"                               )
+    VIDS  . setGrouping       ( "Subordination"                              )
+    ##########################################################################
+    LANGZ = self . Translations [ KEY ] [ "Languages"                        ]
+    MENUZ = self . Translations [ KEY ] [ "Menus"                            ]
+    ##########################################################################
+    VIDS  . PrepareMessages   (                                              )
+    VIDS  . setLocality       ( self . getLocality ( )                       )
+    VIDS  . setLanguages      ( LANGZ                                        )
+    VIDS  . setMenus          ( MENUZ                                        )
+    ##########################################################################
+    VIDS  . AddToPlayList     . connect ( self . DoAddToPlayList             )
+    VIDS  . CreateAnalysis    . connect ( self . DoCreateAnalysis            )
+    VIDS  . PlayAnalysis      . connect ( self . DoPlayAnalysis              )
+    VIDS  . JoinCurrentEditor . connect ( self . DoJoinCurrentEditor         )
+    VIDS  . OpenLogHistory    . connect ( self . MAIN . OpenLogHistory       )
+    ##########################################################################
+    self  . setAllFont        ( VIDS , self . font (                       ) )
+    VIDS  . PrepareForActions (                                              )
+    ##########################################################################
+    self  . EditingWidget . SecondVideos = VIDS
+    ##########################################################################
+    self  . EditingWidget . addWidget ( self . EditingWidget . SecondVideos  )
+    ##########################################################################
+    VIDS  . startup                (                                         )
+    ##########################################################################
+    return
+  ############################################################################
   def addSketch                      ( self                                ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 660
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 400
     ##########################################################################
     MSG  = self . getMenuItem        ( "SketchArena"                         )
     TEXT = QPlainTextEdit            (                                       )
     TEXT . setMinimumHeight          ( 200                                   )
-    TEXT . resize                    ( 400 , 640                             )
+    TEXT . resize                    ( 400 , 400                             )
     TEXT . setToolTip                ( MSG                                   )
     ##########################################################################
     self . EditingWidget . SketchText = TEXT
@@ -732,7 +1028,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
   def addAlbumChapters         ( self                                      ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 700
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 400
     ##########################################################################
     TOOL = QToolBar            (                                             )
     ##########################################################################
@@ -751,7 +1047,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     TEXT = QPlainTextEdit      (                                             )
     TEXT . setMinimumHeight    ( 200                                         )
-    TEXT . resize              ( 400 , 640                                   )
+    TEXT . resize              ( 400 , 400                                   )
     ##########################################################################
     DKEY = "Chapters"
     DDIR = self . ALBUM . DIR
@@ -787,7 +1083,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   ############################################################################
   def addAlbumDescription      ( self                                      ) :
     ##########################################################################
-    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 700
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 400
     ##########################################################################
     TOOL = QToolBar            (                                             )
     ##########################################################################
@@ -806,7 +1102,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     TEXT = QPlainTextEdit      (                                             )
     TEXT . setMinimumHeight    ( 200                                         )
-    TEXT . resize              ( 400 , 640                                   )
+    TEXT . resize              ( 400 , 400                                   )
     ##########################################################################
     DKEY = "Description"
     DDIR = self . ALBUM . DIR
@@ -846,20 +1142,25 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     self . addAlbumTitle           (                                         )
     self . addAlbumCoverSection    (                                         )
     ##########################################################################
-    self . EditingWidget . NamesEditor   = None
-    self . EditingWidget . Organizations = None
-    self . EditingWidget . Identifiers   = None
-    self . EditingWidget . PeopleView    = None
+    self . EditingWidget . NamesEditor      = None
+    self . EditingWidget . Organizations    = None
+    self . EditingWidget . Identifiers      = None
+    self . EditingWidget . PeopleView       = None
+    self . EditingWidget . CandidateView    = None
+    self . EditingWidget . MainVideos       = None
+    self . EditingWidget . MainVideoCombo   = None
+    self . EditingWidget . SecondVideos     = None
+    self . EditingWidget . SecondVideoCombo = None
     ##########################################################################
     if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
       self . addCompanyAndNames    (                                         )
       self . addAlbumIdentifiers   (                                         )
       self . addPeopleView         (                                         )
+      self . addCandidateView      (                                         )
       self . addAlbumGallery       (                                         )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
+      self . addMainVideos         (                                         )
+      self . addSecondVideos       (                                         )
     ##########################################################################
     self . addSketch               (                                         )
     self . addAlbumChapters        (                                         )
@@ -929,10 +1230,25 @@ class EpisodeEditor          ( ScrollArea                                  ) :
       TH   = self . EditingWidget . PeopleView      . height (               )
       self .        EditingWidget . PeopleView      . resize ( WW , TH       )
     ##########################################################################
+    if ( self . EditingWidget . CandidateView not in [ False , None ]      ) :
+      ########################################################################
+      TH   = self . EditingWidget . CandidateView   . height (               )
+      self .        EditingWidget . CandidateView   . resize ( WW , TH       )
+    ##########################################################################
     if ( self . EditingWidget . GalleryViewer not in [ False , None ]      ) :
       ########################################################################
       TH   = self . EditingWidget . GalleryViewer   . height (               )
       self .        EditingWidget . GalleryViewer   . resize ( WW , TH       )
+    ##########################################################################
+    if ( self . EditingWidget . MainVideos    not in [ False , None ]      ) :
+      ########################################################################
+      TH   = self . EditingWidget . MainVideos      . height (               )
+      self .        EditingWidget . MainVideos      . resize ( WW , TH       )
+    ##########################################################################
+    if ( self . EditingWidget . SecondVideos  not in [ False , None ]      ) :
+      ########################################################################
+      TH   = self . EditingWidget . SecondVideos    . height (               )
+      self .        EditingWidget . SecondVideos    . resize ( WW , TH       )
     ##########################################################################
     TH     = self . EditingWidget . TitleSplit      . height (               )
     self   .        EditingWidget . TitleSplit      . resize ( WW , TH       )
