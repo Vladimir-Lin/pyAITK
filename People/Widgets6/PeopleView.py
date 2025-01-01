@@ -1060,7 +1060,7 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def ReloadLocality               ( self , DB                             ) :
     ##########################################################################
-    if                             ( not self . isGrouping ( )             ) :
+    if                             ( not self . isGrouping  ( )            ) :
       return
     ##########################################################################
     PAMTAB = self . Tables         [ "Parameters"                            ]
