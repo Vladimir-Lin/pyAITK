@@ -408,6 +408,9 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
+      if                            ( self . isSearching (               ) ) :
+        return False
+      ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
       if                            ( self == sourceWidget                 ) :
