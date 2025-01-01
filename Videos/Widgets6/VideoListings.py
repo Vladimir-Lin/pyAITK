@@ -52,6 +52,7 @@ class VideoListings          ( TreeDock                                    ) :
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
+    self . Method             = ""
     self . ClipJson           = {                                            }
     self . UUIDs              = [                                            ]
     ##########################################################################

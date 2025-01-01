@@ -173,6 +173,7 @@ class Player               ( Widget , AttachDock                           ) :
   PlayerCompleted = Signal ( int                                             )
   FilmViewed      = Signal ( dict                                            )
   FilmStopped     = Signal ( dict                                            )
+  TogglePlaylist  = Signal ( bool                                            )
   NormalWindow    = Signal (                                                 )
   PlayFull        = Signal (                                                 )
   GoMdi           = Signal ( int                                             )
@@ -203,6 +204,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . Delta      = 3000
     self . Method     = 0
     self . DockAt     = 0
+    self . isPlayList = True
     self . INSTANCE   = vlc . Instance (                                     )
     self . MEDIA      = None
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
@@ -620,6 +622,8 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     if                 (        isFull                                     ) :
       ########################################################################
+      self . isPlayList = False
+      ########################################################################
       self . PANEL . BWin . show (                                           )
       ########################################################################
     else                                                                     :
@@ -659,6 +663,12 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . MWin . show (                                             )
     ##########################################################################
     self . GoStack . emit      ( self . PID                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchPlayList ( self , visibility                                   ) :
+    ##########################################################################
+    self . isPlayList = visibility
     ##########################################################################
     return
   ############################################################################
@@ -1717,6 +1727,18 @@ class Player               ( Widget , AttachDock                           ) :
     TRX    = self . Translations   [ "Player"                                ]
     mm     = MenuManager           ( self                                    )
     ##########################################################################
+    if                             ( self . isPlayList                     ) :
+      ########################################################################
+      MSG  = TRX                   [ "HidePlayList"                          ]
+      mm   . addAction             ( 9202 , MSG                              )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      MSG  = TRX                   [ "ShowPlayList"                          ]
+      mm   . addAction             ( 9201 , MSG                              )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
+    ##########################################################################
     if                             ( self . isFullScreen                   ) :
       ########################################################################
       MSG  = TRX                   [ "NormalWindow"                          ]
@@ -1740,6 +1762,20 @@ class Player               ( Widget , AttachDock                           ) :
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( at == 9201                            ) :
+      ########################################################################
+      self . isPlayList = True
+      self . TogglePlaylist . emit ( self . isPlayList                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 9202                            ) :
+      ########################################################################
+      self . isPlayList = False
+      self . TogglePlaylist . emit ( self . isPlayList                       )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( at == 9301                            ) :
       self . BackToNormal          (                                         )

@@ -36,21 +36,22 @@ from   AITK    . Qt6 . TreeDock       import TreeDock       as TreeDock
 ##############################################################################
 from   AITK    . Videos . Film        import Film           as FilmItem
 ##############################################################################
-class PlayList                     ( TreeDock                              ) :
+class PlayList             ( TreeDock                                      ) :
   ############################################################################
   HavingMenu      = 1371434312
   ############################################################################
-  playFilm        = Signal         ( dict                                    )
-  appendFilm      = Signal         ( dict                                    )
-  FilmsAppended   = Signal         (                                         )
-  HistoryLoaded   = Signal         (                                         )
-  ToggleActions   = Signal         (                                         )
-  emitProgress    = Signal         (                                         )
-  emitStopWaiting = Signal         (                                         )
+  playFilm        = Signal ( dict                                            )
+  appendFilm      = Signal ( dict                                            )
+  FilmsAppended   = Signal (                                                 )
+  HistoryLoaded   = Signal (                                                 )
+  ToggleActions   = Signal (                                                 )
+  emitProgress    = Signal (                                                 )
+  emitStopWaiting = Signal (                                                 )
+  emitVisiblity   = Signal ( bool                                            )
   ############################################################################
-  def __init__                     ( self , parent = None , plan = None    ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
-    super ( ) . __init__           (        parent        , plan             )
+    super ( ) . __init__   (        parent        , plan                     )
     ##########################################################################
     self . FID                = 0
     self . Awaiting           = False
@@ -112,6 +113,19 @@ class PlayList                     ( TreeDock                              ) :
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 480 )                       )
+  ############################################################################
+  def Visiblity                         ( self , visible                   ) :
+    ##########################################################################
+    self . emitVisiblity . emit         (        visible                     )
+    ##########################################################################
+    if                                  ( self . Trigger == None           ) :
+      return
+    ##########################################################################
+    w      = self . Dock . parentWidget (                                    )
+    if ( ( w != None ) and ( not w . isMinimized ( ) ) )                     :
+      self . Trigger . setChecked       ( visible                            )
+    ##########################################################################
+    return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################

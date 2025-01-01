@@ -1221,7 +1221,7 @@ class Episode    (                                                         ) :
       if ( "Uuid" not in self . Album [ "Clips" ] [ "Entities" ] [ F ]     ) :
         continue
       ########################################################################
-      UUID   = self . Album [ "Clips" ] [ "Entities" ] [ F                   ]
+      UUID   = self . Album [ "Clips" ] [ "Entities" ] [ F ] [ "Uuid"        ]
       ########################################################################
       if                         ( UUID > 0                                ) :
         continue
@@ -1314,7 +1314,7 @@ class Episode    (                                                         ) :
         continue
       ########################################################################
       FC     = FILEs             [ 0                                         ]
-      RF     = f"{DDIR}/{F}"
+      RF     = f"{DDIR}/{FC}"
       ########################################################################
       if                         ( not Path ( RF ) . is_file ( )           ) :
         continue
@@ -1334,24 +1334,24 @@ class Episode    (                                                         ) :
       self   . Album [ "Clips" ] [ "Information" ] [ FXD ] [ "Details" ] = VJI
       ########################################################################
       PMSG   = SMSG
-      PMSG   = PMSG . replace    ( "$(FILE)" , RF                            )
+      PMSG   = PMSG . replace    ( "$(FILE)" , FC                            )
       PMSG   = PMSG . replace    ( "$(UUID)" , FXD                           )
       self   . LOG               ( PMSG                                      )
     ##########################################################################
     return
   ############################################################################
-  def UpdatePartsToGroups      ( self , DB , CLIPs , RELATE , KEY          ) :
+  def UpdatePartsToGroups       ( self , DB , CLIPs , RELATE , KEY         ) :
     ##########################################################################
     if ( "Entities" not in self . Album [ "Clips" ]                        ) :
       return
     ##########################################################################
     DDIR    = self . DIR
     UUID    = self . Uuid
-    RELTAB  = self . Tables     [ "VideoListings" ] [ "RelationVideos"        ]
+    RELTAB  = self . Tables     [ "VideoListings" ] [ "RelationVideos"       ]
     MKEY    = f"ClipsJoinGroup{KEY}"
-    SMSG    = self . getMessage (                                             )
-    VUIDs   =                   [                                             ]
-    MSGs    =                   [                                             ]
+    SMSG    = self . getMessage ( MKEY                                       )
+    VUIDs   =                   [                                            ]
+    MSGs    =                   [                                            ]
     ##########################################################################
     for F in CLIPs                                                           :
       ########################################################################
@@ -1380,7 +1380,7 @@ class Episode    (                                                         ) :
       for VUID in VUIDs                                                      :
         ######################################################################
         LLL = f"( {UUID} , 76 , {VUID} , 11 , {RELATE} , {CNT} )"
-        LQs . append            ( LL                                         )
+        LQs . append            ( LLL                                        )
         CNT = CNT + 1
       ########################################################################
       LQ    = " , " . join      ( LQs                                        )
@@ -1397,9 +1397,12 @@ class Episode    (                                                         ) :
                     and ( `t1` = 76 )
                     and ( `t2` = 11 )
                     and ( `relation` = {RELATE} ) ;"""
-    DB      . Query             ( " " . join ( QQ . split (              ) ) )
+    QQ      = " " . join ( QQ . split (                                    ) )
+    self    . LOG               ( QQ                                         )
+    DB      . Query             ( QQ                                         )
     ##########################################################################
     if                          ( len ( VUIDs ) > 0                        ) :
+      self  . LOG               ( GQ                                         )
       DB    . Query             ( GQ                                         )
     ##########################################################################
     DB      . UnlockTables      (                                            )
