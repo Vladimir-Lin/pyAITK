@@ -1472,7 +1472,11 @@ class Episode    (                                                         ) :
         FILEs   = self . Album [ "Videos" ] [ "Subfolders" ] [ D ] [ "Clips" ]
         ######################################################################
         if ( "Order" in self . Album [ "Videos" ] [ "Subfolders" ] [ D ]   ) :
-          FILEs = self . Album [ "Videos" ] [ "Subfolders" ] [ D ] [ "Order" ]
+          ####################################################################
+          ORDERs = self . Album [ "Videos" ] [ "Subfolders" ] [ D ] [ "Order" ]
+          ####################################################################
+          if                          ( len ( FILEs ) == len ( ORDERs )    ) :
+            FILEs = ORDERs
         ######################################################################
         for F in FILEs                                                       :
           ####################################################################
