@@ -805,21 +805,41 @@ class CliParser  (                                                         ) :
     T1      = self . CLI    [ KEY ] [ "T1"                                   ]
     R       = self . CLI    [ KEY ] [ "Relation"                             ]
     ##########################################################################
+    TOLWR   = True
+    ##########################################################################
+    if                      ( "Lower" in self . CLI [ KEY ]                ) :
+      TOLWR = self . CLI    [ KEY ] [ "Lower"                                ]
+    ##########################################################################
     HMSG    = self . Translations   [ f"CMD::{KEY}::Search:"                 ]
     MLOG    = f"{HMSG}{NAME}"
     self    . LOG           ( MLOG                                           )
     ##########################################################################
-    LNAME   = NAME . lower  (                                                )
+    LNAME   = NAME
+    ##########################################################################
+    if                      ( TOLWR                                        ) :
+      LNAME = NAME . lower  (                                                )
+    ##########################################################################
     ZNAME   = f"%{LNAME}%"
     ##########################################################################
     VQ      = f"""select `second` from {RELTAB}
                  where ( `t1` = {T1} )
                    and ( `relation` = {R} )
                    and ( `first` = {UUID} )"""
-    QQ      = f"""select `uuid` from {NAMTAB}
+    ##########################################################################
+    if                      ( TOLWR                                        ) :
+      ########################################################################
+      QQ    = f"""select `uuid` from {NAMTAB}
                   where ( `locality` in ( {LANGx} ) )
                     and ( `uuid` in ( {VQ} ) )
                     and ( lower ( convert ( `name` using utf8 ) ) like %s )
+                  group by `uuid` asc ;"""
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      QQ    = f"""select `uuid` from {NAMTAB}
+                  where ( `locality` in ( {LANGx} ) )
+                    and ( `uuid` in ( {VQ} ) )
+                    and ( convert ( `name` using utf8 ) like %s )
                   group by `uuid` asc ;"""
     ##########################################################################
     QQ      = " " . join    ( QQ . split ( )                                 )

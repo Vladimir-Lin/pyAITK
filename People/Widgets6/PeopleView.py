@@ -525,38 +525,47 @@ class PeopleView                 ( IconDock                                ) :
   def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
     return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
   ############################################################################
-  def PeopleMoving            ( self , atUuid , NAME , JSON                ) :
+  def PeopleMoving               ( self , atUuid , NAME , JSON             ) :
     ##########################################################################
-    UUIDs  = JSON             [ "UUIDs"                                      ]
-    if                        ( len ( UUIDs ) <= 0                         ) :
+    UUIDs   = JSON               [ "UUIDs"                                   ]
+    if                           ( len ( UUIDs ) <= 0                      ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( self . NotOkay ( DB )                      ) :
+    DB      = self . ConnectDB   (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
+    self    . OnBusy  . emit     (                                           )
+    self    . setBustle          (                                           )
     ##########################################################################
-    RELTAB = self . Tables    [ "RelationPeople"                             ]
-    DB     . LockWrites       ( [ RELTAB                                   ] )
+    RELTAB  = self . Tables      [ "RelationPeople"                          ]
+    DB      . LockWrites         ( [ RELTAB                                ] )
     ##########################################################################
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    if                           ( self . isReverse (                    ) ) :
+      ########################################################################
+      OPTS  = f"order by `reverse` asc"
+      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      OPTS  = f"order by `position` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
     ##########################################################################
-    LUID   = PUIDs            [ -1                                           ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100         )
+    if                           ( len ( PUIDs ) > 1                       ) :
+      ########################################################################
+      LUID  = PUIDs              [ -1                                        ]
+      LAST  = self . GetLastestPosition ( DB     , LUID                      )
+      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
+      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
     ##########################################################################
-    DB     . UnlockTables     (                                              )
+    DB      . UnlockTables       (                                           )
     ##########################################################################
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    DB     . Close            (                                              )
+    self    . setVacancy         (                                           )
+    self    . GoRelax . emit     (                                           )
+    DB      . Close              (                                           )
     ##########################################################################
-    self   . loading          (                                              )
+    self    . loading            (                                           )
     ##########################################################################
     return
   ############################################################################
