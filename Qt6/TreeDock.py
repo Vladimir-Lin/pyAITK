@@ -426,6 +426,15 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     return mm
   ############################################################################
+  def AppendClearAction      ( self , mm , Id                              ) :
+    ##########################################################################
+    TRX  = self . Translations
+    msg  = TRX               [ "UI::Clear"                                   ]
+    icon = QIcon             ( ":/images/undecided.png"                      )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
+    ##########################################################################
+    return mm
+  ############################################################################
   def TryAppendEditNamesAction ( self , atItem , mm , Id                   ) :
     ##########################################################################
     if                         ( self . NotOkay ( atItem )                 ) :

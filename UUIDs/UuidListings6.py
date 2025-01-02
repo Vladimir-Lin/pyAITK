@@ -276,9 +276,7 @@ class UuidListings                 ( TreeDock                              ) :
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
-    ##########################################################################
-    MSG    = self . getMenuItem    ( "Clear"                                 )
-    mm     . addAction             ( 1201 , MSG                              )
+    self   . AppendClearAction     ( mm , 1201                               )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
