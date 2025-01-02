@@ -426,10 +426,10 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendClearAction      ( self , mm , Id                              ) :
+  def AppendClearAllAction   ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX               [ "UI::Clear"                                   ]
+    msg  = TRX               [ "UI::ClearAll"                                ]
     icon = QIcon             ( ":/images/cut.png"                            )
     mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################

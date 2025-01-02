@@ -60,11 +60,23 @@ def appendUuids                 ( UUIDs                                    ) :
   ############################################################################
   return
 ##############################################################################
+def assignUuids                 ( UUIDs                                    ) :
+  ############################################################################
+  global defaultUuidListings
+  global SystemUUIDs
+  ############################################################################
+  SystemUUIDs         = UUIDs
+  ############################################################################
+  defaultUuidListings . startup (                                            )
+  ############################################################################
+  return
+##############################################################################
 class UuidListings                 ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
   emitLog    = Signal              ( str                                     )
+  emitReload = Signal              (                                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -92,20 +104,22 @@ class UuidListings                 ( TreeDock                              ) :
     self . setDragEnabled          ( False                                   )
     self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
+    self . emitReload . connect    ( self . reload                           )
+    ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                      Enabled        ) :
+  def AttachActions   ( self         ,                        Enabled      ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup     , Enabled          )
+    self . LinkAction ( "Refresh"    , self . startup       , Enabled        )
     ##########################################################################
-    self . LinkAction ( "Insert"     , self . InsertItem  , Enabled          )
-    self . LinkAction ( "Delete"     , self . DeleteItems , Enabled          )
-    self . LinkAction ( "Cut"        , self . ClearItems  , Enabled          )
-    self . LinkAction ( "Paste"      , self . PasteItems  , Enabled          )
+    self . LinkAction ( "Insert"     , self . InsertItem    , Enabled        )
+    self . LinkAction ( "Delete"     , self . DeleteItems   , Enabled        )
+    self . LinkAction ( "Cut"        , self . ClearAllItems , Enabled        )
+    self . LinkAction ( "Paste"      , self . PasteItems    , Enabled        )
     ##########################################################################
-    self . LinkAction ( "Select"     , self . SelectOne   , Enabled          )
-    self . LinkAction ( "SelectAll"  , self . SelectAll   , Enabled          )
-    self . LinkAction ( "SelectNone" , self . SelectNone  , Enabled          )
+    self . LinkAction ( "Select"     , self . SelectOne     , Enabled        )
+    self . LinkAction ( "SelectAll"  , self . SelectAll     , Enabled        )
+    self . LinkAction ( "SelectNone" , self . SelectNone    , Enabled        )
     ##########################################################################
     M    = self . windowTitle (                                              )
     ##########################################################################
@@ -148,7 +162,7 @@ class UuidListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def startup                ( self                                        ) :
+  def reload                 ( self                                        ) :
     ##########################################################################
     global SystemUUIDs
     ##########################################################################
@@ -160,6 +174,12 @@ class UuidListings                 ( TreeDock                              ) :
       item . setText         ( 0 , str ( UUID )                              )
       item . setData         ( 0 , Qt . UserRole , UUID                      )
       self . addTopLevelItem ( item                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def startup                ( self                                        ) :
+    ##########################################################################
+    self . emitReload . emit (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -257,7 +277,7 @@ class UuidListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ClearItems          ( self                                           ) :
+  def ClearAllItems       ( self                                           ) :
     ##########################################################################
     SystemUUIDs =         [                                                  ]
     self        . startup (                                                  )
@@ -283,10 +303,10 @@ class UuidListings                 ( TreeDock                              ) :
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
-    self   . AppendClearAction     ( mm , 1201                               )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
+      self . AppendClearAllAction  ( mm , 1201                               )
       self . AppendDeleteAction    ( mm , 1202                               )
     ##########################################################################
     mm     . addSeparator          (                                         )
@@ -314,7 +334,7 @@ class UuidListings                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . ClearItems            (                                         )
+      self . ClearAllItems         (                                         )
       return True
     ##########################################################################
     if                             ( at == 1202                            ) :

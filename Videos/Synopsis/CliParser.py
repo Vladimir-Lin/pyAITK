@@ -36,6 +36,7 @@ from   AITK . Documents . Variables      import Variables      as VariableItem
 ##############################################################################
 from   AITK . UUIDs     . UuidListings6  import appendUuid
 from   AITK . UUIDs     . UuidListings6  import appendUuids
+from   AITK . UUIDs     . UuidListings6  import assignUuids
 from   AITK . UUIDs     . UuidListings6  import getUuids
 ##############################################################################
 class CliParser  (                                                         ) :
