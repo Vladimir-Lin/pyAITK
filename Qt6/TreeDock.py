@@ -430,7 +430,7 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     TRX  = self . Translations
     msg  = TRX               [ "UI::Clear"                                   ]
-    icon = QIcon             ( ":/images/undecided.png"                      )
+    icon = QIcon             ( ":/images/cut.png"                            )
     mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
