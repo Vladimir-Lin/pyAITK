@@ -528,6 +528,7 @@ class PeopleView                 ( IconDock                                ) :
   def PeopleMoving               ( self , atUuid , NAME , JSON             ) :
     ##########################################################################
     UUIDs   = JSON               [ "UUIDs"                                   ]
+    ##########################################################################
     if                           ( len ( UUIDs ) <= 0                      ) :
       return
     ##########################################################################
@@ -538,7 +539,9 @@ class PeopleView                 ( IconDock                                ) :
     self    . OnBusy  . emit     (                                           )
     self    . setBustle          (                                           )
     ##########################################################################
-    RELTAB  = self . Tables      [ "RelationPeople"                          ]
+    RELKEY  = "Relation"
+    ## RELKEY  = "RelationPeople"
+    RELTAB  = self . Tables      [   RELKEY                                  ]
     DB      . LockWrites         ( [ RELTAB                                ] )
     ##########################################################################
     if                           ( self . isReverse (                    ) ) :
@@ -554,9 +557,11 @@ class PeopleView                 ( IconDock                                ) :
     if                           ( len ( PUIDs ) > 1                       ) :
       ########################################################################
       LUID  = PUIDs              [ -1                                        ]
-      LAST  = self . GetLastestPosition ( DB     , LUID                      )
-      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
-      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      ########################################################################
+      LAST  = self . GetGroupLastestPosition ( DB     , RELKEY , LUID        )
+      PUIDs = self . OrderingPUIDs           ( atUuid , UUIDs  , PUIDs       )
+      SQLs  = self . GenerateGroupMovingSQL  ( RELKEY , LAST   , PUIDs       )
+      ########################################################################
       self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
     ##########################################################################
     DB      . UnlockTables       (                                           )
