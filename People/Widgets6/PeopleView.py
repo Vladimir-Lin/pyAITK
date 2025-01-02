@@ -250,16 +250,27 @@ class PeopleView                 ( IconDock                                ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    if                ( self . Grouping in [ "Subordination" ]             ) :
+    if                ( self . isGrouping ( )                              ) :
       ########################################################################
-      T    = self . windowTitle (                                            )
-      M    = self . getMenuItem ( "PeopleViewParameter"                      )
-      F    = self . Relation . First
-      W    = self . Relation . T1
-      R    = self . Relation . Relation
-      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
+      GG   = self . Grouping
+      TT   = self . windowTitle (                                            )
+      MM   = self . getMenuItem ( "PeopleViewParameter"                      )
+      FF   = self . Relation . First
+      ST   = self . Relation . Second
+      T1   = self . Relation . T1
+      T2   = self . Relation . T2
+      RT   = self . Relation . Relation
+      LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
       ########################################################################
-      self . emitLog . emit  ( L                                             )
+      if              ( Enabled                                            ) :
+        ######################################################################
+        LL = f"{LL} Enter"
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        LL = f"{LL} Leave"
+      ########################################################################
+      self . emitLog . emit  ( LL                                            )
     ##########################################################################
     return
   ############################################################################
@@ -274,6 +285,16 @@ class PeopleView                 ( IconDock                                ) :
     self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
+  ############################################################################
+  def FocusOut             ( self                                          ) :
+    ##########################################################################
+    if                     ( not self . isPrepared ( )                     ) :
+      return True
+    ##########################################################################
+    if                     ( not self . AtMenu                             ) :
+      self . AttachActions ( False                                           )
+    ##########################################################################
+    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
@@ -408,7 +429,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
-      if                            ( self . isSearching (               ) ) :
+      if                            ( self . OldGrouping in ["Searching"]  ) :
         return False
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
@@ -573,6 +594,12 @@ class PeopleView                 ( IconDock                                ) :
       self  . Relation  . JoinsFirst ( DB , RELTAB , UUIDs                   )
       OPTS  = f"order by `reverse` asc"
       PUIDs = self . Relation . GetOwners ( DB , RELTAB , OPTS               )
+      ########################################################################
+      LUID  = PUIDs             [ -1                                         ]
+      LAST  = self . GetLastestPosition ( DB     , LUID                      )
+      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
+      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )
@@ -676,14 +703,29 @@ class PeopleView                 ( IconDock                                ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
+    if                                ( not self . isGrouping (          ) ) :
+      return
+    ##########################################################################
     RELTAB = self . Tables            [ "Relation"                           ]
     SQLs   =                          [                                      ]
     ##########################################################################
-    for UUID in UUIDs                                                        :
+    RV     = self . isReverse         (                                      )
+    ##########################################################################
+    if                                ( RV                                 ) :
       ########################################################################
-      self . Relation . set           ( "second" , UUID                      )
-      QQ   = self . Relation . Delete ( RELTAB                               )
-      SQLs . append                   ( QQ                                   )
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        self . Relation . set         ( "first" , UUID                       )
+        QQ   = self . Relation . Delete ( RELTAB                             )
+        SQLs . append                 ( QQ                                   )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        self . Relation . set         ( "second" , UUID                      )
+        QQ   = self . Relation . Delete ( RELTAB                             )
+        SQLs . append                 ( QQ                                   )
     ##########################################################################
     DB     = self . ConnectDB         (                                      )
     if                                ( self . NotOkay ( DB )              ) :
@@ -1803,9 +1845,13 @@ class PeopleView                 ( IconDock                                ) :
     self   . LocalityMenu              ( mm                                  )
     self   . DockingMenu               ( mm                                  )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                   ( self    . menuFont ( )              )
     aa     = mm . exec_                ( QCursor . pos      ( )              )
     at     = mm . at                   ( aa                                  )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
     ##########################################################################
