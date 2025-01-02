@@ -60,9 +60,9 @@ class VideoAlbumsView             ( IconDock                               ) :
   emitOpenSmartNote      = Signal ( str                                      )
   emitLog                = Signal ( str                                      )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__       (        parent        , plan                 )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
@@ -105,6 +105,11 @@ class VideoAlbumsView             ( IconDock                               ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def PrepareForActions ( self                                             ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                       Enabled       ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
@@ -122,16 +127,27 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
     self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
     ##########################################################################
-    if                ( self . Grouping in [ "Subordination" ]             ) :
+    if                ( self . isGrouping ( )                              ) :
       ########################################################################
-      T    = self . windowTitle (                                            )
-      M    = self . getMenuItem ( "ViewAlbumParameter"                       )
-      F    = self . Relation . First
-      W    = self . Relation . T1
-      R    = self . Relation . Relation
-      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
+      GG   = self . Grouping
+      TT   = self . windowTitle (                                            )
+      MM   = self . getMenuItem ( "ViewAlbumParameter"                       )
+      FF   = self . Relation . First
+      ST   = self . Relation . Second
+      T1   = self . Relation . T1
+      T2   = self . Relation . T2
+      RT   = self . Relation . Relation
+      LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
       ########################################################################
-      self . emitLog . emit  ( L                                             )
+      if              ( Enabled                                            ) :
+        ######################################################################
+        LL = f"{LL} Enter"
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        LL = f"{LL} Leave"
+      ########################################################################
+      self . emitLog . emit  ( LL                                            )
     ##########################################################################
     return
   ############################################################################
@@ -140,15 +156,29 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
     ##########################################################################
     return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+    ##########################################################################
+    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
-    self . defaultCloseEvent (        event                                  )
+    self . detachActionsTool (                                               )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -157,6 +187,53 @@ class VideoAlbumsView             ( IconDock                               ) :
     RELTAB = self . Tables           [ "Relation"                            ]
     ##########################################################################
     return self . defaultGetUuidIcon ( DB , RELTAB , "Album" , UUID          )
+  ############################################################################
+  def FetchIcon                       ( self , DB , PUID                   ) :
+    ##########################################################################
+    if                                ( PUID <= 0                          ) :
+      return None
+    ##########################################################################
+    TUBTAB     = self . Tables        [ "Thumb"                              ]
+    WH         = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
+    OPTS       = "order by `id` desc limit 0 , 1"
+    QQ         = f"select `thumb` from {TUBTAB} {WH} {OPTS} ;"
+    DB         . Query                ( QQ                                   )
+    THUMB      = DB . FetchOne        (                                      )
+    ##########################################################################
+    if                                ( THUMB == None                      ) :
+      return None
+    ##########################################################################
+    if                                ( len ( THUMB ) <= 0                 ) :
+      return None
+    ##########################################################################
+    BLOB       = THUMB                [ 0                                    ]
+    if                                ( isinstance ( BLOB , bytearray )    ) :
+      BLOB = bytes                    ( BLOB                                 )
+    ##########################################################################
+    if                                ( len ( BLOB ) <= 0                  ) :
+      return None
+    ##########################################################################
+    IMG        = QImage               (                                      )
+    IMG        . loadFromData         ( QByteArray ( BLOB ) , "PNG"          )
+    TSIZE      = IMG . size           (                                      )
+    ##########################################################################
+    ISIZE      = self . iconSize      (                                      )
+    ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
+    ICZ        . fill                 ( QColor ( 255 , 255 , 255 )           )
+    ##########################################################################
+    W          = int       ( ( ISIZE . width  ( ) - TSIZE . width  ( ) ) / 2 )
+    H          = int       ( ( ISIZE . height ( ) - TSIZE . height ( ) ) / 2 )
+    PTS        = QPoint               ( W , H                                )
+    ##########################################################################
+    p          = QPainter             (                                      )
+    p          . begin                ( ICZ                                  )
+    p          . drawImage            ( PTS , IMG                            )
+    p          . end                  (                                      )
+    ##########################################################################
+    PIX        = QPixmap              (                                      )
+    PIX        . convertFromImage     ( ICZ                                  )
+    ##########################################################################
+    return QIcon                      ( PIX                                  )
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
@@ -287,9 +364,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
+  def allowedMimeTypes     ( self , mime                                   ) :
+    ##########################################################################
+    ## video/uuids
     formats = "album/uuids;people/uuids;picture/uuids"
-    return self . MimeType    ( mime , formats                               )
+    ##########################################################################
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )
@@ -307,7 +387,23 @@ class VideoAlbumsView             ( IconDock                               ) :
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
     atItem  = self . itemAt         ( mousePos                               )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                              ( mtype in [ "album/uuids" ]           ) :
+      ########################################################################
+      if                            ( self . OldGrouping in ["Searching"]  ) :
+        return False
+      ########################################################################
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                   ( UUIDs                                  )
+      if                            ( self == sourceWidget                 ) :
+        FMT = self . getMenuItem    ( "MoveAlbums"                           )
+        MSG = FMT  . format         ( CNT                                    )
+      else                                                                   :
+        FMT = self . getMenuItem    ( "JoinAlbums"                           )
+        MSG = FMT  . format         ( title , CNT                            )
+      ########################################################################
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    elif                            ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
       if                            ( atItem in [ False , None ]           ) :
         return False
@@ -321,12 +417,13 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     elif                            ( mtype in [ "picture/uuids" ]         ) :
       ########################################################################
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}張圖片"
-      else                                                                   :
-        MSG = f"從「{title}」複製{CNT}張圖片"
+      FMT   = self . getMenuItem    ( "CopyPicturesFrom"                     )
+      MSG   = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -349,20 +446,43 @@ class VideoAlbumsView             ( IconDock                               ) :
         return False
       return True
     ##########################################################################
+    if                         ( mtype in [ "picture/uuids" ]              ) :
+      if                       ( atItem in [ False , None ]                ) :
+        return False
+      return True
+    ##########################################################################
     if                         ( atItem . isSelected ( )                   ) :
       return False
     ##########################################################################
+    return True
+  ############################################################################
+  def acceptAlbumsDrop ( self                                              ) :
+    return True
+  ############################################################################
+  def dropAlbums                   ( self , source , pos , JSOX            ) :
+    ##########################################################################
+    ATID , NAME = self . itemAtPos ( pos                                     )
+    ##########################################################################
+    ## 在內部移動
+    ##########################################################################
+    if                             ( self == source                        ) :
+      ########################################################################
+      self . Go ( self . AlbumMoving    , ( ATID , NAME , JSOX , )           )
+      ########################################################################
+      return True
+    ##########################################################################
+    ## 從外部加入
+    ##########################################################################
+    self   . Go ( self . AlbumAppending , ( ATID , NAME , JSOX , )           )
     ##########################################################################
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptPeopleDrop ( self                                              ) :
     return True
   ############################################################################
   def dropPeople                   ( self , source , pos , JSOX            ) :
     ##########################################################################
     ATID , NAME = self . itemAtPos ( pos                                     )
-    ##########################################################################
-    ## 從外部加入
     ##########################################################################
     VAL         =                  ( ATID , NAME , JSOX ,                    )
     self . Go                      ( self . PeopleAppending , VAL            )
@@ -372,13 +492,12 @@ class VideoAlbumsView             ( IconDock                               ) :
   def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
-  def dropPictures             ( self , source , pos , JSOX                ) :
+  def dropPictures                 ( self , source , pos , JSOX            ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPictures")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    ATID , NAME = self . itemAtPos ( pos                                     )
+    ##########################################################################
+    VAL         =                  ( ATID , NAME , JSOX ,                    )
+    self . Go                      ( self . PicturesAppending , VAL          )
     ##########################################################################
     return True
   ############################################################################
@@ -389,23 +508,23 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def singleClicked                ( self , item                           ) :
+  def singleClicked ( self , item                                          ) :
     ##########################################################################
-    self . Notify                  ( 0                                       )
-    ##########################################################################
-    return True
-  ############################################################################
-  def doubleClicked                ( self , item                           ) :
-    ##########################################################################
+    self . Notify   ( 0                                                      )
     ##########################################################################
     return True
   ############################################################################
-  def CopyItems                    ( self                                  ) :
+  def doubleClicked ( self , item                                          ) :
+    ##########################################################################
+    ##########################################################################
+    return True
+  ############################################################################
+  def CopyItems ( self                                                     ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def PasteItems                   ( self                                  ) :
+  def PasteItems ( self                                                    ) :
     ##########################################################################
     ##########################################################################
     return
@@ -451,6 +570,111 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def GetLastestPosition                  ( self , DB , LUID               ) :
+    return self . GetGroupLastestPosition ( DB , "RelationVideos" , LUID     )
+  ############################################################################
+  def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
+    return self . GenerateGroupMovingSQL ( "RelationVideos" , LAST , UUIDs   )
+  ############################################################################
+  def AlbumMoving                ( self , atUuid , NAME , JSON             ) :
+    ##########################################################################
+    UUIDs   = JSON               [ "UUIDs"                                   ]
+    ##########################################################################
+    if                           ( len ( UUIDs ) <= 0                      ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB   (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
+      return
+    ##########################################################################
+    self    . OnBusy  . emit     (                                           )
+    self    . setBustle          (                                           )
+    ##########################################################################
+    RELKEY  = "Relation"
+    ## RELKEY  = "RelationPeople"
+    RELTAB  = self . Tables      [   RELKEY                                  ]
+    DB      . LockWrites         ( [ RELTAB                                ] )
+    ##########################################################################
+    if                           ( self . isReverse (                    ) ) :
+      ########################################################################
+      OPTS  = f"order by `reverse` asc"
+      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      OPTS  = f"order by `position` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
+    ##########################################################################
+    if                           ( len ( PUIDs ) > 1                       ) :
+      ########################################################################
+      LUID  = PUIDs              [ -1                                        ]
+      ########################################################################
+      LAST  = self . GetGroupLastestPosition ( DB     , RELKEY , LUID        )
+      PUIDs = self . OrderingPUIDs           ( atUuid , UUIDs  , PUIDs       )
+      SQLs  = self . GenerateGroupMovingSQL  ( RELKEY , LAST   , PUIDs       )
+      ########################################################################
+      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
+    ##########################################################################
+    DB      . UnlockTables       (                                           )
+    ##########################################################################
+    self    . setVacancy         (                                           )
+    self    . GoRelax . emit     (                                           )
+    DB      . Close              (                                           )
+    ##########################################################################
+    self    . loading            (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def AlbumAppending           ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationVideos"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    ##########################################################################
+    if                         ( self . isSubordination (                ) ) :
+      ########################################################################
+      self  . Relation  . Joins ( DB , RELTAB , UUIDs                        )
+      OPTS  = f"order by `position` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
+      ########################################################################
+      LUID  = PUIDs             [ -1                                         ]
+      LAST  = self . GetLastestPosition ( DB     , LUID                      )
+      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
+      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
+      ########################################################################
+    elif                       ( self . isReverse (                      ) ) :
+      ########################################################################
+      self  . Relation  . JoinsFirst ( DB , RELTAB , UUIDs                   )
+      OPTS  = f"order by `reverse` asc"
+      PUIDs = self . Relation . GetOwners ( DB , RELTAB , OPTS               )
+      ########################################################################
+      LUID  = PUIDs             [ -1                                         ]
+      LAST  = self . GetLastestPosition ( DB     , LUID                      )
+      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
+      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
+      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
   def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
     ##########################################################################
     UUIDs  = JSON              [ "UUIDs"                                     ]
@@ -485,6 +709,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     DB     . Close             (                                             )
     ##########################################################################
     self   . Notify            ( 5                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def PicturesAppending            ( self , atUuid , NAME , JSON           ) :
+    ##########################################################################
+    ## T1  = "People"
+    ## TAB = "RelationPeople"
+    ##########################################################################
+    ## OK  = self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1  )
+    ## if                             ( not OK                                ) :
+    ##   return
+    ##########################################################################
+    ## self   . loading               (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -1551,7 +1788,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       UUID = self . Relation . get ( "second"                                )
     ##########################################################################
     SCOPE  = self . Grouping
-    SCOPE  = f"ViewAlbums-{SCOPE}"
+    SCOPE  = f"ViewAlbums-{SCOPE}-{TYPE}-{UUID}"
     self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     DB     . UnlockTables          (                                         )
@@ -1577,7 +1814,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       UUID = self . Relation . get ( "second"                                )
     ##########################################################################
     SCOPE  = self . Grouping
-    SCOPE  = f"ViewAlbums-{SCOPE}"
+    SCOPE  = f"ViewAlbums-{SCOPE}-{TYPE}-{UUID}"
     self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
