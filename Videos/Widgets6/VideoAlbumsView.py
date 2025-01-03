@@ -4,16 +4,13 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 import glob
 import shutil
 import pathlib
-import ffmpeg
 ##############################################################################
 from   PySide6                           import QtCore
 from   PySide6                           import QtGui

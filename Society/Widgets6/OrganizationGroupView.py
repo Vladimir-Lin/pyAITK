@@ -38,6 +38,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
   OrganizationSubgroup = Signal ( str , int , str                            )
   OrganizationGroup    = Signal ( str , int , str , str , QIcon              )
   OpenVariantTables    = Signal ( str , str , int , str , dict               )
+  emitLog              = Signal ( str                                        )
   ############################################################################
   def __init__                  ( self , parent = None , plan = None       ) :
     ##########################################################################
@@ -48,6 +49,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    self . CompanyBtn   = None
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Grouping     = "Tag"
@@ -90,24 +92,52 @@ class OrganizationGroupView     ( IconDock                                 ) :
       A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
       A    . setToolTip             ( msg                                    )
       A    . triggered . connect    ( self . OpenOrganizationGroup           )
+      A    . setEnabled             ( False                                  )
+      ########################################################################
+      self . CompanyBtn = A
+      ########################################################################
       self . WindowActions . append ( A                                      )
+    ##########################################################################
+    self   . AppendToolNamingAction (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "OrganizationGroupParameter"                 )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
     ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -123,21 +153,39 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return True
   ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
+  ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    ##########################################################################
     TABLE = "RelationPictures"
+    ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
   def singleClicked ( self , item                                          ) :
     ##########################################################################
     self . Notify   ( 0                                                      )
+    if ( self . CompanyBtn not in [ False , None ]                         ) :
+      self . CompanyBtn . setEnabled ( True                                  )
     ##########################################################################
     return True
   ############################################################################
@@ -594,6 +642,12 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item , "Organizations" , "NamesEditing" )
+    ##########################################################################
+    return
+  ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
@@ -684,9 +738,13 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self   . LocalityMenu             ( mm                                   )
     self   . DockingMenu              ( mm                                   )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                  ( self    . menuFont ( )               )
     aa     = mm . exec_               ( QCursor . pos      ( )               )
     at     = mm . at                  ( aa                                   )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunDocking        ( mm , aa                              )
     if                                ( OKAY                               ) :
@@ -728,12 +786,16 @@ class OrganizationGroupView     ( IconDock                                 ) :
       self . RenameItem               (                                      )
       return True
     ##########################################################################
-    if                                ( at == 1601                         ) :
-      ########################################################################
-      NAM  = self . Tables            [ "NamesEditing"                       ]
-      self . EditAllNames             ( self , "Organizations" , uuid , NAM  )
-      ########################################################################
+    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
+    if                                ( OKAY                               ) :
       return True
+    ##########################################################################
+    ## if                                ( at == 1601                         ) :
+    ##   ########################################################################
+    ##   NAM  = self . Tables            [ "NamesEditing"                       ]
+    ##   self . EditAllNames             ( self , "Organizations" , uuid , NAM  )
+    ##   ########################################################################
+    ##   return True
     ##########################################################################
     if                                ( at == 2001                         ) :
       ########################################################################
