@@ -444,18 +444,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     UUIDs  = self . DropInJSON [ "UUIDs"                                     ]
     atItem = self . itemAt     ( mousePos                                    )
     ##########################################################################
-    if                         ( mtype in [ "people/uuids" ]               ) :
-      if                       ( atItem in [ False , None ]                ) :
+    if                         ( mtype      in [ "people/uuids" ]          ) :
+      if                       ( atItem     in self . EmptySet             ) :
         return False
       return True
     ##########################################################################
-    if                         ( mtype in [ "picture/uuids" ]              ) :
-      if                       ( atItem in [ False , None ]                ) :
+    if                         ( mtype      in [ "picture/uuids" ]         ) :
+      if                       ( atItem     in self . EmptySet             ) :
         return False
       return True
     ##########################################################################
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
+    if                         ( atItem not in self . EmptySet             ) :
+      if                       ( atItem . isSelected ( )                   ) :
+        return False
     ##########################################################################
     return True
   ############################################################################
