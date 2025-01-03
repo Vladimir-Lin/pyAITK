@@ -69,6 +69,7 @@ class AbstractGui            (                                             ) :
     self . Speaker         = None
     self . PlanFunc        = None
     self . SaveSettings    = None
+    self . EmptySet        = [ False , None                                  ]
     self . LocalIcons      = {                                               }
     self . LocalMsgs       = {                                               }
     self . LimitValues     = {                                               }

@@ -51,16 +51,17 @@ class ListWidget               ( QListWidget , VirtualGui                  ) :
     self . setVerticalScrollBarPolicy      ( Qt . ScrollBarAsNeeded          )
     self . setFunction                     ( self . FunctionDocking , False  )
     ##########################################################################
-    self . pickSelectionMode   . connect   ( self . assignSelectionMode      )
-    self . SubmitStatusMessage . connect   ( self . AssignStatusMessage      )
-    self . emitSelectOne       . connect   ( self . SelectOne                )
-    self . emitSelectAll       . connect   ( self . SelectAll                )
-    self . emitSelectNone      . connect   ( self . SelectNone               )
-    self . emitAssignToolTip   . connect   ( self . AcceptToolTip            )
-    self . emitBustle          . connect   ( self . DoBustle                 )
-    self . emitVacancy         . connect   ( self . DoVacancy                )
-    self . OnBusy              . connect   ( self . AtBusy                   )
-    self . GoRelax             . connect   ( self . OnRelax                  )
+    self . itemSelectionChanged . connect  ( self . selectionsChanged        )
+    self . pickSelectionMode    . connect  ( self . assignSelectionMode      )
+    self . SubmitStatusMessage  . connect  ( self . AssignStatusMessage      )
+    self . emitSelectOne        . connect  ( self . SelectOne                )
+    self . emitSelectAll        . connect  ( self . SelectAll                )
+    self . emitSelectNone       . connect  ( self . SelectNone               )
+    self . emitAssignToolTip    . connect  ( self . AcceptToolTip            )
+    self . emitBustle           . connect  ( self . DoBustle                 )
+    self . emitVacancy          . connect  ( self . DoVacancy                )
+    self . OnBusy               . connect  ( self . AtBusy                   )
+    self . GoRelax              . connect  ( self . OnRelax                  )
     ##########################################################################
     self . droppingAction = False
     self . VoiceJSON      =                {                                 }
@@ -547,16 +548,34 @@ class ListWidget               ( QListWidget , VirtualGui                  ) :
     ##########################################################################
     return
   ############################################################################
-  def singleClicked           ( self , item                                ) :
+  def selectionsChanged ( self                                             ) :
+    return
+  ############################################################################
+  def isEmptySelection          ( self                                     ) :
+    ##########################################################################
+    item = self . currentItem   (                                            )
+    OKAY =                      ( item not in self . EmptySet                )
+    ##########################################################################
+    if                          ( OKAY                                     ) :
+      ########################################################################
+      IT = self . selectedItems (                                            )
+      ########################################################################
+      if                        ( len ( IT ) <= 0                          ) :
+        ######################################################################
+        OKAY = False
+    ##########################################################################
+    return OKAY
+  ############################################################################
+  def singleClicked ( self , item                                          ) :
     return True
   ############################################################################
-  def doubleClicked           ( self , item                                ) :
+  def doubleClicked ( self , item                                          ) :
     return True
   ############################################################################
-  def stateChanged            ( self , item                                ) :
+  def stateChanged ( self , item                                           ) :
     return True
   ############################################################################
-  def removeParked            ( self                                       ) :
+  def removeParked ( self                                                  ) :
     return True
   ############################################################################
   def itemAtPos            ( self , pos                                    ) :

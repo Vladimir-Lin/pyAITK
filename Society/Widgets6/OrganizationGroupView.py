@@ -49,7 +49,9 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    self . GroupBtn     = None
     self . CompanyBtn   = None
+    self . NameBtn      = None
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Grouping     = "Tag"
@@ -83,22 +85,37 @@ class OrganizationGroupView     ( IconDock                                 ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareForActions                     ( self                         ) :
+    ##########################################################################
+    msg    = self . getMenuItem             ( "Subgroup"                     )
+    A      = QAction                        (                                )
+    IC     = QIcon                          ( ":/images/catalog.png"         )
+    A      . setIcon                        ( IC                             )
+    A      . setToolTip                     ( msg                            )
+    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
+    A      . setEnabled                     ( False                          )
+    ##########################################################################
+    self   . GroupBtn = A
+    ##########################################################################
+    self   . WindowActions . append         ( A                              )
     ##########################################################################
     if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "SIG"                                  )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenOrganizationGroup           )
-      A    . setEnabled             ( False                                  )
+      msg  = self . getMenuItem             ( "SIG"                          )
+      A    = QAction                        (                                )
+      IC   = QIcon                          ( ":/images/lists.png"           )
+      A    . setIcon                        ( IC                             )
+      A    . setToolTip                     ( msg                            )
+      A    . triggered . connect            ( self . OpenOrganizationGroup   )
+      A    . setEnabled                     ( False                          )
       ########################################################################
       self . CompanyBtn = A
       ########################################################################
-      self . WindowActions . append ( A                                      )
+      self . WindowActions . append         ( A                              )
     ##########################################################################
-    self   . AppendToolNamingAction (                                        )
+    self   . AppendToolNamingAction         (                                )
+    self   . NameBtn = self . WindowActions [ -1                             ]
+    self   . NameBtn . setEnabled           ( False                          )
     ##########################################################################
     return
   ############################################################################
@@ -181,16 +198,38 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
-  def singleClicked ( self , item                                          ) :
+  def SwitchSideTools ( self , Enabled                                     ) :
     ##########################################################################
-    self . Notify   ( 0                                                      )
-    if ( self . CompanyBtn not in [ False , None ]                         ) :
-      self . CompanyBtn . setEnabled ( True                                  )
+    if                ( self . GroupBtn   not in self . EmptySet           ) :
+      ########################################################################
+      self . GroupBtn   . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . CompanyBtn not in self . EmptySet           ) :
+      ########################################################################
+      self . CompanyBtn . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . NameBtn    not in self . EmptySet           ) :
+      ########################################################################
+      self . NameBtn    . setEnabled ( Enabled                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . Notify          ( 0                                               )
+    self . SwitchSideTools ( True                                            )
     ##########################################################################
     return True
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     return self . OpenItemSubgroup (        item                             )
+  ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
+    return
   ############################################################################
   def ObtainUuidsQuery                    ( self                           ) :
     return self . catalogObtainUuidsQuery (                                  )
@@ -716,12 +755,16 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     if                                ( uuid > 0                           ) :
       ########################################################################
+      ic   = QIcon                    ( ":/images/catalog.png"               )
       mg   = self . getMenuItem       ( "Subgroup"                           )
-      mm   . addAction                ( 2001 , mg                            )
+      mm   . addAction                ( 2001 , ic , mg                       )
       ########################################################################
       if                              ( self . isSubgroup ( )              ) :
+        ######################################################################
+        ic = QIcon                    ( ":/images/lists.png"                 )
         mg = self . getMenuItem       ( "SIG"                                )
-        mm . addAction                ( 2002 , mg                            )
+        mm . addActionWithIcon        ( 2002 , ic , mg                       )
+      ########################################################################
       mm   . addSeparator             (                                      )
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )

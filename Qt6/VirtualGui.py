@@ -30,14 +30,20 @@ class VirtualGui              ( AbstractGui                                ) :
     ##########################################################################
     self . SignalConnectors = {                                              }
     self . AtMenu           = False
+    self . HavingPlacement  = True
+    self . HavingMDI        = True
+    self . HavingDOCK       = True
+    self . HavingSTACK      = False
     ##########################################################################
     return
   ############################################################################
   def __del__ ( self                                                       ) :
     return
   ############################################################################
-  def Initialize               ( self , widget = None                      ) :
-    super ( ) . Initialize     ( widget                                      )
+  def Initialize           ( self , widget = None                          ) :
+    ##########################################################################
+    super ( ) . Initialize (        widget                                   )
+    ##########################################################################
     return
   ############################################################################
   def setAllFont                    ( self , widget , font                 ) :
@@ -61,49 +67,49 @@ class VirtualGui              ( AbstractGui                                ) :
     ##########################################################################
     return wflags
   ############################################################################
-  def addIntoWidget                 ( self , parent , widget               ) :
+  def addIntoWidget    ( self , parent , widget                            ) :
     ##########################################################################
-    if                              ( parent == None                       ) :
+    if                 ( parent == None                                    ) :
       return
     ##########################################################################
-    parent . addWidget              ( widget                                 )
+    parent . addWidget ( widget                                              )
     ##########################################################################
     return
   ############################################################################
-  def allowDrag             ( self , dragDrop                              ) :
+  def allowDrag ( self , dragDrop                                          ) :
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . NoDragDrop   ) :
+    if          ( dragDrop == QAbstractItemView . NoDragDrop               ) :
       return False
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DragOnly     ) :
+    if          ( dragDrop == QAbstractItemView . DragOnly                 ) :
       return True
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DropOnly     ) :
+    if          ( dragDrop == QAbstractItemView . DropOnly                 ) :
       return False
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DragDrop     ) :
+    if          ( dragDrop == QAbstractItemView . DragDrop                 ) :
       return True
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . InternalMove ) :
+    if          ( dragDrop == QAbstractItemView . InternalMove             ) :
       return False
     ##########################################################################
     return False
   ############################################################################
-  def allowDrop             ( self , dragDrop                              ) :
+  def allowDrop ( self , dragDrop                                          ) :
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . NoDragDrop   ) :
+    if          ( dragDrop == QAbstractItemView . NoDragDrop               ) :
       return False
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DragOnly     ) :
+    if          ( dragDrop == QAbstractItemView . DragOnly                 ) :
       return False
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DropOnly     ) :
+    if          ( dragDrop == QAbstractItemView . DropOnly                 ) :
       return True
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . DragDrop     ) :
+    if          ( dragDrop == QAbstractItemView . DragDrop                 ) :
       return True
     ##########################################################################
-    if                      ( dragDrop == QAbstractItemView . InternalMove ) :
+    if          ( dragDrop == QAbstractItemView . InternalMove             ) :
       return False
     ##########################################################################
     return False
@@ -201,47 +207,53 @@ class VirtualGui              ( AbstractGui                                ) :
     ##########################################################################
     return
   ############################################################################
-  def onlyConnector             ( self , name                              ) :
+  def onlyConnector    ( self , name                                       ) :
     ##########################################################################
-    if                          ( name not in self . SignalConnectors      ) :
+    if                 ( name not in self . SignalConnectors               ) :
       return
     ##########################################################################
     SIG   = self . SignalConnectors [ name ] [ "signal" ]
     SLT   = self . SignalConnectors [ name ] [ "slot"   ]
     ##########################################################################
     try                                                                      :
-      SIG . disconnect          (                                            )
-      SIG . connect             ( SLT                                        )
+      ########################################################################
+      SIG . disconnect (                                                     )
+      SIG . connect    ( SLT                                                 )
+      ########################################################################
     except                                                                   :
       return
     ##########################################################################
     return
   ############################################################################
-  def doConnector               ( self , name                              ) :
+  def doConnector   ( self , name                                          ) :
     ##########################################################################
-    if                          ( name not in self . SignalConnectors      ) :
+    if              ( name not in self . SignalConnectors                  ) :
       return
     ##########################################################################
     SIG   = self . SignalConnectors [ name ] [ "signal" ]
     SLT   = self . SignalConnectors [ name ] [ "slot"   ]
     ##########################################################################
     try                                                                      :
-      SIG . connect             ( SLT                                        )
+      ########################################################################
+      SIG . connect ( SLT                                                    )
+      ########################################################################
     except                                                                   :
       return
     ##########################################################################
     return
   ############################################################################
-  def undoConnector             ( self , name                              ) :
+  def undoConnector    ( self , name                                       ) :
     ##########################################################################
-    if                          ( name not in self . SignalConnectors      ) :
+    if                 ( name not in self . SignalConnectors               ) :
       return
     ##########################################################################
-    SIG   = self . SignalConnectors [ name ] [ "signal" ]
-    SLT   = self . SignalConnectors [ name ] [ "slot"   ]
+    SIG   = self . SignalConnectors [ name ] [ "signal"                      ]
+    SLT   = self . SignalConnectors [ name ] [ "slot"                        ]
     ##########################################################################
     try                                                                      :
-      SIG . disconnect          ( SLT                                        )
+      ########################################################################
+      SIG . disconnect ( SLT                                                 )
+      ########################################################################
     except                                                                   :
       return
     ##########################################################################
