@@ -29,25 +29,28 @@ from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . People     . People   import People
 ##############################################################################
-class OrganizationListings     ( TreeDock                                  ) :
+class OrganizationListings        ( TreeDock                               ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow       = Signal (                                             )
-  emitAllNames        = Signal ( dict                                        )
-  emitAssignAmounts   = Signal ( str , int , int                             )
-  PeopleGroup         = Signal ( str , int , str                             )
-  AlbumGroup          = Signal ( str , int , str                             )
-  ShowWebPages        = Signal ( str , int , str , str , QIcon               )
-  OpenVariantTables   = Signal ( str , str , int , str , dict                )
-  OpenLogHistory      = Signal ( str , str , str , str , str                 )
-  OpenIdentifiers     = Signal ( str , str , int                             )
-  emitVendorDirectory = Signal ( str                                         )
-  emitLog             = Signal ( str                                         )
+  emitNamesShow          = Signal (                                          )
+  emitAllNames           = Signal ( dict                                     )
+  emitAssignAmounts      = Signal ( str , int , int                          )
+  PeopleGroup            = Signal ( str , int , str                          )
+  AlbumGroup             = Signal ( str , int , str                          )
+  AlbumDepot             = Signal ( str , int , str , str                    )
+  GalleryDepot           = Signal ( str , int , str , str                    )
+  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
+  OpenVariantTables      = Signal ( str , str , int , str , dict             )
+  OpenLogHistory         = Signal ( str , str , str , str , str              )
+  OpenIdentifiers        = Signal ( str , str , int                          )
+  emitRelationParameters = Signal ( str , int , int                          )
+  emitVendorDirectory    = Signal ( str                                      )
+  emitLog                = Signal ( str                                      )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__       (        parent        , plan                 )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -153,6 +156,30 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "OrganizationListingsParameter"              )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
@@ -175,16 +202,7 @@ class OrganizationListings     ( TreeDock                                  ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    if                ( self . Grouping in [ "Subordination" ]             ) :
-      ########################################################################
-      T    = self . windowTitle (                                            )
-      M    = self . getMenuItem ( "OrganizationListingsParameter"            )
-      F    = self . Relation . First
-      W    = self . Relation . T1
-      R    = self . Relation . Relation
-      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
-      ########################################################################
-      self . emitLog . emit  ( L                                             )
+    self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -197,14 +215,29 @@ class OrganizationListings     ( TreeDock                                  ) :
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
     self . LinkVoice         ( self . CommandParser                          )
+    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -1326,6 +1359,9 @@ class OrganizationListings     ( TreeDock                                  ) :
     msg  = self . getMenuItem        ( "AssignTables"                        )
     mm   . addActionFromMenu         ( LOM , 25351301 , msg                  )
     ##########################################################################
+    msg  = self . getMenuItem        ( "GroupsToCLI"                         )
+    mm   . addActionFromMenu         ( LOM , 25351302 , msg                  )
+    ##########################################################################
     msg  = self . getMenuItem        ( "Search"                              )
     ICON = QIcon                     ( ":/images/search.png"                 )
     mm   . addActionFromMenuWithIcon ( LOM , 25351401 , ICON , msg           )
@@ -1362,6 +1398,21 @@ class OrganizationListings     ( TreeDock                                  ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25351302                    ) :
+      ########################################################################
+      if                               ( self . isSubordination (        ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        UUID = str                     ( UUID                                )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        RR   = self . Relation  . get  ( "relation"                          )
+        RR   = int                     ( RR                                  )
+        ######################################################################
+        self . emitRelationParameters . emit ( UUID , RR , TYPE              )
       ########################################################################
       return True
     ##########################################################################
@@ -1406,15 +1457,21 @@ class OrganizationListings     ( TreeDock                                  ) :
     ICON = QIcon                ( ":/images/viewpeople.png"                  )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Films"                                    )
-    ICON = QIcon                ( ":/images/video.png"                       )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
+    msg  = self . getMenuItem   ( "AlbumDepot"                               )
+    mm   . addActionFromMenu    ( COL , 38521003 , msg                       )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CreateVendorDirectory"                    )
+    msg  = self . getMenuItem   ( "GalleryDepot"                             )
     mm   . addActionFromMenu    ( COL , 38521004 , msg                       )
     ##########################################################################
+    msg  = self . getMenuItem   ( "Films"                                    )
+    ICON = QIcon                ( ":/images/video.png"                       )
+    mm   . addActionFromMenuWithIcon ( COL , 38521005 , ICON , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "CreateVendorDirectory"                    )
+    mm   . addActionFromMenu    ( COL , 38521006 , msg                       )
+    ##########################################################################
     msg  = self . getMenuItem   ( "CollectFilms"                             )
-    mm   . addActionFromMenu    ( COL , 38521005 , msg                       )
+    mm   . addActionFromMenu    ( COL , 38521007 , msg                       )
     ##########################################################################
     mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
@@ -1465,7 +1522,9 @@ class OrganizationListings     ( TreeDock                                  ) :
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
-      self . AlbumGroup  . emit    ( head , self . GType , str ( uuid )      )
+      rr   = "Capable"
+      ########################################################################
+      self . AlbumDepot   . emit   ( head , self . GType , str ( uuid ) , rr )
       ########################################################################
       return True
     ##########################################################################
@@ -1473,11 +1532,31 @@ class OrganizationListings     ( TreeDock                                  ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
-      self . emitVendorDirectory . emit ( str ( uuid )                       )
+      head = item . text           ( 0                                       )
+      rr   = "Contains"
+      ########################################################################
+      self . GalleryDepot . emit   ( head , self . GType , str ( uuid ) , rr )
       ########################################################################
       return True
     ##########################################################################
     if                             ( at == 38521005                        ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      head = item . text           ( 0                                       )
+      self . AlbumGroup  . emit    ( head , self . GType , str ( uuid )      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38521006                        ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      self . emitVendorDirectory . emit ( str ( uuid )                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38521007                        ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
@@ -1582,9 +1661,13 @@ class OrganizationListings     ( TreeDock                                  ) :
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
     if                             ( OKAY                                  ) :

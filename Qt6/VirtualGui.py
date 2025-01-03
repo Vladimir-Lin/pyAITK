@@ -33,6 +33,7 @@ class VirtualGui              ( AbstractGui                                ) :
     self . HavingPlacement  = True
     self . HavingMDI        = True
     self . HavingDOCK       = True
+    self . HavingALONE      = True
     self . HavingSTACK      = False
     ##########################################################################
     return

@@ -1742,12 +1742,14 @@ class Player               ( Widget , AttachDock                           ) :
     if                             ( self . isFullScreen                   ) :
       ########################################################################
       MSG  = TRX                   [ "NormalWindow"                          ]
-      mm   . addAction             ( 9301 , MSG                              )
+      ICO  = QIcon                 ( ":/images/GUI.png"                      )
+      mm   . addActionWithIcon     ( 9301 , ICO , MSG                        )
       ########################################################################
     else                                                                     :
       ########################################################################
       MSG  = TRX                   [ "PlayFullWindow"                        ]
-      mm   . addAction             ( 9302 , MSG                              )
+      ICO  = QIcon                 ( ":/images/fullscreen.png"               )
+      mm   . addActionWithIcon     ( 9302 , ICO , MSG                        )
     ##########################################################################
     if                             ( 0 == self . DockAt                    ) :
       ########################################################################

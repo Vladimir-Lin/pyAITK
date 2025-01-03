@@ -29,6 +29,7 @@ class AttachDock         (                                                 ) :
   AttachToNone    = 1000000
   AttachToMdi     = 1000001
   AttachToDock    = 1000002
+  AttachToStack   = 1000003
   ############################################################################
   def __init__           ( self                                            ) :
     return

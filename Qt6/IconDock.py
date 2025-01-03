@@ -555,29 +555,30 @@ class IconDock                 ( ListDock                                  ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendInsertAction              ( self , mm , Id                     ) :
+  def AppendInsertAction     ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Insert"                         ]
-    icon = QIcon                      ( ":/images/plus.png"                  )
-    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    msg  = TRX               [ "UI::Insert"                                  ]
+    icon = QIcon             ( ":/images/plus.png"                           )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
-  def AppendDeleteAction              ( self , mm , Id                     ) :
+  def AppendDeleteAction     ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Delete"                         ]
-    icon = QIcon                      ( ":/images/delete.png"                )
-    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    msg  = TRX               [ "UI::Delete"                                  ]
+    icon = QIcon             ( ":/images/delete.png"                         )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
-  def AppendRenameAction ( self , mm , Id                                  ) :
+  def AppendRenameAction     ( self , mm , Id                              ) :
     ##########################################################################
-    TRX = self . Translations
-    msg = TRX            [ "UI::Rename"                                      ]
-    mm  . addAction      ( Id , msg                                          )
+    TRX  = self . Translations
+    msg  = TRX               [ "UI::Rename"                                  ]
+    icon = QIcon             ( ":/images/rename.png"                         )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################

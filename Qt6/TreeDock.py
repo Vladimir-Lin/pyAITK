@@ -37,6 +37,7 @@ from   AITK    . People     . People   import People      as PeopleItem
 class TreeDock         ( TreeWidget , AttachDock                           ) :
   ############################################################################
   attachNone  = Signal ( QWidget                                             )
+  attachStack = Signal ( QWidget                                             )
   attachDock  = Signal ( QWidget                                           , \
                          str                                               , \
                          Qt . DockWidgetArea                               , \
@@ -123,10 +124,12 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
     DCKMSG = self . Translations [ "Docking" ] [ "Dock"                      ]
     MDIMSG = self . Translations [ "Docking" ] [ "MDI"                       ]
+    STKMSG = self . Translations [ "Docking" ] [ "Stack"                     ]
     ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    self   . setLocalMessage     ( self . AttachToNone  , IDPMSG             )
+    self   . setLocalMessage     ( self . AttachToMdi   , MDIMSG             )
+    self   . setLocalMessage     ( self . AttachToDock  , DCKMSG             )
+    self   . setLocalMessage     ( self . AttachToStack , STKMSG             )
     ##########################################################################
     return
   ############################################################################
@@ -206,59 +209,80 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def DockingMenu                    ( self , menu                         ) :
+  def DockingMenu                     ( self , menu                        ) :
     ##########################################################################
-    canDock = self . isFunction      ( self . FunctionDocking                )
-    if                               ( not canDock                         ) :
+    if                                ( not self . HavingPlacement         ) :
       return
     ##########################################################################
-    p       = self . parentWidget    (                                       )
-    S       = False
-    D       = False
-    M       = False
+    canDock  = self . isFunction      ( self . FunctionDocking               )
+    if                                ( not canDock                        ) :
+      return
     ##########################################################################
-    if                               ( p == None                           ) :
-      S     = True
+    p        = self . parentWidget    (                                      )
+    S        = False
+    D        = False
+    M        = False
+    ##########################################################################
+    if                                ( p == None                          ) :
+      S      = True
     else                                                                     :
       ########################################################################
-      if                             ( self . isDocking ( )                ) :
-        D   = True
+      if                              ( self . isDocking ( )               ) :
+        D    = True
       else                                                                   :
-        M   = True
+        M    = True
     ##########################################################################
-    menu    . addSeparator           (                                       )
+    menu     . addSeparator           (                                      )
     ##########################################################################
-    if                               (     S or D                          ) :
-      msg   = self . getLocalMessage ( self . AttachToMdi                    )
-      menu  . addAction              ( self . AttachToMdi  , msg             )
+    if                                ( self . HavingMDI                   ) :
+      if                              (     S or D                         ) :
+        ######################################################################
+        msg  = self . getLocalMessage ( self . AttachToMdi                   )
+        ico  = QIcon                  ( ":/images/GUI.png"                   )
+        menu . addActionWithIcon      ( self . AttachToMdi  , ico , msg      )
     ##########################################################################
-    if                               (     S or M                          ) :
-      msg   = self . getLocalMessage ( self . AttachToDock                   )
-      menu  . addAction              ( self . AttachToDock , msg             )
+    if                                ( self . HavingDOCK                  ) :
+      if                              (     S or M                         ) :
+        ######################################################################
+        msg  = self . getLocalMessage ( self . AttachToDock                  )
+        ico  = QIcon                  ( ":/images/hidespeech.png"            )
+        menu . addActionWithIcon      ( self . AttachToDock , ico , msg      )
     ##########################################################################
-    if                               ( not S                               ) :
-      msg   = self . getLocalMessage ( self . AttachToNone                   )
-      menu  . addAction              ( self . AttachToNone , msg             )
+    ## if                                ( self . HavingSTACK                 ) :
+    ##   if                              ( not S                              ) :
+    ##     ######################################################################
+    ##     msg  = self . getLocalMessage ( self . AttachToStack                 )
+    ##     menu . addAction              ( self . AttachToStack , msg           )
+    ##########################################################################
+    if                                ( self . HavingALONE                 ) :
+      if                              ( not S                              ) :
+        ######################################################################
+        msg  = self . getLocalMessage ( self . AttachToNone                  )
+        menu . addAction              ( self . AttachToNone , msg            )
     ##########################################################################
     return
   ############################################################################
-  def RunDocking               ( self , menu , action                      ) :
+  def RunDocking                ( self , menu , action                     ) :
     ##########################################################################
-    at = menu . at             ( action                                      )
+    at = menu . at              ( action                                     )
     ##########################################################################
-    if                         ( at == self . AttachToNone                 ) :
-      self . attachNone . emit ( self                                        )
+    if                          ( at == self . AttachToNone                ) :
+      self . attachNone  . emit ( self                                       )
       return True
     ##########################################################################
-    if                         ( at == self . AttachToMdi                  ) :
-      self . attachMdi  . emit ( self , self . dockingOrientation            )
+    if                          ( at == self . AttachToMdi                 ) :
+      self . attachMdi   . emit ( self , self . dockingOrientation           )
       return True
     ##########################################################################
-    if                         ( at == self . AttachToDock                 ) :
-      self . attachDock . emit ( self                                      , \
-                                 self . windowTitle ( )                    , \
-                                 self . dockingPlace                       , \
-                                 self . dockingPlaces                        )
+    if                          ( at == self . AttachToDock                ) :
+      self . attachDock  . emit ( self                                     , \
+                                  self . windowTitle ( )                   , \
+                                  self . dockingPlace                      , \
+                                  self . dockingPlaces                       )
+      return True
+    ##########################################################################
+    if                          ( at == self . AttachToStack               ) :
+      self . attachStack . emit ( self                                       )
       return True
     ##########################################################################
     return False
