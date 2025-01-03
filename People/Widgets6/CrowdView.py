@@ -39,6 +39,7 @@ class CrowdView              ( IconDock                                    ) :
   PeopleGroup       = Signal ( str , int , str                               )
   OpenVariantTables = Signal ( str , str , int , str , dict                  )
   OpenLogHistory    = Signal ( str , str , str , str , str                   )
+  emitLog           = Signal ( str                                           )
   ############################################################################
   def __init__               ( self , parent = None , plan = None          ) :
     ##########################################################################
@@ -49,6 +50,7 @@ class CrowdView              ( IconDock                                    ) :
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    self . PeopleBtn    = None
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Grouping     = "Tag"
@@ -88,26 +90,52 @@ class CrowdView              ( IconDock                                    ) :
       A    . setIcon                ( QIcon ( ":/images/buddy.png" )         )
       A    . setToolTip             ( msg                                    )
       A    . triggered . connect    ( self . OpenCurrentCrowd                )
+      A    . setEnabled             ( False                                  )
+      ########################################################################
+      self . PeopleBtn = A
+      ########################################################################
       self . WindowActions . append ( A                                      )
     ##########################################################################
     self . AppendToolNamingAction (                                          )
     ##########################################################################
     return
   ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "CrowdViewParameter"                         )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -123,11 +151,25 @@ class CrowdView              ( IconDock                                    ) :
     ##########################################################################
     return True
   ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
+  ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -146,6 +188,8 @@ class CrowdView              ( IconDock                                    ) :
   def singleClicked ( self , item                                          ) :
     ##########################################################################
     self . Notify   ( 0                                                      )
+    if ( self . PeopleBtn not in [ False , None ]                          ) :
+      self . PeopleBtn . setEnabled ( True                                   )
     ##########################################################################
     return True
   ############################################################################
@@ -795,9 +839,13 @@ class CrowdView              ( IconDock                                    ) :
     self   . LocalityMenu               ( mm                                 )
     self   . DockingMenu                ( mm                                 )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                    ( self    . menuFont ( )             )
     aa     = mm . exec_                 ( QCursor . pos      ( )             )
     at     = mm . at                    ( aa                                 )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunDocking          ( mm , aa                            )
     if                                  ( OKAY                             ) :

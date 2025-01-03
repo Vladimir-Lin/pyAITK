@@ -110,6 +110,33 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    if                        ( not self . isGrouping (                  ) ) :
+      return
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "ViewAlbumParameter"                         )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                       Enabled       ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
@@ -126,28 +153,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . LinkAction ( "PageDown"   , self . PageDown     , Enabled         )
     self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
     self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
-    ##########################################################################
-    if                ( self . isGrouping ( )                              ) :
-      ########################################################################
-      GG   = self . Grouping
-      TT   = self . windowTitle (                                            )
-      MM   = self . getMenuItem ( "ViewAlbumParameter"                       )
-      FF   = self . Relation . First
-      ST   = self . Relation . Second
-      T1   = self . Relation . T1
-      T2   = self . Relation . T2
-      RT   = self . Relation . Relation
-      LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
-      ########################################################################
-      if              ( Enabled                                            ) :
-        ######################################################################
-        LL = f"{LL} Enter"
-        ######################################################################
-      else                                                                   :
-        ######################################################################
-        LL = f"{LL} Leave"
-      ########################################################################
-      self . emitLog . emit  ( LL                                            )
+    self . TellStory  (                                      Enabled         )
     ##########################################################################
     return
   ############################################################################
@@ -356,7 +362,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     mtype   = "album/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
+    return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
   def startDrag         ( self , dropActions                               ) :
     ##########################################################################

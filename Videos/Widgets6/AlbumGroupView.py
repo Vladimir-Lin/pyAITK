@@ -39,6 +39,7 @@ class AlbumGroupView         ( IconDock                                    ) :
   AlbumSubgroup     = Signal ( str , int , str                               )
   AlbumGroup        = Signal ( str , int , str                               )
   OpenVariantTables = Signal ( str , str , int , str , dict                  )
+  emitLog           = Signal ( str                                           )
   ############################################################################
   def __init__               ( self , parent = None , plan = None          ) :
     ##########################################################################
@@ -49,6 +50,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . PrivateIcon   = True
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
+    self . AlbumBtn      = None
     self . dockingPlace  = Qt . BottomDockWidgetArea
     self . dockingPlaces = Qt . TopDockWidgetArea                          | \
                            Qt . BottomDockWidgetArea                       | \
@@ -89,24 +91,52 @@ class AlbumGroupView         ( IconDock                                    ) :
       A    . setIcon                ( QIcon ( ":/images/videos.png" )        )
       A    . setToolTip             ( msg                                    )
       A    . triggered . connect    ( self . OpenCurrentAlbum                )
+      A    . setEnabled             ( False                                  )
+      ########################################################################
+      self . AlbumBtn = A
+      ########################################################################
       self . WindowActions . append ( A                                      )
+    ##########################################################################
+    self   . AppendToolNamingAction (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "AlbumGroupParameter"                        )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
     ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    ##########################################################################
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -122,11 +152,25 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return True
   ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
+  ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -139,12 +183,16 @@ class AlbumGroupView         ( IconDock                                    ) :
     return self . Grouping
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    ##########################################################################
     TABLE = "RelationPictures"
+    ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
   def singleClicked ( self , item                                          ) :
     ##########################################################################
     self . Notify   ( 0                                                      )
+    if ( self . AlbumBtn not in [ False , None ]                           ) :
+      self . AlbumBtn . setEnabled ( True                                    )
     ##########################################################################
     return True
   ############################################################################
@@ -262,12 +310,16 @@ class AlbumGroupView         ( IconDock                                    ) :
     return True
   ############################################################################
   def dropAlbumGroups               ( self , source , pos , JSON           ) :
+    ##########################################################################
     MF   = self . AlbumGroupsMoving
     AF   = self . AlbumGroupsAppending
+    ##########################################################################
     return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
   def dropAlbums                        ( self , source , pos , JSON       ) :
+    ##########################################################################
     FUNC = self . AlbumAppending
+    ##########################################################################
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
   def dropPictures                      ( self , source , pos , JSON       ) :
@@ -359,16 +411,18 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def AlbumAppending                  ( self , atUuid , NAME , JSON        ) :
+  def AlbumAppending                   ( self , atUuid , NAME , JSON       ) :
     ##########################################################################
-    T1  = "Subgroup"
-    TAB = "RelationVideos"
+    T1   = "Subgroup"
+    TAB  = "RelationVideos"
     ##########################################################################
-    OK  = self . AppendingAlbumIntoT1 ( atUuid , NAME , JSON , TAB , T1      )
-    if                                ( not OK                             ) :
+    OK   = self . AppendingAlbumIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
+    if                                 ( not OK                            ) :
       return
     ##########################################################################
-    self   . loading                  (                                     )
+    self . loading                     (                                     )
+    M    = self    . getMenuItem       ( "AlbumsJoined"                      )
+    self . emitLog . emit              ( M                                   )
     ##########################################################################
     return
   ############################################################################
@@ -624,6 +678,13 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return self . OpenItemAlbum ( atItem                                     )
   ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    ## self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesEditing"     )
+    self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesLocal"       )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -732,9 +793,13 @@ class AlbumGroupView         ( IconDock                                    ) :
     self   . LocalityMenu           ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunDocking      ( mm , aa                                )
     if                              ( OKAY                                 ) :
@@ -780,9 +845,8 @@ class AlbumGroupView         ( IconDock                                    ) :
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1601                           ) :
-      NAM  = self . Tables          [ "NamesEditing"                         ]
-      self . EditAllNames           ( self , "Albums" , uuid , NAM           )
+    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( at == 2001                           ) :
