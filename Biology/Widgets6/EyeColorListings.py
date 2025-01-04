@@ -4,75 +4,43 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PySide6                         import QtCore
+from   PySide6                         import QtGui
+from   PySide6                         import QtWidgets
+from   PySide6 . QtCore                import *
+from   PySide6 . QtGui                 import *
+from   PySide6 . QtWidgets             import *
+from   AITK    . Qt6                   import *
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QSizeF
+from   AITK    . Essentials . Relation import Relation
+from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Calendars  . Periode  import Periode
+from   AITK    . People     . People   import People
 ##############################################################################
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QPainter
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
-##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
-##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
-##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-from   AITK  . Calendars  . StarDate  import StarDate
-from   AITK  . Calendars  . Periode   import Periode
-from   AITK  . People     . People    import People
-##############################################################################
-class EyeColorListings             ( TreeDock                              ) :
+class EyeColorListings         ( TreeDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow       = pyqtSignal (                                         )
-  emitAllNames        = pyqtSignal ( list                                    )
-  emitAssignAmounts   = pyqtSignal ( str , int , int                         )
-  PeopleGroup         = pyqtSignal ( str , int , str                         )
-  ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
-  ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
-  ShowLodListings     = pyqtSignal ( str , str             , QIcon           )
-  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
-  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
+  emitNamesShow       = Signal (                                             )
+  emitAllNames        = Signal ( list                                        )
+  emitAssignAmounts   = Signal ( str , int , int                             )
+  emitPossibleAmounts = Signal ( str , int , int                             )
+  PeopleGroup         = Signal ( str , int , str                             )
+  ShowPersonalGallery = Signal ( str , int , str       , QIcon               )
+  ShowPersonalIcons   = Signal ( str , int , str , str , QIcon               )
+  ShowLodListings     = Signal ( str , str             , QIcon               )
+  OpenVariantTables   = Signal ( str , str , int , str , dict                )
+  OpenLogHistory      = Signal ( str , str , str , str , str                 )
+  emitLog             = Signal ( str                                         )
   ############################################################################
-  def __init__                     ( self , parent = None , plan = None    ) :
+  def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
-    super ( ) . __init__           (        parent        , plan             )
+    super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -80,6 +48,10 @@ class EyeColorListings             ( TreeDock                              ) :
     self . FetchTableKey      = "EyeColorListings"
     self . GType              = 19
     self . SortOrder          = "asc"
+    self . JoinRelate         = "Subordination"
+    self . PeopleBtn          = None
+    self . GalleryBtn         = None
+    self . NameBtn            = None
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -88,9 +60,10 @@ class EyeColorListings             ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
+    self . setColumnCount          ( 4                                       )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -99,9 +72,10 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    self . emitNamesShow       . connect ( self . show                       )
+    self . emitAllNames        . connect ( self . refresh                    )
+    self . emitAssignAmounts   . connect ( self . AssignAmounts              )
+    self . emitPossibleAmounts . connect ( self . PossibleAmounts            )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -113,29 +87,39 @@ class EyeColorListings             ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 240 , 360 )                       )
+    return self . SizeSuggestion ( QSize ( 200 , 200 )                       )
   ############################################################################
-  def PrepareForActions                    ( self                          ) :
+  def PrepareForActions            ( self                                  ) :
     ##########################################################################
-    self . AppendToolNamingAction          (                                 )
+    msg  = self . getMenuItem      ( "Crowds"                                )
+    A    = QAction                 (                                         )
+    ICON = QIcon                   ( ":/images/viewpeople.png"               )
+    A    . setIcon                 ( ICON                                    )
+    A    . setToolTip              ( msg                                     )
+    A    . triggered     . connect ( self . GotoItemCrowd                    )
+    A    . setEnabled              ( False                                   )
+    ##########################################################################
+    self . PeopleBtn     = A
+    ##########################################################################
+    self . WindowActions . append  ( A                                       )
+    ##########################################################################
+    msg  = self . getMenuItem      ( "EyesGallery"                           )
+    A    = QAction                 (                                         )
+    ICON = QIcon                   ( ":/images/gallery.png"                  )
+    A    . setIcon                 ( ICON                                    )
+    A    . setToolTip              ( msg                                     )
+    A    . triggered     . connect ( self . GotoItemGallery                  )
+    A    . setEnabled              ( False                                   )
+    ##########################################################################
+    self . GalleryBtn    = A
+    ##########################################################################
+    self . WindowActions . append  ( A                                       )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
-    msg  = self . getMenuItem              ( "EyesGallery"                   )
-    A    = QAction                         (                                 )
-    ICON = QIcon                           ( ":/images/gallery.png"          )
-    A    . setIcon                         ( ICON                            )
-    A    . setToolTip                      ( msg                             )
-    A    . triggered     . connect         ( self . GotoItemGallery          )
-    self . WindowActions . append          ( A                               )
-    ##########################################################################
-    msg  = self . getMenuItem              ( "Crowds"                        )
-    A    = QAction                         (                                 )
-    ICON = QIcon                           ( ":/images/viewpeople.png"       )
-    A    . setIcon                         ( ICON                            )
-    A    . setToolTip                      ( msg                             )
-    A    . triggered     . connect         ( self . GotoItemCrowd            )
-    self . WindowActions . append          ( A                               )
+    self . AppendToolNamingAction  (                                         )
+    self . NameBtn = self . WindowActions [ -1                               ]
+    self . NameBtn . setEnabled    ( False                                   )
     ##########################################################################
     return
   ############################################################################
@@ -161,23 +145,62 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
+  ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchSideTools ( self , Enabled                                     ) :
+    ##########################################################################
+    if                ( self . GalleryBtn not in self . EmptySet           ) :
+      ########################################################################
+      self . GalleryBtn . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . PeopleBtn  not in self . EmptySet           ) :
+      ########################################################################
+      self . PeopleBtn  . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . NameBtn    not in self . EmptySet           ) :
+      ########################################################################
+      self . NameBtn    . setEnabled ( Enabled                               )
     ##########################################################################
     return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
+    self . Notify               ( 0                                          )
+    self . SwitchSideTools      ( True                                       )
     self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
     self . defaultSingleClicked (        item , column                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
     ##########################################################################
     return
   ############################################################################
@@ -209,12 +232,54 @@ class EyeColorListings             ( TreeDock                              ) :
     IT   . setIcon                ( 0 , ICON                                 )
     ##########################################################################
     IT   . setTextAlignment       ( 1 , Qt . AlignRight                      )
+    IT   . setTextAlignment       ( 2 , Qt . AlignRight                      )
     ##########################################################################
-    IT   . setData                ( 2 , Qt . UserRole , JSON                 )
+    IT   . setData                ( 3 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                (        str  , int     , int                     )
+  def PossibleAmounts      ( self , UUID , Amounts , Column                ) :
+    ##########################################################################
+    IT = self . uuidAtItem ( UUID , 0                                        )
+    if                     ( IT in [ False , None ]                        ) :
+      return
+    ##########################################################################
+    IT . setText           ( Column , str ( Amounts )                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReportPossibleEyes                ( self , UUIDs                     ) :
+    ##########################################################################
+    time   . sleep                      ( 1.0                                )
+    ##########################################################################
+    RELTAB = self . Tables              [ "RelationPeople"                   ]
+    REL    = Relation                   (                                    )
+    REL    . setT1                      ( "Eyes"                             )
+    REL    . setT2                      ( "People"                           )
+    REL    . setRelation                ( "Possible"                         )
+    ##########################################################################
+    DB     = self . ConnectDB           (                                    )
+    ##########################################################################
+    if                                  ( self . NotOkay ( DB )            ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit             (                                    )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      if                                ( not self . StayAlive             ) :
+        continue
+      ########################################################################
+      REL  . set                        ( "first" , UUID                     )
+      CNT  = REL . CountSecond          ( DB , RELTAB                        )
+      ########################################################################
+      self . emitPossibleAmounts . emit ( str ( UUID ) , CNT , 2             )
+    ##########################################################################
+    self   . GoRelax . emit             (                                    )
+    DB     . Close                      (                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
     IT = self . uuidAtItem ( UUID , 0                                        )
@@ -240,7 +305,7 @@ class EyeColorListings             ( TreeDock                              ) :
     if                                ( self . NotOkay ( DB )              ) :
       return
     ##########################################################################
-    self    . OnBusy  . emit          (                                      )
+    self   . OnBusy  . emit           (                                      )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
@@ -257,7 +322,6 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        list                              )
   def refresh                     ( self , LISTs                           ) :
     ##########################################################################
     self   . clear                (                                          )
@@ -353,11 +417,15 @@ class EyeColorListings             ( TreeDock                              ) :
       VAL         =                         ( UUIDs ,                        )
       self        . Go                      ( self . ReportBelongings , VAL  )
     ##########################################################################
+    OKAY          = self . isColumnHidden   ( 2                              )
+    if                                      ( not OKAY                     ) :
+      VAL         =                         ( UUIDs ,                        )
+      self        . Go                      ( self . ReportPossibleEyes , VAL )
+    ##########################################################################
     self          . Notify                  ( 5                              )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot          (                                                       )
   def startup        ( self                                                ) :
     ##########################################################################
     if               ( not self . isPrepared ( )                           ) :
@@ -483,19 +551,6 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptPictureDrop        ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPictures                 ( self , source , pos , JSON            ) :
-    ##########################################################################
-    HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
-    if                             ( HUID <= 0                             ) :
-      return True
-    ##########################################################################
-    self . Go ( self . PicturesAppending , ( HUID , NAME , JSON , )          )
-    ##########################################################################
-    return True
-  ############################################################################
   def PeopleAppending           ( self , atUuid , NAME , JSON              ) :
     ##########################################################################
     UUIDs  = JSON               [ "UUIDs"                                    ]
@@ -515,7 +570,7 @@ class EyeColorListings             ( TreeDock                              ) :
     REL    . set                ( "first" , atUuid                           )
     REL    . setT1              ( "Eyes"                                     )
     REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( "Subordination"                            )
+    REL    . setRelation        ( self . JoinRelate                          )
     ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
     REL    . Joins              ( DB , RELTAB , UUIDs                        )
@@ -525,11 +580,29 @@ class EyeColorListings             ( TreeDock                              ) :
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
     ##########################################################################
-    if                          ( not self . isColumnHidden ( 1 )          ) :
+    RR     =                    ( not self . isColumnHidden ( 1 )            )
+    ##########################################################################
+    if                          ( not self . isColumnHidden ( 2 )          ) :
+      RR   = True
+    ##########################################################################
+    if                          ( RR                                       ) :
       ########################################################################
       self . emitRestart . emit (                                            )
     ##########################################################################
     return
+  ############################################################################
+  def acceptPictureDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPictures                 ( self , source , pos , JSON            ) :
+    ##########################################################################
+    HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
+    if                             ( HUID <= 0                             ) :
+      return True
+    ##########################################################################
+    self . Go ( self . PicturesAppending , ( HUID , NAME , JSON , )          )
+    ##########################################################################
+    return True
   ############################################################################
   def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
     ##########################################################################
@@ -597,7 +670,7 @@ class EyeColorListings             ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 2                              )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     return
   ############################################################################
@@ -659,13 +732,13 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     if                                 ( at == 25351301                    ) :
       ########################################################################
-      ## TITLE = self . windowTitle       (                                     )
+      TITLE = self . windowTitle       (                                     )
       ########################################################################
-      ## self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-      ##                                    "0"                               , \
-      ##                                    self . GType                      , \
-      ##                                    self . FetchTableKey              , \
-      ##                                    self . Tables                       )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         "0"                               , \
+                                         self . GType                      , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
       ########################################################################
       return True
     ##########################################################################
@@ -676,11 +749,13 @@ class EyeColorListings             ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at in [ 9001 ] ) and ( hid )        ) :
+      ########################################################################
+      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
@@ -806,6 +881,37 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
+  def JoinsMenu              ( self , mm                                   ) :
+    ##########################################################################
+    msg = self . getMenuItem ( "JoinMethod"                                  )
+    LOM = mm   . addMenu     ( msg                                           )
+    ##########################################################################
+    CK  =                    ( "Subordination" == self . JoinRelate          )
+    msg = self . getMenuItem ( "ConfirmEyeColor"                             )
+    mm  . addActionFromMenu  ( LOM , 66471301 , msg , True , CK              )
+    ##########################################################################
+    CK  =                    ( "Possible"      == self . JoinRelate          )
+    msg = self . getMenuItem ( "PossibleEyeColor"                            )
+    mm  . addActionFromMenu  ( LOM , 66471302 , msg , True , CK              )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunJoinsMenu ( self , at                                             ) :
+    ##########################################################################
+    if             ( at == 66471301                                        ) :
+      ########################################################################
+      self . JoinRelate = "Subordination"
+      ########################################################################
+      return True
+    ##########################################################################
+    if             ( at == 66471302                                        ) :
+      ########################################################################
+      self . JoinRelate = "Possible"
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
     if                                 ( not self . isPrepared ( )         ) :
@@ -828,14 +934,19 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     self   . FunctionsMenu             ( mm , uuid , atItem                  )
     self   . GroupsMenu                ( mm ,        atItem                  )
+    self   . JoinsMenu                 ( mm                                  )
     self   . ColumnsMenu               ( mm                                  )
     self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
     self   . DockingMenu               ( mm                                  )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                   ( self    . menuFont ( )              )
     aa     = mm . exec_                ( QCursor . pos      ( )              )
     at     = mm . at                   ( aa                                  )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunDocking         ( mm , aa                             )
     if                                 ( OKAY                              ) :
@@ -861,6 +972,10 @@ class EyeColorListings             ( TreeDock                              ) :
       return True
     ##########################################################################
     OKAY   = self . RunGroupsMenu      ( at , atItem                         )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunJoinsMenu       ( at                                  )
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################

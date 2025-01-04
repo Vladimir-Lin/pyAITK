@@ -9,20 +9,16 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                              import QtCore
-from   PySide6                              import QtGui
-from   PySide6                              import QtWidgets
-from   PySide6 . QtCore                     import *
-from   PySide6 . QtGui                      import *
-from   PySide6 . QtWidgets                  import *
-from   AITK    . Qt6                        import *
+from   PySide6                         import QtCore
+from   PySide6                         import QtGui
+from   PySide6                         import QtWidgets
+from   PySide6 . QtCore                import *
+from   PySide6 . QtGui                 import *
+from   PySide6 . QtWidgets             import *
+from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Qt6        . MenuManager   import MenuManager   as MenuManager
-from   AITK    . Qt6        . MajorListings import MajorListings as MajorListings
-##############################################################################
-from   AITK    . Essentials . Relation      import Relation
-from   AITK    . Calendars  . StarDate      import StarDate
-from   AITK    . Calendars  . Periode       import Periode
+from   AITK    . Essentials . Relation import Relation
+from   AITK    . Calendars  . StarDate import StarDate
 ##############################################################################
 class SexualityListings        ( MajorListings                             ) :
   ############################################################################
@@ -217,43 +213,43 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     return
   ############################################################################
-  def loading                         ( self                               ) :
+  def loading                        ( self                                ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      self . emitNamesShow . emit    (                                       )
       return
     ##########################################################################
-    self    . Notify                  ( 3                                    )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
+    self   . Notify                  ( 3                                     )
+    self   . OnBusy  . emit          (                                       )
+    self   . setBustle               (                                       )
     ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
+    FMT    = self . Translations     [ "UI::StartLoading"                    ]
+    MSG    = FMT . format            ( self . windowTitle ( )                )
+    self   . ShowStatus              ( MSG                                   )
     ##########################################################################
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    UUIDs  = self . ObtainsItemUuids ( DB                                    )
+    NAMEs  = self . ObtainsUuidNames ( DB , UUIDs                            )
     ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
+    self   . setVacancy              (                                       )
+    self   . GoRelax . emit          (                                       )
+    self   . ShowStatus              ( ""                                    )
+    DB     . Close                   (                                       )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      self  . emitNamesShow . emit    (                                      )
+    if                               ( len ( UUIDs ) <= 0                  ) :
+      self . emitNamesShow . emit    (                                       )
       return
     ##########################################################################
-    JSON    =                         {  "UUIDs" : UUIDs , "NAMEs" : NAMEs   }
+    JSON   =                         {  "UUIDs" : UUIDs , "NAMEs" : NAMEs    }
     ##########################################################################
-    self    . emitAllNames . emit     ( JSON                                 )
+    self   . emitAllNames . emit     ( JSON                                  )
     ##########################################################################
-    OKAY    = self . isColumnHidden   ( 1                                    )
+    OKAY   = self . isColumnHidden   ( 1                                     )
     if                                ( not OKAY                           ) :
-      VAL   =                         ( UUIDs ,                              )
-      self  . Go                      ( self . ReportBelongings , VAL        )
+      VAL  =                         ( UUIDs ,                               )
+      self . Go                      ( self . ReportBelongings , VAL         )
     ##########################################################################
-    self    . Notify                  ( 5                                    )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
@@ -295,18 +291,19 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
     ##########################################################################
-    if                         ( self . droppingAction                     ) :
+    if                     ( self . droppingAction                         ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
+    if                     ( sourceWidget != self                          ) :
       return True
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem in self . EmptySet                 ) :
+    atItem = self . itemAt ( mousePos                                        )
+    ##########################################################################
+    if                     ( atItem in self . EmptySet                     ) :
       return False
-    if                         ( atItem . isSelected ( )                   ) :
+    if                     ( atItem . isSelected ( )                       ) :
       return False
     ##########################################################################
     return True
@@ -521,76 +518,76 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                            ( self , pos                         ) :
     ##########################################################################
-    if                                 ( not self . isPrepared ( )         ) :
+    if                                ( not self . isPrepared ( )          ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction         ( self . HavingMenu                   )
-    if                                 ( not doMenu                        ) :
+    doMenu = self . isFunction        ( self . HavingMenu                    )
+    if                                ( not doMenu                         ) :
       return False
     ##########################################################################
-    self   . Notify                    ( 0                                   )
+    self   . Notify                   ( 0                                    )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager              ( self                                 )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendInsertAction    ( mm , 1101                               )
-    mm     . addSeparator          (                                         )
+    self   . AppendRefreshAction      ( mm , 1001                            )
+    self   . AppendInsertAction       ( mm , 1101                            )
+    mm     . addSeparator             (                                      )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
     ##########################################################################
-    self   . GroupsMenu            ( mm ,        atItem                      )
-    self   . ColumnsMenu           ( mm                                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    self   . GroupsMenu               ( mm ,        atItem                   )
+    self   . ColumnsMenu              ( mm                                   )
+    self   . SortingMenu              ( mm                                   )
+    self   . LocalityMenu             ( mm                                   )
+    self   . DockingMenu              ( mm                                   )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    mm     . setFont                  ( self    . menuFont ( )               )
+    aa     = mm . exec_               ( QCursor . pos      ( )               )
+    at     = mm . at                  ( aa                                   )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    if                                ( self . RunDocking   ( mm , aa )    ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                                ( self . HandleLocalityMenu ( at )   ) :
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunColumnsMenu    ( at                                   )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunSortingMenu    ( at                                   )
+    if                                ( OKAY                               ) :
       ########################################################################
-      self . restart               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
-    if                             ( OKAY                                  ) :
-      return True
-    ##########################################################################
-    if                             ( at == 1001                            ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart                  (                                      )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    OKAY   = self . RunGroupsMenu     ( at , atItem                          )
+    if                                ( OKAY                               ) :
+      return True
+    ##########################################################################
+    if                                ( at == 1001                         ) :
+      ########################################################################
+      self . clear                    (                                      )
+      self . startup                  (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 1101                         ) :
+      self . InsertItem               (                                      )
       return True
     ##########################################################################
     OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
-    if                              ( OKAY                                 ) :
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
     return True

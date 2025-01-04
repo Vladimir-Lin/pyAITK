@@ -9,24 +9,18 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                            import QtCore
-from   PySide6                            import QtGui
-from   PySide6                            import QtWidgets
-from   PySide6 . QtCore                   import *
-from   PySide6 . QtGui                    import *
-from   PySide6 . QtWidgets                import *
-from   AITK    . Qt6                      import *
+from   PySide6                         import QtCore
+from   PySide6                         import QtGui
+from   PySide6                         import QtWidgets
+from   PySide6 . QtCore                import *
+from   PySide6 . QtGui                 import *
+from   PySide6 . QtWidgets             import *
+from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6        . TreeDock    import TreeDock    as TreeDock
-from   AITK    . Qt6        . LineEdit    import LineEdit    as LineEdit
-from   AITK    . Qt6        . ComboBox    import ComboBox    as ComboBox
-from   AITK    . Qt6        . SpinBox     import SpinBox     as SpinBox
-##############################################################################
-from   AITK    . Essentials . Relation    import Relation
-from   AITK    . Calendars  . StarDate    import StarDate
-from   AITK    . Calendars  . Periode     import Periode
-from   AITK    . People     . People      import People
+from   AITK    . Essentials . Relation import Relation
+from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Calendars  . Periode  import Periode
+from   AITK    . People     . People   import People
 ##############################################################################
 class HairColorListings        ( TreeDock                                  ) :
   ############################################################################
@@ -93,35 +87,35 @@ class HairColorListings        ( TreeDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 280 )                       )
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions            ( self                                  ) :
     ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemCrowd                     )
-    A    . setEnabled             ( False                                    )
+    msg  = self . getMenuItem      ( "Crowds"                                )
+    A    = QAction                 (                                         )
+    A    . setIcon                 ( QIcon ( ":/images/viewpeople.png" )     )
+    A    . setToolTip              ( msg                                     )
+    A    . triggered     . connect ( self . GotoItemCrowd                    )
+    A    . setEnabled              ( False                                   )
     ##########################################################################
-    self . PeopleBtn  = A
+    self . PeopleBtn     = A
     ##########################################################################
-    self . WindowActions . append ( A                                        )
+    self . WindowActions . append  ( A                                       )
     ##########################################################################
-    msg  = self . getMenuItem     ( "HairGallery"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemGallery                   )
-    A    . setEnabled             ( False                                    )
+    msg  = self . getMenuItem      ( "HairGallery"                           )
+    A    = QAction                 (                                         )
+    A    . setIcon                 ( QIcon ( ":/images/gallery.png" )        )
+    A    . setToolTip              ( msg                                     )
+    A    . triggered     . connect ( self . GotoItemGallery                  )
+    A    . setEnabled              ( False                                   )
     ##########################################################################
-    self . GalleryBtn = A
+    self . GalleryBtn    = A
     ##########################################################################
-    self . WindowActions . append ( A                                        )
+    self . WindowActions . append  ( A                                       )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
-    self . AppendToolNamingAction (                                          )
+    self . AppendToolNamingAction  (                                         )
     self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled   ( False                                    )
+    self . NameBtn . setEnabled    ( False                                   )
     ##########################################################################
     return
   ############################################################################
@@ -156,7 +150,7 @@ class HairColorListings        ( TreeDock                                  ) :
       ########################################################################
       self . AttachActions     ( False                                       )
       self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                          )
+      self . LinkVoice         ( None                                        )
     ##########################################################################
     return False
   ############################################################################
@@ -265,7 +259,7 @@ class HairColorListings        ( TreeDock                                  ) :
     if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
-    self    . OnBusy  . emit       (                                         )
+    self   . OnBusy  . emit        (                                         )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
@@ -307,7 +301,7 @@ class HairColorListings        ( TreeDock                                  ) :
     if                                ( self . NotOkay ( DB )              ) :
       return
     ##########################################################################
-    self    . OnBusy  . emit          (                                      )
+    self   . OnBusy  . emit           (                                      )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
@@ -595,7 +589,12 @@ class HairColorListings        ( TreeDock                                  ) :
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
     ##########################################################################
-    if                          ( not self . isColumnHidden ( 1 )          ) :
+    RR     =                    ( not self . isColumnHidden ( 1 )            )
+    ##########################################################################
+    if                          ( not self . isColumnHidden ( 2 )          ) :
+      RR   = True
+    ##########################################################################
+    if                          ( RR                                       ) :
       ########################################################################
       self . emitRestart . emit (                                            )
     ##########################################################################
@@ -840,30 +839,30 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return False
   ############################################################################
-  def JoinsMenu                      ( self , mm                           ) :
+  def JoinsMenu              ( self , mm                                   ) :
     ##########################################################################
-    msg  = self . getMenuItem        ( "JoinMethod"                          )
-    LOM  = mm   . addMenu            ( msg                                   )
+    msg = self . getMenuItem ( "JoinMethod"                                  )
+    LOM = mm   . addMenu     ( msg                                           )
     ##########################################################################
-    CK   =                           ( "Subordination" == self . JoinRelate  )
-    msg  = self . getMenuItem        ( "OriginalHairColor"                   )
-    mm   . addActionFromMenu         ( LOM , 66471301 , msg , True , CK      )
+    CK  =                    ( "Subordination" == self . JoinRelate          )
+    msg = self . getMenuItem ( "OriginalHairColor"                           )
+    mm  . addActionFromMenu  ( LOM , 66471301 , msg , True , CK              )
     ##########################################################################
-    CK   =                           ( "Contains"      == self . JoinRelate  )
-    msg  = self . getMenuItem        ( "DyeHairColor"                        )
-    mm   . addActionFromMenu         ( LOM , 66471302 , msg , True , CK      )
+    CK  =                    ( "Contains"      == self . JoinRelate          )
+    msg = self . getMenuItem ( "DyeHairColor"                                )
+    mm  . addActionFromMenu  ( LOM , 66471302 , msg , True , CK              )
     ##########################################################################
     return mm
   ############################################################################
-  def RunJoinsMenu                     ( self , at                         ) :
+  def RunJoinsMenu ( self , at                                             ) :
     ##########################################################################
-    if                                 ( at == 66471301                    ) :
+    if             ( at == 66471301                                        ) :
       ########################################################################
       self . JoinRelate = "Subordination"
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( at == 66471302                    ) :
+    if             ( at == 66471302                                        ) :
       ########################################################################
       self . JoinRelate = "Contains"
       ########################################################################
