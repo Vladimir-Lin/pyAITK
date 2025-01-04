@@ -1,57 +1,80 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## OrganizationListings
-## 組織列表
+## SexPositionListings
+## 性愛姿勢列表
 ##############################################################################
 import os
 import sys
+import getopt
 import time
 import requests
 import threading
+import gettext
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PyQt5                          import QtCore
+from   PyQt5                          import QtGui
+from   PyQt5                          import QtWidgets
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . People     . People   import People
+from   PyQt5 . QtCore                 import QObject
+from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
+from   PyQt5 . QtCore                 import Qt
+from   PyQt5 . QtCore                 import QPoint
+from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
 ##############################################################################
-class OrganizationListings        ( TreeDock                               ) :
+from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QCursor
+from   PyQt5 . QtGui                  import QKeySequence
+##############################################################################
+from   PyQt5 . QtWidgets              import QApplication
+from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import qApp
+from   PyQt5 . QtWidgets              import QAction
+from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
+from   PyQt5 . QtWidgets              import QTreeWidget
+from   PyQt5 . QtWidgets              import QTreeWidgetItem
+from   PyQt5 . QtWidgets              import QLineEdit
+from   PyQt5 . QtWidgets              import QComboBox
+from   PyQt5 . QtWidgets              import QSpinBox
+##############################################################################
+from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
+from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
+##############################################################################
+from   AITK  . Essentials . Relation  import Relation
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
+##############################################################################
+class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow          = Signal (                                          )
-  emitAllNames           = Signal ( dict                                     )
-  emitAssignAmounts      = Signal ( str , int , int                          )
-  PeopleGroup            = Signal ( str , int , str                          )
-  AlbumGroup             = Signal ( str , int , str                          )
-  AlbumDepot             = Signal ( str , int , str , str                    )
-  GalleryDepot           = Signal ( str , int , str , str                    )
-  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
-  OpenVariantTables      = Signal ( str , str , int , str , dict             )
-  OpenLogHistory         = Signal ( str , str , str , str , str              )
-  OpenIdentifiers        = Signal ( str , str , int                          )
-  emitRelationParameters = Signal ( str , int , int                          )
-  emitVendorDirectory    = Signal ( str                                      )
-  emitLog                = Signal ( str                                      )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( dict                                    )
+  ShowPersonalGallery = pyqtSignal ( str , int , str  ,       QIcon          )
+  ShowPersonalIcons   = pyqtSignal ( str , int , str  , str , QIcon          )
+  ShowGalleries       = pyqtSignal ( str , int , str  ,       QIcon          )
+  ShowVideoAlbums     = pyqtSignal ( str , int , str  ,       QIcon          )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . GType              = 38
+    self . GType              = 210
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 40
+    self . Amount             = 45
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -62,7 +85,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
-    self . FetchTableKey      = "OrganizationListings"
+    self . FetchTableKey      = "SexPositionListings"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -72,13 +95,11 @@ class OrganizationListings        ( TreeDock                               ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT2        ( "SexPosition"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 2                                       )
     self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -90,7 +111,6 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -110,7 +130,7 @@ class OrganizationListings        ( TreeDock                               ) :
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    A    . triggered . connect    ( self . OpenSexPositionNames              )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "Search"                                 )
@@ -119,58 +139,6 @@ class OrganizationListings        ( TreeDock                               ) :
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . Search                            )
     self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Films"                                  )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationVideos            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Identifiers"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "IdentWebPage"                           )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def TellStory               ( self , Enabled                             ) :
-    ##########################################################################
-    GG   = self . Grouping
-    TT   = self . windowTitle (                                              )
-    MM   = self . getMenuItem ( "OrganizationListingsParameter"              )
-    FF   = self . Relation . First
-    ST   = self . Relation . Second
-    T1   = self . Relation . T1
-    T2   = self . Relation . T2
-    RT   = self . Relation . Relation
-    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
-    ##########################################################################
-    if                        ( Enabled                                    ) :
-      ########################################################################
-      LL = f"{LL} Enter"
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      LL = f"{LL} Leave"
-    ##########################################################################
-    self . emitLog . emit     ( LL                                           )
     ##########################################################################
     return
   ############################################################################
@@ -196,8 +164,6 @@ class OrganizationListings        ( TreeDock                               ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . TellStory  (                                         Enabled      )
-    ##########################################################################
     return
   ############################################################################
   def FocusIn                ( self                                        ) :
@@ -209,29 +175,14 @@ class OrganizationListings        ( TreeDock                               ) :
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
     self . LinkVoice         ( self . CommandParser                          )
-    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -241,7 +192,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked            ( self , item , column                       ) :
+  def doubleClicked           ( self , item , column                       ) :
     ##########################################################################
     if                        ( column not in [ 0 ]                        ) :
       return
@@ -256,18 +207,17 @@ class OrganizationListings        ( TreeDock                               ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "OrganizationListings" , 3                       )
+    self . defaultPrepare ( "SexPositionListings" , 1                        )
     ##########################################################################
     return
   ############################################################################
   def PrepareItem               ( self , UUID , NAME                       ) :
     ##########################################################################
     IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
-    IT . setTextAlignment       ( 2    , Qt . AlignRight                     )
     ##########################################################################
     return IT
   ############################################################################
+  @pyqtSlot                      (                                           )
   def InsertItem                 ( self                                    ) :
     ##########################################################################
     item = QTreeWidgetItem       (                                           )
@@ -281,6 +231,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                   (                                              )
   def DeleteItems             ( self                                       ) :
     ##########################################################################
     if                        ( not self . isGrouping ( )                  ) :
@@ -290,12 +241,14 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot             (                                                    )
   def RenameItem        ( self                                             ) :
     ##########################################################################
     self . goRenameItem ( 0                                                  )
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                     (                                            )
   def nameChanged               ( self                                     ) :
     ##########################################################################
     if                          ( not self . isItemPicked ( )              ) :
@@ -332,6 +285,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                       (        dict                              )
   def refresh                     ( self , JSON                            ) :
     ##########################################################################
     self   . clear                (                                          )
@@ -360,7 +314,7 @@ class OrganizationListings        ( TreeDock                               ) :
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder          (                               )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables                   [ "Relation"                    ]
+    RELTAB = self . Tables                   [ "RelationGroups"              ]
     ##########################################################################
     if                                       ( self . isSubordination ( )  ) :
       OPTS = f"order by `position` {ORDER}"
@@ -388,68 +342,6 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  def AssignAmounts        ( self , UUID , Amounts , Column                ) :
-    ##########################################################################
-    IT = self . uuidAtItem ( UUID , 0                                        )
-    if                     ( IT in [ False , None ]                        ) :
-      return
-    ##########################################################################
-    IT . setText           ( Column , str ( Amounts )                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
-    ##########################################################################
-    time   . sleep                    ( 1.0                                  )
-    ##########################################################################
-    RELTAB = self . Tables            [ "Relation"                           ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Organization"                       )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
-      return
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
-    ##########################################################################
-    DB     . Close                    (                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportVideos                    ( self , UUIDs                       ) :
-    ##########################################################################
-    time   . sleep                    ( 1.0                                  )
-    ##########################################################################
-    RELTAB = self . Tables            [ "RelationVideos"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Organization"                       )
-    REL    . setT2                    ( "Album"                              )
-    REL    . setRelation              ( "Subordination"                      )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
-      return
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2               )
-    ##########################################################################
-    DB     . Close                    (                                      )
-    ##########################################################################
-    return
-  ############################################################################
   def looking                         ( self , name                        ) :
     ##########################################################################
     if                                ( len ( name ) <= 0                  ) :
@@ -457,7 +349,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     if                                ( self . isOriginal ( )              ) :
       self . SearchingForT2           ( name                                 ,
-                                        "Organizations"                      ,
+                                        "SexPosition"                        ,
                                         "Names"                              )
       return
     ##########################################################################
@@ -468,7 +360,7 @@ class OrganizationListings        ( TreeDock                               ) :
     if                                ( DB == None                         ) :
       return
     ##########################################################################
-    RELTAB  = self . Tables           [ "RelationEditing"                    ]
+    RELTAB  = self . Tables           [ "RelationGroups"                     ]
     NAMTAB  = self . Tables           [ "Names"                              ]
     LIC     = self . getLocality      (                                      )
     LIKE    = f"%{name}%"
@@ -570,18 +462,11 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 2 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportVideos , VAL            )
-    ##########################################################################
     self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot          (                                                       )
   def startup        ( self                                                ) :
     ##########################################################################
     if               ( not self . isPrepared ( )                           ) :
@@ -593,7 +478,7 @@ class OrganizationListings        ( TreeDock                               ) :
   ############################################################################
   def ObtainAllUuids                ( self , DB                            ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "Organizations"                        ]
+    TABLE  = self . Tables          [ "SexPosition"                          ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
@@ -607,24 +492,10 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return DB . ObtainUuids         ( QQ , 0                                 )
   ############################################################################
-  def TranslateAll              ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    TABLE = self . Tables       [ "NamesEditing"                             ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
-    ##########################################################################
-    DB    . Close               (                                            )
-    ##########################################################################
-    return
-  ############################################################################
   def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    ORGTAB = self . Tables   [ "Organizations"                               ]
-    QQ     = f"select count(*) from {ORGTAB} where ( `used` > 0 ) ;"
+    SEXTAB = self . Tables   [ "SexPosition"                                 ]
+    QQ     = f"select count(*) from {SEXTAB} where ( `used` > 0 ) ;"
     DB     . Query           ( QQ                                            )
     ONE    = DB . FetchOne   (                                               )
     ##########################################################################
@@ -638,24 +509,24 @@ class OrganizationListings        ( TreeDock                               ) :
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    RELTAB = self . Tables               [ "RelationGroups"                  ]
     ##########################################################################
     return self . Relation . CountSecond ( DB , RELTAB                       )
   ############################################################################
   def FetchGroupOwnersCount              ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    RELTAB = self . Tables               [ "RelationGroups"                  ]
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    ORGTAB = self . Tables          [ "Organizations"                        ]
+    SEXTAB = self . Tables          [ "SexPosition"                          ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {ORGTAB}
+    QQ     = f"""select `uuid` from {SEXTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
@@ -706,7 +577,7 @@ class OrganizationListings        ( TreeDock                               ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "organization/uuids"
+    mtype   = "sexposition/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -718,9 +589,7 @@ class OrganizationListings        ( TreeDock                               ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    ##########################################################################
-    formats = "people/uuids;organization/uuids"
-    ##########################################################################
+    formats = "sexposition/uuids"
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -748,14 +617,8 @@ class OrganizationListings        ( TreeDock                               ) :
     title  = source . windowTitle    (                                       )
     CNT    = len                     ( UUIDs                                 )
     ##########################################################################
-    if                               ( mtype in [ "people/uuids"         ] ) :
-      ########################################################################
-      if                             ( atItem in [ False , None ]          ) :
-        return False
-      ########################################################################
-      self . ShowMenuItemTitleStatus ( "CopyFrom" , title , CNT              )
-    elif                             ( mtype in [ "organization/uuids"   ] ) :
-      self . ShowMenuItemTitleStatus ( "OrganizationFrom" , title , CNT      )
+    if                               ( mtype in [ "sexposition/uuids"    ] ) :
+      self . ShowMenuItemTitleStatus ( "SexPositionFrom" , title , CNT       )
     ##########################################################################
     return RDN
   ############################################################################
@@ -767,106 +630,28 @@ class OrganizationListings        ( TreeDock                               ) :
     if                         ( source == self                            ) :
       return False
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    mtype  = self . DropInJSON [ "Mime"                                      ]
-    ##########################################################################
-    if                         ( mtype  in [ "people/uuids"              ] ) :
-      ########################################################################
-      if                       ( atItem in [ False , None ]                ) :
-        return False
+    ## atItem = self . itemAt     ( mousePos                                    )
+    ## mtype  = self . DropInJSON [ "Mime"                                      ]
     ##########################################################################
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptSexPositionsDrop ( self                                        ) :
     return True
   ############################################################################
-  def acceptOrganizationsDrop  ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople           ( self , source , pos , JSOX                    ) :
+  def dropSexPositions ( self , source , pos , JSOX                        ) :
     ##########################################################################
-    if                     ( "UUIDs" not in JSOX                           ) :
+    if                 ( "UUIDs" not in JSOX                               ) :
       return True
     ##########################################################################
-    UUIDs  = JSOX          [ "UUIDs"                                         ]
-    if                     ( len ( UUIDs ) <= 0                            ) :
+    UUIDs  = JSOX      [ "UUIDs"                                             ]
+    if                 ( len ( UUIDs ) <= 0                                ) :
       return True
     ##########################################################################
-    atItem = self . itemAt ( pos                                             )
-    if                     ( atItem in [ False , None ]                    ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data ( 0 , Qt . UserRole                               )
-    UUID   = int           ( UUID                                            )
-    ##########################################################################
-    if                     ( UUID <= 0                                     ) :
-      return True
-    ##########################################################################
-    self . Go              ( self . PeopleJoinOrganization                 , \
-                             ( UUID , UUIDs , )                              )
+    self . Go          ( self . AppendingSexPositions , ( UUIDs , )          )
     ##########################################################################
     return True
   ############################################################################
-  def dropOrganizations ( self , source , pos , JSOX                       ) :
-    ##########################################################################
-    if                  ( "UUIDs" not in JSOX                              ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX       [ "UUIDs"                                            ]
-    if                  ( len ( UUIDs ) <= 0                               ) :
-      return True
-    ##########################################################################
-    self . Go           ( self . AppendingOrganizations , ( UUIDs , )        )
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinOrganization        ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    FMT     = self . getMenuItem    ( "JoinPeople"                           )
-    MSG     = FMT  . format         ( COUNT                                  )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    TYPE    = "Organization"
-    PER     = People                (                                        )
-    RELTAB  = self . Tables         [ "RelationEditing"                      ]
-    DB      . LockWrites            ( [ RELTAB                             ] )
-    PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = PER . CountBelongs    ( DB , RELTAB , UUID , TYPE              )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def AppendingOrganizations    ( self , UUIDs                             ) :
+  def AppendingSexPositions     ( self , UUIDs                             ) :
     ##########################################################################
     COUNT  = len                ( UUIDs                                      )
     if                          ( COUNT <= 0                               ) :
@@ -878,21 +663,12 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     self   . OnBusy  . emit     (                                            )
     self   . setBustle          (                                            )
-    FMT    = self . getMenuItem ( "JoinOrganization"                         )
+    FMT    = self . getMenuItem ( "JoinSexPosition"                          )
     MSG    = FMT  . format      ( COUNT                                      )
     self   . ShowStatus         ( MSG                                        )
     self   . TtsTalk            ( MSG , 1002                                 )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationEditing"                          ]
-    ##########################################################################
-    if                          ( self . isReverse       ( )               ) :
-      ########################################################################
-      T2   = self . Relation . get ( "t2"                                    )
-      ########################################################################
-      if                        ( 76 == T2                                 ) :
-        ######################################################################
-        RELTAB = self . Tables  [ "RelationVideos"                           ]
-    ##########################################################################
+    RELTAB = self . Tables      [ "RelationGroups"                           ]
     DB     . LockWrites         ( [ RELTAB                                 ] )
     ##########################################################################
     if                          ( self . isSubordination ( )               ) :
@@ -920,7 +696,7 @@ class OrganizationListings        ( TreeDock                               ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationEditing"                    ]
+    RELTAB = self . Tables            [ "RelationGroups"                     ]
     SQLs   =                          [                                      ]
     ##########################################################################
     for UUID in UUIDs                                                        :
@@ -937,7 +713,7 @@ class OrganizationListings        ( TreeDock                               ) :
     self   . setBustle                (                                      )
     DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
-    TITLE  = "RemoveOrganizationItems"
+    TITLE  = "RemoveSexPositionItems"
     self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
     ##########################################################################
     DB     . UnlockTables             (                                      )
@@ -954,17 +730,17 @@ class OrganizationListings        ( TreeDock                               ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    ORGTAB = self . Tables    [ "Organizations"                              ]
-    RELTAB = self . Tables    [ "RelationEditing"                            ]
+    SEXTAB = self . Tables    [ "SexPosition"                                ]
+    RELTAB = self . Tables    [ "RelationGroups"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ ORGTAB , RELTAB , NAMTAB                 ] )
+    DB     . LockWrites       ( [ SEXTAB , RELTAB , NAMTAB                 ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
     if                        ( uuid <= 0                                  ) :
       ########################################################################
-      uuid = DB . LastUuid    ( ORGTAB , "uuid" , 1600000000000000000        )
-      DB   . AppendUuid       ( ORGTAB , uuid                                )
+      uuid = DB . LastUuid    ( SEXTAB , "uuid" , 5431236238719400000        )
+      DB   . AppendUuid       ( SEXTAB , uuid                                )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
@@ -994,10 +770,10 @@ class OrganizationListings        ( TreeDock                               ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    ORGTAB = self . Tables    [ "Organizations"                              ]
+    SEXTAB = self . Tables    [ "SexPosition"                                ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ ORGTAB , NAMTAB                          ] )
+    DB     . LockWrites       ( [ SEXTAB , NAMTAB                          ] )
     ##########################################################################
     for N in L                                                               :
       ########################################################################
@@ -1008,176 +784,13 @@ class OrganizationListings        ( TreeDock                               ) :
       if                      ( len ( name ) <= 0                          ) :
         continue
       ########################################################################
-      uuid = DB . LastUuid    ( ORGTAB , "uuid" , 1600000000000000000        )
-      DB   . AppendUuid       ( ORGTAB , uuid                                )
+      uuid = DB . LastUuid    ( SEXTAB , "uuid" , 5431236238719400000        )
+      DB   . AppendUuid       ( SEXTAB , uuid                                )
       self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
     self   . loading          (                                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainFilmFilters           ( self , DB , UUID                       ) :
-    ##########################################################################
-    IDFTAB  = self . Tables       [ "Identifiers"                            ]
-    ##########################################################################
-    FILTERS =                     [                                          ]
-    GTYPE   = self . GType
-    ##########################################################################
-    QQ      = f"""select `name` from {IDFTAB}
-                  where ( `uuid` = {UUID} )
-                    and ( `type` = {GTYPE} )
-                    order by `id` asc ;"""
-    QQ      = " " . join          ( QQ . split ( )                           )
-    DB      . Query               ( QQ                                       )
-    ALL     = DB . FetchAll       (                                          )
-    ##########################################################################
-    if                            ( self . NotOkay ( ALL )                 ) :
-      return FILTERS
-    ##########################################################################
-    if                            ( len ( ALL ) <= 0                       ) :
-      return FILTERS
-    ##########################################################################
-    for RR in ALL                                                            :
-      ########################################################################
-      F     = self . assureString ( RR [ 0 ]                                 )
-      if                          ( len ( F ) > 0                          ) :
-        FILTERS . append          ( F                                        )
-    ##########################################################################
-    return FILTERS
-  ############################################################################
-  def CollectRemainingFilms   ( self , DB , UUID , FILTERS                 ) :
-    ##########################################################################
-    FILMs     =               [                                              ]
-    if                        ( len ( FILTERS ) <= 0                       ) :
-      return FILMs
-    ##########################################################################
-    IDFTAB    = self . Tables [ "Identifiers"                                ]
-    VIDREL    = self . Tables [ "RelationVideos"                             ]
-    GTYPE     = self . GType
-    LIKEs     =               [                                              ]
-    VAL       = tuple         ( FILTERS                                      )
-    ##########################################################################
-    for L in FILTERS                                                         :
-      ########################################################################
-      LIKEs   . append        ( "( `name` like %s )"                         )
-    ##########################################################################
-    if                        ( self . isSubordination ( )                 ) :
-      ########################################################################
-      UQ      = f"""select `second` from {VIDREL}
-                    where ( `first` = {UUID} )
-                      and ( `t1` = {GTYPE} )
-                      and ( `t2` = 76 )
-                      and ( `relation` = 1 )"""
-      ########################################################################
-    elif                      ( self . isReverse       ( )                 ) :
-      ########################################################################
-      UQ      = f"""select `first` from {VIDREL}
-                    where ( `second` = {UUID} )
-                      and ( `t1` = 76 )
-                      and ( `t2` = {GTYPE} )
-                      and ( `relation` = 1 )"""
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      return FILMs
-    ##########################################################################
-    QLIKE     = " or " . join ( LIKEs                                        )
-    QQ        = f"""select `uuid` from {IDFTAB}
-                    where ( `uuid` not in ( {UQ} ) )
-                      and ( `type` = 76 )
-                      and ( {QLIKE} )
-                    group by `uuid` asc ;"""
-    QQ        = " " . join    ( QQ . split ( )                               )
-    DB        . QueryValues   ( QQ , VAL                                     )
-    ##########################################################################
-    ALL       = DB . FetchAll (                                              )
-    ##########################################################################
-    if                        ( self . NotOkay ( ALL )                     ) :
-      return FILMs
-    ##########################################################################
-    if                        ( len ( ALL ) <= 0                           ) :
-      return FILMs
-    ##########################################################################
-    for RR in ALL                                                            :
-      ########################################################################
-      try                                                                    :
-        F     = int           ( RR [ 0 ]                                     )
-        FILMs . append        ( F                                            )
-      except                                                                 :
-        pass
-    ##########################################################################
-    return FILMs
-  ############################################################################
-  def ImportOrganizationFilms   ( self , DB , UUID , FILMs                 ) :
-    ##########################################################################
-    VIDREL = self . Tables      [ "RelationVideos"                           ]
-    SQLs   =                    [                                            ]
-    ID     = -1
-    ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , UUID                             )
-    REL    . setT1              ( "Organization"                             )
-    REL    . setT2              ( "Album"                                    )
-    REL    . setRelation        ( "Subordination"                            )
-    ##########################################################################
-    QQ     = REL . Last         ( VIDREL                                     )
-    DB     . Query              ( QQ                                         )
-    RR     = DB . FetchOne      (                                            )
-    if                          ( self . NotOkay ( RR )                    ) :
-      pass
-    else                                                                     :
-      ID   = int                ( RR [ 0 ]                                   )
-    ##########################################################################
-    ID     = ID + 1
-    ##########################################################################
-    for FILM in FILMs                                                        :
-      ########################################################################
-      REL  . Position = ID
-      REL  . set                ( "second" , FILM                            )
-      ########################################################################
-      QQ   = REL . Insert       ( VIDREL                                     )
-      SQLs . append             ( QQ                                         )
-      ########################################################################
-      ID   = ID + 1
-    ##########################################################################
-    TITLE  = "ImportOrganizationFilms"
-    self   . ExecuteSqlCommands ( TITLE , DB , SQLs , 100                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def CollectFilms                    ( self , UUID                        ) :
-    ##########################################################################
-    if                                ( not self . isGrouping ( )          ) :
-      return
-    ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      return False
-    ##########################################################################
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
-    ##########################################################################
-    IDFTAB  = self . Tables           [ "Identifiers"                        ]
-    VIDREL  = self . Tables           [ "RelationVideos"                     ]
-    GTYPE   = self . GType
-    ##########################################################################
-    FILTERS = self . ObtainFilmFilters     ( DB , UUID                       )
-    FILMs   = self . CollectRemainingFilms ( DB , UUID , FILTERS             )
-    ##########################################################################
-    if                                ( len ( FILMs ) > 0                  ) :
-      ########################################################################
-      DB    . LockWrites              ( [ VIDREL                           ] )
-      ########################################################################
-      self  . ImportOrganizationFilms ( DB , UUID , FILMs                    )
-      ########################################################################
-      DB    . UnlockTables            (                                      )
-    ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    DB      . Close                   (                                      )
-    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -1222,7 +835,7 @@ class OrganizationListings        ( TreeDock                               ) :
     if                              ( CUD                                  ) :
       ########################################################################
       SCOPE = self . Grouping
-      SCOPE = f"OrganizationListings-{SCOPE}"
+      SCOPE = f"SexPositionListings-{SCOPE}"
       self  . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
     ##########################################################################
     DB      . UnlockTables          (                                        )
@@ -1254,7 +867,7 @@ class OrganizationListings        ( TreeDock                               ) :
       return
     ##########################################################################
     SCOPE  = self . Grouping
-    SCOPE  = f"OrganizationListings-{SCOPE}"
+    SCOPE  = f"SexPositionListings-{SCOPE}"
     self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
@@ -1271,7 +884,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenOrganizationNames     ( self                                     ) :
+  def OpenSexPositionNames      ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
     if                          ( self . NotOkay ( atItem )                ) :
@@ -1281,69 +894,53 @@ class OrganizationListings        ( TreeDock                               ) :
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "Organization" , uuid , NAM         )
+    self   . EditAllNames       ( self , "SexPosition" , uuid , NAM          )
     ##########################################################################
     return
   ############################################################################
-  def OpenOrganizationIdentifiers   ( self                                 ) :
+  def OpenItemGalleries         ( self , item                              ) :
     ##########################################################################
-    atItem = self . currentItem     (                                        )
-    if                              ( self . NotOkay ( atItem )            ) :
-      return
+    uuid = item . data          ( 0 , Qt . UserRole                          )
+    uuid = int                  ( uuid                                       )
+    text = item . text          ( 0                                          )
+    icon = self . windowIcon    (                                            )
+    xsid = str                  ( uuid                                       )
     ##########################################################################
-    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
-    uuid   = int                    ( uuid                                   )
-    head   = atItem . text          ( 0                                      )
-    self   . OpenIdentifiers . emit ( head , str ( uuid ) , self . GType     )
+    self . ShowGalleries . emit ( text , self . GType , xsid , icon          )
     ##########################################################################
     return
   ############################################################################
-  def OpenOrganizationCrowds    ( self                                     ) :
+  def OpenPersonalGalleries     ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
+    ##########################################################################
     if                          ( self . NotOkay ( atItem )                ) :
       return
     ##########################################################################
-    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
-    uuid   = int                ( uuid                                       )
-    head   = atItem . text      ( 0                                          )
-    self   . PeopleGroup . emit ( head , self . GType , str ( uuid )         )
+    self . OpenItemGalleries    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
-  def OpenOrganizationVideos    ( self                                     ) :
+  def OpenGalleryItem                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( 0 , Qt . UserRole                    )
+    uuid = int                        ( uuid                                 )
+    text = item . text                ( 0                                    )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPersonalGallery       ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
+    ##########################################################################
     if                          ( self . NotOkay ( atItem )                ) :
       return
     ##########################################################################
-    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
-    uuid   = int                ( uuid                                       )
-    head   = atItem . text      ( 0                                          )
-    self   . AlbumGroup  . emit ( head , self . GType , str ( uuid )         )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenIdentifierWebPages    ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self . OpenWebPageListings  ( atItem , "Equivalent"                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenWebPageListings      ( self , item , Related                     ) :
-    ##########################################################################
-    text = item . text         ( 0                                           )
-    uuid = item . data         ( 0    , Qt . UserRole                        )
-    uuid = int                 ( uuid                                        )
-    xsid = str                 ( uuid                                        )
-    Typi = int                 ( self . GType                                )
-    icon = self . windowIcon   (                                             )
-    ##########################################################################
-    self . ShowWebPages . emit ( text , Typi , xsid , Related , icon         )
+    self   . OpenGalleryItem    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -1352,12 +949,6 @@ class OrganizationListings        ( TreeDock                               ) :
     msg  = self . getMenuItem        ( "Functions"                           )
     LOM  = mm   . addMenu            ( msg                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "AssignTables"                        )
-    mm   . addActionFromMenu         ( LOM , 25351301 , msg                  )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "GroupsToCLI"                         )
-    mm   . addActionFromMenu         ( LOM , 25351302 , msg                  )
-    ##########################################################################
     msg  = self . getMenuItem        ( "Search"                              )
     ICON = QIcon                     ( ":/images/search.png"                 )
     mm   . addActionFromMenuWithIcon ( LOM , 25351401 , ICON , msg           )
@@ -1365,52 +956,6 @@ class OrganizationListings        ( TreeDock                               ) :
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
-    ##########################################################################
-    if                                 ( at == 25351301                    ) :
-      ########################################################################
-      TITLE = self . windowTitle       (                                     )
-      if                               ( self . isOriginal ( )             ) :
-        ######################################################################
-        UUID = "0"
-        TYPE = self . GType
-        ######################################################################
-      elif                             ( self . isSubordination (        ) ) :
-        ######################################################################
-        UUID = self . Relation  . get  ( "first"                             )
-        TYPE = self . Relation  . get  ( "t1"                                )
-        TYPE = int                     ( TYPE                                )
-        ######################################################################
-      elif                             ( self . isReverse       (        ) ) :
-        ######################################################################
-        UUID = self . Relation  . get  ( "second"                            )
-        TYPE = self . Relation  . get  ( "t2"                                )
-        TYPE = int                     ( TYPE                                )
-        ######################################################################
-      else                                                                   :
-        return False
-      ########################################################################
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
-                                         self . FetchTableKey              , \
-                                         self . Tables                       )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 25351302                    ) :
-      ########################################################################
-      if                               ( self . isSubordination (        ) ) :
-        ######################################################################
-        UUID = self . Relation  . get  ( "first"                             )
-        UUID = str                     ( UUID                                )
-        TYPE = self . Relation  . get  ( "t1"                                )
-        TYPE = int                     ( TYPE                                )
-        RR   = self . Relation  . get  ( "relation"                          )
-        RR   = int                     ( RR                                  )
-        ######################################################################
-        self . emitRelationParameters . emit ( UUID , RR , TYPE              )
-      ########################################################################
-      return True
     ##########################################################################
     if                                 ( at == 25351401                    ) :
       self . Search                    (                                     )
@@ -1424,197 +969,122 @@ class OrganizationListings        ( TreeDock                               ) :
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at >= 9001 ) and ( at <= 9003 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
-        ######################################################################
-        self . restart             (                                         )
-        ######################################################################
+      ########################################################################
       return True
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu                ( self , mm , item                         ) :
+  def GroupsMenu                     ( self , mm , item                    ) :
     ##########################################################################
-    if                          ( self . NotOkay ( item )                  ) :
+    if                               ( self . NotOkay ( item )             ) :
       return mm
     ##########################################################################
     TRX  = self . Translations
-    NAME = item . text          ( 0                                          )
-    FMT  = TRX                  [ "UI::Belongs"                              ]
-    MSG  = FMT . format         ( NAME                                       )
-    COL  = mm . addMenu         ( MSG                                        )
+    NAME = item . text               ( 0                                     )
+    FMT  = TRX                       [ "UI::Belongs"                         ]
+    msg  = FMT . format              ( NAME                                  )
+    icon = QIcon                     ( ":/images/graphics.png"               )
+    COL  = mm . addMenuWithIcon      ( icon , msg                            )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CopyOrganizationUuid"                     )
-    mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
+    msg  = self . getMenuItem        ( "CopySexPositionUuid"                 )
+    icon = QIcon                     ( ":/images/copy.png"                   )
+    mm   . addActionFromMenuWithIcon ( COL , 38521001 , icon , msg           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Crowds"                                   )
-    ICON = QIcon                ( ":/images/viewpeople.png"                  )
-    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
+    mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem   ( "AlbumDepot"                               )
-    mm   . addActionFromMenu    ( COL , 38521003 , msg                       )
+    MSG  = self . getMenuItem        ( "Icons"                               )
+    icon = QIcon                     ( ":/images/pictures.png"               )
+    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , MSG           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "GalleryDepot"                             )
-    mm   . addActionFromMenu    ( COL , 38521004 , msg                       )
+    MSG  = self . getMenuItem        ( "PersonalGallery"                     )
+    icon = QIcon                     ( ":/images/gallery.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , MSG           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Films"                                    )
-    ICON = QIcon                ( ":/images/video.png"                       )
-    mm   . addActionFromMenuWithIcon ( COL , 38521005 , ICON , msg           )
+    MSG  = self . getMenuItem        ( "Galleries"                           )
+    icon = QIcon                     ( ":/images/galleries.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38522003 , icon , MSG           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CreateVendorDirectory"                    )
-    mm   . addActionFromMenu    ( COL , 38521006 , msg                       )
+    MSG  = self . getMenuItem        ( "Videos"                              )
+    icon = QIcon                     ( ":/images/video.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 38522004 , icon , MSG           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CollectFilms"                             )
-    mm   . addActionFromMenu    ( COL , 38521007 , msg                       )
-    ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "Description"                              )
-    mm   . addActionFromMenu    ( COL , 38522001 , msg                       )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "Address"                                  )
-    mm   . addActionFromMenu    ( COL , 38522002 , msg                       )
-    ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "Identifiers"                              )
-    ICON = QIcon                ( ":/images/tag.png"                         )
-    mm   . addActionFromMenuWithIcon ( COL , 38523001 , ICON , msg           )
-    ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "WebPages"                                 )
-    mm   . addActionFromMenu    ( COL , 38524001 , msg                       )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "IdentWebPage"                             )
-    ICON = QIcon                ( ":/images/webfind.png"                     )
-    mm   . addActionFromMenuWithIcon ( COL , 38524002 , ICON , msg           )
+    msg  = self . getMenuItem        ( "Description"                         )
+    icon = QIcon                     ( ":/images/documents.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38523001 , icon , msg           )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu                ( self , at , item                      ) :
+  def RunGroupsMenu                   ( self , at , item                   ) :
     ##########################################################################
-    if                             ( at == 38521001                        ) :
+    if                                ( at == 38521001                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      qApp . clipboard ( ). setText   ( f"{uuid}"                            )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521002                        ) :
+    if                                ( at == 38522001                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . PeopleGroup . emit    ( head , self . GType , str ( uuid )      )
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      text = item . text              ( 0                                    )
+      icon = self . windowIcon        (                                      )
       ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38521003                        ) :
+      tail = self . getMenuItem       ( "(Icons)"                            )
+      text = f"{text}{tail}"
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      rr   = "Capable"
-      ########################################################################
-      self . AlbumDepot   . emit   ( head , self . GType , str ( uuid ) , rr )
+      self . ShowPersonalIcons . emit ( text                                 ,
+                                        self . GType                         ,
+                                        "Using"                              ,
+                                        str ( uuid )                         ,
+                                        icon                                 )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521004                        ) :
+    if                                ( at == 38522002                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      rr   = "Contains"
-      ########################################################################
-      self . GalleryDepot . emit   ( head , self . GType , str ( uuid ) , rr )
+      self . OpenGalleryItem          ( item                                 )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521005                        ) :
+    if                                ( at == 38522003                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . AlbumGroup  . emit    ( head , self . GType , str ( uuid )      )
+      self . OpenItemGalleries        ( item                                 )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521006                        ) :
+    if                                ( at == 38522004                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      self . emitVendorDirectory . emit ( str ( uuid )                       )
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      text = item . text              ( 0                                    )
+      icon = self . windowIcon        (                                      )
+      xsid = str                      ( uuid                                 )
       ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38521007                        ) :
-      ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      VAL  =                       ( uuid ,                                  )
-      self . Go                    ( self . CollectFilms , VAL               )
+      self . ShowVideoAlbums . emit   ( text , self . GType , xsid , icon    )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38522001                        ) :
+    if                                ( at == 38523001                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      head = item . text              ( 0                                    )
       nx   = ""
       ########################################################################
-      if                           ( "Notes" in self . Tables              ) :
-        nx = self . Tables         [ "Notes"                                 ]
+      if                              ( "Notes" in self . Tables           ) :
+        nx = self . Tables            [ "Notes"                              ]
       ########################################################################
-      self . OpenLogHistory . emit ( head                                    ,
-                                     str ( uuid )                            ,
-                                     "Description"                           ,
-                                     nx                                      ,
-                                     ""                                      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38522002                        ) :
-      ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      nx   = ""
-      ########################################################################
-      if                           ( "Notes" in self . Tables              ) :
-        nx = self . Tables         [ "Notes"                                 ]
-      ########################################################################
-      self . OpenLogHistory . emit ( head                                    ,
-                                     str ( uuid )                            ,
-                                     "Address"                               ,
-                                     nx                                      ,
-                                     ""                                      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38523001                        ) :
-      ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . OpenIdentifiers . emit ( head , str ( uuid ) , self . GType     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38524001                        ) :
-      ########################################################################
-      self . OpenWebPageListings   ( item , "Subordination"                  )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 38524002                        ) :
-      ########################################################################
-      self . OpenWebPageListings   ( item , "Equivalent"                     )
+      self . OpenLogHistory . emit    ( head                                 ,
+                                        str ( uuid )                         ,
+                                        "Description"                        ,
+                                        nx                                   ,
+                                        str ( self . getLocality ( ) )       )
       ########################################################################
       return True
     ##########################################################################
@@ -1646,7 +1116,6 @@ class OrganizationListings        ( TreeDock                               ) :
     self   . AppendRenameAction    ( mm , 1102                               )
     self   . AppendDeleteAction    ( mm , 1103                               )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
-    self   . AppendTranslateAllAction (          mm , 3001                   )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
@@ -1657,13 +1126,9 @@ class OrganizationListings        ( TreeDock                               ) :
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    self   . AtMenu = True
-    ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
-    ##########################################################################
-    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
     if                             ( OKAY                                  ) :
@@ -1728,12 +1193,8 @@ class OrganizationListings        ( TreeDock                               ) :
       ########################################################################
       uuid = self . itemUuid       ( atItem , 0                              )
       NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "Organization" , uuid , NAM      )
+      self . EditAllNames          ( self , "SexPosition" , uuid , NAM       )
       ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
       return True
     ##########################################################################
     return True
