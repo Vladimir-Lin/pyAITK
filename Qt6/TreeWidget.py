@@ -53,6 +53,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
     self . CurrentItem =                    {                                }
+    self . itemSelectionChanged   .connect  ( self . selectionsChanged       )
     self . emitPendingTopLevelItem.connect  ( self.acceptPendingTopLevelItem )
     self . pendingRemoveItem   . connect    ( self . removeTopLevelItem      )
     self . pickSelectionMode   . connect    ( self . assignSelectionMode     )
@@ -865,6 +866,24 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . doStopBusy  (                                                     )
     ##########################################################################
     return
+  ############################################################################
+  def selectionsChanged ( self                                             ) :
+    return
+  ############################################################################
+  def isEmptySelection          ( self                                     ) :
+    ##########################################################################
+    item = self . currentItem   (                                            )
+    OKAY =                      ( item not in self . EmptySet                )
+    ##########################################################################
+    if                          ( OKAY                                     ) :
+      ########################################################################
+      IT = self . selectedItems (                                            )
+      ########################################################################
+      if                        ( len ( IT ) <= 0                          ) :
+        ######################################################################
+        OKAY = False
+    ##########################################################################
+    return OKAY
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )

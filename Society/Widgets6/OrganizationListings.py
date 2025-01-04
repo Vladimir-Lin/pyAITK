@@ -724,7 +724,9 @@ class OrganizationListings        ( TreeDock                               ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
+    ##########################################################################
     formats = "people/uuids;organization/uuids"
+    ##########################################################################
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -787,27 +789,27 @@ class OrganizationListings        ( TreeDock                               ) :
   def acceptOrganizationsDrop  ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPeople           ( self , source , pos , JSOX                    ) :
     ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
+    if                     ( "UUIDs" not in JSOX                           ) :
       return True
     ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
+    UUIDs  = JSOX          [ "UUIDs"                                         ]
+    if                     ( len ( UUIDs ) <= 0                            ) :
       return True
     ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem in [ False , None ]                ) :
+    atItem = self . itemAt ( pos                                             )
+    if                     ( atItem in [ False , None ]                    ) :
       return True
     ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
+    UUID   = atItem . data ( 0 , Qt . UserRole                               )
+    UUID   = int           ( UUID                                            )
     ##########################################################################
-    if                         ( UUID <= 0                                 ) :
+    if                     ( UUID <= 0                                     ) :
       return True
     ##########################################################################
-    self . Go                  ( self . PeopleJoinOrganization             , \
-                                 ( UUID , UUIDs , )                          )
+    self . Go              ( self . PeopleJoinOrganization                 , \
+                             ( UUID , UUIDs , )                              )
     ##########################################################################
     return True
   ############################################################################
