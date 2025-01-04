@@ -48,7 +48,7 @@ class SexualityListings        ( MajorListings                             ) :
     self . PeopleBtn        = None
     self . NameBtn          = None
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -68,6 +68,9 @@ class SexualityListings        ( MajorListings                             ) :
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     return
+  ############################################################################
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 240 , 440 )                       )
   ############################################################################
   def PrepareForActions                   ( self                           ) :
     ##########################################################################
@@ -443,9 +446,11 @@ class SexualityListings        ( MajorListings                             ) :
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
       if                           ( ( at in [ 9001 ] ) and ( hid )        ) :
         ######################################################################
         self . restart             (                                         )
