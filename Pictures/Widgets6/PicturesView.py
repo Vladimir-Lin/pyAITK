@@ -4,37 +4,29 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 ##############################################################################
-from   PySide6                             import QtCore
-from   PySide6                             import QtGui
-from   PySide6                             import QtWidgets
-from   PySide6 . QtCore                    import *
-from   PySide6 . QtGui                     import *
-from   PySide6 . QtWidgets                 import *
-from   AITK    . Qt6                       import *
+from   PySide6                              import QtCore
+from   PySide6                              import QtGui
+from   PySide6                              import QtWidgets
+from   PySide6 . QtCore                     import *
+from   PySide6 . QtGui                      import *
+from   PySide6 . QtWidgets                  import *
+from   AITK    . Qt6                        import *
 ##############################################################################
-from   AITK    . Qt6        . IconDock     import IconDock    as IconDock
+from   AITK    . Essentials . Relation      import Relation    as Relation
+from   AITK    . Calendars  . StarDate      import StarDate    as StarDate
+from   AITK    . Calendars  . Periode       import Periode     as Periode
+from   AITK    . Pictures   . Picture6      import Picture     as PictureItem
+from   AITK    . Pictures   . Gallery       import Gallery     as GalleryItem
 ##############################################################################
-from   AITK    . Qt6        . MenuManager  import MenuManager as MenuManager
-from   AITK    . Qt6        . LineEdit     import LineEdit    as LineEdit
-from   AITK    . Qt6        . ComboBox     import ComboBox    as ComboBox
-from   AITK    . Qt6        . SpinBox      import SpinBox     as SpinBox
-##############################################################################
-from   AITK    . Essentials . Relation     import Relation    as Relation
-from   AITK    . Calendars  . StarDate     import StarDate    as StarDate
-from   AITK    . Calendars  . Periode      import Periode     as Periode
-from   AITK    . Pictures   . Picture      import Picture     as PictureItem
-from   AITK    . Pictures   . Gallery      import Gallery     as GalleryItem
-##############################################################################
-from   AITK    . UUIDs      . UuidListings import appendUuid
-from   AITK    . UUIDs      . UuidListings import appendUuids
-from   AITK    . UUIDs      . UuidListings import getUuids
+from   AITK    . UUIDs      . UuidListings6 import appendUuid
+from   AITK    . UUIDs      . UuidListings6 import appendUuids
+from   AITK    . UUIDs      . UuidListings6 import getUuids
+from   AITK    . UUIDs      . UuidListings6 import assignUuids
 ##############################################################################
 class PicturesView           ( IconDock                                    ) :
   ############################################################################

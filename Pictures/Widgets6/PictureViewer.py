@@ -4,36 +4,31 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 import binascii
 import hashlib
 import base64
 ##############################################################################
-from   io                                 import BytesIO
-from   wand . image                       import Image
-from   PIL                                import Image       as Pillow
+from   io                              import BytesIO
+from   wand . image                    import Image
+from   PIL                             import Image       as Pillow
 ##############################################################################
-from   PySide6                            import QtCore
-from   PySide6                            import QtGui
-from   PySide6                            import QtWidgets
-from   PySide6 . QtCore                   import *
-from   PySide6 . QtGui                    import *
-from   PySide6 . QtWidgets                import *
-from   AITK    . Qt6                      import *
+from   PySide6                         import QtCore
+from   PySide6                         import QtGui
+from   PySide6                         import QtWidgets
+from   PySide6 . QtCore                import *
+from   PySide6 . QtGui                 import *
+from   PySide6 . QtWidgets             import *
+from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6        . VirtualGui  import VirtualGui  as VirtualGui
-##############################################################################
-from   AITK    . Essentials . Relation    import Relation
-from   AITK    . Calendars  . StarDate    import StarDate
-from   AITK    . Calendars  . Periode     import Periode
-from   AITK    . Pictures   . Picture     import Picture     as Picture
-from   AITK    . Pictures   . Gallery     import Gallery     as GalleryItem
+from   AITK    . Essentials . Relation import Relation
+from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Calendars  . Periode  import Periode
+from   AITK    . Pictures   . Picture6 import Picture     as Picture
+from   AITK    . Pictures   . Gallery  import Gallery     as GalleryItem
 ##############################################################################
 class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   ############################################################################

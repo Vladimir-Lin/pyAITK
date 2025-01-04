@@ -26,7 +26,7 @@ from   PySide6 . QtGui                                  import *
 from   PySide6 . QtWidgets                              import *
 from   AITK    . Qt6                                    import *
 ##############################################################################
-from   AITK    . Pictures . Picture                     import Picture          as PictureItem
+from   AITK    . Pictures . Picture6                    import Picture          as PictureItem
 from   AITK    . Pictures . Gallery                     import Gallery          as GalleryItem
 ##############################################################################
 from   AITK    . Qt6      . MenuManager                 import MenuManager      as MenuManager
