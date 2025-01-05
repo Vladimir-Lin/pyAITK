@@ -4,64 +4,37 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 ##############################################################################
-from   PyQt5                               import QtCore
-from   PyQt5                               import QtGui
-from   PyQt5                               import QtWidgets
+from   PySide6                               import QtCore
+from   PySide6                               import QtGui
+from   PySide6                               import QtWidgets
+from   PySide6 . QtCore                      import *
+from   PySide6 . QtGui                       import *
+from   PySide6 . QtWidgets                   import *
+from   AITK    . Qt6                         import *
 ##############################################################################
-from   PyQt5 . QtCore                      import QObject
-from   PyQt5 . QtCore                      import pyqtSignal
-from   PyQt5 . QtCore                      import pyqtSlot
-from   PyQt5 . QtCore                      import Qt
-from   PyQt5 . QtCore                      import QPoint
-from   PyQt5 . QtCore                      import QPointF
-from   PyQt5 . QtCore                      import QSize
+from   AITK    . Essentials . Relation       import Relation
+from   AITK    . Calendars  . StarDate       import StarDate
+from   AITK    . Calendars  . Periode        import Periode
+from   AITK    . Documents  . Notes          import Notes
+from   AITK    . Documents  . JSON           import Save           as SaveJson
+from   AITK    . Documents  . Variables      import Variables      as VariableItem
+from   AITK    . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   PyQt5 . QtGui                       import QIcon
-from   PyQt5 . QtGui                       import QCursor
-from   PyQt5 . QtGui                       import QKeySequence
-##############################################################################
-from   PyQt5 . QtWidgets                   import QApplication
-from   PyQt5 . QtWidgets                   import QWidget
-from   PyQt5 . QtWidgets                   import qApp
-from   PyQt5 . QtWidgets                   import QMenu
-from   PyQt5 . QtWidgets                   import QAction
-from   PyQt5 . QtWidgets                   import QShortcut
-from   PyQt5 . QtWidgets                   import QAbstractItemView
-from   PyQt5 . QtWidgets                   import QTreeWidget
-from   PyQt5 . QtWidgets                   import QTreeWidgetItem
-from   PyQt5 . QtWidgets                   import QLineEdit
-from   PyQt5 . QtWidgets                   import QComboBox
-from   PyQt5 . QtWidgets                   import QSpinBox
-from   PyQt5 . QtWidgets                   import QFileDialog
-##############################################################################
-from   AITK  . Qt . MenuManager            import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock               import TreeDock    as TreeDock
-##############################################################################
-from   AITK  . Essentials . Relation       import Relation
-from   AITK  . Calendars  . StarDate       import StarDate
-from   AITK  . Calendars  . Periode        import Periode
-from   AITK  . Documents  . Notes          import Notes
-from   AITK  . Documents  . JSON           import Save           as SaveJson
-from   AITK  . Documents  . Variables      import Variables      as VariableItem
-from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
-##############################################################################
-class BodyShapeWidget              ( TreeDock                              ) :
+class BodyShapeWidget    ( TreeDock                                        ) :
   ############################################################################
-  HavingMenu     = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow  = pyqtSignal      (                                         )
-  emitAllNames   = pyqtSignal      (                                         )
+  emitNamesShow = Signal (                                                   )
+  emitAllNames  = Signal (                                                   )
   ############################################################################
-  def __init__                     ( self , parent = None , plan = None    ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( ) . __init__           (        parent        , plan             )
+    super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
     self . ClassTag           = "BodyShapeWidget"
     self . Uuid               = 0
@@ -228,7 +201,6 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return J
   ############################################################################
-  @pyqtSlot                (                                                 )
   def InsertItem           ( self                                          ) :
     ##########################################################################
     IT   = QTreeWidgetItem (                                                 )
@@ -238,7 +210,6 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                             (                                    )
   def DeleteItems                       ( self                             ) :
     ##########################################################################
     items  = self . selectedItems       (                                    )
@@ -251,7 +222,6 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                          (                                       )
   def refresh                        ( self                                ) :
     ##########################################################################
     self   . clear                   (                                       )
@@ -284,7 +254,6 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                             (                                    )
   def nameChanged                       ( self                             ) :
     ##########################################################################
     if                                  ( not self . isItemPicked ( )      ) :

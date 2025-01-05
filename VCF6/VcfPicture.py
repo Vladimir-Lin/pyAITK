@@ -21,22 +21,22 @@ import skimage
 import numpy                                               as np
 ##############################################################################
 import PySide6
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
+from   PySide6                             import QtCore
+from   PySide6                             import QtGui
+from   PySide6                             import QtWidgets
 ##############################################################################
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
+from   PySide6 . QtCore                    import *
+from   PySide6 . QtGui                     import *
+from   PySide6 . QtWidgets                 import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager     import MenuManager  as MenuManager
+from   AITK    . Qt6 . MenuManager         import MenuManager  as MenuManager
 ##############################################################################
-from   AITK    . Essentials . Object   import Object       as Object
-from   AITK    . Pictures   . Picture  import Picture      as PictureItem
-from   AITK    . Pictures   . Gallery  import Gallery      as GalleryItem
-from   AITK    . People . Faces . Face import Face         as FaceItem
+from   AITK    . Essentials . Object       import Object       as Object
+from   AITK    . Pictures   . Picture6     import Picture      as PictureItem
+from   AITK    . Pictures   . Gallery      import Gallery      as GalleryItem
+from   AITK    . People     . Faces . Face import Face         as FaceItem
 ##############################################################################
-from           . VcfRectangle          import VcfRectangle as VcfRectangle
+from           . VcfRectangle              import VcfRectangle as VcfRectangle
 ##############################################################################
 class VcfPicture                 ( VcfRectangle                            , \
                                    Object                                  ) :
