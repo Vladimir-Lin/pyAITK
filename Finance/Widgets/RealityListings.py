@@ -63,7 +63,7 @@ class RealityListings              ( TreeDock                              ) :
   ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
   ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
   ShowLodListings       = pyqtSignal ( str , str              , QIcon        )
-  OpenLogHistory        = pyqtSignal ( str , str , str , str , str           )
+  OpenLogHistory        = pyqtSignal ( str , str , str  , str , str          )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################

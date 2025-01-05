@@ -4,66 +4,41 @@
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 import math
 import shutil
 import vtk
 ##############################################################################
-from   PyQt5                                   import QtCore
-from   PyQt5                                   import QtGui
-from   PyQt5                                   import QtWidgets
+from   PySide6                                   import QtCore
+from   PySide6                                   import QtGui
+from   PySide6                                   import QtWidgets
+from   PySide6 . QtCore                          import *
+from   PySide6 . QtGui                           import *
+from   PySide6 . QtWidgets                       import *
+from   AITK    . Qt6                             import *
 ##############################################################################
-from   PyQt5 . QtCore                          import QObject
-from   PyQt5 . QtCore                          import pyqtSignal
-from   PyQt5 . QtCore                          import pyqtSlot
-from   PyQt5 . QtCore                          import Qt
-from   PyQt5 . QtCore                          import QPoint
-from   PyQt5 . QtCore                          import QPointF
-from   PyQt5 . QtCore                          import QSize
+from   vtk     . qt . QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 ##############################################################################
-from   PyQt5 . QtGui                           import QIcon
-from   PyQt5 . QtGui                           import QCursor
-from   PyQt5 . QtGui                           import QColor
-from   PyQt5 . QtGui                           import QKeySequence
+from   AITK    . Documents . JSON                import Save as SaveJson
 ##############################################################################
-from   PyQt5 . QtWidgets                       import QApplication
-from   PyQt5 . QtWidgets                       import qApp
-from   PyQt5 . QtWidgets                       import QWidget
-from   PyQt5 . QtWidgets                       import QFileDialog
-from   PyQt5 . QtWidgets                       import QSpinBox
-from   PyQt5 . QtWidgets                       import QDoubleSpinBox
-##############################################################################
-from   vtk   . qt . QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-##############################################################################
-from   AITK  . Documents . JSON                import Save        as SaveJson
-##############################################################################
-from   AITK  . Qt . VirtualGui                 import VirtualGui  as VirtualGui
-from   AITK  . Qt . AttachDock                 import AttachDock  as AttachDock
-from   AITK  . Qt . MenuManager                import MenuManager as MenuManager
-from   AITK  . Qt . LineEdit                   import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox                   import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox                    import SpinBox     as SpinBox
-##############################################################################
-class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
+class VtkWidget ( QVTKRenderWindowInteractor , VirtualGui , AttachDock     ) :
   ############################################################################
   HavingMenu  = 1371434312
   ############################################################################
-  attachNone  = pyqtSignal ( QWidget                                         )
-  attachDock  = pyqtSignal ( QWidget , str , int , int                       )
-  attachMdi   = pyqtSignal ( QWidget , int                                   )
-  Leave       = pyqtSignal ( QWidget                                         )
+  attachNone  = Signal ( QWidget                                             )
+  attachDock  = Signal ( QWidget , str , int , int                           )
+  attachMdi   = Signal ( QWidget , int                                       )
+  Leave       = Signal ( QWidget                                             )
   ############################################################################
-  emitBustle  = pyqtSignal (                                                 )
-  emitVacancy = pyqtSignal (                                                 )
-  OnBusy      = pyqtSignal (                                                 )
-  GoRelax     = pyqtSignal (                                                 )
+  emitBustle  = Signal (                                                     )
+  emitVacancy = Signal (                                                     )
+  OnBusy      = Signal (                                                     )
+  GoRelax     = Signal (                                                     )
   ############################################################################
-  def __init__ ( self , parent = None , plan = None                        ) :
+  def __init__         ( self , parent = None , plan = None                ) :
     ##########################################################################
     super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )
@@ -243,7 +218,6 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  @pyqtSlot                   (                                              )
   def DoBustle                ( self                                       ) :
     self . Bustle             (                                              )
     return
@@ -252,7 +226,6 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
     self . emitBustle  . emit (                                              )
     return
   ############################################################################
-  @pyqtSlot                   (                                              )
   def DoVacancy               ( self                                       ) :
     self . Vacancy            (                                              )
     return

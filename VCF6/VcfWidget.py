@@ -42,10 +42,10 @@ class VcfWidget           ( QGraphicsView                                  , \
                             VcfDisplay                                     , \
                             VcfManager                                     ) :
   ############################################################################
-  attachNone     = pyqtSignal ( QWidget                                      )
-  attachDock     = pyqtSignal ( QWidget , str , int , int                    )
-  attachMdi      = pyqtSignal ( QWidget , int                                )
-  emitMenuCaller = pyqtSignal ( dict                                         )
+  attachNone     = Signal ( QWidget                                          )
+  attachDock     = Signal ( QWidget , str , int , int                        )
+  attachMdi      = Signal ( QWidget , int                                    )
+  emitMenuCaller = Signal ( dict                                             )
   ############################################################################
   def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################

@@ -11,65 +11,43 @@ import threading
 import gettext
 import json
 import math
-##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                                  import QtCore
-from   PyQt5                                  import QtGui
-from   PyQt5                                  import QtWidgets
+from   PySide6                                  import QtCore
+from   PySide6                                  import QtGui
+from   PySide6                                  import QtWidgets
+from   PySide6 . QtCore                         import *
+from   PySide6 . QtGui                          import *
+from   PySide6 . QtWidgets                      import *
+from   AITK    . Qt6                            import *
 ##############################################################################
-from   PyQt5 . QtCore                         import QObject
-from   PyQt5 . QtCore                         import pyqtSignal
-from   PyQt5 . QtCore                         import pyqtSlot
-from   PyQt5 . QtCore                         import Qt
-from   PyQt5 . QtCore                         import QPoint
-from   PyQt5 . QtCore                         import QPointF
-from   PyQt5 . QtCore                         import QSize
+from   AITK    . Documents . JSON               import Load         as LoadJson
+from   AITK    . Documents . JSON               import Save         as SaveJson
 ##############################################################################
-from   PyQt5 . QtGui                          import QIcon
-from   PyQt5 . QtGui                          import QCursor
-from   PyQt5 . QtGui                          import QColor
-from   PyQt5 . QtGui                          import QKeySequence
+from   AITK    . VTK6 . VtkWidget               import VtkWidget    as VtkWidget
+from   AITK    . VTK6 . Wrapper                 import Wrapper      as VtkWrapper
 ##############################################################################
-from   PyQt5 . QtWidgets                      import QApplication
-from   PyQt5 . QtWidgets                      import qApp
-from   PyQt5 . QtWidgets                      import QWidget
-from   PyQt5 . QtWidgets                      import QFileDialog
-from   PyQt5 . QtWidgets                      import QSpinBox
-from   PyQt5 . QtWidgets                      import QDoubleSpinBox
+from   AITK    . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
+from   AITK    . Math . Geometry . Contour      import Contour      as Contour
+from   AITK    . Math . Geometry . Circle       import Circle       as Circle
+from   AITK    . Math . Geometry . Cylinder     import Cylinder     as Cylinder
+from   AITK    . Math . Geometry . Plane        import Plane        as Plane
+from   AITK    . Math . Geometry . Parabola     import Parabola     as Parabola
+from   AITK    . Math . Geometry . Sphere       import Sphere       as Sphere
+from   AITK    . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
 ##############################################################################
-from   AITK  . Documents . JSON               import Load         as LoadJson
-from   AITK  . Documents . JSON               import Save         as SaveJson
+from   AITK    . Models     . AitkModel         import Model        as ModelJson
+from   AITK    . Essentials . Relation          import Relation     as Relation
+from   AITK    . Calendars  . StarDate          import StarDate     as StarDate
+from   AITK    . Calendars  . Periode           import Periode      as Periode
+from   AITK    . Pictures   . Picture6          import Picture      as PictureItem
+from   AITK    . Pictures   . Gallery           import Gallery      as GalleryItem
 ##############################################################################
-from   AITK  . VTK . VtkWidget                import VtkWidget    as VtkWidget
-from   AITK  . VTK . Wrapper                  import Wrapper      as VtkWrapper
-##############################################################################
-from   AITK  . Qt  . MenuManager              import MenuManager  as MenuManager
-from   AITK  . Qt  . LineEdit                 import LineEdit     as LineEdit
-from   AITK  . Qt  . ComboBox                 import ComboBox     as ComboBox
-from   AITK  . Qt  . SpinBox                  import SpinBox      as SpinBox
-##############################################################################
-from   AITK  . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
-from   AITK  . Math . Geometry . Contour      import Contour      as Contour
-from   AITK  . Math . Geometry . Circle       import Circle       as Circle
-from   AITK  . Math . Geometry . Cylinder     import Cylinder     as Cylinder
-from   AITK  . Math . Geometry . Plane        import Plane        as Plane
-from   AITK  . Math . Geometry . Parabola     import Parabola     as Parabola
-from   AITK  . Math . Geometry . Sphere       import Sphere       as Sphere
-from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
-##############################################################################
-from   AITK  . Models     . AitkModel         import Model        as ModelJson
-from   AITK  . Essentials . Relation          import Relation     as Relation
-from   AITK  . Calendars  . StarDate          import StarDate     as StarDate
-from   AITK  . Calendars  . Periode           import Periode      as Periode
-from   AITK  . Pictures   . Picture           import Picture      as PictureItem
-from   AITK  . Pictures   . Gallery           import Gallery      as GalleryItem
-##############################################################################
-from . Face                                   import Face         as FaceItem
+from   AITK    . People . Faces  . Face         import Face         as FaceItem
 ##############################################################################
 class VtkRawFace              ( VtkWidget                                  ) :
   ############################################################################
-  emitStartModel = pyqtSignal (                                              )
+  emitStartModel = Signal     (                                              )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################

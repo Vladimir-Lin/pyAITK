@@ -25,15 +25,12 @@ from   PySide6 . QtCore                                 import *
 from   PySide6 . QtGui                                  import *
 from   PySide6 . QtWidgets                              import *
 from   AITK    . Qt6                                    import *
+from   AITK    . VCF6                                   import *
 ##############################################################################
 from   AITK    . Pictures . Picture6                    import Picture          as PictureItem
 from   AITK    . Pictures . Gallery                     import Gallery          as GalleryItem
 ##############################################################################
-from   AITK    . Qt6      . MenuManager                 import MenuManager      as MenuManager
-from   AITK    . VCF6     . VcfWidget                   import VcfWidget        as VcfWidget
-from   AITK    . VCF6     . VcfItem                     import VcfItem          as VcfItem
-from   AITK    . VCF6     . VcfRectangle                import VcfRectangle     as VcfRectangle
-from   AITK    . People   . Faces    . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
+from   AITK    . People   . Faces6   . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
 from   AITK    . People   . Widgets6 . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 from   AITK    . People   . Widgets6 . PeopleDetails    import PeopleDetails    as PeopleDetails
 ##############################################################################

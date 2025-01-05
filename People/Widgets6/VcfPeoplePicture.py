@@ -22,61 +22,29 @@ import skimage
 import numpy                          as np
 import mediapipe                      as mp
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PySide6                          import QtCore
+from   PySide6                          import QtGui
+from   PySide6                          import QtWidgets
+from   PySide6 . QtCore                 import *
+from   PySide6 . QtGui                  import *
+from   PySide6 . QtWidgets              import *
+from   AITK    . Qt6                    import *
+from   AITK    . VCF6                   import *
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QSizeF
-from   PyQt5 . QtCore                 import QRect
-from   PyQt5 . QtCore                 import QRectF
+from   AITK    . Documents  . JSON      import Load         as LoadJson
+from   AITK    . Documents  . JSON      import Save         as SaveJson
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QImage
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QFont
-from   PyQt5 . QtGui                  import QFontMetricsF
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QPen
-from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QTransform
-from   PyQt5 . QtGui                  import QPolygonF
-from   PyQt5 . QtGui                  import QPainterPath
+from   AITK    . Essentials . Object    import Object       as Object
+from   AITK    . Pictures   . Picture   import Picture      as PictureItem
+from   AITK    . Pictures   . Gallery   import Gallery      as GalleryItem
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QToolTip
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QFileDialog
-from   PyQt5 . QtWidgets              import QGraphicsView
-from   PyQt5 . QtWidgets              import QGraphicsItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QDoubleSpinBox
+from   AITK    . People . Faces  . Face import Face         as FaceItem
+from   AITK    . People . Body   . Tit  import Tit          as TitItem
+from   AITK    . People . Body   . Body import Body         as BodyItem
 ##############################################################################
-from   AITK  . Documents  . JSON      import Load         as LoadJson
-from   AITK  . Documents  . JSON      import Save         as SaveJson
+from   AITK    . People . Faces6 . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
-##############################################################################
-from   AITK  . Essentials . Object    import Object       as Object
-from   AITK  . Pictures   . Picture   import Picture      as PictureItem
-from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
-##############################################################################
-from   AITK  . People . Faces . Face  import Face         as FaceItem
-from   AITK  . People . Body  . Tit   import Tit          as TitItem
-from   AITK  . People . Body  . Body  import Body         as BodyItem
-##############################################################################
-from   AITK  . VCF . VcfPicture       import VcfPicture   as VcfPicture
-from   AITK  . People . Faces . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
-##############################################################################
-from   AITK  . Math . Geometry . Contour import Contour as Contour
+from   AITK    . Math . Geometry . Contour import Contour as Contour
 ##############################################################################
 class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
