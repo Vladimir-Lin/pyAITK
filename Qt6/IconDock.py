@@ -38,6 +38,7 @@ class IconDock                 ( ListDock                                  ) :
   emitIconsShow       = Signal (                                             )
   emitAllIcons        = Signal ( dict                                        )
   emitAssignIcon      = Signal ( QListWidgetItem , QIcon                     )
+  emitAssignToolTip   = Signal ( QListWidgetItem , str                       )
   emitEmptySelections = Signal (                                             )
   emitDoSearch        = Signal (                                             )
   emitRestart         = Signal (                                             )
@@ -83,11 +84,12 @@ class IconDock                 ( ListDock                                  ) :
     self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAsNeeded             )
     self . setMinimumSize           ( QSize ( 144 , 200 )                    )
     ##########################################################################
-    self . emitIconsShow  . connect ( self . ShowIconDock                    )
-    self . emitAllIcons   . connect ( self . refresh                         )
-    self . emitAssignIcon . connect ( self . AssignIcon                      )
-    self . emitDoSearch   . connect ( self . DoActualSearch                  )
-    self . emitRestart    . connect ( self . restart                         )
+    self . emitIconsShow       . connect ( self . ShowIconDock               )
+    self . emitAllIcons        . connect ( self . refresh                    )
+    self . emitAssignIcon      . connect ( self . AssignIcon                 )
+    self . emitAssignToolTip   . connect ( self . AssignToolTip              )
+    self . emitDoSearch        . connect ( self . DoActualSearch             )
+    self . emitRestart         . connect ( self . restart                    )
     self . emitEmptySelections . connect ( self . doEmptySelections          )
     ##########################################################################
     return
@@ -136,6 +138,38 @@ class IconDock                 ( ListDock                                  ) :
   def isSubgroup      ( self                                               ) :
     ##########################################################################
     return            ( self . Grouping in [ "Subgroup"                    ] )
+  ############################################################################
+  def subgroupFetchTableKey        ( self                                  ) :
+    ##########################################################################
+    S      = self . ClassTag
+    ##########################################################################
+    if                             ( self . isSubordination (           ) ) :
+      ########################################################################
+      T    = self . Relation . get ( "t1"                                    )
+      R    = self . Relation . get ( "relation"                              )
+      ########################################################################
+    elif                            ( self . isReverse       (           ) ) :
+      ########################################################################
+      T    = self . Relation . get ( "t2"                                    )
+      R    = self . Relation . get ( "relation"                              )
+    ##########################################################################
+    else                                                                     :
+      ########################################################################
+      self . FetchTableKey = S
+      ########################################################################
+      return
+    ##########################################################################
+    G      = self . Grouping
+    E      = f"{S}-{G}-{T}-{R}"
+    ##########################################################################
+    self   . FetchTableKey = E
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareFetchTableKey ( self                                          ) :
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   def getSelectedUuids               ( self                                ) :
     ##########################################################################
@@ -213,8 +247,12 @@ class IconDock                 ( ListDock                                  ) :
     ##########################################################################
     return self . font                (                                      )
   ############################################################################
-  def AssignIcon                      ( self , item            , icon      ) :
-    item . setIcon                    ( icon                                 )
+  def AssignIcon   ( self , item , icon                                    ) :
+    item . setIcon (               icon                                      )
+    return
+  ############################################################################
+  def AssignToolTip   ( self , item , text                                 ) :
+    item . setToolTip (               text                                   )
     return
   ############################################################################
   def PrepareItemContent              ( self , item , UUID , NAME          ) :
@@ -366,7 +404,7 @@ class IconDock                 ( ListDock                                  ) :
     else                                                                     :
       DB       = self . ConnectDB      ( True                                )
     ##########################################################################
-    if                                 ( DB == None                        ) :
+    if                                 ( self . NotOkay ( DB )             ) :
       ########################################################################
       self     . DoParallelIcons [ ID ] = True
       ########################################################################
@@ -405,6 +443,7 @@ class IconDock                 ( ListDock                                  ) :
         continue
       ########################################################################
       icon     = self . FetchIcon      ( DB , PUID                           )
+      ########################################################################
       if                               ( icon not in [ False , None ]      ) :
         if                             ( self . LoopRunning                ) :
           if                           ( self . FetchingIcons              ) :
@@ -812,7 +851,7 @@ class IconDock                 ( ListDock                                  ) :
     self    . LoopRunning = False
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
+    if                                ( self . NotOkay ( DB )              ) :
       self  . emitIconsShow . emit    (                                      )
       self  . LoopRunning = True
       return
@@ -1584,6 +1623,62 @@ class IconDock                 ( ListDock                                  ) :
       return False
     ##########################################################################
     return True
+  ############################################################################
+  def subgroupUpdateLocalityUsage  ( self                                  ) :
+    ##########################################################################
+    if                             ( not self . isGrouping (             ) ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB      (                                         )
+    if                             ( self . NotOkay ( DB                 ) ) :
+      return False
+    ##########################################################################
+    if                             ( self . isSubordination (            ) ) :
+      ########################################################################
+      UUID = self . Relation . get ( "first"                                 )
+      TYPE = self . Relation . get ( "t1"                                    )
+      ########################################################################
+    elif                           ( self . isReverse       (            ) ) :
+      ########################################################################
+      UUID = self . Relation . get ( "second"                                )
+      TYPE = self . Relation . get ( "t2"                                    )
+      ########################################################################
+    else                                                                     :
+      return False
+    ##########################################################################
+    SCOPE  = self . FetchTableKey
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    DB     . LockWrites            ( [ PAMTAB                              ] )
+    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    ##########################################################################
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def subgroupReloadLocality       ( self , DB                             ) :
+    ##########################################################################
+    if                             ( not self . isGrouping (             ) ) :
+      return
+    ##########################################################################
+    if                             ( self . isSubordination (            ) ) :
+      ########################################################################
+      UUID = self . Relation . get ( "first"                                 )
+      TYPE = self . Relation . get ( "t1"                                    )
+      ########################################################################
+    elif                           ( self . isReverse       (            ) ) :
+      ########################################################################
+      UUID = self . Relation . get ( "second"                                )
+      TYPE = self . Relation . get ( "t2"                                    )
+      ########################################################################
+    else                                                                     :
+      return False
+    ##########################################################################
+    SCOPE  = self . FetchTableKey
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    ##########################################################################
+    return
   ############################################################################
   def catalogReloadLocality         ( self , DB                            ) :
     ##########################################################################

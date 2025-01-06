@@ -35,6 +35,8 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
+  ShowPeopleGroup     = Signal ( str , int , str                             )
+  OwnedPeopleGroup    = Signal ( str , int , str                             )
   ShowPersonalGallery = Signal ( str , int , str       , QIcon               )
   ShowPersonalIcons   = Signal ( str , int , str , str , QIcon               )
   ViewFullGallery     = Signal ( str , int , str , int , QIcon               )
@@ -48,11 +50,20 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
+    self . ClassTag     = "GalleriesView"
     self . Total        =  0
     self . StartId      =  0
     self . Amount       = 60
+    self . GType        = 64
     self . SortOrder    = "asc"
     self . SortByName   = False
+    self . ExtraINFOs   = True
+    self . UsedOptions  = [ 1 , 2 , 3 , 4                                    ]
+    self . GalleryOPTs  = {                                                  }
+    ##########################################################################
+    self . PicturesBtn  = None
+    self . PeopleBtn    = None
+    self . NameBtn      = None
     ##########################################################################
     self . SearchLine   = None
     self . SearchKey    = ""
@@ -83,152 +94,85 @@ class GalleriesView            ( IconDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
+  def PrepareFetchTableKey       ( self                                    ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "Gallery"                                 )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
-    ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
-  ############################################################################
-  def FetchRegularDepotCount ( self , DB                                   ) :
-    ##########################################################################
-    GALTAB = self . Tables   [ "Galleries"                                   ]
-    QQ     = f"select count(*) from {GALTAB} where ( `used` = 1 ) ;"
-    DB     . Query           ( QQ                                            )
-    ONE    = DB . FetchOne   (                                               )
-    ##########################################################################
-    if                       ( ONE == None                                 ) :
-      return 0
-    ##########################################################################
-    if                       ( len ( ONE ) <= 0                            ) :
-      return 0
-    ##########################################################################
-    return ONE               [ 0                                             ]
-  ############################################################################
-  def FetchGroupMembersCount             ( self , DB                       ) :
-    ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
-    ##########################################################################
-    return self . Relation . CountSecond ( DB , RELTAB                       )
-  ############################################################################
-  def FetchGroupOwnersCount              ( self , DB                       ) :
-    ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
-    ##########################################################################
-    return self . Relation . CountFirst  ( DB , RELTAB                       )
-  ############################################################################
-  def ObtainUuidsQuery              ( self                                 ) :
-    ##########################################################################
-    GALTAB = self . Tables          [ "Galleries"                            ]
-    SID    = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder (                                        )
-    QQ     = f"""select `uuid` from {GALTAB}
-                 where ( `used` = 1 )
-                 order by `id` {ORDER}
-                 limit {SID} , {AMOUNT} ;"""
-    ##########################################################################
-    return " " . join               ( QQ . split ( )                         )
-  ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
-    ##########################################################################
-    SID    = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder (                                        )
-    LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables     [ "Relation"                                  ]
-    NAMTAB = self . Tables     [ "Names"                                     ]
-    ##########################################################################
-    if                         ( self . isSubordination ( )                ) :
-      ########################################################################
-      if                       ( self . SortByName                         ) :
-        ######################################################################
-        LC = self . getLocality          (                                   )
-        WS = self . Relation . FirstItem (                                   )
-        QS = f"select `second` from {RELTAB} {WS}"
-        QQ = f"""select distinct(`uuid`) from {NAMTAB}
-                 where ( `uuid` in ( {QS} ) )
-                   and ( `locality` = {LC} )
-                 order by `name` {ORDER} {LMTS} ;"""
-        QQ = " " . join         ( QQ . split ( )                             )
-        ######################################################################
-        return DB . ObtainUuids ( QQ                                         )
-        ######################################################################
-      else                                                                   :
-        ######################################################################
-        OPTS = f"order by `position` {ORDER}"
-        return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS   )
-      ########################################################################
-    if                         ( self . isReverse       ( )                ) :
-      ########################################################################
-      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
-      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
-    ##########################################################################
-    return                     [                                             ]
-  ############################################################################
-  def ObtainsItemUuids                      ( self , DB                    ) :
-    ##########################################################################
-    if                                      ( self . isSearching (       ) ) :
-      return self . UUIDs
-    ##########################################################################
-    if                                      ( self . isOriginal ( )        ) :
-      return self . DefaultObtainsItemUuids ( DB                             )
-    ##########################################################################
-    return self   . ObtainSubgroupUuids     ( DB                             )
-  ############################################################################
-  def FetchSessionInformation             ( self , DB                      ) :
-    ##########################################################################
-    self . defaultFetchSessionInformation (        DB                        )
+    self . subgroupFetchTableKey (                                           )
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions                   ( self                           ) :
     ##########################################################################
-    msg  = self . Translations    [ "UI::PersonalGallery"                    ]
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/pictures.png" )        )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenCurrentGallery                )
-    self . WindowActions . append ( A                                        )
+    self . PrepareFetchTableKey           (                                  )
+    ##########################################################################
+    msg  = self . Translations            [ "UI::PersonalGallery"            ]
+    A    = QAction                        (                                  )
+    ICON = QIcon                          ( ":/images/pictures.png"          )
+    A    . setIcon                        ( ICON                             )
+    A    . setToolTip                     ( msg                              )
+    A    . triggered . connect            ( self . OpenCurrentGallery        )
+    A    . setEnabled                     ( False                            )
+    ##########################################################################
+    self . PicturesBtn = A
+    ##########################################################################
+    self . WindowActions . append         ( A                                )
+    ##########################################################################
+    msg  = self . getMenuItem             ( "BelongsCrowd"                   )
+    A    = QAction                        (                                  )
+    ICON = QIcon                          ( ":/images/peoplegroups.png"      )
+    A    . setIcon                        ( ICON                             )
+    A    . setToolTip                     ( msg                              )
+    A    . triggered . connect            ( self . OpenCurrentCrowds         )
+    A    . setEnabled                     ( False                            )
+    ##########################################################################
+    self . PeopleBtn   = A
+    ##########################################################################
+    self . WindowActions . append         ( A                                )
+    ##########################################################################
+    self . AppendToolNamingAction         (                                  )
+    self . NameBtn = self . WindowActions [ -1                               ]
+    self . NameBtn . setEnabled           ( False                            )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def TellStory               ( self , Enabled                             ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "GalleriesViewParameter"                     )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
     ##########################################################################
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    ##########################################################################
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
-    ##########################################################################
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    ##########################################################################
-    if                ( self . Grouping in [ "Subordination" ]             ) :
+    if                        ( Enabled                                    ) :
       ########################################################################
-      T    = self . windowTitle (                                            )
-      M    = self . getMenuItem ( "GalleriesViewParameter"                   )
-      F    = self . Relation . First
-      W    = self . Relation . T1
-      R    = self . Relation . Relation
-      L    = f"{M} {F} ( Subordination : {R} , {W} ) - {T}"
+      LL = f"{LL} Enter"
       ########################################################################
-      self . emitLog . emit  ( L                                             )
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                      Enabled        ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup     , Enabled          )
+    self . LinkAction ( "Insert"     , self . InsertItem  , Enabled          )
+    self . LinkAction ( "Delete"     , self . DeleteItems , Enabled          )
+    self . LinkAction ( "Rename"     , self . RenameItem  , Enabled          )
+    self . LinkAction ( "Home"       , self . PageHome    , Enabled          )
+    self . LinkAction ( "End"        , self . PageEnd     , Enabled          )
+    self . LinkAction ( "PageUp"     , self . PageUp      , Enabled          )
+    self . LinkAction ( "PageDown"   , self . PageDown    , Enabled          )
+    self . LinkAction ( "Select"     , self . SelectOne   , Enabled          )
+    self . LinkAction ( "SelectAll"  , self . SelectAll   , Enabled          )
+    self . LinkAction ( "SelectNone" , self . SelectNone  , Enabled          )
+    ##########################################################################
+    self . TellStory  (                                     Enabled          )
     ##########################################################################
     return
   ############################################################################
@@ -241,20 +185,108 @@ class GalleriesView            ( IconDock                                  ) :
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
     self . LinkVoice         ( self . CommandParser                          )
+    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
-  def singleClicked ( self , item                                          ) :
+  def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
-    self . Notify   ( 0                                                      )
+    RELTAB   = self . Tables         [ "Relation"                            ]
+    ##########################################################################
+    if                               ( "RelationIcons" in self . Tables    ) :
+      RELTAB = self . Tables         [ "RelationIcons"                       ]
+    ##########################################################################
+    return self . defaultGetUuidIcon ( DB , RELTAB , "Gallery" , UUID        )
+  ############################################################################
+  def FetchIcon                       ( self , DB , PUID                   ) :
+    ##########################################################################
+    if                                ( PUID <= 0                          ) :
+      return None
+    ##########################################################################
+    TUBTAB     = self . Tables        [ "Thumb"                              ]
+    WH         = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
+    OPTS       = "order by `id` desc limit 0 , 1"
+    QQ         = f"select `thumb` from {TUBTAB} {WH} {OPTS} ;"
+    DB         . Query                ( QQ                                   )
+    THUMB      = DB . FetchOne        (                                      )
+    ##########################################################################
+    if                                ( THUMB == None                      ) :
+      return None
+    ##########################################################################
+    if                                ( len ( THUMB ) <= 0                 ) :
+      return None
+    ##########################################################################
+    BLOB       = THUMB                [ 0                                    ]
+    if                                ( isinstance ( BLOB , bytearray )    ) :
+      BLOB = bytes                    ( BLOB                                 )
+    ##########################################################################
+    if                                ( len ( BLOB ) <= 0                  ) :
+      return None
+    ##########################################################################
+    IMG        = QImage               (                                      )
+    IMG        . loadFromData         ( QByteArray ( BLOB ) , "PNG"          )
+    TSIZE      = IMG . size           (                                      )
+    ##########################################################################
+    ISIZE      = self . iconSize      (                                      )
+    ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
+    ICZ        . fill                 ( QColor ( 255 , 255 , 255 )           )
+    ##########################################################################
+    W          = int       ( ( ISIZE . width  ( ) - TSIZE . width  ( ) ) / 2 )
+    H          = int       ( ( ISIZE . height ( ) - TSIZE . height ( ) ) / 2 )
+    PTS        = QPoint               ( W , H                                )
+    ##########################################################################
+    p          = QPainter             (                                      )
+    p          . begin                ( ICZ                                  )
+    p          . drawImage            ( PTS , IMG                            )
+    p          . end                  (                                      )
+    ##########################################################################
+    PIX        = QPixmap              (                                      )
+    PIX        . convertFromImage     ( ICZ                                  )
+    ##########################################################################
+    return QIcon                      ( PIX                                  )
+  ############################################################################
+  def SwitchSideTools ( self , Enabled                                     ) :
+    ##########################################################################
+    if                ( self . PicturesBtn not in self . EmptySet          ) :
+      ########################################################################
+      self . PicturesBtn . setEnabled ( Enabled                              )
+    ##########################################################################
+    if                ( self . PeopleBtn   not in self . EmptySet          ) :
+      ########################################################################
+      self . PeopleBtn   . setEnabled ( Enabled                              )
+    ##########################################################################
+    if                ( self . NameBtn     not in self . EmptySet          ) :
+      ########################################################################
+      self . NameBtn     . setEnabled ( Enabled                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . Notify          ( 0                                               )
+    self . SwitchSideTools ( True                                            )
     ##########################################################################
     return True
   ############################################################################
@@ -274,6 +306,241 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchRegularDepotCount        ( self , DB                            ) :
+    ##########################################################################
+    GALTAB = self . Tables          [ "Galleries"                            ]
+    UOPTS  = " , " . join           ( str(x) for x in self . UsedOptions     )
+    QQ     = f"""select count(*) from {GALTAB}
+                 where ( `used` in ( {UOPTS} ) ) ;"""
+    ##########################################################################
+    return self . DbCountDepotTotal ( DB , QQ                                )
+  ############################################################################
+  def FetchGroupMembersCount ( self , DB                                   ) :
+    ##########################################################################
+    GALTAB = self . Tables   [ "Galleries"                                   ]
+    RELTAB = self . Tables   [ "Relation"                                    ]
+    UOPTS  = " , " . join    ( str(x) for x in self . UsedOptions            )
+    RQ     = self . Relation . GetSecondUuidsSqlSyntax ( RELTAB              )
+    ##########################################################################
+    QQ     = f"""select count(*) from {GALTAB}
+                 where ( `used` in ( {UOPTS} ) )
+                   and ( `uuid` in ( {RQ} ) ) ;"""
+    ##########################################################################
+    return self . DbCountDepotTotal ( DB , QQ                                )
+  ############################################################################
+  def FetchGroupOwnersCount ( self , DB                                    ) :
+    ##########################################################################
+    GALTAB = self . Tables  [ "Galleries"                                    ]
+    RELTAB = self . Tables  [ "Relation"                                     ]
+    UOPTS  = " , " . join   ( str(x) for x in self . UsedOptions             )
+    RQ     = self . Relation . GetFirstUuidsSqlSyntax ( RELTAB               )
+    ##########################################################################
+    QQ     = f"""select count(*) from {GALTAB}
+                 where ( `used` in ( {UOPTS} ) )
+                   and ( `uuid` in ( {RQ} ) ) ;"""
+    ##########################################################################
+    return self . DbCountDepotTotal ( DB , QQ                                )
+  ############################################################################
+  def ObtainUuidsQuery     ( self                                          ) :
+    ##########################################################################
+    GALTAB = self . Tables [ "Galleries"                                     ]
+    UOPTS  = " , " . join  ( str(x) for x in self . UsedOptions              )
+    SID    = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
+    QQ     = f"""select `uuid` from {GALTAB}
+                 where ( `used` in ( {UOPTS} ) )
+                 order by `id` {ORDER}
+                 limit {SID} , {AMOUNT} ;"""
+    ##########################################################################
+    return " " . join      ( QQ . split ( )                                  )
+  ############################################################################
+  def ObtainSubgroupUuids           ( self , DB                            ) :
+    ##########################################################################
+    SID    = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
+    ASC    =                        ( ORDER . lower in [ "asc"             ] )
+    LMTS   = f"limit {SID} , {AMOUNT}"
+    GALTAB = self . Tables          [ "Galleries"                            ]
+    RELTAB = self . Tables          [ "Relation"                             ]
+    NAMTAB = self . Tables          [ "Names"                                ]
+    UOPTS  = " , " . join           ( str(x) for x in self . UsedOptions     )
+    ##########################################################################
+    if                              ( self . isSubordination (           ) ) :
+      ########################################################################
+      RQ   = self . Relation . GetSecondUuidsSqlSyntax ( RELTAB              )
+      EQ   = f"""select `uuid` from {GALTAB}
+                 where ( `uuid` in ( {RQ} ) )
+                   and ( `used` in ( {UOPTS} ) )"""
+      VQ   = f"and ( `second` in ( {EQ} ) )"
+      SQ   = f"order by `position` {ORDER} , `reverse` {ORDER}"
+      QQ   = f"{RQ} {VQ} {SQ} {LMTS} ;"
+      QQ   = " " . join             ( QQ . split ( )                         )
+      UIDs = DB . ObtainUuids       ( QQ                                     )
+      ########################################################################
+      if                            ( len ( UIDs ) <= 0                    ) :
+        return UIDs
+      if                            ( not self . SortByName                ) :
+        return UIDs
+      ########################################################################
+      UXDs = " , " . join           ( str(x) for x in UIDs                   )
+      LC   = self . getLocality     (                                        )
+      QQ   = f"""select distinct(`uuid`) from {NAMTAB}
+                 where ( `uuid` in ( {UXDs} ) )
+                   and ( `locality` = {LC} )
+                 order by `name` {ORDER} {LMTS} ;"""
+      QQ   = " " . join             ( QQ . split ( )                         )
+      ########################################################################
+      UNDs = DB . ObtainUuids       ( QQ                                     )
+      ########################################################################
+      return self . JoinPrimaryUuidsInOrder ( UNDs , UIDs  , ASC             )
+    ##########################################################################
+    if                              ( self . isReverse       (           ) ) :
+      ########################################################################
+      RQ   = self . Relation . GetFirstUuidsSqlSyntax ( RELTAB               )
+      EQ   = f"""select `uuid` from {GALTAB}
+                 where ( `uuid` in ( {RQ} ) )
+                   and ( `used` in ( {UOPTS} ) )"""
+      VQ   = f"and ( `first` in ( {EQ} ) )"
+      SQ   = f"order by `reverse` {ORDER} , `position` {ORDER}"
+      QQ   = f"{RQ} {VQ} {SQ} {LMTS} ;"
+      QQ   = " " . join             ( QQ . split ( )                         )
+      ########################################################################
+      UIDs = DB . ObtainUuids       ( QQ                                     )
+      ########################################################################
+      if                            ( len ( UIDs ) <= 0                    ) :
+        return UIDs
+      if                            ( not self . SortByName                ) :
+        return UIDs
+      ########################################################################
+      UXDs = " , " . join           ( str(x) for x in UIDs                   )
+      LC   = self . getLocality     (                                        )
+      QQ   = f"""select distinct(`uuid`) from {NAMTAB}
+                 where ( `uuid` in ( {UXDs} ) )
+                   and ( `locality` = {LC} )
+                 order by `name` {ORDER} {LMTS} ;"""
+      QQ   = " " . join             ( QQ . split ( )                         )
+      ########################################################################
+      UNDs = DB . ObtainUuids       ( QQ                                     )
+      ########################################################################
+      return self . JoinPrimaryUuidsInOrder ( UNDs , UIDs  , ASC             )
+    ##########################################################################
+    return                          [                                        ]
+  ############################################################################
+  def ObtainsItemUuids                      ( self , DB                    ) :
+    ##########################################################################
+    if                                      ( self . isSearching (       ) ) :
+      return self . UUIDs
+    ##########################################################################
+    if                                      ( self . isOriginal ( )        ) :
+      return self . DefaultObtainsItemUuids ( DB                             )
+    ##########################################################################
+    return self   . ObtainSubgroupUuids     ( DB                             )
+  ############################################################################
+  def FetchSessionInformation             ( self , DB                      ) :
+    ##########################################################################
+    self . defaultFetchSessionInformation (        DB                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    FMT          = self . getMenuItem  ( "GalleryToolTip"                    )
+    USAGE        = self . Translations [ self . ClassTag ] [ "Usage"         ]
+    STATEs       = self . Translations [ self . ClassTag ] [ "States"        ]
+    DB           = self . ConnectDB    (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
+    ##########################################################################
+    GALTAB       = self . Tables       [ "Galleries"                         ]
+    PICTAB       = self . Tables       [ "RelationPictures"                  ]
+    RELTAB       = self . Tables       [ "Relation"                          ]
+    PEOTAB       = self . Tables       [ "RelationPeople"                    ]
+    VIDTAB       = self . Tables       [ "RelationVideos"                    ]
+    REL          = Relation            (                                     )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . StayAlive              ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      self       . GalleryOPTs [ U ] = { "Used"      : 1                   , \
+                                         "States"    : 0                   , \
+                                         "Pictures"  : 0                   , \
+                                         "Subgroups" : 0                   , \
+                                         "People"    : 0                   , \
+                                         "Albums"    : 0                     }
+      ########################################################################
+      UMSG       = ""
+      QQ         = f"""select `used` , `states` from {GALTAB}
+                       where ( `uuid` = {U} ) ;"""
+      DB         . Query               ( " " . join ( QQ . split (       ) ) )
+      RR         = DB . FetchOne       (                                     )
+      ########################################################################
+      if                               ( RR not in self . EmptySet         ) :
+        ######################################################################
+        if                             ( 2 == len ( RR )                   ) :
+          ####################################################################
+          USD    = int                 ( RR [ 0                            ] )
+          SSS    = int                 ( RR [ 1                            ] )
+          self   . GalleryOPTs [ U ] [ "Used"   ] = USD
+          self   . GalleryOPTs [ U ] [ "States" ] = SSS
+          ####################################################################
+          if                           ( f"{USD}" in USAGE                 ) :
+            UMSG = USAGE               [ f"{USD}"                            ]
+      ########################################################################
+      item       = self . UuidItemMaps [ U                                   ]
+      ########################################################################
+      REL        . set                 ( "first" , U                         )
+      REL        . setT1               ( "Gallery"                           )
+      REL        . setT2               ( "Picture"                           )
+      REL        . setRelation         ( "Subordination"                     )
+      PICs       = REL . CountSecond   ( DB , PICTAB                         )
+      ########################################################################
+      self       . GalleryOPTs [ U ] [ "Pictures" ] = PICs
+      ########################################################################
+      REL        . set                 ( "second" , U                        )
+      REL        . setT2               ( "Gallery"                           )
+      ########################################################################
+      REL        . setT1               ( "Subgroup"                          )
+      SGPs       = REL . CountFirst    ( DB , RELTAB                         )
+      ########################################################################
+      self       . GalleryOPTs [ U ] [ "Subgroups" ] = SGPs
+      ########################################################################
+      REL        . setT1               ( "People"                            )
+      PEOs       = REL . CountFirst    ( DB , RELTAB                         )
+      ########################################################################
+      self       . GalleryOPTs [ U ] [ "People" ] = PEOs
+      ########################################################################
+      REL        . setT1               ( "Album"                             )
+      VIDs       = REL . CountFirst    ( DB , RELTAB                         )
+      ########################################################################
+      self       . GalleryOPTs [ U ] [ "Albums" ] = VIDs
+      ########################################################################
+      text       = FMT . format        ( U                                 , \
+                                         PICs                              , \
+                                         SGPs                              , \
+                                         PEOs                              , \
+                                         VIDs                              , \
+                                         UMSG                                )
+      ########################################################################
+      self       . emitAssignToolTip . emit ( item , text                    )
+    ##########################################################################
+    DB           . Close               (                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
     mtype   = "gallery/uuids"
@@ -288,50 +555,52 @@ class GalleriesView            ( IconDock                                  ) :
     return
   ############################################################################
   def allowedMimeTypes     ( self , mime                                   ) :
+    ##########################################################################
     FMTs    =              [ "people/uuids"                                , \
                              "gallery/uuids"                               , \
                              "picture/uuids"                                 ]
     formats = ";" . join   ( FMTs                                            )
+    ##########################################################################
     return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    atItem  = self . itemAt         ( mousePos                               )
-    CNT     = len                   ( UUIDs                                  )
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
+    atItem  = self . itemAt              ( mousePos                          )
+    CNT     = len                        ( UUIDs                             )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                                   ( mtype in [ "people/uuids" ]     ) :
       ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
+      if                                 ( atItem in self . EmptySet       ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinPeople"   , title , CNT         )
+      self  . ShowMenuItemTitleStatus    ( "JoinPeople"   , title , CNT      )
     ##########################################################################
-    elif                            ( mtype in [ "picture/uuids" ]         ) :
+    elif                                 ( mtype in [ "picture/uuids" ]    ) :
       ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
+      if                                 ( atItem in self . EmptySet       ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinPictures" , title , CNT         )
+      self  . ShowMenuItemTitleStatus    ( "JoinPictures" , title , CNT      )
     ##########################################################################
-    elif                            ( mtype in [ "gallery/uuids" ]         ) :
+    elif                                 ( mtype in [ "gallery/uuids" ]    ) :
       ########################################################################
-      if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemCountStatus ( "MoveGalleries" , CNT               )
+      if                                 ( self == sourceWidget            ) :
+        self . ShowMenuItemCountStatus   ( "MoveGalleries" ,         CNT     )
       else                                                                   :
-        self . ShowMenuItemCountStatus ( "JoinGalleries" , CNT               )
+        self . ShowMenuItemTitleStatus   ( "JoinGalleries" , title , CNT     )
     ##########################################################################
     return RDN
   ############################################################################
@@ -356,8 +625,10 @@ class GalleriesView            ( IconDock                                  ) :
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
   def dropGalleries                 ( self , source , pos , JSON           ) :
+    ##########################################################################
     MF   = self . GalleriesMoving
     AF   = self . GalleriesAppending
+    ##########################################################################
     return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
   def GetLastestPosition                  ( self , DB , LUID               ) :
@@ -417,6 +688,7 @@ class GalleriesView            ( IconDock                                  ) :
     RELTAB = self . Tables     [ "RelationPeople"                            ]
     ##########################################################################
     DB     . LockWrites        ( [ RELTAB                                  ] )
+    ##########################################################################
     self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
     OPTS   = f"order by `position` asc"
     PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
@@ -564,64 +836,11 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage           ( self                                 ) :
-    ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return False
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return False
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    DB      . LockWrites            ( [ PAMTAB ]                             )
-    ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    SCOPE   = f"GalleriesView-{SCOPE}-{TYPE}-{UUID}"
-    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
-    ##########################################################################
-    DB      . UnlockTables          (                                        )
-    DB      . Close                 (                                        )
-    ##########################################################################
-    return True
+  def UpdateLocalityUsage                     ( self                       ) :
+    return self . subgroupUpdateLocalityUsage (                              )
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
-    ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    SCOPE   = self . Grouping
-    SCOPE   = f"GalleriesView-{SCOPE}-{TYPE}-{UUID}"
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
-    ##########################################################################
-    return
+  def ReloadLocality                     ( self , DB                       ) :
+    return self . subgroupReloadLocality (        DB                         )
   ############################################################################
   def ExportUUIDs              ( self                                      ) :
     ##########################################################################
@@ -678,21 +897,25 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def OpenItemIcons                   ( self , item                        ) :
+  def OpenItemIcons                 ( self , item                          ) :
     ##########################################################################
-    uuid = item . data                ( Qt . UserRole                        )
-    uuid = int                        ( uuid                                 )
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
     ##########################################################################
-    if                                ( uuid <= 0                          ) :
+    if                              ( uuid <= 0                            ) :
       return False
     ##########################################################################
-    text = item . text                (                                      )
-    icon = item . icon                (                                      )
-    xsid = str                        ( uuid                                 )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
     ##########################################################################
     relz = "Using"
     ##########################################################################
-    self . ShowPersonalIcons . emit   ( text , 64 , relz , xsid , icon       )
+    self . ShowPersonalIcons . emit ( text                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
     ##########################################################################
     return True
   ############################################################################
@@ -704,6 +927,36 @@ class GalleriesView            ( IconDock                                  ) :
       return False
     ##########################################################################
     return self . OpenItemGallery ( atItem                                   )
+  ############################################################################
+  def OpenCurrentCrowds           ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( atItem == None                         ) :
+      return False
+    ##########################################################################
+    return self . OpenOwnedCrowds ( atItem                                   )
+  ############################################################################
+  def OpenOwnedCrowds              ( self , item                           ) :
+    ##########################################################################
+    uuid = item . data             ( Qt . UserRole                           )
+    uuid = int                     ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    text = item . text             (                                         )
+    xsid = str                     ( uuid                                    )
+    ##########################################################################
+    self . OwnedPeopleGroup . emit ( text , self . GType , xsid              )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item , "Gallery" , "NamesEditing"    )
+    ##########################################################################
+    return
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
@@ -774,6 +1027,15 @@ class GalleriesView            ( IconDock                                  ) :
                                    True                                    , \
                                    self . SortByName                         )
     ##########################################################################
+    if                           ( item not in self . EmptySet             ) :
+      ########################################################################
+      return mm
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "BelongsCrowd"                            )
+    mm    . addActionFromMenu    ( COL , 62231231 , MSG                      )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( COL                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "WebPages"                                )
@@ -819,6 +1081,12 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       self   . clear               (                                         )
       self   . startup             (                                         )
+    ##########################################################################
+    if                             ( at == 62231231                        ) :
+      ########################################################################
+      self . OpenOwnedCrowds       ( item                                    )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( at == 62231321                        ) :
       ########################################################################
@@ -980,9 +1248,8 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1601                           ) :
-      NAM  = self . Tables          [ "Names"                                ]
-      self . EditAllNames           ( self , "Gallery" , uuid , NAM          )
+    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
     if                              ( at == 7401                           ) :
