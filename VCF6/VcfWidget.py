@@ -236,10 +236,11 @@ class VcfWidget           ( QGraphicsView                                  , \
     Ratio   . setEnabled         ( enabled                                   )
     Ratio   . setToolTip         ( msg                                       )
     ##########################################################################
-    try                                                                      :
+    ics     = QMetaMethod . fromSignal ( Ratio . currentIndexChanged         )
+    ##########################################################################
+    if                           ( self . isSignalConnected ( ics )        ) :
+      ########################################################################
       Ratio . currentIndexChanged . disconnect (                             )
-    except                                                                   :
-      pass
     ##########################################################################
     if                           ( enabled                                 ) :
       ########################################################################
