@@ -12,33 +12,38 @@ import glob
 import shutil
 import pathlib
 ##############################################################################
-from   PySide6                           import QtCore
-from   PySide6                           import QtGui
-from   PySide6                           import QtWidgets
-from   PySide6 . QtCore                  import *
-from   PySide6 . QtGui                   import *
-from   PySide6 . QtWidgets               import *
-from   AITK    . Qt6                     import *
+from   PySide6                              import QtCore
+from   PySide6                              import QtGui
+from   PySide6                              import QtWidgets
+from   PySide6 . QtCore                     import *
+from   PySide6 . QtGui                      import *
+from   PySide6 . QtWidgets                  import *
+from   AITK    . Qt6                        import *
 ##############################################################################
-from   AITK    . Qt6 . IconDock          import IconDock    as IconDock
+from   AITK    . Qt6        . IconDock      import IconDock    as IconDock
 ##############################################################################
-from   AITK    . Qt6 . MenuManager       import MenuManager as MenuManager
-from   AITK    . Qt6 . LineEdit          import LineEdit    as LineEdit
-from   AITK    . Qt6 . ComboBox          import ComboBox    as ComboBox
-from   AITK    . Qt6 . SpinBox           import SpinBox     as SpinBox
+from   AITK    . Qt6        . MenuManager   import MenuManager as MenuManager
+from   AITK    . Qt6        . LineEdit      import LineEdit    as LineEdit
+from   AITK    . Qt6        . ComboBox      import ComboBox    as ComboBox
+from   AITK    . Qt6        . SpinBox       import SpinBox     as SpinBox
 ##############################################################################
-from   AITK    . Essentials . Relation   import Relation
-from   AITK    . Calendars  . StarDate   import StarDate
-from   AITK    . Calendars  . Periode    import Periode
-from   AITK    . Documents  . Name       import Name        as NameItem
-from   AITK    . Documents  . JSON       import Load        as LoadJson
-from   AITK    . Documents  . JSON       import Save        as SaveJson
-from   AITK    . Documents  . Identifier import Identifier  as IdentifierItem
-from   AITK    . Pictures   . Picture    import Picture     as PictureItem
-from   AITK    . Pictures   . Gallery    import Gallery     as GalleryItem
-from   AITK    . People     . People     import People      as PeopleItem
-from   AITK    . Videos     . Album      import Album       as AlbumItem
-from   AITK    . Videos     . Film       import Film        as FilmItem
+from   AITK    . Essentials . Relation      import Relation
+from   AITK    . Calendars  . StarDate      import StarDate
+from   AITK    . Calendars  . Periode       import Periode
+from   AITK    . Documents  . Name          import Name        as NameItem
+from   AITK    . Documents  . JSON          import Load        as LoadJson
+from   AITK    . Documents  . JSON          import Save        as SaveJson
+from   AITK    . Documents  . Identifier    import Identifier  as IdentifierItem
+from   AITK    . Pictures   . Picture       import Picture     as PictureItem
+from   AITK    . Pictures   . Gallery       import Gallery     as GalleryItem
+from   AITK    . People     . People        import People      as PeopleItem
+from   AITK    . Videos     . Album         import Album       as AlbumItem
+from   AITK    . Videos     . Film          import Film        as FilmItem
+##############################################################################
+from   AITK    . UUIDs      . UuidListings6 import appendUuid
+from   AITK    . UUIDs      . UuidListings6 import appendUuids
+from   AITK    . UUIDs      . UuidListings6 import assignUuids
+from   AITK    . UUIDs      . UuidListings6 import getUuids
 ##############################################################################
 class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
@@ -1867,6 +1872,9 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       msg = self . getMenuItem   ( "AssignTables"                            )
       mm  . addActionFromMenu    ( LOM , 34621301 , msg                      )
+      ########################################################################
+      msg = self . getMenuItem   ( "GroupsToCLI"                             )
+      mm  . addActionFromMenu    ( LOM , 34621302 , msg                      )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ShowIdentifier"                          )
     mm    . addActionFromMenu    ( LOM                                     , \
@@ -1918,6 +1926,12 @@ class VideoAlbumsView             ( IconDock                               ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621302                    ) :
+      ########################################################################
+      self . EmitRelateParameters      (                                     )
       ########################################################################
       return True
     ##########################################################################

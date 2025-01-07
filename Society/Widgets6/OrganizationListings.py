@@ -10,41 +10,45 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                              import QtCore
+from   PySide6                              import QtGui
+from   PySide6                              import QtWidgets
+from   PySide6 . QtCore                     import *
+from   PySide6 . QtGui                      import *
+from   PySide6 . QtWidgets                  import *
+from   AITK    . Qt6                        import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . People     . People   import People
+from   AITK    . Essentials . Relation      import Relation
+from   AITK    . Calendars  . StarDate      import StarDate
+from   AITK    . Calendars  . Periode       import Periode
+from   AITK    . People     . People        import People
 ##############################################################################
-class OrganizationListings        ( TreeDock                               ) :
+from   AITK    . UUIDs      . UuidListings6 import appendUuid
+from   AITK    . UUIDs      . UuidListings6 import appendUuids
+from   AITK    . UUIDs      . UuidListings6 import assignUuids
+from   AITK    . UUIDs      . UuidListings6 import getUuids
+##############################################################################
+class OrganizationListings     ( TreeDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow          = Signal (                                          )
-  emitAllNames           = Signal ( dict                                     )
-  emitAssignAmounts      = Signal ( str , int , int                          )
-  PeopleGroup            = Signal ( str , int , str                          )
-  AlbumGroup             = Signal ( str , int , str                          )
-  AlbumDepot             = Signal ( str , int , str , str                    )
-  GalleryDepot           = Signal ( str , int , str , str                    )
-  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
-  OpenVariantTables      = Signal ( str , str , int , str , dict             )
-  OpenLogHistory         = Signal ( str , str , str , str , str              )
-  OpenIdentifiers        = Signal ( str , str , int                          )
-  emitRelationParameters = Signal ( str , int , int                          )
-  emitVendorDirectory    = Signal ( str                                      )
-  emitLog                = Signal ( str                                      )
+  emitNamesShow       = Signal (                                             )
+  emitAllNames        = Signal ( dict                                        )
+  emitAssignAmounts   = Signal ( str , int , int                             )
+  PeopleGroup         = Signal ( str , int , str                             )
+  AlbumGroup          = Signal ( str , int , str                             )
+  AlbumDepot          = Signal ( str , int , str , str                       )
+  GalleryDepot        = Signal ( str , int , str , str                       )
+  ShowWebPages        = Signal ( str , int , str , str , QIcon               )
+  OpenVariantTables   = Signal ( str , str , int , str , dict                )
+  OpenLogHistory      = Signal ( str , str , str , str , str                 )
+  OpenIdentifiers     = Signal ( str , str , int                             )
+  emitVendorDirectory = Signal ( str                                         )
+  emitLog             = Signal ( str                                         )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -1399,16 +1403,7 @@ class OrganizationListings        ( TreeDock                               ) :
     ##########################################################################
     if                                 ( at == 25351302                    ) :
       ########################################################################
-      if                               ( self . isSubordination (        ) ) :
-        ######################################################################
-        UUID = self . Relation  . get  ( "first"                             )
-        UUID = str                     ( UUID                                )
-        TYPE = self . Relation  . get  ( "t1"                                )
-        TYPE = int                     ( TYPE                                )
-        RR   = self . Relation  . get  ( "relation"                          )
-        RR   = int                     ( RR                                  )
-        ######################################################################
-        self . emitRelationParameters . emit ( UUID , RR , TYPE              )
+      self . EmitRelateParameters      (                                     )
       ########################################################################
       return True
     ##########################################################################

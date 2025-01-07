@@ -33,19 +33,20 @@ from   AITK    . Pictures   . Gallery  import Gallery     as GalleryItem
 from   AITK    . Videos     . Album    import Album       as AlbumItem
 from   AITK    . People     . People   import People      as PeopleItem
 ##############################################################################
-class IconDock                 ( ListDock                                  ) :
+class IconDock                    ( ListDock                               ) :
   ############################################################################
-  emitIconsShow       = Signal (                                             )
-  emitAllIcons        = Signal ( dict                                        )
-  emitAssignIcon      = Signal ( QListWidgetItem , QIcon                     )
-  emitAssignToolTip   = Signal ( QListWidgetItem , str                       )
-  emitEmptySelections = Signal (                                             )
-  emitDoSearch        = Signal (                                             )
-  emitRestart         = Signal (                                             )
+  emitIconsShow          = Signal (                                          )
+  emitAllIcons           = Signal ( dict                                     )
+  emitAssignIcon         = Signal ( QListWidgetItem , QIcon                  )
+  emitAssignToolTip      = Signal ( QListWidgetItem , str                    )
+  emitEmptySelections    = Signal (                                          )
+  emitRelationParameters = Signal ( str , int , int                          )
+  emitDoSearch           = Signal (                                          )
+  emitRestart            = Signal (                                          )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__       ( parent , plan                               )
+    super ( ) . __init__          ( parent , plan                            )
     ##########################################################################
     self . EditAllNames    = None
     self . IconFont        = None
@@ -2220,6 +2221,21 @@ class IconDock                 ( ListDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def EmitRelateParameters               ( self                            ) :
+    ##########################################################################
+    if                                   ( not self . isSubordination (  ) ) :
+      return
+    ##########################################################################
+    UUID = self . Relation  . get        ( "first"                           )
+    UUID = str                           ( UUID                              )
+    TYPE = self . Relation  . get        ( "t1"                              )
+    TYPE = int                           ( TYPE                              )
+    RR   = self . Relation  . get        ( "relation"                        )
+    RR   = int                           ( RR                                )
+    ##########################################################################
+    self . emitRelationParameters . emit ( UUID , RR , TYPE                  )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

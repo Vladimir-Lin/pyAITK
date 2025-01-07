@@ -34,21 +34,21 @@ from   AITK    . Pictures   . Gallery  import Gallery     as GalleryItem
 from   AITK    . Videos     . Album    import Album       as AlbumItem
 from   AITK    . People     . People   import People      as PeopleItem
 ##############################################################################
-class TreeDock         ( TreeWidget , AttachDock                           ) :
+class TreeDock                    ( TreeWidget , AttachDock                ) :
   ############################################################################
-  attachNone  = Signal ( QWidget                                             )
-  attachStack = Signal ( QWidget                                             )
-  attachDock  = Signal ( QWidget                                           , \
-                         str                                               , \
-                         Qt . DockWidgetArea                               , \
-                         Qt . DockWidgetAreas                                )
-  attachMdi   = Signal ( QWidget , int                                       )
-  Clicked     = Signal ( int                                                 )
-  emitRestart = Signal (                                                     )
+  attachNone             = Signal ( QWidget                                  )
+  attachStack            = Signal ( QWidget                                  )
+  attachDock             = Signal ( QWidget                                , \
+                                    str                                    , \
+                                    Qt . DockWidgetArea                    , \
+                                    Qt . DockWidgetAreas                     )
+  attachMdi              = Signal ( QWidget , int                            )
+  Clicked                = Signal ( int                                      )
+  emitRelationParameters = Signal ( str , int , int                          )
+  emitRestart            = Signal (                                          )
   ############################################################################
-  def __init__         ( self , parent = None , plan = None                ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    ## super ( TreeWidget , self ) . __init__ ( parent , plan                   )
     super (                   ) . __init__ ( parent , plan                   )
     super ( AttachDock , self ) . __init__ (                                 )
     self . InitializeDock                  (          plan                   )
@@ -996,6 +996,21 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
+  def EmitRelateParameters               ( self                            ) :
+    ##########################################################################
+    if                                   ( not self . isSubordination (  ) ) :
+      return
+    ##########################################################################
+    UUID = self . Relation  . get        ( "first"                           )
+    UUID = str                           ( UUID                              )
+    TYPE = self . Relation  . get        ( "t1"                              )
+    TYPE = int                           ( TYPE                              )
+    RR   = self . Relation  . get        ( "relation"                        )
+    RR   = int                           ( RR                                )
+    ##########################################################################
+    self . emitRelationParameters . emit ( UUID , RR , TYPE                  )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

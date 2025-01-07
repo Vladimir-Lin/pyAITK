@@ -28,6 +28,11 @@ from   AITK    . Documents  . ParameterQuery import ParameterQuery as ParameterQ
 from   AITK    . Pictures   . Gallery        import Gallery        as GalleryItem
 from   AITK    . People     . People         import People         as PeopleItem
 ##############################################################################
+from   AITK    . UUIDs      . UuidListings6  import appendUuid
+from   AITK    . UUIDs      . UuidListings6  import appendUuids
+from   AITK    . UUIDs      . UuidListings6  import assignUuids
+from   AITK    . UUIDs      . UuidListings6  import getUuids
+##############################################################################
 class PeopleView                 ( IconDock                                ) :
   ############################################################################
   HavingMenu            = 1371434312
@@ -1345,6 +1350,9 @@ class PeopleView                 ( IconDock                                ) :
       ########################################################################
       msg = self . getMenuItem    ( "AssignTables"                           )
       mm  . addActionFromMenu     ( LOM , 25351301 , msg                     )
+      ########################################################################
+      msg = self . getMenuItem    ( "GroupsToCLI"                            )
+      mm  . addActionFromMenu     ( LOM , 25351302 , msg                     )
     ##########################################################################
     mm    = self . IndexingMenu   ( mm , LOM , uuid , item                   )
     ##########################################################################
@@ -1382,6 +1390,12 @@ class PeopleView                 ( IconDock                                ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25351302                    ) :
+      ########################################################################
+      self . EmitRelateParameters      (                                     )
       ########################################################################
       return True
     ##########################################################################
