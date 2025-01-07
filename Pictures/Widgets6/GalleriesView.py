@@ -37,6 +37,7 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   ShowPeopleGroup     = Signal ( str , int , str                             )
   OwnedPeopleGroup    = Signal ( str , int , str                             )
+  OwnedVideoAlbums    = Signal ( str , int , str ,       QIcon               )
   ShowPersonalGallery = Signal ( str , int , str       , QIcon               )
   ShowPersonalIcons   = Signal ( str , int , str , str , QIcon               )
   ViewFullGallery     = Signal ( str , int , str , int , QIcon               )
@@ -58,11 +59,13 @@ class GalleriesView            ( IconDock                                  ) :
     self . SortOrder    = "asc"
     self . SortByName   = False
     self . ExtraINFOs   = True
-    self . UsedOptions  = [ 1 , 2 , 3 , 4                                    ]
+    self . RefreshOpts  = True
+    self . UsedOptions  = [ 1 , 2 , 3 , 4 , 5 , 6                            ]
     self . GalleryOPTs  = {                                                  }
     ##########################################################################
     self . PicturesBtn  = None
     self . PeopleBtn    = None
+    self . AlbumBtn     = None
     self . NameBtn      = None
     ##########################################################################
     self . SearchLine   = None
@@ -88,6 +91,8 @@ class GalleriesView            ( IconDock                                  ) :
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    ##########################################################################
+    self . setMinimumSize          ( 160 , 200                               )
     ##########################################################################
     return
   ############################################################################
@@ -125,6 +130,18 @@ class GalleriesView            ( IconDock                                  ) :
     A    . setEnabled                     ( False                            )
     ##########################################################################
     self . PeopleBtn   = A
+    ##########################################################################
+    self . WindowActions . append         ( A                                )
+    ##########################################################################
+    msg  = self . getMenuItem             ( "BelongsAlbums"                  )
+    A    = QAction                        (                                  )
+    ICON = QIcon                          ( ":/images/videos.png"            )
+    A    . setIcon                        ( ICON                             )
+    A    . setToolTip                     ( msg                              )
+    A    . triggered . connect            ( self . OpenCurrentAlbums         )
+    A    . setEnabled                     ( False                            )
+    ##########################################################################
+    self . AlbumBtn    = A
     ##########################################################################
     self . WindowActions . append         ( A                                )
     ##########################################################################
@@ -276,6 +293,10 @@ class GalleriesView            ( IconDock                                  ) :
     if                ( self . PeopleBtn   not in self . EmptySet          ) :
       ########################################################################
       self . PeopleBtn   . setEnabled ( Enabled                              )
+    ##########################################################################
+    if                ( self . AlbumBtn    not in self . EmptySet          ) :
+      ########################################################################
+      self . AlbumBtn    . setEnabled ( Enabled                              )
     ##########################################################################
     if                ( self . NameBtn     not in self . EmptySet          ) :
       ########################################################################
@@ -451,6 +472,48 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def GenerateItemToolTip             ( self , UUID                        ) :
+    ##########################################################################
+    if                                ( UUID not in self . UuidItemMaps    ) :
+      return
+    ##########################################################################
+    if                                ( UUID not in self . GalleryOPTs     ) :
+      return
+    ##########################################################################
+    FMT    = self . getMenuItem       ( "GalleryToolTip"                     )
+    USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
+    STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
+    ##########################################################################
+    USD    = self . GalleryOPTs       [ UUID ] [ "Used"                      ]
+    SSS    = self . GalleryOPTs       [ UUID ] [ "States"                    ]
+    PICs   = self . GalleryOPTs       [ UUID ] [ "Pictures"                  ]
+    SGPs   = self . GalleryOPTs       [ UUID ] [ "Subgroups"                 ]
+    PEOs   = self . GalleryOPTs       [ UUID ] [ "People"                    ]
+    VIDs   = self . GalleryOPTs       [ UUID ] [ "Albums"                    ]
+    ##########################################################################
+    UMSG   = ""
+    ##########################################################################
+    if                                ( f"{USD}" in USAGE                  ) :
+      ########################################################################
+      UMSG = USAGE                    [ f"{USD}"                             ]
+    ##########################################################################
+    text   = FMT . format             ( UUID                               , \
+                                        PICs                               , \
+                                        SGPs                               , \
+                                        PEOs                               , \
+                                        VIDs                               , \
+                                        UMSG                                 )
+    ##########################################################################
+    if                                ( UUID in self . UuidItemNames       ) :
+      ########################################################################
+      TIT  = self . UuidItemNames     [ UUID                                 ]
+      text = f"{text}\n\n{TIT}"
+    ##########################################################################
+    item   = self . UuidItemMaps      [ UUID                                 ]
+    self   . emitAssignToolTip . emit ( item , text                          )
+    ##########################################################################
+    return
+  ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
     ##########################################################################
     FMT          = self . getMenuItem  ( "GalleryToolTip"                    )
@@ -464,7 +527,8 @@ class GalleriesView            ( IconDock                                  ) :
     PICTAB       = self . Tables       [ "RelationPictures"                  ]
     RELTAB       = self . Tables       [ "Relation"                          ]
     PEOTAB       = self . Tables       [ "RelationPeople"                    ]
-    VIDTAB       = self . Tables       [ "RelationVideos"                    ]
+    ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
+    VIDTAB       = self . Tables       [ "RelationPeople"                    ]
     REL          = Relation            (                                     )
     ##########################################################################
     for U in UUIDs                                                           :
@@ -500,8 +564,6 @@ class GalleriesView            ( IconDock                                  ) :
           if                           ( f"{USD}" in USAGE                 ) :
             UMSG = USAGE               [ f"{USD}"                            ]
       ########################################################################
-      item       = self . UuidItemMaps [ U                                   ]
-      ########################################################################
       REL        . set                 ( "first" , U                         )
       REL        . setT1               ( "Gallery"                           )
       REL        . setT2               ( "Picture"                           )
@@ -528,14 +590,7 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       self       . GalleryOPTs [ U ] [ "Albums" ] = VIDs
       ########################################################################
-      text       = FMT . format        ( U                                 , \
-                                         PICs                              , \
-                                         SGPs                              , \
-                                         PEOs                              , \
-                                         VIDs                              , \
-                                         UMSG                                )
-      ########################################################################
-      self       . emitAssignToolTip . emit ( item , text                    )
+      self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
     DB           . Close               (                                     )
     ##########################################################################
@@ -869,6 +924,54 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def UpdateGalleryUsage         ( self , uuid , usage                     ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
+      return
+    ##########################################################################
+    GALTAB = self . Tables       [ "Galleries"                               ]
+    ##########################################################################
+    DB     . LockWrites          ( [ GALTAB                                ] )
+    ##########################################################################
+    QQ     = f"""update {GALTAB}
+                 set `used` = {usage}
+                 where ( `uuid` = {uuid} ) ; """
+    DB     . Query               ( " " . join ( QQ . split (             ) ) )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    DB     . Close               (                                           )
+    ##########################################################################
+    self   . GalleryOPTs         [ uuid ] [ "Used" ] = usage
+    self   . GenerateItemToolTip ( uuid                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def OptimizeGalleryOrder    ( self                                       ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables    [ "Relation"                                   ]
+    ##########################################################################
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    if                        ( self . isSubordination (                 ) ) :
+      ########################################################################
+      UUIDs = self . Relation . Subordination ( DB , RELTAB                  )
+      ########################################################################
+      ########################################################################
+    elif                      ( self . isReverse       (                 ) ) :
+      ########################################################################
+      UUIDs = self . Relation . GetOwners     ( DB , RELTAB                  )
+      ########################################################################
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenWebPageListings      ( self , item , Related                     ) :
     ##########################################################################
     text = item . text         (                                             )
@@ -952,6 +1055,31 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenCurrentAlbums           ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( atItem == None                         ) :
+      return False
+    ##########################################################################
+    return self . OpenOwnedAlbums ( atItem                                   )
+  ############################################################################
+  def OpenOwnedAlbums              ( self , item                           ) :
+    ##########################################################################
+    uuid = item . data             ( Qt . UserRole                           )
+    uuid = int                     ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    text = item . text             (                                         )
+    icon = item . icon             (                                         )
+    xsid = str                     ( uuid                                    )
+    ##########################################################################
+    self . OwnedVideoAlbums . emit ( text , self . GType , xsid , icon       )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item , "Gallery" , "NamesEditing"    )
@@ -970,25 +1098,69 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def BlocMenu                 ( self , mm , item , uuid                   ) :
+  def BlocMenu                   ( self , mm , item , uuid                 ) :
     ##########################################################################
-    MSG   = self . getMenuItem ( "Bloc"                                      )
-    LOM   = mm   . addMenu     ( MSG                                         )
+    MSG   = self . getMenuItem   ( "Bloc"                                    )
+    LOM   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    MSG   = self . getMenuItem ( "ExportUUIDs"                               )
-    mm    . addActionFromMenu  ( LOM , 8831001 , MSG                         )
-    ##########################################################################
-    if                         ( uuid > 0                                  ) :
+    if                           ( self . isSubordination ( )              ) :
       ########################################################################
-      MSG = self . getMenuItem ( "CopyGalleryUuid"                           )
-      mm  . addActionFromMenu  ( LOM , 8831101 , MSG                         )
+      msg = self . getMenuItem   ( "AssignTables"                            )
+      mm  . addActionFromMenu    ( LOM , 1301 , msg                          )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "SortByName"                              )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   1302                                    , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . SortByName                         )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "ExportUUIDs"                             )
+    mm    . addActionFromMenu    ( LOM , 8831001 , MSG                       )
+    ##########################################################################
+    if                           ( uuid > 0                                ) :
       ########################################################################
-      MSG = self . getMenuItem ( "CopyGalleryName"                           )
-      mm  . addActionFromMenu  ( LOM , 8831102 , MSG                         )
+      MSG = self . getMenuItem   ( "CopyGalleryUuid"                         )
+      mm  . addActionFromMenu    ( LOM , 8831101 , MSG                       )
+      ########################################################################
+      MSG = self . getMenuItem   ( "CopyGalleryName"                         )
+      mm  . addActionFromMenu    ( LOM , 8831102 , MSG                       )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "OptimizeGalleryOrder"                    )
+    mm    . addActionFromMenu    ( LOM , 8836001 , MSG                       )
     ##########################################################################
     return mm
   ############################################################################
   def RunBlocMenu ( self , at , item , uuid                                ) :
+    ##########################################################################
+    if            ( at == 1301                                             ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( at == 1302                                             ) :
+      ########################################################################
+      if          ( self . SortByName                                      ) :
+        self . SortByName = False
+      else                                                                   :
+        self . SortByName = True
+      ########################################################################
+      self   . restart             (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if            ( at == 8831001                                          ) :
       ########################################################################
@@ -1008,33 +1180,30 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       return True
     ##########################################################################
+    if            ( at == 8836001                                          ) :
+      ########################################################################
+      self . Go   ( self . OptimizeGalleryOrder                              )
+      ########################################################################
+      return True
+    ##########################################################################
     return False
   ############################################################################
   def PropertiesMenu             ( self , mm , item                        ) :
-    ##########################################################################
-    MSG   = self . getMenuItem   ( "Properties"                              )
-    COL   = mm   . addMenu       ( MSG                                       )
-    ##########################################################################
-    if                           ( self . isSubordination ( )              ) :
-      ########################################################################
-      msg = self . getMenuItem   ( "AssignTables"                            )
-      mm  . addActionFromMenu    ( COL , 1301 , msg                          )
-    ##########################################################################
-    msg   = self . getMenuItem   ( "SortByName"                              )
-    mm    . addActionFromMenu    ( COL                                     , \
-                                   1302                                    , \
-                                   msg                                     , \
-                                   True                                    , \
-                                   self . SortByName                         )
     ##########################################################################
     if                           ( item in self . EmptySet                 ) :
       ########################################################################
       return mm
     ##########################################################################
-    mm    . addSeparatorFromMenu ( COL                                       )
+    MSG   = self . getMenuItem   ( "Properties"                              )
+    COL   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "BelongsCrowd"                            )
-    mm    . addActionFromMenu    ( COL , 62231231 , MSG                      )
+    ICON  = QIcon                ( ":/images/peoplegroups.png"               )
+    mm    . addActionFromMenuWithIcon ( COL , 62231231 , ICON , MSG          )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "BelongsAlbums"                           )
+    ICON  = QIcon                ( ":/images/videos.png"                     )
+    mm    . addActionFromMenuWithIcon ( COL , 62231232 , ICON , MSG          )
     ##########################################################################
     mm    . addSeparatorFromMenu ( COL                                       )
     ##########################################################################
@@ -1058,33 +1227,15 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   def RunPropertiesMenu            ( self , at , item                      ) :
     ##########################################################################
-    if                             ( at == 1301                            ) :
-      ########################################################################
-      TITLE = self . windowTitle       (                                     )
-      UUID  = self . Relation  . get   ( "first"                             )
-      TYPE  = self . Relation  . get   ( "t1"                                )
-      TYPE  = int                      ( TYPE                                )
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
-                                         self . FetchTableKey              , \
-                                         self . Tables                       )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 1302                            ) :
-      ########################################################################
-      if                           ( self . SortByName                     ) :
-        self . SortByName = False
-      else                                                                   :
-        self . SortByName = True
-      ########################################################################
-      self   . clear               (                                         )
-      self   . startup             (                                         )
-    ##########################################################################
     if                             ( at == 62231231                        ) :
       ########################################################################
       self . OpenOwnedCrowds       ( item                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 62231232                        ) :
+      ########################################################################
+      self . OpenOwnedAlbums       ( item                                    )
       ########################################################################
       return True
     ##########################################################################
@@ -1126,6 +1277,133 @@ class GalleriesView            ( IconDock                                  ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def UsageMenu                  ( self , mm , item                        ) :
+    ##########################################################################
+    if                           ( self . NotOkay ( item                 ) ) :
+      return
+    ##########################################################################
+    uuid  = item  . data         ( Qt . UserRole                             )
+    uuid  = int                  ( uuid                                      )
+    ##########################################################################
+    if                           ( uuid not in self . GalleryOPTs          ) :
+      return
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "GalleryUsage"                            )
+    COL   = mm    . addMenu      ( MSG                                       )
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    KEYs  = USAGE . keys         (                                           )
+    USED  = self . GalleryOPTs   [ uuid ] [ "Used"                           ]
+    BAID  = 29431000
+    ##########################################################################
+    for ID in KEYs                                                           :
+      ########################################################################
+      VID = int                  ( ID                                        )
+      CHK =                      ( USED == VID                               )
+      MSG = USAGE                [ ID                                        ]
+      BXD = int                  ( VID + BAID                                )
+      ########################################################################
+      mm  . addActionFromMenu    ( COL , BXD , MSG , True , CHK              )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunUsageMenu               ( self , at , item                        ) :
+    ##########################################################################
+    if                           ( at < 29431000                           ) :
+      return False
+    ##########################################################################
+    if                           ( at > 29431100                           ) :
+      return False
+    ##########################################################################
+    uuid  = item  . data         ( Qt . UserRole                             )
+    uuid  = int                  ( uuid                                      )
+    ##########################################################################
+    if                           ( uuid not in self . GalleryOPTs          ) :
+      return
+    ##########################################################################
+    VID   = int                  ( at - 29431000                             )
+    VSD   = f"{VID}"
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    ##########################################################################
+    if                           ( VSD not in USAGE                        ) :
+      return False
+    ##########################################################################
+    VP    =                      ( uuid , VID ,                              )
+    self  . Go                   ( self . UpdateGalleryUsage , VP            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def DisplayMenu                ( self , mm                               ) :
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "DisplayUsage"                            )
+    COL   = mm    . addMenu      ( MSG                                       )
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    KEYs  = USAGE . keys         (                                           )
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "RefreshOptions"                          )
+    mm    . addActionFromMenu    ( COL                                     , \
+                                   29432101                                , \
+                                   MSG                                     , \
+                                   True                                    , \
+                                   self . RefreshOpts                        )
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    BAID  = 29432000
+    ##########################################################################
+    for ID in KEYs                                                           :
+      ########################################################################
+      VID = int                  ( ID                                        )
+      CHK =                      ( VID in self . UsedOptions                 )
+      MSG = USAGE                [ ID                                        ]
+      BXD = int                  ( VID + BAID                                )
+      ########################################################################
+      mm  . addActionFromMenu    ( COL , BXD , MSG , True , CHK              )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunDisplayMenu              ( self , at                              ) :
+    ##########################################################################
+    if                            ( at == 29432101                         ) :
+      ########################################################################
+      if                          ( self . RefreshOpts                     ) :
+        self . RefreshOpts = False
+      else                                                                   :
+        self . RefreshOpts = True
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( at < 29432000                          ) :
+      return False
+    ##########################################################################
+    if                            ( at > 29432100                          ) :
+      return False
+    ##########################################################################
+    VID    = int                  ( at - 29432000                            )
+    VSD    = f"{VID}"
+    USAGE  = self  . Translations [ self . ClassTag ] [ "Usage"              ]
+    ##########################################################################
+    if                            ( VSD not in USAGE                       ) :
+      return False
+    ##########################################################################
+    if                            ( VID in self . UsedOptions              ) :
+      ########################################################################
+      ROP  =                      [                                          ]
+      ########################################################################
+      for ID in self . UsedOptions                                           :
+        ######################################################################
+        if                        ( VID != ID                              ) :
+          ROP . append            ( ID                                       )
+      ########################################################################
+      self . UsedOptions = ROP
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . UsedOptions . append ( VID                                      )
+    ##########################################################################
+    if                            ( self . RefreshOpts                     ) :
+      self   . restart            (                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -1173,13 +1451,19 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self   . BlocMenu               ( mm , atItem , uuid                     )
     self   . PropertiesMenu         ( mm , atItem                            )
+    self   . UsageMenu              ( mm , atItem                            )
+    self   . DisplayMenu            ( mm                                     )
     self   . SortingMenu            ( mm                                     )
     self   . LocalityMenu           ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
     if                              ( OKAY                                 ) :
@@ -1204,6 +1488,14 @@ class GalleriesView            ( IconDock                                  ) :
       return True
     ##########################################################################
     OKAY   = self . RunPropertiesMenu ( at , atItem                          )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunUsageMenu    ( at , atItem                            )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunDisplayMenu  ( at                                     )
     if                              ( OKAY                                 ) :
       return True
     ##########################################################################

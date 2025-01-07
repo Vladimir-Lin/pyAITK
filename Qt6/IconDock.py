@@ -63,6 +63,7 @@ class IconDock                 ( ListDock                                  ) :
     self . SpinStartId     = None
     self . SpinAmount      = None
     self . UuidItemMaps    =        {                                        }
+    self . UuidItemNames   =        {                                        }
     self . FetchingIcons   = False
     self . DoParallelIcons =        {                                        }
     ##########################################################################
@@ -792,8 +793,11 @@ class IconDock                 ( ListDock                                  ) :
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
+    ##########################################################################
     if                                ( self . UsingName                   ) :
+      ########################################################################
       NAMEs = JSON                    [ "NAMEs"                              ]
+      self . UuidItemNames = NAMEs
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
