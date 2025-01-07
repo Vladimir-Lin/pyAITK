@@ -86,11 +86,13 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setSelectionMode        ( QAbstractItemView . ContiguousSelection )
+    ##########################################################################
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
-    self . setMinimumSize          ( 160 , 200                               )
+    self . setMinimumSize          ( 180 , 200                               )
     ##########################################################################
     return
   ############################################################################

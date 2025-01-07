@@ -1569,7 +1569,7 @@ class AbstractGui            (                                             ) :
       if                      ( UUID not in UUIDs                          ) :
         KUIDs . append        ( UUID                                         )
     ##########################################################################
-    if                        ( atUuid < 0                                 ) :
+    if                        ( atUuid <= 0                                ) :
       for UUID in UUIDs                                                      :
         KUIDs . append        ( UUID                                         )
       return KUIDs
@@ -1583,7 +1583,9 @@ class AbstractGui            (                                             ) :
     ##########################################################################
     if                        ( atPos <= 0                                 ) :
       for UUID in PUIDs                                                      :
-        UUIDs . append        ( UUID                                         )
+        ######################################################################
+        if                    ( UUID not in UUIDs                          ) :
+          UUIDs . append      ( UUID                                         )
       return UUIDs
     ##########################################################################
     TOTAL     = len           ( KUIDs                                        )
@@ -1592,10 +1594,12 @@ class AbstractGui            (                                             ) :
     RIGHTs    = KUIDs         [ - REMAIN :                                   ]
     ##########################################################################
     for UUID in UUIDs                                                        :
-      LEFTs   . append        ( UUID                                         )
+      if                      ( UUID not in LEFTs                          ) :
+        LEFTs . append        ( UUID                                         )
     ##########################################################################
     for UUID in RIGHTs                                                       :
-      LEFTs   . append        ( UUID                                         )
+      if                      ( UUID not in LEFTs                          ) :
+        LEFTs . append        ( UUID                                         )
     ##########################################################################
     return LEFTs
   ############################################################################
