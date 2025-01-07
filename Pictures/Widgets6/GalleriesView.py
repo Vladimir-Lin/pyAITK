@@ -692,74 +692,22 @@ class GalleriesView            ( IconDock                                  ) :
   def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
     return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
   ############################################################################
-  def GalleriesMoving         ( self , atUuid , NAME , JSON                ) :
+  def GalleriesMoving  ( self , atUuid , NAME , JSON                       ) :
     ##########################################################################
-    UUIDs  = JSON             [ "UUIDs"                                      ]
-    if                        ( len ( UUIDs ) <= 0                         ) :
-      return
+    TK   = "Relation"
+    ## TK   = "RelationPeople"
+    MK   = "OrganizePositions"
     ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    RELTAB = self . Tables    [ "RelationPeople"                             ]
-    DB     . LockWrites       ( [ RELTAB                                   ] )
-    ##########################################################################
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs            [ -1                                           ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    ##########################################################################
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    DB     . Close            (                                              )
-    ##########################################################################
-    self   . loading          (                                              )
+    self . MajorMoving (        atUuid ,        JSON , TK , MK               )
     ##########################################################################
     return
   ############################################################################
-  def GalleriesAppending       ( self , atUuid , NAME , JSON               ) :
+  def GalleriesAppending  ( self , atUuid , NAME , JSON                    ) :
     ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return
+    TK   = "RelationPeople"
+    MK   = "OrganizePositions"
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    ##########################################################################
-    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs             [ -1                                          ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
+    self . MajorAppending (        atUuid ,        JSON , TK , MK            )
     ##########################################################################
     return
   ############################################################################
@@ -947,28 +895,12 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def OptimizeGalleryOrder    ( self                                       ) :
+  def OptimizeGalleryOrder              ( self                             ) :
     ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( self . NotOkay ( DB )                      ) :
-      return
+    TKEY = "RelationPeople"
+    MKEY = "OrganizePositions"
     ##########################################################################
-    RELTAB = self . Tables    [ "Relation"                                   ]
-    ##########################################################################
-    DB     . LockWrites       ( [ RELTAB                                   ] )
-    ##########################################################################
-    if                        ( self . isSubordination (                 ) ) :
-      ########################################################################
-      UUIDs = self . Relation . Subordination ( DB , RELTAB                  )
-      ########################################################################
-      ########################################################################
-    elif                      ( self . isReverse       (                 ) ) :
-      ########################################################################
-      UUIDs = self . Relation . GetOwners     ( DB , RELTAB                  )
-      ########################################################################
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
+    self . DoRepositionMembershipOrders ( TKEY , MKEY , self . ProgressMin   )
     ##########################################################################
     return
   ############################################################################

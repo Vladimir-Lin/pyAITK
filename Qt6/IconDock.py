@@ -55,6 +55,7 @@ class IconDock                 ( ListDock                                  ) :
     self . StartId         = 0
     self . Amount          = 60
     self . AssignedAmount  = 0
+    self . ProgressMin     = 100
     self . FetchTableKey   = "Tables"
     self . PrivateIcon     = False
     self . PrivateGroup    = False
@@ -544,6 +545,12 @@ class IconDock                 ( ListDock                                  ) :
   ############################################################################
   def getSortingOrder              ( self                                  ) :
     return self . SortOrder
+  ############################################################################
+  def isAscendingOrder  ( self                                             ) :
+    return              ( self . SortOrder in [ "asc"                      ] )
+  ############################################################################
+  def isDescendingOrder ( self                                             ) :
+    return              ( self . SortOrder in [ "desc"                     ] )
   ############################################################################
   def SortingMenu                 ( self , mm                              ) :
     ##########################################################################
@@ -1594,7 +1601,7 @@ class IconDock                 ( ListDock                                  ) :
                                              RELTAB                        , \
                                              self . Relation               , \
                                              UUIDs                         , \
-                                             LAST + 10000                  , \
+                                             LAST + 1000000                , \
                                              Reverse                         )
     SQLs   = self . GenerateRepositionSQLs ( SQLs                          , \
                                              RELTAB                        , \
@@ -1609,6 +1616,216 @@ class IconDock                 ( ListDock                                  ) :
     ##########################################################################
     R = self . isReverse                  (                                  )
     return self . GenerateNormalMovingSQL ( TABLE , LAST , UUIDs , R         )
+  ############################################################################
+  def RepositionMembershipOrders ( self , DB , TABKEY , MSGKEY , M = 100   ) :
+    ##########################################################################
+    RELTAB  = self . Tables      [ TABKEY                                    ]
+    ##########################################################################
+    if                           ( self . isSubordination (              ) ) :
+      ########################################################################
+      UUIDs = self . Relation . Subordination ( DB , RELTAB                  )
+      ########################################################################
+    elif                         ( self . isReverse       (              ) ) :
+      ########################################################################
+      UUIDs = self . Relation . GetOwners     ( DB , RELTAB                  )
+    ##########################################################################
+    if                           ( len ( UUIDs ) <= 0                      ) :
+      return
+    ##########################################################################
+    LUID    = UUIDs              [ -1                                        ]
+    LAST    = self . GetGroupLastestPosition ( DB     , TABKEY , LUID        )
+    SQLs    = self . GenerateGroupMovingSQL  ( TABKEY , LAST   , UUIDs       )
+    self    . ExecuteSqlCommands             ( MSGKEY , DB     , SQLs , M    )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoRepositionMembershipOrders    ( self , TABKEY , MSGKEY , M = 100   ) :
+    ##########################################################################
+    if                                ( not self . isGrouping (          ) ) :
+      return
+    ##########################################################################
+    DB   = self . ConnectDB           (                                      )
+    if                                ( self . NotOkay ( DB )              ) :
+      return
+    ##########################################################################
+    RTAB = self . Tables              [ TABKEY                               ]
+    ##########################################################################
+    DB   . LockWrites                 ( [ RTAB                             ] )
+    self . RepositionMembershipOrders ( DB , TABKEY , MSGKEY , M             )
+    DB   . UnlockTables               (                                      )
+    DB   . Close                      (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinMajorEntities                       ( self                       , \
+                                                DB                         , \
+                                                atUuid                     , \
+                                                UUIDs                      , \
+                                                TABKEY                     , \
+                                                MSGKEY                     , \
+                                                M = 100                    ) :
+    ##########################################################################
+    RELTAB  = self . Tables                   [ TABKEY                       ]
+    ##########################################################################
+    if                                        ( self . isSubordination ( ) ) :
+      ########################################################################
+      self  . Relation  . Joins               ( DB , RELTAB , UUIDs          )
+      OPTS  = f"order by `position` asc , `reverse` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
+      ########################################################################
+    elif                                      ( self . isReverse       ( ) ) :
+      ########################################################################
+      self  . Relation  . JoinsFirst          ( DB , RELTAB , UUIDs          )
+      OPTS  = f"order by `reverse` asc , `position` asc"
+      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      PUIDs =                                 [                              ]
+    ##########################################################################
+    if                                        ( len ( PUIDs ) <= 0         ) :
+      return
+    ##########################################################################
+    LUID    = PUIDs                           [ -1                           ]
+    LAST    = self . GetGroupLastestPosition  ( DB     , TABKEY , LUID       )
+    PUIDs   = self . OrderingPUIDs            ( atUuid , UUIDs  , PUIDs      )
+    SQLs    = self . GenerateGroupMovingSQL   ( TABKEY , LAST   , UUIDs      )
+    self    . ExecuteSqlCommands              ( MSGKEY , DB     , SQLs , M   )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendingMajorEntities   ( self                                      , \
+                                 atUuid                                    , \
+                                 UUIDs                                     , \
+                                 TABKEY                                    , \
+                                 MSGKEY                                    , \
+                                 M = 100                                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ TABKEY                                      ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . JoinMajorEntities ( DB , atUuid , UUIDs , TABKEY , MSGKEY , M   )
+    DB     . UnlockTables      (                                             )
+    ##########################################################################
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def MajorAppending                 ( self                                , \
+                                       atUuid                              , \
+                                       JSON                                , \
+                                       TABKEY                              , \
+                                       MSGKEY                              ) :
+    ##########################################################################
+    UUIDs   = JSON                   [ "UUIDs"                               ]
+    if                               ( len ( UUIDs ) <= 0                  ) :
+      return
+    ##########################################################################
+    if                               ( self . isDescendingOrder (        ) ) :
+      UUIDs = list                   ( reversed ( UUIDs                    ) )
+    ##########################################################################
+    self    . AppendingMajorEntities ( atUuid                              , \
+                                       UUIDs                               , \
+                                       TABKEY                              , \
+                                       MSGKEY                              , \
+                                       self . ProgressMin                    )
+    self    . loading                (                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def MoveMajorEntities                       ( self                       , \
+                                                DB                         , \
+                                                atUuid                     , \
+                                                UUIDs                      , \
+                                                TABKEY                     , \
+                                                MSGKEY                     , \
+                                                M = 100                    ) :
+    ##########################################################################
+    RELTAB  = self . Tables                   [   TABKEY                     ]
+    ##########################################################################
+    if                                        ( self . isSubordination ( ) ) :
+      ########################################################################
+      OPTS  = f"order by `position` asc , `reverse` asc"
+      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
+      ########################################################################
+    elif                                      ( self . isReverse       ( ) ) :
+      ########################################################################
+      OPTS  = f"order by `reverse` asc , `position` asc"
+      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      return
+    ##########################################################################
+    if                                        ( len ( PUIDs ) < 2          ) :
+      return
+    ##########################################################################
+    LUID    = PUIDs                           [ -1                           ]
+    LAST    = self . GetGroupLastestPosition  ( DB     , TABKEY , LUID       )
+    PUIDs   = self . OrderingPUIDs            ( atUuid , UUIDs  , PUIDs      )
+    SQLs    = self . GenerateGroupMovingSQL   ( TABKEY , LAST   , PUIDs      )
+    self    . ExecuteSqlCommands              ( MSGKEY , DB , SQLs , M       )
+    ##########################################################################
+    return
+  ############################################################################
+  def MovingMajorEntities      ( self                                      , \
+                                 atUuid                                    , \
+                                 UUIDs                                     , \
+                                 TABKEY                                    , \
+                                 MSGKEY                                    , \
+                                 M = 100                                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ TABKEY                                      ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . MoveMajorEntities ( DB , atUuid , UUIDs , TABKEY , MSGKEY , M   )
+    DB     . UnlockTables      (                                             )
+    ##########################################################################
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def MajorMoving                 ( self                                   , \
+                                    atUuid                                 , \
+                                    JSON                                   , \
+                                    TABKEY                                 , \
+                                    MSGKEY                                 ) :
+    ##########################################################################
+    UUIDs   = JSON                [ "UUIDs"                                  ]
+    if                            ( len ( UUIDs ) <= 0                     ) :
+      return
+    ##########################################################################
+    if                            ( self . isDescendingOrder (           ) ) :
+      UUIDs = list                ( reversed ( UUIDs                       ) )
+    ##########################################################################
+    self    . MovingMajorEntities ( atUuid                                 , \
+                                    UUIDs                                  , \
+                                    TABKEY                                 , \
+                                    MSGKEY                                 , \
+                                    self . ProgressMin                       )
+    self    . loading             (                                          )
+    ##########################################################################
+    return
   ############################################################################
   def defaultDropMoving    ( self , sourceWidget , mimeData , mousePos     ) :
     ##########################################################################
@@ -2002,6 +2219,11 @@ class IconDock                 ( ListDock                                  ) :
                                      NAME                                    )
     ##########################################################################
     return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
   ############################################################################
 ##############################################################################

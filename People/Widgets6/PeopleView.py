@@ -573,102 +573,23 @@ class PeopleView                 ( IconDock                                ) :
   def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
     return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
   ############################################################################
-  def PeopleMoving               ( self , atUuid , NAME , JSON             ) :
+  ############################################################################
+  def PeopleMoving     ( self , atUuid , NAME , JSON                       ) :
     ##########################################################################
-    UUIDs   = JSON               [ "UUIDs"                                   ]
+    TK   = "Relation"
+    ## TK   = "RelationPeople"
+    MK   = "OrganizePeople"
     ##########################################################################
-    if                           ( len ( UUIDs ) <= 0                      ) :
-      return
-    ##########################################################################
-    DB      = self . ConnectDB   (                                           )
-    if                           ( self . NotOkay ( DB )                   ) :
-      return
-    ##########################################################################
-    self    . OnBusy  . emit     (                                           )
-    self    . setBustle          (                                           )
-    ##########################################################################
-    RELKEY  = "Relation"
-    ## RELKEY  = "RelationPeople"
-    RELTAB  = self . Tables      [   RELKEY                                  ]
-    DB      . LockWrites         ( [ RELTAB                                ] )
-    ##########################################################################
-    if                           ( self . isReverse (                    ) ) :
-      ########################################################################
-      OPTS  = f"order by `reverse` asc"
-      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      OPTS  = f"order by `position` asc"
-      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
-    ##########################################################################
-    if                           ( len ( PUIDs ) > 1                       ) :
-      ########################################################################
-      LUID  = PUIDs              [ -1                                        ]
-      ########################################################################
-      LAST  = self . GetGroupLastestPosition ( DB     , RELKEY , LUID        )
-      PUIDs = self . OrderingPUIDs           ( atUuid , UUIDs  , PUIDs       )
-      SQLs  = self . GenerateGroupMovingSQL  ( RELKEY , LAST   , PUIDs       )
-      ########################################################################
-      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
-    ##########################################################################
-    DB      . UnlockTables       (                                           )
-    ##########################################################################
-    self    . setVacancy         (                                           )
-    self    . GoRelax . emit     (                                           )
-    DB      . Close              (                                           )
-    ##########################################################################
-    self    . loading            (                                           )
+    self . MajorMoving (        atUuid ,        JSON , TK , MK               )
     ##########################################################################
     return
   ############################################################################
-  def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
+  def PeopleAppending     ( self , atUuid , NAME , JSON                    ) :
     ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return
+    TK   = "RelationPeople"
+    MK   = "OrganizePeople"
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( self . NotOkay ( DB )                     ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    ##########################################################################
-    if                         ( self . isSubordination (                ) ) :
-      ########################################################################
-      self  . Relation  . Joins ( DB , RELTAB , UUIDs                        )
-      OPTS  = f"order by `position` asc"
-      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
-      ########################################################################
-      LUID  = PUIDs             [ -1                                         ]
-      LAST  = self . GetLastestPosition ( DB     , LUID                      )
-      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
-      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
-      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
-      ########################################################################
-    elif                       ( self . isReverse (                      ) ) :
-      ########################################################################
-      self  . Relation  . JoinsFirst ( DB , RELTAB , UUIDs                   )
-      OPTS  = f"order by `reverse` asc"
-      PUIDs = self . Relation . GetOwners ( DB , RELTAB , OPTS               )
-      ########################################################################
-      LUID  = PUIDs             [ -1                                         ]
-      LAST  = self . GetLastestPosition ( DB     , LUID                      )
-      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
-      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
-      self  . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100        )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
+    self . MajorAppending (        atUuid ,        JSON , TK , MK            )
     ##########################################################################
     return
   ############################################################################
@@ -1189,6 +1110,15 @@ class PeopleView                 ( IconDock                                ) :
     SCOPE  = self . Grouping
     SCOPE  = f"PeopleView-{SCOPE}-{TYPE}-{UUID}"
     self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    ##########################################################################
+    return
+  ############################################################################
+  def OptimizePeopleOrder               ( self                             ) :
+    ##########################################################################
+    TKEY = "Relation"
+    MKEY = "OrganizePeople"
+    ##########################################################################
+    self . DoRepositionMembershipOrders ( TKEY , MKEY , self . ProgressMin   )
     ##########################################################################
     return
   ############################################################################
