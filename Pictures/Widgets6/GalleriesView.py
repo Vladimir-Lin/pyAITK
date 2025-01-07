@@ -1044,9 +1044,12 @@ class GalleriesView            ( IconDock                                  ) :
       msg = self . getMenuItem   ( "GroupsToCLI"                             )
       mm  . addActionFromMenu    ( LOM , 1302 , msg                          )
     ##########################################################################
+    msg   = self . getMenuItem   ( "ReportTables"                            )
+    mm    . addActionFromMenu    ( LOM , 1303 , msg                          )
+    ##########################################################################
     msg   = self . getMenuItem   ( "SortByName"                              )
     mm    . addActionFromMenu    ( LOM                                     , \
-                                   1303                                    , \
+                                   1304                                    , \
                                    msg                                     , \
                                    True                                    , \
                                    self . SortByName                         )
@@ -1096,7 +1099,13 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       return True
     ##########################################################################
-    if            ( at == 1303                                             ) :
+    if                                 ( at == 1303                        ) :
+      ########################################################################
+      self . emitLog . emit            ( json . dumps ( self . Tables      ) )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( at == 1304                                             ) :
       ########################################################################
       if          ( self . SortByName                                      ) :
         self . SortByName = False
