@@ -900,6 +900,9 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self . DoRepositionMembershipOrders ( TKEY , MKEY , self . ProgressMin   )
     ##########################################################################
+    MSG  = self . getMenuItem           ( "OptimizeGalleryCompleted"         )
+    self . emitLog . emit               ( MSG                                )
+    ##########################################################################
     return
   ############################################################################
   def OpenWebPageListings      ( self , item , Related                     ) :
