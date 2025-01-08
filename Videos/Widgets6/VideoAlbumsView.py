@@ -2387,6 +2387,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       msg = self . getMenuItem   ( "CopyGroupUuidToClipboard"                )
       mm  . addActionFromMenu    ( LOM , 34621301 , msg                      )
+      mm  . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     if                           ( self . isSubordination ( )              ) :
       ########################################################################
@@ -2499,6 +2500,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     MSG   = self . getMenuItem        ( "CopyAlbumUuidToClipboard"           )
     mm    . addActionFromMenu         ( LOM , 34611101 ,        MSG          )
+    ##########################################################################
+    mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
     MSG   = self . getMenuItem        ( "CreateAlbum"                        )
     mm    . addActionFromMenu         ( LOM , 34635101 ,        MSG          )
