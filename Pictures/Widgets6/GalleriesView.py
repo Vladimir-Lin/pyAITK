@@ -49,35 +49,42 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
-    self . ClassTag     = "GalleriesView"
-    self . Total        =  0
-    self . StartId      =  0
-    self . Amount       = 60
-    self . GType        = 64
-    self . SortOrder    = "asc"
-    self . SortByName   = False
-    self . ExtraINFOs   = True
-    self . RefreshOpts  = True
-    self . UsedOptions  = [ 1 , 2 , 3 , 4 , 5 , 6                            ]
-    self . GalleryOPTs  = {                                                  }
+    self . ClassTag           = "GalleriesView"
+    self . Total              =  0
+    self . StartId            =  0
+    self . Amount             = 60
+    self . GType              = 64
+    self . SortOrder          = "asc"
+    self . FetchTableKey      = "GalleriesView"
+    self . SortByName         = False
+    self . ExtraINFOs         = True
+    self . RefreshOpts        = True
+    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6                      ]
+    self . GalleryOPTs        = {                                            }
     ##########################################################################
-    self . PicturesBtn  = None
-    self . PeopleBtn    = None
-    self . AlbumBtn     = None
-    self . NameBtn      = None
+    self . PicturesBtn        = None
+    self . PeopleBtn          = None
+    self . AlbumBtn           = None
+    self . NameBtn            = None
     ##########################################################################
-    self . SearchLine   = None
-    self . SearchKey    = ""
-    self . UUIDs        = [                                                  ]
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                                  ]
     ##########################################################################
-    self . Grouping     = "Original"
-    self . OldGrouping  = "Original"
-    ## self . Grouping     = "Subordination"
-    ## self . Grouping     = "Reverse"
+    self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
+    ## self . Grouping           = "Subordination"
+    ## self . Grouping           = "Reverse"
     ##########################################################################
-    self . dockingPlace = Qt . BottomDockWidgetArea
+    self . dockingOrientation = 0
+    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea                  | \
+                                Qt . LeftDockWidgetArea                    | \
+                                Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
+    self . Relation . setT1        ( "Gallery"                               )
     self . Relation . setT2        ( "Gallery"                               )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
@@ -1511,8 +1518,7 @@ class GalleriesView            ( IconDock                                  ) :
     if                              ( at == 7401                           ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
