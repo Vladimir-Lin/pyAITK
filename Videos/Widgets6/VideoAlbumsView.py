@@ -2071,7 +2071,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ALMTAB   = self . Tables             [ "Albums"                          ]
     NAMTAB   = self . Tables             [ "NamesEditing"                    ]
     RELTAB   = self . Tables             [ "RelationEditing"                 ]
-    TABLES   =                           [ PEOTAB , NAMTAB                   ]
+    TABLES   =                           [ ALMTAB , NAMTAB                   ]
     ##########################################################################
     if                                   (  self . isGrouping ( )          ) :
       ########################################################################
