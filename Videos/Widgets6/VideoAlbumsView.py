@@ -54,7 +54,9 @@ class VideoAlbumsView             ( IconDock                               ) :
   ShowPersonalGallery    = Signal ( str , int , str ,       QIcon            )
   ShowPersonalIcons      = Signal ( str , int , str , str , QIcon            )
   GalleryGroup           = Signal ( str , int , str                          )
+  ShowGalleriesRelation  = Signal ( str , int , str , str , QIcon            )
   OwnedOrganizationGroup = Signal ( str , int , str , str , QIcon            )
+  OwnedEpisodesSubgroup  = Signal ( str , int , str                          )
   emitConnectAlbum       = Signal ( str                                      )
   emitOpenVideoGroup     = Signal ( str , int , str , str , QIcon            )
   ShowWebPages           = Signal ( str , int , str , str , QIcon            )
@@ -85,6 +87,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . PicturesBtn        = None
     self . PeopleBtn          = None
     self . GalleryBtn         = None
+    self . SubgroupBtn        = None
     self . NameBtn            = None
     ##########################################################################
     self . SearchLine         = None
@@ -180,6 +183,18 @@ class VideoAlbumsView             ( IconDock                               ) :
     A    . setIcon                        ( ICON                             )
     A    . setToolTip                     ( msg                              )
     A    . triggered . connect            ( self . OpenCurrentCrowds         )
+    A    . setEnabled                     ( False                            )
+    ##########################################################################
+    self . PeopleBtn   = A
+    ##########################################################################
+    self . WindowActions . append         ( A                                )
+    ##########################################################################
+    msg  = self . getMenuItem             ( "AlbumSubgroups"                 )
+    A    = QAction                        (                                  )
+    ICON = QIcon                          ( ":/images/modifyproject.png"     )
+    A    . setIcon                        ( ICON                             )
+    A    . setToolTip                     ( msg                              )
+    A    . triggered . connect            ( self . OpenEpisodesSubgroup      )
     A    . setEnabled                     ( False                            )
     ##########################################################################
     self . PeopleBtn   = A
@@ -667,8 +682,9 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       REL        . set                 ( "first" , U                         )
       REL        . setT1               ( "Album"                             )
-      REL        . setT2               ( "Picture"                           )
       REL        . setRelation         ( "Subordination"                     )
+      ########################################################################
+      REL        . setT2               ( "Picture"                           )
       PICs       = REL . CountSecond   ( DB , PICTAB                         )
       ########################################################################
       self       . AlbumOPTs [ U ] [ "Pictures"  ] = PICs
@@ -2110,7 +2126,6 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  ############################################################################
   def UpdateLocalityUsage                     ( self                       ) :
     return self . subgroupUpdateLocalityUsage (                              )
   ############################################################################
@@ -2246,7 +2261,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     icon = item . icon                (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
-    ## self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    self . GalleryGroup . emit        ( text , self . GType , xsid           )
     ##########################################################################
     return True
   ############################################################################
@@ -2283,30 +2298,29 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  ## def OpenCurrentAlbums           ( self                                   ) :
-  ##   ##########################################################################
-  ##   atItem = self . currentItem   (                                          )
-  ##   ##########################################################################
-  ##   if                            ( atItem == None                         ) :
-  ##     return False
-  ##   ##########################################################################
-  ##   return self . OpenOwnedAlbums ( atItem                                   )
+  def OpenEpisodesSubgroup         ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    return self . OpenSubgroupItem ( atItem                                  )
   ############################################################################
-  ## def OpenOwnedAlbums              ( self , item                           ) :
-  ##   ##########################################################################
-  ##   uuid = item . data             ( Qt . UserRole                           )
-  ##   uuid = int                     ( uuid                                    )
-  ##   ##########################################################################
-  ##   if                             ( uuid <= 0                             ) :
-  ##     return False
-  ##   ##########################################################################
-  ##   text = item . text             (                                         )
-  ##   icon = item . icon             (                                         )
-  ##   xsid = str                     ( uuid                                    )
-  ##   ##########################################################################
-  ##   self . OwnedVideoAlbums . emit ( text , self . GType , xsid , icon       )
-  ##   ##########################################################################
-  ##   return
+  def OpenSubgroupItem                  ( self , item                      ) :
+    ##########################################################################
+    uuid = item . data                  ( Qt . UserRole                      )
+    uuid = int                          ( uuid                               )
+    ##########################################################################
+    if                                  ( uuid <= 0                        ) :
+      return False
+    ##########################################################################
+    text = item . text                  (                                    )
+    xsid = str                          ( uuid                               )
+    ##########################################################################
+    self . OwnedEpisodesSubgroup . emit ( text , self . GType , xsid         )
+    ##########################################################################
+    return
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
@@ -2473,15 +2487,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
     MSG   = self . getMenuItem        ( "IconGroups"                         )
-    mm    . addActionFromMenu         ( LOM , 1201     ,        MSG          )
+    mm    . addActionFromMenu         ( LOM , 34231201 ,        MSG          )
     ##########################################################################
     MSG   = TRX                       [ "UI::PersonalGallery"                ]
     ICON  = QIcon                     ( ":/images/pictures.png"              )
-    mm    . addActionFromMenuWithIcon ( LOM , 1202     , ICON , MSG          )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231202 , ICON , MSG          )
     ##########################################################################
     MSG   = TRX                       [ "UI::Galleries"                      ]
     ICON  = QIcon                     ( ":/images/galleries.png"             )
-    mm    . addActionFromMenuWithIcon ( LOM , 1203     , ICON , MSG          )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231203 , ICON , MSG          )
+    ##########################################################################
+    MSG   = self . getMenuItem        ( "AlbumSubgroups"                     )
+    ICON  = QIcon                     ( ":/images/modifyproject.png"         )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231204 , ICON , MSG          )
     ##########################################################################
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
@@ -2536,10 +2554,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     if                             ( at == 34635203                        ) :
       ########################################################################
-      text = item . text           (                                         )
-      xsid = str                   ( uuid                                    )
-      ########################################################################
-      self . OwnedPeopleGroup . emit ( text , 76 , xsid                      )
+      self . OpenOwnedCrowds       ( item                                    )
       ########################################################################
       return True
     ##########################################################################
@@ -2553,7 +2568,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
+    if                             ( at == 34231201                        ) :
       ########################################################################
       text = item . text           (                                         )
       icon = item . icon           (                                         )
@@ -2564,23 +2579,21 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1202                            ) :
+    if                             ( at == 34231202                        ) :
       ########################################################################
-      text = item . text           (                                         )
-      icon = item . icon           (                                         )
-      xsid = str                   ( uuid                                    )
-      ########################################################################
-      self . ShowPersonalGallery . emit ( text , 76 , xsid , icon            )
+      self . OpenItemGallery       ( item                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1203                            ) :
+    if                             ( at == 34231203                        ) :
       ########################################################################
-      text = item . text           (                                         )
-      icon = item . icon           (                                         )
-      xsid = str                   ( uuid                                    )
+      self . OpenItemGalleries     ( item                                    )
       ########################################################################
-      self . GalleryGroup . emit   ( text , 76 , xsid                        )
+      return True
+    ##########################################################################
+    if                             ( at == 34231204                        ) :
+      ########################################################################
+      self . OpenSubgroupItem      ( item                                    )
       ########################################################################
       return True
     ##########################################################################
