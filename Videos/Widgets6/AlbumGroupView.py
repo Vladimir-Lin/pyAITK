@@ -212,7 +212,8 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables                 [ "RelationGroup"                 ]
+    RELTAB = self . Tables                 [ "Relation"                      ]
+    ## RELTAB = self . Tables                 [ "RelationGroup"                 ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
