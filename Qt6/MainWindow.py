@@ -31,6 +31,8 @@ class MainWindow         ( QMainWindow , VirtualGui                        ) :
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
+    self . ListFontSize = 8
+    ##########################################################################
     self . SubmitTtsTalk         . connect  ( self . DoTtsTalk               )
     ##########################################################################
     return
@@ -254,7 +256,7 @@ class MainWindow         ( QMainWindow , VirtualGui                        ) :
     fnt   = QFont        (                                                   )
     fnt   . fromString   ( Settings [ "Font" ]                               )
     LISTW . setFont      ( fnt                                               )
-    fnt   . setPointSize ( 8                                                 )
+    fnt   . setPointSize ( self . ListFontSize                               )
     LISTW . setIconFont  ( fnt                                               )
     ##########################################################################
     return
