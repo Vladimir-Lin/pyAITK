@@ -197,7 +197,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     A    . triggered . connect            ( self . OpenEpisodesSubgroup      )
     A    . setEnabled                     ( False                            )
     ##########################################################################
-    self . PeopleBtn   = A
+    self . SubgroupBtn = A
     ##########################################################################
     self . WindowActions . append         ( A                                )
     ##########################################################################
@@ -360,6 +360,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                ( self . GalleryBtn  not in self . EmptySet          ) :
       ########################################################################
       self . GalleryBtn  . setEnabled ( Enabled                              )
+    ##########################################################################
+    if                ( self . SubgroupBtn not in self . EmptySet          ) :
+      ########################################################################
+      self . SubgroupBtn . setEnabled ( Enabled                              )
     ##########################################################################
     if                ( self . NameBtn     not in self . EmptySet          ) :
       ########################################################################
