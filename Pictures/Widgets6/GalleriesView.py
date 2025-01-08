@@ -533,9 +533,14 @@ class GalleriesView            ( IconDock                                  ) :
     GALTAB       = self . Tables       [ "Galleries"                         ]
     PICTAB       = self . Tables       [ "RelationPictures"                  ]
     RELTAB       = self . Tables       [ "Relation"                          ]
-    PEOTAB       = self . Tables       [ "RelationPeople"                    ]
+    SGPTAB       = self . Tables       [ "Relation"                          ]
+    PEOTAB       = self . Tables       [ "Relation"                          ]
+    ## PEOTAB       = self . Tables       [ "RelationPeople"                    ]
     ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
-    VIDTAB       = self . Tables       [ "RelationPeople"                    ]
+    ALMTAB       = self . Tables       [ "Relation"                          ]
+    ## ALMTAB       = self . Tables       [ "RelationPeople"                    ]
+    VIDTAB       = self . Tables       [ "Relation"                          ]
+    ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
     REL          = Relation            (                                     )
     ##########################################################################
     for U in UUIDs                                                           :
@@ -583,17 +588,17 @@ class GalleriesView            ( IconDock                                  ) :
       REL        . setT2               ( "Gallery"                           )
       ########################################################################
       REL        . setT1               ( "Subgroup"                          )
-      SGPs       = REL . CountFirst    ( DB , RELTAB                         )
+      SGPs       = REL . CountFirst    ( DB , SGPTAB                         )
       ########################################################################
       self       . GalleryOPTs [ U ] [ "Subgroups" ] = SGPs
       ########################################################################
       REL        . setT1               ( "People"                            )
-      PEOs       = REL . CountFirst    ( DB , RELTAB                         )
+      PEOs       = REL . CountFirst    ( DB , PEOTAB                         )
       ########################################################################
       self       . GalleryOPTs [ U ] [ "People" ] = PEOs
       ########################################################################
       REL        . setT1               ( "Album"                             )
-      VIDs       = REL . CountFirst    ( DB , RELTAB                         )
+      VIDs       = REL . CountFirst    ( DB , ALMTAB                         )
       ########################################################################
       self       . GalleryOPTs [ U ] [ "Albums" ] = VIDs
       ########################################################################

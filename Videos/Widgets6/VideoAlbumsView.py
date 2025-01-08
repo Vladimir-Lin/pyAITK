@@ -567,14 +567,135 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                                ( UUID not in self . UuidItemMaps    ) :
       return
     ##########################################################################
-    if                                ( UUID not in self . GalleryOPTs     ) :
+    if                                ( UUID not in self . AlbumOPTs       ) :
       return
     ##########################################################################
+    FMT    = self . getMenuItem       ( "AlbumToolTip"                       )
+    USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
+    STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
+    ##########################################################################
+    USD    = self . AlbumOPTs         [ UUID ] [ "Used"                      ]
+    SSS    = self . AlbumOPTs         [ UUID ] [ "States"                    ]
+    PICs   = self . AlbumOPTs         [ UUID ] [ "Pictures"                  ]
+    GALs   = self . AlbumOPTs         [ UUID ] [ "Galleries"                 ]
+    SGPs   = self . AlbumOPTs         [ UUID ] [ "Subgroups"                 ]
+    PEOs   = self . AlbumOPTs         [ UUID ] [ "People"                    ]
+    VIDs   = self . AlbumOPTs         [ UUID ] [ "Videos"                    ]
+    ##########################################################################
+    UMSG   = ""
+    ##########################################################################
+    if                                ( f"{USD}" in USAGE                  ) :
+      ########################################################################
+      UMSG = USAGE                    [ f"{USD}"                             ]
+    ##########################################################################
+    text   = FMT . format             ( UUID                               , \
+                                        VIDs                               , \
+                                        PEOs                               , \
+                                        PICs                               , \
+                                        GALs                               , \
+                                        SGPs                               , \
+                                        UMSG                                 )
+    ##########################################################################
+    if                                ( UUID in self . UuidItemNames       ) :
+      ########################################################################
+      TIT  = self . UuidItemNames     [ UUID                                 ]
+      text = f"{TIT}\n\n{text}"
+    ##########################################################################
+    item   = self . UuidItemMaps      [ UUID                                 ]
+    self   . emitAssignToolTip . emit ( item , text                          )
     ##########################################################################
     return
   ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
     ##########################################################################
+    FMT          = self . getMenuItem  ( "AlbumToolTip"                      )
+    USAGE        = self . Translations [ self . ClassTag ] [ "Usage"         ]
+    STATEs       = self . Translations [ self . ClassTag ] [ "States"        ]
+    DB           = self . ConnectDB    (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
+    ##########################################################################
+    ALMTAB       = self . Tables       [ "Albums"                            ]
+    PICTAB       = self . Tables       [ "Relation"                          ]
+    ## PICTAB       = self . Tables       [ "RelationPictures"                  ]
+    GALTAB       = self . Tables       [ "Relation"                          ]
+    SGPTAB       = self . Tables       [ "Relation"                          ]
+    RELTAB       = self . Tables       [ "Relation"                          ]
+    PEOTAB       = self . Tables       [ "Relation"                          ]
+    ## PEOTAB       = self . Tables       [ "RelationPeople"                    ]
+    ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
+    ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
+    VIDTAB       = self . Tables       [ "Relation"                          ]
+    REL          = Relation            (                                     )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . StayAlive              ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      self       . AlbumOPTs [ U ] =   { "Used"      : 1                   , \
+                                         "States"    : 0                   , \
+                                         "Pictures"  : 0                   , \
+                                         "Galleries" : 0                   , \
+                                         "Subgroups" : 0                   , \
+                                         "People"    : 0                   , \
+                                         "Videos"    : 0                     }
+      ########################################################################
+      UMSG       = ""
+      QQ         = f"""select `used` , `states` from {ALMTAB}
+                       where ( `uuid` = {U} ) ;"""
+      DB         . Query               ( " " . join ( QQ . split (       ) ) )
+      RR         = DB . FetchOne       (                                     )
+      ########################################################################
+      if                               ( RR not in self . EmptySet         ) :
+        ######################################################################
+        if                             ( 2 == len ( RR )                   ) :
+          ####################################################################
+          USD    = int                 ( RR [ 0                            ] )
+          SSS    = int                 ( RR [ 1                            ] )
+          self   . AlbumOPTs [ U ] [ "Used"   ] = USD
+          self   . AlbumOPTs [ U ] [ "States" ] = SSS
+          ####################################################################
+          if                           ( f"{USD}" in USAGE                 ) :
+            UMSG = USAGE               [ f"{USD}"                            ]
+      ########################################################################
+      REL        . set                 ( "first" , U                         )
+      REL        . setT1               ( "Album"                             )
+      REL        . setT2               ( "Picture"                           )
+      REL        . setRelation         ( "Subordination"                     )
+      PICs       = REL . CountSecond   ( DB , PICTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Pictures"  ] = PICs
+      ########################################################################
+      REL        . setT2               ( "Gallery"                           )
+      GALs       = REL . CountSecond   ( DB , GALTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Galleries" ] = GALs
+      ########################################################################
+      REL        . setT2               ( "Video"                             )
+      VIDs       = REL . CountSecond   ( DB , VIDTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Videos"    ] = VIDs
+      ########################################################################
+      REL        . set                 ( "second" , U                        )
+      REL        . setT2               ( "Album"                             )
+      ########################################################################
+      REL        . setT1               ( "Subgroup"                          )
+      SGPs       = REL . CountFirst    ( DB , SGPTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Subgroups" ] = SGPs
+      ########################################################################
+      REL        . setT1               ( "People"                            )
+      PEOs       = REL . CountFirst    ( DB , PEOTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "People" ] = PEOs
+      ########################################################################
+      self       . GenerateItemToolTip ( U                                   )
+    ##########################################################################
+    DB           . Close               (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -2198,12 +2319,12 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def ConnectDirectoryToAlbum            ( self                            ) :
     ##########################################################################
-    atItem = self . currentItem          (                                   )
+    atItem = self   . currentItem        (                                   )
     ##########################################################################
     if                                   ( self . NotOkay ( atItem )       ) :
       return
     ##########################################################################
-    uuid   = item . data                 ( Qt . UserRole                     )
+    uuid   = atItem . data               ( Qt . UserRole                     )
     uuid   = int                         ( uuid                              )
     ##########################################################################
     if                                   ( uuid <= 0                       ) :
@@ -2522,10 +2643,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     uuid  = item  . data         ( Qt . UserRole                             )
     uuid  = int                  ( uuid                                      )
     ##########################################################################
-    if                           ( uuid not in self . GalleryOPTs          ) :
+    if                           ( uuid not in self . AlbumOPTs            ) :
       return
     ##########################################################################
-    MSG   = self  . getMenuItem  ( "GalleryUsage"                            )
+    MSG   = self  . getMenuItem  ( "AlbumUsage"                              )
     COL   = mm    . addMenu      ( MSG                                       )
     USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
     KEYs  = USAGE . keys         (                                           )
