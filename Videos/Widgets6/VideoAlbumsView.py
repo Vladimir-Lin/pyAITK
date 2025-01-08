@@ -460,6 +460,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     LMTS   = f"limit {SID} , {AMOUNT}"
     ALMTAB = self . Tables          [ "Albums"                               ]
     RELTAB = self . Tables          [ "Relation"                             ]
+    ## RELTAB = self . Tables          [ "RelationVideos"                       ]
     NAMTAB = self . Tables          [ "Names"                                ]
     UOPTS  = " , " . join           ( str(x) for x in self . UsedOptions     )
     ##########################################################################
@@ -942,102 +943,22 @@ class VideoAlbumsView             ( IconDock                               ) :
   def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
     return self . GenerateGroupMovingSQL ( "RelationVideos" , LAST , UUIDs   )
   ############################################################################
-  def AlbumMoving                ( self , atUuid , NAME , JSON             ) :
+  def AlbumMoving      ( self , atUuid , NAME , JSON                       ) :
     ##########################################################################
-    UUIDs   = JSON               [ "UUIDs"                                   ]
+    TK   = "Relation"
+    ## TK   = "RelationPeople"
+    MK   = "OrganizeAlbums"
     ##########################################################################
-    if                           ( len ( UUIDs ) <= 0                      ) :
-      return
-    ##########################################################################
-    DB      = self . ConnectDB   (                                           )
-    if                           ( self . NotOkay ( DB )                   ) :
-      return
-    ##########################################################################
-    self    . OnBusy  . emit     (                                           )
-    self    . setBustle          (                                           )
-    ##########################################################################
-    RELKEY  = "Relation"
-    ## RELKEY  = "RelationPeople"
-    RELTAB  = self . Tables      [   RELKEY                                  ]
-    DB      . LockWrites         ( [ RELTAB                                ] )
-    ##########################################################################
-    if                           ( self . isReverse (                    ) ) :
-      ########################################################################
-      OPTS  = f"order by `reverse` asc"
-      PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      OPTS  = f"order by `position` asc"
-      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
-    ##########################################################################
-    if                           ( len ( PUIDs ) > 1                       ) :
-      ########################################################################
-      LUID  = PUIDs              [ -1                                        ]
-      ########################################################################
-      LAST  = self . GetGroupLastestPosition ( DB     , RELKEY , LUID        )
-      PUIDs = self . OrderingPUIDs           ( atUuid , UUIDs  , PUIDs       )
-      SQLs  = self . GenerateGroupMovingSQL  ( RELKEY , LAST   , PUIDs       )
-      ########################################################################
-      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
-    ##########################################################################
-    DB      . UnlockTables       (                                           )
-    ##########################################################################
-    self    . setVacancy         (                                           )
-    self    . GoRelax . emit     (                                           )
-    DB      . Close              (                                           )
-    ##########################################################################
-    self    . loading            (                                           )
+    self . MajorMoving (        atUuid ,        JSON , TK , MK               )
     ##########################################################################
     return
   ############################################################################
-  def AlbumAppending           ( self , atUuid , NAME , JSON               ) :
+  def AlbumAppending      ( self , atUuid , NAME , JSON                    ) :
     ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return
+    TK   = "RelationVideos"
+    MK   = "OrganizeAlbums"
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( self . NotOkay ( DB )                     ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "RelationVideos"                            ]
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    ##########################################################################
-    if                         ( self . isSubordination (                ) ) :
-      ########################################################################
-      self  . Relation  . Joins ( DB , RELTAB , UUIDs                        )
-      OPTS  = f"order by `position` asc"
-      PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
-      ########################################################################
-      LUID  = PUIDs             [ -1                                         ]
-      LAST  = self . GetLastestPosition ( DB     , LUID                      )
-      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
-      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
-      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
-      ########################################################################
-    elif                       ( self . isReverse (                      ) ) :
-      ########################################################################
-      self  . Relation  . JoinsFirst ( DB , RELTAB , UUIDs                   )
-      OPTS  = f"order by `reverse` asc"
-      PUIDs = self . Relation . GetOwners ( DB , RELTAB , OPTS               )
-      ########################################################################
-      LUID  = PUIDs             [ -1                                         ]
-      LAST  = self . GetLastestPosition ( DB     , LUID                      )
-      PUIDs = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs             )
-      SQLs  = self . GenerateMovingSQL  ( LAST   , PUIDs                     )
-      self  . ExecuteSqlCommands ( "OrganizeAlbums" , DB , SQLs , 100        )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
+    self . MajorAppending (        atUuid ,        JSON , TK , MK            )
     ##########################################################################
     return
   ############################################################################
@@ -2130,6 +2051,85 @@ class VideoAlbumsView             ( IconDock                               ) :
       NAMEs [ UUID ] = NAME
     ##########################################################################
     return NAMEs
+  ############################################################################
+  def AppendItemName                     ( self , item , name              ) :
+    ##########################################################################
+    DB       = self . ConnectDB          ( UsePure = True                    )
+    if                                   ( self . NotOkay ( DB )           ) :
+      return
+    ##########################################################################
+    uuid     = item . data               ( Qt . UserRole                     )
+    uuid     = int                       ( uuid                              )
+    ##########################################################################
+    PHID     = 2800002000000000000
+    ##########################################################################
+    if                                   ( "Heading" in self . Tables      ) :
+      ########################################################################
+      PHID   = self . Tables             [ "Heading"                         ]
+      PHID   = int                       ( PHID                              )
+    ##########################################################################
+    ALMTAB   = self . Tables             [ "Albums"                          ]
+    NAMTAB   = self . Tables             [ "NamesEditing"                    ]
+    RELTAB   = self . Tables             [ "RelationEditing"                 ]
+    TABLES   =                           [ PEOTAB , NAMTAB                   ]
+    ##########################################################################
+    if                                   (  self . isGrouping ( )          ) :
+      ########################################################################
+      TABLES . append                    ( RELTAB                            )
+      T1     = self . Relation . get     ( "t1"                              )
+      T2     = self . Relation . get     ( "t2"                              )
+      RR     = self . Relation . get     ( "relation"                        )
+    ##########################################################################
+    DB       . LockWrites                ( TABLES                            )
+    ##########################################################################
+    if                                   ( uuid <= 0                       ) :
+      ########################################################################
+      PI     = AlbumItem                 (                                   )
+      PI     . Settings [ "Head"   ] = PHID
+      PI     . Tables   [ "Albums" ] = ALMTAB
+      ########################################################################
+      uuid   = PI . NewAlbum             ( DB                                )
+    ##########################################################################
+    REL      = Relation                  (                                   )
+    REL      . set                       ( "relation" , RR                   )
+    ##########################################################################
+    if                                   ( self . isSubordination ( )      ) :
+      ########################################################################
+      PUID   = self . Relation . get     ( "first"                           )
+      REL    . set                       ( "first"    , PUID                 )
+      REL    . set                       ( "second"   , uuid                 )
+      REL    . set                       ( "t1"       , T1                   )
+      REL    . setT2                     ( "Album"                           )
+      REL    . Join                      ( DB , RELTAB                       )
+      ########################################################################
+    elif                                 ( self . isReverse       ( )      ) :
+      ########################################################################
+      PUID   = self . Relation . get     ( "second"                          )
+      REL    . set                       ( "first"    , uuid                 )
+      REL    . set                       ( "second"   , PUID                 )
+      REL    . setT1                     ( "Album"                          )
+      REL    . set                       ( "t2"       , T2                   )
+      REL    . Join                      ( DB , RELTAB                       )
+    ##########################################################################
+    self     . AssureUuidNameByLocality  ( DB                              , \
+                                           NAMTAB                          , \
+                                           uuid                            , \
+                                           name                            , \
+                                           self . getLocality ( )            )
+    ##########################################################################
+    DB       . UnlockTables              (                                   )
+    DB       . Close                     (                                   )
+    ##########################################################################
+    self     . PrepareItemContent        ( item , uuid , name                )
+    self     . assignToolTip             ( item , str ( uuid )               )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateItemName             ( self ,           item , uuid , name     ) :
+    ##########################################################################
+    self . UpdateItemNameByTable ( "NamesEditing" , item , uuid , name       )
+    ##########################################################################
+    return
   ############################################################################
   def UpdateLocalityUsage                     ( self                       ) :
     return self . subgroupUpdateLocalityUsage (                              )

@@ -579,7 +579,6 @@ class PeopleView                 ( IconDock                                ) :
   def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
     return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
   ############################################################################
-  ############################################################################
   def PeopleMoving     ( self , atUuid , NAME , JSON                       ) :
     ##########################################################################
     TK   = "Relation"
@@ -751,6 +750,7 @@ class PeopleView                 ( IconDock                                ) :
     uuid     = int                       ( uuid                              )
     ##########################################################################
     PHID     = 1400000000000000000
+    ##########################################################################
     if                                   ( "Heading" in self . Tables      ) :
       ########################################################################
       PHID   = self . Tables             [ "Heading"                         ]
