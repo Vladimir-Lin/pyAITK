@@ -624,14 +624,16 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchSessionInformation    ( self , DB                               ) :
+  def FetchSessionInformation ( self , DB                                  ) :
     ##########################################################################
-    self . catalogReloadLocality (        DB                                 )
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage             ( self                               ) :
-    return catalogUpdateLocalityUsage (                                      )
+  def UpdateLocalityUsage                    ( self                        ) :
+    return self . catalogUpdateLocalityUsage (                               )
+  ############################################################################
+  def ReloadLocality                    ( self , DB                        ) :
+    return self . catalogReloadLocality (        DB                          )
   ############################################################################
   def OpenItemSubgroup             ( self , item                           ) :
     ##########################################################################
