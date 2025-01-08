@@ -514,7 +514,7 @@ class GalleriesView            ( IconDock                                  ) :
     if                                ( UUID in self . UuidItemNames       ) :
       ########################################################################
       TIT  = self . UuidItemNames     [ UUID                                 ]
-      text = f"{text}\n\n{TIT}"
+      text = f"{TIT}\n\n{text}"
     ##########################################################################
     item   = self . UuidItemMaps      [ UUID                                 ]
     self   . emitAssignToolTip . emit ( item , text                          )
@@ -1264,7 +1264,7 @@ class GalleriesView            ( IconDock                                  ) :
     COL   = mm    . addMenu      ( MSG                                       )
     USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
     KEYs  = USAGE . keys         (                                           )
-    USED  = self . GalleryOPTs   [ uuid ] [ "Used"                           ]
+    USED  = self  . GalleryOPTs  [ uuid ] [ "Used"                           ]
     BAID  = 29431000
     ##########################################################################
     for ID in KEYs                                                           :
