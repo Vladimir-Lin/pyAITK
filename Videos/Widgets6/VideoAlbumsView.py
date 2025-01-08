@@ -570,9 +570,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                                ( UUID not in self . AlbumOPTs       ) :
       return
     ##########################################################################
+    VAKEY  = "VideoAlbumsView"
     FMT    = self . getMenuItem       ( "AlbumToolTip"                       )
-    USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
-    STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
+    USAGE  = self . Translations      [ VAKEY ] [ "Usage"                    ]
+    STATEs = self . Translations      [ VAKEY ] [ "States"                   ]
     ##########################################################################
     USD    = self . AlbumOPTs         [ UUID ] [ "Used"                      ]
     SSS    = self . AlbumOPTs         [ UUID ] [ "States"                    ]
@@ -608,9 +609,11 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
     ##########################################################################
+    VAKEY        = "VideoAlbumsView"
     FMT          = self . getMenuItem  ( "AlbumToolTip"                      )
-    USAGE        = self . Translations [ self . ClassTag ] [ "Usage"         ]
-    STATEs       = self . Translations [ self . ClassTag ] [ "States"        ]
+    USAGE        = self . Translations [ VAKEY ] [ "Usage"                   ]
+    STATEs       = self . Translations [ VAKEY ] [ "States"                  ]
+    ##########################################################################
     DB           = self . ConnectDB    (                                     )
     if                                 ( self . NotOkay ( DB )             ) :
       return
@@ -691,7 +694,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       REL        . setT1               ( "People"                            )
       PEOs       = REL . CountFirst    ( DB , PEOTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "People" ] = PEOs
+      self       . AlbumOPTs [ U ] [ "People"    ] = PEOs
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
@@ -2646,11 +2649,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                           ( uuid not in self . AlbumOPTs            ) :
       return
     ##########################################################################
+    VAKEY = "VideoAlbumsView"
     MSG   = self  . getMenuItem  ( "AlbumUsage"                              )
     COL   = mm    . addMenu      ( MSG                                       )
-    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    USAGE = self  . Translations [ VAKEY ] [ "Usage"                         ]
     KEYs  = USAGE . keys         (                                           )
-    USED  = self  . AlbumOPTs    [ uuid ] [ "Used"                           ]
+    USED  = self  . AlbumOPTs    [ uuid  ] [ "Used"                          ]
     BAID  = 29431000
     ##########################################################################
     for ID in KEYs                                                           :
@@ -2680,7 +2684,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     VID   = int                  ( at - 29431000                             )
     VSD   = f"{VID}"
-    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    VAKEY = "VideoAlbumsView"
+    USAGE = self  . Translations [ VAKEY ] [ "Usage"                         ]
     ##########################################################################
     if                           ( VSD not in USAGE                        ) :
       return False
@@ -2694,7 +2699,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     MSG   = self  . getMenuItem  ( "DisplayUsage"                            )
     COL   = mm    . addMenu      ( MSG                                       )
-    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    VAKEY = "VideoAlbumsView"
+    USAGE = self  . Translations [ VAKEY ] [ "Usage"                         ]
     KEYs  = USAGE . keys         (                                           )
     ##########################################################################
     MSG   = self  . getMenuItem  ( "RefreshOptions"                          )
@@ -2737,7 +2743,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     VID    = int                  ( at - 29432000                            )
     VSD    = f"{VID}"
-    USAGE  = self  . Translations [ self . ClassTag ] [ "Usage"              ]
+    VAKEY  = "VideoAlbumsView"
+    USAGE  = self  . Translations [ VAKEY ] [ "Usage"                        ]
     ##########################################################################
     if                            ( VSD not in USAGE                       ) :
       return False

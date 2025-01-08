@@ -526,6 +526,7 @@ class GalleriesView            ( IconDock                                  ) :
     FMT          = self . getMenuItem  ( "GalleryToolTip"                    )
     USAGE        = self . Translations [ self . ClassTag ] [ "Usage"         ]
     STATEs       = self . Translations [ self . ClassTag ] [ "States"        ]
+    ##########################################################################
     DB           = self . ConnectDB    (                                     )
     if                                 ( self . NotOkay ( DB )             ) :
       return
