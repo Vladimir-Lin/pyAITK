@@ -99,6 +99,8 @@ class GalleryGroupView       ( IconDock                                    ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
+    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
+    ##########################################################################
     return
   ############################################################################
   def FocusIn                ( self                                        ) :

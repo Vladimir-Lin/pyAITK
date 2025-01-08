@@ -234,24 +234,25 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                       Enabled       ) :
+  def AttachActions   ( self         ,                         Enabled     ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
-    self . LinkAction ( "Insert"     , self . InsertItem   , Enabled         )
-    self . LinkAction ( "Rename"     , self . RenameVideo  , Enabled         )
-    self . LinkAction ( "Delete"     , self . DeleteItems  , Enabled         )
-    self . LinkAction ( "Cut"        , self . DeleteItems  , Enabled         )
-    self . LinkAction ( "Copy"       , self . CopyItems    , Enabled         )
-    self . LinkAction ( "Paste"      , self . PasteItems   , Enabled         )
-    self . LinkAction ( "Search"     , self . Search       , Enabled         )
-    self . LinkAction ( "Home"       , self . PageHome     , Enabled         )
-    self . LinkAction ( "End"        , self . PageEnd      , Enabled         )
-    self . LinkAction ( "PageUp"     , self . PageUp       , Enabled         )
-    self . LinkAction ( "PageDown"   , self . PageDown     , Enabled         )
-    self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
-    self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    self . LinkAction ( "Refresh"    , self . startup        , Enabled       )
+    self . LinkAction ( "Insert"     , self . InsertItem     , Enabled       )
+    self . LinkAction ( "Rename"     , self . RenameVideo    , Enabled       )
+    self . LinkAction ( "Delete"     , self . DeleteItems    , Enabled       )
+    self . LinkAction ( "Cut"        , self . DeleteItems    , Enabled       )
+    self . LinkAction ( "Copy"       , self . CopyItems      , Enabled       )
+    self . LinkAction ( "Paste"      , self . PasteItems     , Enabled       )
+    self . LinkAction ( "Search"     , self . Search         , Enabled       )
+    self . LinkAction ( "Home"       , self . PageHome       , Enabled       )
+    self . LinkAction ( "End"        , self . PageEnd        , Enabled       )
+    self . LinkAction ( "PageUp"     , self . PageUp         , Enabled       )
+    self . LinkAction ( "PageDown"   , self . PageDown       , Enabled       )
+    self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
+    self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
+    self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
     ##########################################################################
-    self . TellStory  (                                      Enabled         )
+    self . TellStory  (                                        Enabled       )
     ##########################################################################
     return
   ############################################################################

@@ -154,6 +154,8 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
+    ##########################################################################
     self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
