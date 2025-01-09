@@ -1122,7 +1122,11 @@ class CliParser  (                                                         ) :
       ########################################################################
       return
     ##########################################################################
+    CNT     = len           ( UUIDs                                          )
+    FMT     = self . Translations [ f"CMD::{KEY}::FoundTotal"                ]
+    TMSG    = FMT  . format ( CNT                                            )
     MSG     = "\n" . join   ( UUIDz                                          )
+    MSG     = f"{MSG}\n{TMSG}"
     self    . LOG           ( MSG                                            )
     ##########################################################################
     self    . CLI           [ "Action" ] = "FindGalleriesByName"
@@ -1204,7 +1208,11 @@ class CliParser  (                                                         ) :
       ########################################################################
       return
     ##########################################################################
+    CNT     = len            ( UUIDs                                         )
+    FMT     = self . Translations [ f"CMD::{KEY}::FoundTotal"                ]
+    TMSG    = FMT  . format  ( CNT                                           )
     MSG     = "\n" . join    ( UUIDz                                         )
+    MSG     = f"{MSG}\n{TMSG}"
     self    . LOG            ( MSG                                           )
     ##########################################################################
     self    . CLI            [ "Action" ] = "FindGalleriesByName"
