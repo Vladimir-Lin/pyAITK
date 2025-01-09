@@ -238,7 +238,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     ics     = QMetaMethod . fromSignal ( Ratio . currentIndexChanged         )
     ##########################################################################
-    if                           ( self . isSignalConnected ( ics )        ) :
+    if                           ( Ratio . isSignalConnected ( ics )       ) :
       ########################################################################
       Ratio . currentIndexChanged . disconnect (                             )
     ##########################################################################
