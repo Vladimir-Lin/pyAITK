@@ -884,7 +884,11 @@ class CliParser  (                                                         ) :
   def FindPeopleNoName      ( self                                         ) :
     ##########################################################################
     KEY     = "Crowd"
-    TABLEs  = self . CLI    [ KEY ] [ "Tables"                               ]
+    TABLEs  = self . CLI    [ "Tables" ] [ "PeopleView"                      ]
+    MAXE    = 30
+    ##########################################################################
+    if                      ( "MaxEmpty" in self . CLI [ KEY ]             ) :
+      MAXE  = int           ( self . CLI [ KEY ] [ "MaxEmpty"              ] )
     ##########################################################################
     self    . CLI           [ "Action" ] = ""
     self    . CLI           [ KEY ] [ "Found" ] = [                          ]
@@ -897,7 +901,7 @@ class CliParser  (                                                         ) :
     DB      . Prepare       (                                                )
     ##########################################################################
     NAMTAB  = TABLEs        [ "NamesEditing"                                 ]
-    RELTAB  = TABLEs        [ "RelationPeople"                               ]
+    RELTAB  = TABLEs        [ "Relation"                                     ]
     ##########################################################################
     LANGz   =               [                                                ]
     LANGs   = self . CLI    [ KEY ] [ "Languages"                            ]
@@ -936,7 +940,7 @@ class CliParser  (                                                         ) :
                     and ( `first` = {UUID} )
                     and ( `second` not in ( {EQ} ) )
                   order by `second` asc
-                  limit 0 , 30 ;"""
+                  limit 0 , {MAXE} ;"""
     ##########################################################################
     QQ      = " " . join    ( QQ . split ( )                                 )
     ##########################################################################
@@ -1317,6 +1321,16 @@ class CliParser  (                                                         ) :
       EM          = self . Translations [ "CMD::Key::Empty"                  ]
       ########################################################################
       if                                ( token in EM                      ) :
+        ######################################################################
+        if                              ( T > 2                            ) :
+          ####################################################################
+          try                                                                :
+            ##################################################################
+            SS    = int                 ( sequences [ 2                    ] )
+            self . CLI [ "Crowd" ] [ "MaxEmpty" ] = SS
+            ##################################################################
+          except                                                             :
+            pass
         ######################################################################
         threading . Thread              ( target = self . FindPeopleNoName ) \
                   . start               (                                    )
