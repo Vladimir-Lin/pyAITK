@@ -236,6 +236,7 @@ class AttachDock         (                                                 ) :
     self     . Dock . setWindowTitle ( title                                 )
     self     . Dock . setWidget      ( widget                                )
     self     . Dock . setToolTip     ( title                                 )
+    self     . Dock . setMinimumSize ( widget . minimumSize (              ) )
     ##########################################################################
     Main     . addDockWidget         ( area , self . Dock                    )
     ##########################################################################

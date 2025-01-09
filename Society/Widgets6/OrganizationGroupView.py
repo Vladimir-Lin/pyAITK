@@ -83,6 +83,8 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self . setAcceptDrops         ( True                                     )
     self . setDragDropMode        ( QAbstractItemView . DragDrop             )
     ##########################################################################
+    self . setMinimumSize         ( 180 , 200                                )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
