@@ -48,6 +48,8 @@ class PicturesView           ( IconDock                                    ) :
     self . UsingName     = False
     self . FetchTableKey = "PicturesView"
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping      = "Original"
     self . OldGrouping   = "Original"
     ## self . Grouping   = "Subordination"

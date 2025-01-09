@@ -58,6 +58,8 @@ class CrowdView              ( IconDock                                    ) :
     ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping     = "Tag"
     self . OldGrouping  = "Tag"
     ## self . Grouping     = "Catalog"

@@ -69,7 +69,9 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
-    self . UUIDs              = [                                                  ]
+    self . UUIDs              = [                                            ]
+    ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
@@ -92,8 +94,6 @@ class GalleriesView            ( IconDock                                  ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
-    ##########################################################################
-    self . setSelectionMode        ( QAbstractItemView . ContiguousSelection )
     ##########################################################################
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )
@@ -665,6 +665,15 @@ class GalleriesView            ( IconDock                                  ) :
       self  . ShowMenuItemTitleStatus    ( "JoinPictures" , title , CNT      )
     ##########################################################################
     elif                                 ( mtype in [ "gallery/uuids" ]    ) :
+      ########################################################################
+      ## if                                 ( atItem in self . EmptySet       ) :
+      ##   ######################################################################
+      ##   print ( "GalleriesView empty drop" )
+      ##   ######################################################################
+      ## else                                                                   :
+      ##   ######################################################################
+      ##   uxid = atItem . data             ( Qt . UserRole                     )
+      ##   print ( f"GalleriesView {uxid}" )
       ########################################################################
       if                                 ( self == sourceWidget            ) :
         self . ShowMenuItemCountStatus   ( "MoveGalleries" ,         CNT     )

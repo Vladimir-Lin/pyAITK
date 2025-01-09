@@ -96,6 +96,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . PickedUuid         = 0
     self . PickedUuids        = [                                            ]
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
@@ -117,8 +119,6 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
-    ##########################################################################
-    self . setSelectionMode        ( QAbstractItemView . ContiguousSelection )
     ##########################################################################
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )

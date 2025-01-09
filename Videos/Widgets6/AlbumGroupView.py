@@ -48,6 +48,8 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . AlbumBtn      = None
     self . NameBtn       = None
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping      = "Tag"
     self . OldGrouping   = "Tag"
     ## self . Grouping     = "Catalog"

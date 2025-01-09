@@ -76,6 +76,8 @@ class IconDock                    ( ListDock                               ) :
     ## self . Grouping        = "Subordination"
     ## self . Grouping        = "Reverse"
     ##########################################################################
+    self . defaultSelectionMode = "ContiguousSelection"
+    ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
     self . setIconSize              ( QSize ( 128 , 128 )                    )
     self . setGridSize              ( QSize ( 156 , 192 )                    )
@@ -257,7 +259,7 @@ class IconDock                    ( ListDock                               ) :
   ############################################################################
   def Prepare                  ( self                                      ) :
     ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
+    self . assignSelectionMode ( self . defaultSelectionMode                 )
     self . setPrepared         ( True                                        )
     ##########################################################################
     return

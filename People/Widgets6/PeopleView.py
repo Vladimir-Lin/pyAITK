@@ -66,6 +66,8 @@ class PeopleView                 ( IconDock                                ) :
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"

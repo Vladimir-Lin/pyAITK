@@ -56,6 +56,8 @@ class GalleryGroupView       ( IconDock                                    ) :
     self . Relation     . set         ( "t2"    , 158                        )
     self . Relation     . setRelation ( "Subordination"                      )
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . Grouping     = "Tag"
     self . OldGrouping  = "Tag"
     ## self . Grouping     = "Catalog"
