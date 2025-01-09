@@ -44,14 +44,17 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     super ( ) . __init__        (        parent        , plan                )
     ##########################################################################
+    self . ClassTag     = "OrganizationGroupView"
     self . GTYPE        = 38
     self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    ##########################################################################
     self . GroupBtn     = None
     self . CompanyBtn   = None
     self . NameBtn      = None
+    ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Grouping     = "Tag"
@@ -85,17 +88,25 @@ class OrganizationGroupView     ( IconDock                                 ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def PrepareFetchTableKey      ( self                                     ) :
+    ##########################################################################
+    self . catalogFetchTableKey (                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareForActions                     ( self                         ) :
+    ##########################################################################
+    self   . PrepareFetchTableKey           (                                )
     ##########################################################################
     msg    = self . getMenuItem             ( "Subgroup"                     )
     A      = QAction                        (                                )
-    IC     = QIcon                          ( ":/images/catalog.png"         )
-    A      . setIcon                        ( IC                             )
+    ICON   = QIcon                          ( ":/images/catalog.png"         )
+    A      . setIcon                        ( ICON                           )
     A      . setToolTip                     ( msg                            )
     A      . triggered . connect            ( self . OpenCurrentSubgroup     )
     A      . setEnabled                     ( False                          )
     ##########################################################################
-    self   . GroupBtn = A
+    self   . GroupBtn   = A
     ##########################################################################
     self   . WindowActions . append         ( A                              )
     ##########################################################################
@@ -103,8 +114,8 @@ class OrganizationGroupView     ( IconDock                                 ) :
       ########################################################################
       msg  = self . getMenuItem             ( "SIG"                          )
       A    = QAction                        (                                )
-      IC   = QIcon                          ( ":/images/lists.png"           )
-      A    . setIcon                        ( IC                             )
+      ICON = QIcon                          ( ":/images/lists.png"           )
+      A    . setIcon                        ( ICON                           )
       A    . setToolTip                     ( msg                            )
       A    . triggered . connect            ( self . OpenOrganizationGroup   )
       A    . setEnabled                     ( False                          )
@@ -168,7 +179,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    ## self . LinkVoice         ( self . CommandParser                          )
     self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
@@ -182,7 +193,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
       ########################################################################
       self . AttachActions     ( False                                       )
       self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
+      ## self . LinkVoice         ( None                                        )
     ##########################################################################
     return False
   ############################################################################
@@ -190,7 +201,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . LinkVoice         ( None                                          )
+    ## self . LinkVoice         ( None                                          )
     self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
@@ -224,15 +235,15 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def doubleClicked                ( self , item                           ) :
-    return self . OpenItemSubgroup (        item                             )
-  ############################################################################
   def selectionsChanged            ( self                                  ) :
     ##########################################################################
     OKAY = self . isEmptySelection (                                         )
     self . SwitchSideTools         ( OKAY                                    )
     ##########################################################################
     return
+  ############################################################################
+  def doubleClicked                ( self , item                           ) :
+    return self . OpenItemSubgroup (        item                             )
   ############################################################################
   def ObtainUuidsQuery                    ( self                           ) :
     return self . catalogObtainUuidsQuery (                                  )
@@ -241,7 +252,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "Relation"                      ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -249,7 +260,7 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "Relation"                      ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -758,20 +769,27 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchSessionInformation    ( self , DB                               ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
-    self . catalogReloadLocality (        DB                                 )
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
+  ############################################################################
+  def UpdateLocalityUsage             ( self                               ) :
+    ##########################################################################
+    OKAY = catalogUpdateLocalityUsage (                                      )
+    self . emitRestart . emit         (                                      )
+    ##########################################################################
+    return OKAY
+  ############################################################################
+  def ReloadLocality                    ( self , DB                        ) :
+    return self . catalogReloadLocality (        DB                          )
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item , "Organizations" , "NamesEditing" )
     ##########################################################################
     return
-  ############################################################################
-  def UpdateLocalityUsage             ( self                               ) :
-    return catalogUpdateLocalityUsage (                                      )
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################

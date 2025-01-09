@@ -17,13 +17,6 @@ from   PySide6 . QtGui                 import *
 from   PySide6 . QtWidgets             import *
 from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Qt6 . IconDock        import IconDock    as IconDock
-##############################################################################
-from   AITK    . Qt6 . MenuManager     import MenuManager as MenuManager
-from   AITK    . Qt6 . LineEdit        import LineEdit    as LineEdit
-from   AITK    . Qt6 . ComboBox        import ComboBox    as ComboBox
-from   AITK    . Qt6 . SpinBox         import SpinBox     as SpinBox
-##############################################################################
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
@@ -44,17 +37,16 @@ class AlbumGroupView         ( IconDock                                    ) :
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
     self . ClassTag      = "AlbumGroup"
+    self . FetchTableKey = "AlbumGroupView"
     self . GTYPE         = 76
     self . SortOrder     = "asc"
     self . PrivateIcon   = True
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
+    ##########################################################################
+    self . GroupBtn      = None
     self . AlbumBtn      = None
-    self . dockingPlace  = Qt . BottomDockWidgetArea
-    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
-                           Qt . BottomDockWidgetArea                       | \
-                           Qt . LeftDockWidgetArea                         | \
-                           Qt . RightDockWidgetArea
+    self . NameBtn       = None
     ##########################################################################
     self . Grouping      = "Tag"
     self . OldGrouping   = "Tag"
@@ -62,7 +54,12 @@ class AlbumGroupView         ( IconDock                                    ) :
     ## self . Grouping     = "Subgroup"
     ## self . Grouping     = "Reverse"
     ##########################################################################
-    self . FetchTableKey = "AlbumGroupView"
+    self . dockingOrientation = 0
+    self . dockingPlace  = Qt . BottomDockWidgetArea
+    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
+                           Qt . BottomDockWidgetArea                       | \
+                           Qt . LeftDockWidgetArea                         | \
+                           Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
@@ -87,24 +84,39 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareForActions                     ( self                         ) :
     ##########################################################################
-    self . PrepareFetchTableKey     (                                        )
+    self   . PrepareFetchTableKey           (                                )
     ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+    msg    = self . getMenuItem             ( "Subgroup"                     )
+    A      = QAction                        (                                )
+    IC     = QIcon                          ( ":/images/catalog.png"         )
+    A      . setIcon                        ( IC                             )
+    A      . setToolTip                     ( msg                            )
+    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
+    A      . setEnabled                     ( False                          )
+    ##########################################################################
+    self   . GroupBtn = A
+    ##########################################################################
+    self   . WindowActions . append         ( A                              )
+    ##########################################################################
+    if                                      ( self . isCatalogue (       ) ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "Albums"                               )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/videos.png" )        )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenCurrentAlbum                )
-      A    . setEnabled             ( False                                  )
+      msg  = self . getMenuItem             ( "Albums"                       )
+      A    = QAction                        (                                )
+      ICON = QIcon                          ( ":/images/videos.png"          )
+      A    . setIcon                        ( ICON                           )
+      A    . setToolTip                     ( msg                            )
+      A    . triggered . connect            ( self . OpenCurrentAlbum        )
+      A    . setEnabled                     ( False                          )
       ########################################################################
       self . AlbumBtn = A
       ########################################################################
-      self . WindowActions . append ( A                                      )
+      self . WindowActions . append         ( A                              )
     ##########################################################################
-    self   . AppendToolNamingAction (                                        )
+    self   . AppendToolNamingAction         (                                )
+    self   . NameBtn = self . WindowActions [ -1                             ]
+    self   . NameBtn . setEnabled           ( False                          )
     ##########################################################################
     return
   ############################################################################
@@ -157,7 +169,8 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    ## self . LinkVoice         ( self . CommandParser                          )
+    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
   ############################################################################
@@ -170,7 +183,7 @@ class AlbumGroupView         ( IconDock                                    ) :
       ########################################################################
       self . AttachActions     ( False                                       )
       self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
+      ## self . LinkVoice         ( None                                        )
     ##########################################################################
     return False
   ############################################################################
@@ -178,7 +191,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . LinkVoice         ( None                                          )
+    ## self . LinkVoice         ( None                                          )
     self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
@@ -197,13 +210,35 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
-  def singleClicked ( self , item                                          ) :
+  def SwitchSideTools ( self , Enabled                                     ) :
     ##########################################################################
-    self . Notify   ( 0                                                      )
-    if ( self . AlbumBtn not in [ False , None ]                           ) :
-      self . AlbumBtn . setEnabled ( True                                    )
+    if                ( self . GroupBtn not in self . EmptySet             ) :
+      ########################################################################
+      self . GroupBtn . setEnabled ( Enabled                                 )
+    ##########################################################################
+    if                ( self . AlbumBtn not in self . EmptySet             ) :
+      ########################################################################
+      self . AlbumBtn . setEnabled ( Enabled                                 )
+    ##########################################################################
+    if                ( self . NameBtn     not in self . EmptySet          ) :
+      ########################################################################
+      self . NameBtn  . setEnabled ( Enabled                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . Notify          ( 0                                               )
+    self . SwitchSideTools ( True                                            )
     ##########################################################################
     return True
+  ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
+    return
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     return self . OpenItemSubgroup (        item                             )
@@ -633,13 +668,18 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchSessionInformation ( self , DB                                  ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage                    ( self                        ) :
-    return self . catalogUpdateLocalityUsage (                               )
+  def UpdateLocalityUsage             ( self                               ) :
+    ##########################################################################
+    OKAY = catalogUpdateLocalityUsage (                                      )
+    self . emitRestart . emit         (                                      )
+    ##########################################################################
+    return OKAY
   ############################################################################
   def ReloadLocality                    ( self , DB                        ) :
     return self . catalogReloadLocality (        DB                          )

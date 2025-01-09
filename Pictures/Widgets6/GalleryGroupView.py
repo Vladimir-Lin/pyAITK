@@ -37,11 +37,17 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
+    self . ClassTag     = "GalleryGroupView"
     self . GTYPE        = 64
     self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    ##########################################################################
+    self . GroupBtn     = None
+    self . GalleryBtn   = None
+    self . NameBtn      = None
+    ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation     = Relation    (                                      )
@@ -72,16 +78,45 @@ class GalleryGroupView       ( IconDock                                    ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareFetchTableKey      ( self                                     ) :
     ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+    self . catalogFetchTableKey (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareForActions                     ( self                         ) :
+    ##########################################################################
+    self . PrepareFetchTableKey             (                                )
+    ##########################################################################
+    msg    = self . getMenuItem             ( "Subgroup"                     )
+    A      = QAction                        (                                )
+    ICON   = QIcon                          ( ":/images/catalog.png"         )
+    A      . setIcon                        ( ICON                           )
+    A      . setToolTip                     ( msg                            )
+    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
+    A      . setEnabled                     ( False                          )
+    ##########################################################################
+    self   . GroupBtn   = A
+    ##########################################################################
+    self   . WindowActions . append         ( A                              )
+    ##########################################################################
+    if                                      ( self . isCatalogue (       ) ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "Galleries"                            )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/galleries.png" )     )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenCurrentGalleries            )
-      self . WindowActions . append ( A                                      )
+      msg  = self . getMenuItem             ( "Galleries"                    )
+      A    = QAction                        (                                )
+      ICON = QIcon                          ( ":/images/galleries.png"       )
+      A    . setIcon                        ( ICON                           )
+      A    . setToolTip                     ( msg                            )
+      A    . triggered . connect            ( self . OpenCurrentGalleries    )
+      A    . setEnabled                     ( False                          )
+      ########################################################################
+      self . GalleryBtn = A
+      ########################################################################
+      self . WindowActions . append         ( A                              )
+    ##########################################################################
+    self   . AppendToolNamingAction         (                                )
+    self   . NameBtn = self . WindowActions [ -1                             ]
+    self   . NameBtn . setEnabled           ( False                          )
     ##########################################################################
     return
   ############################################################################
@@ -112,14 +147,29 @@ class GalleryGroupView       ( IconDock                                    ) :
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
     ## self . LinkVoice         ( self . CommandParser                          )
+    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      ## self . LinkVoice         ( None                                        )
+    ##########################################################################
+    return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . detachActionsTool (                                               )
+    ## self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -131,11 +181,35 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return self . Grouping
   ############################################################################
-  def singleClicked ( self , item                                          ) :
+  def SwitchSideTools ( self , Enabled                                     ) :
     ##########################################################################
-    self . Notify   ( 0                                                      )
+    if                ( self . GroupBtn   not in self . EmptySet           ) :
+      ########################################################################
+      self . GroupBtn   . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . GalleryBtn not in self . EmptySet           ) :
+      ########################################################################
+      self . GalleryBtn . setEnabled ( Enabled                               )
+    ##########################################################################
+    if                ( self . NameBtn    not in self . EmptySet           ) :
+      ########################################################################
+      self . NameBtn    . setEnabled ( Enabled                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . Notify          ( 0                                               )
+    self . SwitchSideTools ( True                                            )
     ##########################################################################
     return True
+  ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
+    return
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     ##########################################################################
@@ -588,14 +662,21 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchSessionInformation    ( self , DB                               ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
-    self . catalogReloadLocality (        DB                                 )
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
   ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
-    return catalogUpdateLocalityUsage (                                      )
+    ##########################################################################
+    OKAY = catalogUpdateLocalityUsage (                                      )
+    self . emitRestart . emit         (                                      )
+    ##########################################################################
+    return OKAY
+  ############################################################################
+  def ReloadLocality                    ( self , DB                        ) :
+    return self . catalogReloadLocality (        DB                          )
   ############################################################################
   def OpenItemGalleries            ( self , item                           ) :
     ##########################################################################

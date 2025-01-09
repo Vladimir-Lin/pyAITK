@@ -45,12 +45,17 @@ class CrowdView              ( IconDock                                    ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
+    self . ClassTag     = "CrowdView"
     self . GTYPE        = 7
     self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True
+    ##########################################################################
+    self . GroupBtn     = None
     self . PeopleBtn    = None
+    self . NameBtn      = None
+    ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Grouping     = "Tag"
@@ -81,22 +86,45 @@ class CrowdView              ( IconDock                                    ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareFetchTableKey      ( self                                     ) :
     ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+    self . catalogFetchTableKey (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareForActions                     ( self                         ) :
+    ##########################################################################
+    self . PrepareFetchTableKey             (                                )
+    ##########################################################################
+    msg    = self . getMenuItem             ( "Subgroup"                     )
+    A      = QAction                        (                                )
+    IC     = QIcon                          ( ":/images/catalog.png"         )
+    A      . setIcon                        ( IC                             )
+    A      . setToolTip                     ( msg                            )
+    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
+    A      . setEnabled                     ( False                          )
+    ##########################################################################
+    self   . GroupBtn  = A
+    ##########################################################################
+    self   . WindowActions . append         ( A                              )
+    ##########################################################################
+    if                                      ( self . isCatalogue (       ) ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "Crowds"                               )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/buddy.png" )         )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenCurrentCrowd                )
-      A    . setEnabled             ( False                                  )
+      msg  = self . getMenuItem             ( "Crowds"                       )
+      A    = QAction                        (                                )
+      ICON = QIcon                          ( ":/images/buddy.png"           )
+      A    . setIcon                        ( ICON                           )
+      A    . setToolTip                     ( msg                            )
+      A    . triggered . connect            ( self . OpenCurrentCrowd        )
+      A    . setEnabled                     ( False                          )
       ########################################################################
       self . PeopleBtn = A
       ########################################################################
-      self . WindowActions . append ( A                                      )
+      self . WindowActions . append         ( A                              )
     ##########################################################################
-    self . AppendToolNamingAction (                                          )
+    self   . AppendToolNamingAction         (                                )
+    self   . NameBtn = self . WindowActions [ -1                             ]
+    self   . NameBtn . setEnabled           ( False                          )
     ##########################################################################
     return
   ############################################################################
@@ -149,7 +177,8 @@ class CrowdView              ( IconDock                                    ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    ## self . LinkVoice         ( self . CommandParser                          )
+    self . statusMessage     ( self . windowTitle (                        ) )
     ##########################################################################
     return True
   ############################################################################
@@ -162,7 +191,7 @@ class CrowdView              ( IconDock                                    ) :
       ########################################################################
       self . AttachActions     ( False                                       )
       self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
+      ## self . LinkVoice         ( None                                        )
     ##########################################################################
     return False
   ############################################################################
@@ -170,7 +199,7 @@ class CrowdView              ( IconDock                                    ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . LinkVoice         ( None                                          )
+    ## self . LinkVoice         ( None                                          )
     self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
@@ -184,16 +213,40 @@ class CrowdView              ( IconDock                                    ) :
     return self . Grouping
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    ##########################################################################
     TABLE = "RelationPictures"
+    ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
-  def singleClicked ( self , item                                          ) :
+  def SwitchSideTools ( self , Enabled                                     ) :
     ##########################################################################
-    self . Notify   ( 0                                                      )
-    if ( self . PeopleBtn not in [ False , None ]                          ) :
-      self . PeopleBtn . setEnabled ( True                                   )
+    if                ( self . GroupBtn  not in self . EmptySet            ) :
+      ########################################################################
+      self . GroupBtn  . setEnabled ( Enabled                                )
+    ##########################################################################
+    if                ( self . PeopleBtn not in self . EmptySet            ) :
+      ########################################################################
+      self . PeopleBtn . setEnabled ( Enabled                                )
+    ##########################################################################
+    if                ( self . NameBtn   not in self . EmptySet            ) :
+      ########################################################################
+      self . NameBtn   . setEnabled ( Enabled                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . Notify          ( 0                                               )
+    self . SwitchSideTools ( True                                            )
     ##########################################################################
     return True
+  ############################################################################
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
+    return
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     return self . OpenItemSubgroup (        item                             )
@@ -640,9 +693,9 @@ class CrowdView              ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchSessionInformation    ( self , DB                               ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
-    self . catalogReloadLocality (        DB                                 )
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
   ############################################################################
@@ -652,6 +705,9 @@ class CrowdView              ( IconDock                                    ) :
     self . emitRestart . emit         (                                      )
     ##########################################################################
     return OKAY
+  ############################################################################
+  def ReloadLocality                    ( self , DB                        ) :
+    return self . catalogReloadLocality (        DB                          )
   ############################################################################
   def OpenItemSubgroup            ( self , item                            ) :
     ##########################################################################
