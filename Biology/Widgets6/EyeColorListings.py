@@ -31,7 +31,6 @@ class EyeColorListings           ( TreeDock                                ) :
   emitNamesShow         = Signal (                                           )
   emitAllNames          = Signal ( list                                      )
   emitAssignAmounts     = Signal ( str , int , int                           )
-  emitPossibleAmounts   = Signal ( str , int , int                           )
   PeopleGroup           = Signal ( str , int , str                           )
   ShowPeopleGroupRelate = Signal ( str , int , str , str                     )
   ShowPersonalGallery   = Signal ( str , int , str       , QIcon             )
@@ -76,10 +75,9 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
-    self . emitNamesShow       . connect ( self . show                       )
-    self . emitAllNames        . connect ( self . refresh                    )
-    self . emitAssignAmounts   . connect ( self . AssignAmounts              )
-    self . emitPossibleAmounts . connect ( self . PossibleAmounts            )
+    self . emitNamesShow     . connect ( self . show                         )
+    self . emitAllNames      . connect ( self . refresh                      )
+    self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -195,56 +193,6 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     return IT
   ############################################################################
-  def PossibleAmounts      ( self , UUID , Amounts , Column                ) :
-    ##########################################################################
-    IT = self . uuidAtItem ( UUID , 0                                        )
-    if                     ( IT in [ False , None ]                        ) :
-      return
-    ##########################################################################
-    IT . setText           ( Column , str ( Amounts )                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportRelateEyes                    ( self , Relate , UUIDs          ) :
-    ##########################################################################
-    time     . sleep                      ( 1.0                              )
-    ##########################################################################
-    RELTAB   = self . Tables              [ "RelationPeople"                 ]
-    ##########################################################################
-    DB       = self . ConnectDB           (                                  )
-    ##########################################################################
-    if                                    ( self . NotOkay ( DB )          ) :
-      return
-    ##########################################################################
-    self     . OnBusy  . emit             (                                  )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      if                                  ( not self . StayAlive           ) :
-        continue
-      ########################################################################
-      CNT    = self . IRIS . CountIrisPeopleTotal                            (
-                                            DB                             , \
-                                            RELTAB                         , \
-                                            UUID                           , \
-                                            Relate                           )
-      ########################################################################
-      if                                  ( Relate in [ "Possible"       ] ) :
-        self . emitPossibleAmounts . emit ( str ( UUID ) , CNT , 2           )
-      else                                                                   :
-        self . emitAssignAmounts   . emit ( str ( UUID ) , CNT , 1           )
-    ##########################################################################
-    self     . GoRelax . emit             (                                  )
-    DB       . Close                      (                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportPossibleEyes    ( self       , UUIDs                           ) :
-    ##########################################################################
-    self . ReportRelateEyes ( "Possible" , UUIDs                             )
-    ##########################################################################
-    return
-  ############################################################################
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
     IT = self . uuidAtItem ( UUID , 0                                        )
@@ -252,6 +200,46 @@ class EyeColorListings           ( TreeDock                                ) :
       return
     ##########################################################################
     IT . setText           ( Column , str ( Amounts )                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReportRelateEyes                  ( self , Relate , UUIDs            ) :
+    ##########################################################################
+    time     . sleep                    ( 1.0                                )
+    ##########################################################################
+    RELTAB   = self . Tables            [ "RelationPeople"                   ]
+    ##########################################################################
+    DB       = self . ConnectDB         (                                    )
+    ##########################################################################
+    if                                  ( self . NotOkay ( DB )            ) :
+      return
+    ##########################################################################
+    self     . OnBusy  . emit           (                                    )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      if                                ( not self . StayAlive             ) :
+        continue
+      ########################################################################
+      CNT    = self . IRIS . CountIrisPeopleTotal                            (
+                                          DB                               , \
+                                          RELTAB                           , \
+                                          UUID                             , \
+                                          Relate                             )
+      ########################################################################
+      if                                ( Relate in [ "Possible"         ] ) :
+        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2             )
+      else                                                                   :
+        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1             )
+    ##########################################################################
+    self     . GoRelax . emit           (                                    )
+    DB       . Close                    (                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReportPossibleEyes    ( self       , UUIDs                           ) :
+    ##########################################################################
+    self . ReportRelateEyes ( "Possible" , UUIDs                             )
     ##########################################################################
     return
   ############################################################################
@@ -294,46 +282,55 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     return                                 ( UUIDs , LISTs ,                 )
   ############################################################################
-  def loading                               ( self                         ) :
+  def loading                        ( self                                ) :
     ##########################################################################
-    DB            = self . ConnectDB        (                                )
-    if                                      ( self . NotOkay ( DB )        ) :
-      self        . emitNamesShow . emit    (                                )
+    DB     = self . ConnectDB        (                                       )
+    ##########################################################################
+    if                               ( self . NotOkay ( DB )               ) :
+      ########################################################################
+      self . emitNamesShow . emit    (                                       )
+      ########################################################################
       return
     ##########################################################################
-    self          . Notify                  ( 3                              )
-    self          . OnBusy  . emit          (                                )
-    self          . setBustle               (                                )
+    self   . Notify                  ( 3                                     )
+    self   . OnBusy  . emit          (                                       )
+    self   . setBustle               (                                       )
     ##########################################################################
-    FMT           = self . Translations     [ "UI::StartLoading"             ]
-    MSG           = FMT . format            ( self . windowTitle ( )         )
-    self          . ShowStatus              ( MSG                            )
+    FMT    = self . Translations     [ "UI::StartLoading"                    ]
+    MSG    = FMT . format            ( self . windowTitle ( )                )
+    self   . ShowStatus              ( MSG                                   )
     ##########################################################################
-    self          . ObtainsInformation      ( DB                             )
-    UUIDs , LISTs = self . LoadEyesListings ( DB                             )
+    self   . ObtainsInformation      ( DB                                    )
+    U , L  = self . LoadEyesListings ( DB                                    )
     ##########################################################################
-    self          . setVacancy              (                                )
-    self          . GoRelax . emit          (                                )
-    self          . ShowStatus              ( ""                             )
-    DB            . Close                   (                                )
+    self   . setVacancy              (                                       )
+    self   . GoRelax . emit          (                                       )
+    self   . ShowStatus              ( ""                                    )
+    DB     . Close                   (                                       )
     ##########################################################################
-    if                                      ( len ( LISTs ) <= 0           ) :
-      self        . emitNamesShow . emit    (                                )
+    if                               ( len ( L ) <= 0                      ) :
+      ########################################################################
+      self . emitNamesShow . emit    (                                       )
+      ########################################################################
       return
     ##########################################################################
-    self          . emitAllNames  . emit    ( LISTs                          )
+    self   . emitAllNames  . emit    ( L                                     )
     ##########################################################################
-    OKAY          = self . isColumnHidden   ( 1                              )
-    if                                      ( not OKAY                     ) :
-      VAL         =                         ( UUIDs ,                        )
-      self        . Go                      ( self . ReportBelongings , VAL  )
+    OKAY   = self . isColumnHidden   ( 1                                     )
     ##########################################################################
-    OKAY          = self . isColumnHidden   ( 2                              )
-    if                                      ( not OKAY                     ) :
-      VAL         =                         ( UUIDs ,                        )
-      self        . Go                      ( self . ReportPossibleEyes , VAL )
+    if                               ( not OKAY                            ) :
+      ########################################################################
+      V    =                         ( U ,                                   )
+      self . Go                      ( self . ReportBelongings , V           )
     ##########################################################################
-    self          . Notify                  ( 5                              )
+    OKAY   = self . isColumnHidden   ( 2                                     )
+    ##########################################################################
+    if                               ( not OKAY                            ) :
+      ########################################################################
+      V    =                         ( U ,                                   )
+      self . Go                      ( self . ReportPossibleEyes , V         )
+    ##########################################################################
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
