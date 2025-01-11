@@ -89,6 +89,11 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
     self . setAlternatingRowColors ( True                                    )
     ## self . MountClicked            ( 2                                       )
     ##########################################################################
+    self . TreeBrushes = [ QBrush ( QColor ( 255 , 255 , 255 ) )           , \
+                           QBrush ( QColor ( 255 , 244 , 244 ) )           , \
+                           QBrush ( QColor ( 244 , 255 , 244 ) )           , \
+                           QBrush ( QColor ( 244 , 244 , 255 ) )             ]
+    ##########################################################################
     return
   ############################################################################
   def FocusOut ( self                                                      ) :

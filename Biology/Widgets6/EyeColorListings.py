@@ -63,10 +63,11 @@ class EyeColorListings           ( TreeDock                                ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 5                                       )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
     self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 4 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -174,10 +175,11 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                 ( self , JSON                            ) :
+  def PrepareItem                 ( self , JSON , BRUSH                    ) :
     ##########################################################################
     UUID = JSON                   [ "Uuid"                                   ]
     NAME = JSON                   [ "Name"                                   ]
+    ID   = JSON                   [ "Identifier"                             ]
     R    = JSON                   [ "R"                                      ]
     G    = JSON                   [ "G"                                      ]
     B    = JSON                   [ "B"                                      ]
@@ -186,10 +188,15 @@ class EyeColorListings           ( TreeDock                                ) :
     IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
     IT   . setIcon                ( 0 , ICON                                 )
     ##########################################################################
-    IT   . setTextAlignment       ( 1 , Qt . AlignRight                      )
+    IT   . setText                ( 1 , ID                                   )
     IT   . setTextAlignment       ( 2 , Qt . AlignRight                      )
+    IT   . setTextAlignment       ( 3 , Qt . AlignRight                      )
     ##########################################################################
-    IT   . setData                ( 3 , Qt . UserRole , JSON                 )
+    IT   . setData                ( 4 , Qt . UserRole , JSON                 )
+    ##########################################################################
+    for COL in                    [ 0 , 1 , 2 , 3 , 4                      ] :
+      ########################################################################
+      IT . setBackground          ( COL , BRUSH                              )
     ##########################################################################
     return IT
   ############################################################################
@@ -228,9 +235,9 @@ class EyeColorListings           ( TreeDock                                ) :
                                           Relate                             )
       ########################################################################
       if                                ( Relate in [ "Possible"         ] ) :
-        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2             )
+        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 3             )
       else                                                                   :
-        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1             )
+        self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2             )
     ##########################################################################
     self     . GoRelax . emit           (                                    )
     DB       . Close                    (                                    )
@@ -254,10 +261,15 @@ class EyeColorListings           ( TreeDock                                ) :
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
     for JSON in LISTs                                                        :
       ########################################################################
-      IT   = self . PrepareItem   ( JSON                                     )
+      IT   = self . PrepareItem   ( JSON , self . TreeBrushes [ CNT ]        )
       self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
@@ -316,14 +328,14 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     self   . emitAllNames  . emit    ( L                                     )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 1                                     )
+    OKAY   = self . isColumnHidden   ( 2                                     )
     ##########################################################################
     if                               ( not OKAY                            ) :
       ########################################################################
       V    =                         ( U ,                                   )
       self . Go                      ( self . ReportBelongings , V           )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 2                                     )
+    OKAY   = self . isColumnHidden   ( 3                                     )
     ##########################################################################
     if                               ( not OKAY                            ) :
       ########################################################################
@@ -740,7 +752,7 @@ class EyeColorListings           ( TreeDock                                ) :
       return
     ##########################################################################
     T    = self . getMenuItem      ( "AssignIrisColor"                       )
-    JS   = item . data             ( 3 , Qt . UserRole                       )
+    JS   = item . data             ( 4 , Qt . UserRole                       )
     RR   = JS                      [ "R"                                     ]
     GG   = JS                      [ "G"                                     ]
     BB   = JS                      [ "B"                                     ]
@@ -790,7 +802,7 @@ class EyeColorListings           ( TreeDock                                ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -871,13 +883,13 @@ class EyeColorListings           ( TreeDock                                ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9004 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
+      if                           ( ( at in [ 9002 , 9003 ] ) and ( hid ) ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
