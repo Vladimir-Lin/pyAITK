@@ -79,6 +79,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . droppingAction = False
     self . VoiceJSON      =                 {                                }
     self . WIDTHs         =                 [                                ]
+    self . AtMenu         = False
     ##########################################################################
     return
   ############################################################################
@@ -499,28 +500,43 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return   False
   ############################################################################
-  def FocusIn                 ( self                                       ) :
+  def AttachActions ( self , Enabled                                       ) :
+    return
+  ############################################################################
+  def FocusIn ( self                                                       ) :
     return True
   ############################################################################
-  def defaultFocusIn      ( self                                           ) :
+  def defaultFocusIn         ( self                                        ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
-    self . AttachActions  ( True                                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
+    self . singleClicked     ( self . currentItem ( ) , 0                    )
     ##########################################################################
     return True
   ############################################################################
   def FocusOut        ( self                                               ) :
     return True
   ############################################################################
-  def defaultFocusOut ( self                                               ) :
+  def defaultFocusOut          ( self                                      ) :
     ##########################################################################
-    if                ( not self . isPrepared ( )                          ) :
+    if                         ( not self . isPrepared ( )                 ) :
       return True
     ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+    ##########################################################################
     return False
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    return          { "Match" : False                                        }
   ############################################################################
   def itemUuid                  ( self , item , column = 0                 ) :
     uuid = item . data          ( column , Qt . UserRole                     )
@@ -867,7 +883,11 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
-  def selectionsChanged ( self                                             ) :
+  def selectionsChanged            ( self                                  ) :
+    ##########################################################################
+    OKAY = self . isEmptySelection (                                         )
+    self . SwitchSideTools         ( OKAY                                    )
+    ##########################################################################
     return
   ############################################################################
   def isEmptySelection          ( self                                     ) :
@@ -888,13 +908,21 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def defaultSingleClicked  ( self , item , column                         ) :
+  def defaultSingleClicked     ( self , item , column                      ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
+    if                         ( self . isItemPicked ( )                   ) :
+      if                       ( column != self . CurrentItem [ "Column" ] ) :
+        self . removeParked    (                                             )
     ##########################################################################
-    self     . Notify       ( 0                                              )
+    self     . Notify          ( 0                                           )
+    ##########################################################################
+    if                         ( self . NotOkay ( item )                   ) :
+      ########################################################################
+      self   . SwitchSideTools ( False                                       )
+      ########################################################################
+      return
+    ##########################################################################
+    self     . SwitchSideTools ( True                                        )
     ##########################################################################
     return
   ############################################################################

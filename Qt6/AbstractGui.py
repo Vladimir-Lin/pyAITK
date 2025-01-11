@@ -78,6 +78,7 @@ class AbstractGui            (                                             ) :
     self . GuiMutex        = threading . Lock (                              )
     self . RunningThreads  = [                                               ]
     self . WindowActions   = [                                               ]
+    self . HandleActions   = [                                               ]
     self . DropInJSON      = {                                               }
     self . DropDispatchers = [ { "Mime"     : "division/uuids"               ,
                                  "Function" : "acceptDivisionDrop"           ,
@@ -881,6 +882,9 @@ class AbstractGui            (                                             ) :
         return mtype
     ##########################################################################
     return ""
+  ############################################################################
+  def MimeTypeFromFormats  ( self , mime , formats                         ) :
+    return self . MimeType (        mime , ";" . join ( formats )            )
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     return ""
@@ -1991,6 +1995,17 @@ class AbstractGui            (                                             ) :
     ##########################################################################
     p = self        . GetPlan (                                              )
     p . ActionsTool . clear   (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchSideTools ( self , Enabled                                     ) :
+    ##########################################################################
+    for AA in self . HandleActions                                           :
+      ########################################################################
+      if              ( AA in self . EmptySet                              ) :
+        continue
+      ########################################################################
+      AA . setEnabled (        Enabled                                       )
     ##########################################################################
     return
   ############################################################################

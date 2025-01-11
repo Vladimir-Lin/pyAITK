@@ -62,6 +62,7 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
     self . AssignedAmount     = 0
     self . SortOrder          = "asc"
     self . LoopRunning        = True
+    self . AtMenu             = False
     self . SpinStartId        = None
     self . SpinAmount         = None
     self . FetchTableKey      = "Tables"
@@ -70,6 +71,8 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
     self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
+    ##########################################################################
+    self . defaultSelectionMode = "ContiguousSelection"
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = None
@@ -904,7 +907,10 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . GotoItemNamesEditor               )
+    A    . setEnabled             ( False                                    )
+    ##########################################################################
     self . WindowActions . append ( A                                        )
+    self . HandleActions . append ( A                                        )
     ##########################################################################
     return
   ############################################################################
@@ -939,14 +945,6 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
   ############################################################################
   def OpenItemNamesEditor ( self , item                                    ) :
     ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  def AppendWindowToolSeparatorAction ( self                               ) :
-    ##########################################################################
-    A    = QAction                    (                                      )
-    A    . setSeparator               ( True                                 )
-    self . WindowActions . append     ( A                                    )
     ##########################################################################
     return
   ############################################################################
