@@ -14,7 +14,7 @@ import base64
 ##############################################################################
 from   io                              import BytesIO
 from   wand . image                    import Image
-from   PIL                             import Image       as Pillow
+from   PIL                             import Image   as Pillow
 ##############################################################################
 from   PySide6                         import QtCore
 from   PySide6                         import QtGui
@@ -27,37 +27,56 @@ from   AITK    . Qt6                   import *
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . Pictures   . Picture6 import Picture     as Picture
-from   AITK    . Pictures   . Gallery  import Gallery     as GalleryItem
+from   AITK    . Pictures   . Picture6 import Picture as Picture
+from   AITK    . Pictures   . Gallery  import Gallery as GalleryItem
 ##############################################################################
 class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   ############################################################################
   AssignImage   = Signal ( QImage                                            )
   AssignGallery = Signal ( list                                              )
+  emitProgress  = Signal ( int , int                                         )
+  emitComplete  = Signal (                                                   )
+  PlaceMdi      = Signal ( QWidget                                           )
+  PlaceStack    = Signal ( QWidget                                           )
+  emitBustle    = Signal (                                                   )
+  emitVacancy   = Signal (                                                   )
+  OnBusy        = Signal (                                                   )
+  GoRelax       = Signal (                                                   )
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
     super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
+    ##########################################################################
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
+    ##########################################################################
     self . Image         = None
     self . Pictures      =         [                                         ]
     self . LABELs        =         [                                         ]
-    self . Ratio = QSize           ( 100 , 100                               )
+    self . Ratio         = QSize   ( 100 , 100                               )
     self . ZoomLevel     = 10
     self . MaxWidth      = 0
+    self . AtPlace       = 0
+    self . AtMenu        = False
+    self . LoadingPB     = None
     self . FetchTableKey = "PicturesView"
     ##########################################################################
     self . setPrepared             ( True                                    )
     ##########################################################################
     self . AssignImage   . connect ( self . setImage                         )
     self . AssignGallery . connect ( self . setGallery                       )
+    self . emitProgress  . connect ( self . assignProgress                   )
+    self . emitComplete  . connect ( self . completeProgress                 )
+    self . emitBustle    . connect ( self . DoBustle                         )
+    self . emitVacancy   . connect ( self . DoVacancy                        )
+    self . OnBusy        . connect ( self . AtBusy                           )
+    self . GoRelax       . connect ( self . OnRelax                          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 320 )                       )
+    return self . SizeSuggestion ( QSize ( 640 , 480 )                       )
   ############################################################################
   def focusInEvent            ( self , event                               ) :
     ##########################################################################
@@ -79,9 +98,9 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   ############################################################################
   def contextMenuEvent           ( self , event                            ) :
     ##########################################################################
-    ## if                           ( self . Menu ( event . pos ( ) )         ) :
-    ##   event . accept             (                                           )
-    ##   return
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
+      return
     ##########################################################################
     super ( ) . contextMenuEvent ( event                                     )
     ##########################################################################
@@ -110,7 +129,6 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
       return False
     ##########################################################################
     self . setActionLabel ( "Label"    , self . windowTitle ( )              )
-    ##########################################################################
     self . LinkAction     ( "ZoomIn"   , self . ZoomIn                       )
     self . LinkAction     ( "ZoomOut"  , self . ZoomOut                      )
     ##########################################################################
@@ -136,6 +154,115 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def DoBustle    ( self                                                   ) :
+    self . Bustle (                                                          )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  def DoVacancy    ( self                                                  ) :
+    self . Vacancy (                                                         )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
+    return
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoBusy             ( self                                            ) :
+    ##########################################################################
+    self . OnBusy . emit (                                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoRelax              ( self                                          ) :
+    ##########################################################################
+    self . GoRelax . emit  (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoMdi                ( self                                          ) :
+    ##########################################################################
+    self . AtPlace = 1
+    self . PlaceMdi . emit ( self                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoStack                ( self                                        ) :
+    ##########################################################################
+    self . AtPlace = 0
+    self . PlaceStack . emit ( self                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareProgress      ( self                                          ) :
+    ##########################################################################
+    if                     ( self . LoadingPB not in self . EmptySet       ) :
+      return
+    ##########################################################################
+    WPLAN = self . GetPlan (                                                 )
+    ##########################################################################
+    if                     ( self . NotOkay ( WPLAN )                      ) :
+      return
+    ##########################################################################
+    self  . LoadingPB = QProgressBar       (                                 )
+    self  . LoadingPB . setFormat          ( "%v / %m"                       )
+    self  . LoadingPB . setMinimumWidth    ( 320                             )
+    self  . LoadingPB . setMaximumWidth    ( 320                             )
+    self  . LoadingPB . setRange           ( 0 , 1                           )
+    self  . LoadingPB . setValue           ( 0                               )
+    ##########################################################################
+    WPLAN . statusBar . addPermanentWidget ( self . LoadingPB                )
+    ##########################################################################
+    return
+  ############################################################################
+  def completeProgress ( self                                              ) :
+    ##########################################################################
+    if                 ( self . NotOkay ( self  . LoadingPB )              ) :
+      return
+    ##########################################################################
+    M    = self . LoadingPB
+    self . LoadingPB = None
+    ##########################################################################
+    M    . deleteLater (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def stopProgress             ( self                                      ) :
+    ##########################################################################
+    self . emitComplete . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def assignProgress            ( self , Index , Total                     ) :
+    ##########################################################################
+    if                          ( self . NotOkay ( self  . LoadingPB )     ) :
+      return
+    ##########################################################################
+    self . LoadingPB . setRange ( 0 , Total                                  )
+    self . LoadingPB . setValue (     Index                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def setProgress              ( self , Index , Total                      ) :
+    ##########################################################################
+    self . emitProgress . emit (        Index , Total                        )
+    ##########################################################################
+    return
   ############################################################################
   def toPixmap                  ( self , image                             ) :
     ##########################################################################
@@ -246,7 +373,7 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   ############################################################################
   def ZoomOut           ( self                                             ) :
     ##########################################################################
-    if ( self . ZoomLevel <= 1 ) :
+    if                  ( self . ZoomLevel <= 1                            ) :
       return
     ##########################################################################
     self . ZoomLevel = self . ZoomLevel - 1
@@ -305,8 +432,11 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   def FetchImage                ( self , Uuid                              ) :
     ##########################################################################
     DB       = self . ConnectDB ( UsePure = True                             )
-    if                          ( DB == None                               ) :
+    if                          ( self . NotOkay ( DB )                    ) :
       return
+    ##########################################################################
+    self     . DoBusy           (                                            )
+    self     . setBustle        (                                            )
     ##########################################################################
     FOUND    = False
     SUFFIX   = ""
@@ -330,6 +460,8 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
       else                                                                   :
         FOUND  = False
     ##########################################################################
+    self    . setVacancy        (                                            )
+    self    . DoRelax           (                                            )
     DB      . Close             (                                            )
     ##########################################################################
     if                          ( not FOUND                                ) :
@@ -363,8 +495,11 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
   def FetchGallery                   ( self , T1 , UUID , RELATED          ) :
     ##########################################################################
     DB          = self . ConnectDB   ( UsePure = True                        )
-    if                               ( DB == None                          ) :
+    if                               ( self . NotOkay ( DB )               ) :
       return
+    ##########################################################################
+    self        . DoBusy             (                                       )
+    self        . setBustle          (                                       )
     ##########################################################################
     self        . Tables = self . ObtainsOwnerVariantTables                ( \
                                        DB                                  , \
@@ -381,7 +516,13 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     GALM        = GalleryItem        (                                       )
     UUIDs       = GALM . GetPictures ( DB , RELTAB , UUID , T1 , RELATED     )
     ##########################################################################
+    TOTAL       = len                ( UUIDs                                 )
+    INDEX       = 0
+    ##########################################################################
     for UUID in UUIDs                                                        :
+      ########################################################################
+      INDEX     = int                ( INDEX + 1                             )
+      self      . setProgress        ( INDEX , TOTAL                         )
       ########################################################################
       FOUND     = False
       SUFFIX    = ""
@@ -431,6 +572,10 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
       ########################################################################
       Pictures  . append             ( IMG                                   )
     ##########################################################################
+    self        . stopProgress       (                                       )
+    self        . setVacancy         (                                       )
+    self        . DoRelax            (                                       )
+    ##########################################################################
     DB          . Close              (                                       )
     ##########################################################################
     self . Pictures = Pictures
@@ -438,16 +583,27 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def loadUuid    ( self , Uuid                                            ) :
+  def loadUuid ( self , Uuid                                               ) :
     ##########################################################################
-    self . Go     ( self . FetchImage , ( Uuid , )                           )
+    self . Go  ( self . FetchImage , ( Uuid , )                              )
     ##########################################################################
     return
   ############################################################################
-  def loadGallery ( self , T1 , UUID , RELATED                             ) :
+  def loadGallery          ( self , T1 , UUID , RELATED                    ) :
     ##########################################################################
-    ARGS =        ( T1 , UUID , RELATED ,                                    )
-    self . Go     ( self . FetchGallery , ARGS                               )
+    self . PrepareProgress (                                                 )
+    ARGS =                 ( T1 , UUID , RELATED ,                           )
+    self . Go              ( self . FetchGallery , ARGS                      )
     ##########################################################################
     return
+  ############################################################################
+  def loadFile ( self , Filename                                           ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Menu                            ( self , pos                         ) :
+    ##########################################################################
+    ##########################################################################
+    return True
 ##############################################################################

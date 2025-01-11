@@ -35,6 +35,7 @@ class Plan                      ( PurePlan                                 ) :
     self . Mdi                = None
     self . statusMessage      = None
     self . statusBar          = None
+    self . Recognizer         = None
     self . SearchLine         = None
     self . SelectTool         = None
     self . ActionsTool        = None

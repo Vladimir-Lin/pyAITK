@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-from . People import People as People
+from . People     import People     as People
+from . Recognizer import Recognizer as Recognizer
 ##############################################################################
 __all__ = [ "People"                                                       , \
-            "Acupunctures"                                                 , \
-            "Body"                                                         , \
-            "Bones"                                                        , \
-            "Eyes"                                                         , \
-            "Faces"                                                        , \
-            "Sex"                                                          , \
-            "Widgets"                                                        ]
+            "Recognizer"                                                     ]
 ##############################################################################
