@@ -221,6 +221,7 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     if                         ( not self . AtMenu                         ) :
       ########################################################################
+      self . setActionLabel    ( "Label" , ""                                )
       self . AttachActions     ( False                                       )
       self . detachActionsTool (                                             )
       self . LinkVoice         ( None                                        )
@@ -229,6 +230,7 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
+    self . setActionLabel    ( "Label" , ""                                  )
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
