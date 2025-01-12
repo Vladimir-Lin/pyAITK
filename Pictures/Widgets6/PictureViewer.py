@@ -30,20 +30,26 @@ from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . Pictures   . Picture6 import Picture as Picture
 from   AITK    . Pictures   . Gallery  import Gallery as GalleryItem
 ##############################################################################
-class PictureViewer      ( QScrollArea , VirtualGui                        ) :
+class PictureViewer         ( QScrollArea , VirtualGui                     ) :
   ############################################################################
-  AssignImage   = Signal ( QImage                                            )
-  AssignGallery = Signal ( list                                              )
-  emitProgress  = Signal ( int , int                                         )
-  emitComplete  = Signal (                                                   )
-  PlaceMdi      = Signal ( QWidget                                           )
-  PlaceStack    = Signal ( QWidget                                           )
-  emitBustle    = Signal (                                                   )
-  emitVacancy   = Signal (                                                   )
-  OnBusy        = Signal (                                                   )
-  GoRelax       = Signal (                                                   )
+  AssignImage      = Signal ( QImage                                         )
+  AssignGallery    = Signal ( list                                           )
+  emitProgress     = Signal ( int , int                                      )
+  emitComplete     = Signal (                                                )
+  emitEditUuid     = Signal ( str , dict                                     )
+  emitEditFile     = Signal ( str                                            )
+  PlaceMdi         = Signal ( QWidget                                        )
+  PlaceStack       = Signal ( QWidget                                        )
+  emitFullScreen   = Signal (                                                )
+  emitNormalWindow = Signal (                                                )
+  emitBustle       = Signal (                                                )
+  emitVacancy      = Signal (                                                )
+  OnBusy           = Signal (                                                )
+  GoRelax          = Signal (                                                )
+  CloseViewer      = Signal ( QWidget                                        )
+  Leave            = Signal ( QWidget                                        )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__              ( self , parent = None , plan = None           ) :
     ##########################################################################
     super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
@@ -52,13 +58,21 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
     self . Image         = None
-    self . Pictures      =         [                                         ]
-    self . LABELs        =         [                                         ]
-    self . SOLO          = None
+    self . Pictures      = [                                                 ]
+    self . PCIDs         = [                                                 ]
+    self . FILEs         = [                                                 ]
+    self . LABELs        = [                                                 ]
     self . Ratio         = QSize   ( 100 , 100                               )
+    self . SOLO          = None
+    self . Method        = ""
+    self . Filename      = ""
+    self . PictureUuid   = 0
+    self . PickedUuid    = 0
     self . ZoomLevel     = 10
     self . MaxWidth      = 0
+    self . Border        = 10
     self . AtPlace       = 0
+    self . isFullScreen  = False
     self . AtMenu        = False
     self . LoadingPB     = None
     self . FetchTableKey = "PicturesView"
@@ -124,15 +138,129 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions ( self                                             ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
+    self . AppendSideActionWithIcon ( "EditPicture"                        , \
+                                      ":/images/edit.png"                  , \
+                                      self . EditPicture                     )
+    self . AppendSideActionWithIcon ( "FullScreen"                         , \
+                                      ":/images/fullscreen.png"            , \
+                                      self . GoFullScreen                    )
+    self . AppendSideActionWithIcon ( "NormalWindow"                       , \
+                                      ":/images/GUI.png"                   , \
+                                      self . GoNormalWindow                  )
+    self . AppendSideActionWithIcon ( "MDI"                                , \
+                                      ":/images/hidespeech.png"            , \
+                                      self . DoMdi                           )
+    self . AppendSideActionWithIcon ( "Stack"                              , \
+                                      ":/images/computer.png"              , \
+                                      self . DoStack                         )
+    self . AppendSideActionWithIcon ( "CloseView"                          , \
+                                      ":/images/delete.png"                , \
+                                      self . CloseView                       )
+    ##########################################################################
+    self . SwitchSideTools          ( True                                   )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self      ,                  Enabled               ) :
+  def FitZoomRatio                ( self , r                               ) :
     ##########################################################################
-    self . LinkAction ( "ZoomIn"  , self . ZoomIn  , Enabled                 )
-    self . LinkAction ( "ZoomOut" , self . ZoomOut , Enabled                 )
+    ATID     = -1
+    CNT      = 0
+    ZV       = int                ( self . ZoomLevel * 10                    )
+    TOTAL    = r . count          (                                          )
+    ##########################################################################
+    while                         ( ( ATID < 0 ) and ( CNT < TOTAL )       ) :
+      ########################################################################
+      Z      = r . itemData       ( CNT                                      )
+      ########################################################################
+      if                          ( Z == ZV                                ) :
+        ATID = CNT
+      ########################################################################
+      CNT    = CNT + 1
+    ##########################################################################
+    if                            ( ATID >= 0                              ) :
+      ########################################################################
+      r      . blockSignals       ( True                                     )
+      r      . setCurrentIndex    ( ATID                                     )
+      r      . blockSignals       ( False                                    )
+    ##########################################################################
+    TT       = self . windowTitle (                                          )
+    TT       = f"{ZV}%\n\n{TT}"
+    r        . setToolTip         ( TT                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def TryFitZoomRatio         ( self                                       ) :
+    ##########################################################################
+    r    = self . GetRatioBox (                                              )
+    ##########################################################################
+    if                        ( r in self . EmptySet                       ) :
+      return
+    ##########################################################################
+    self . FitZoomRatio       ( r                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def HandleZoomRatio             ( self , Enabled                         ) :
+    ##########################################################################
+    r        = self . GetRatioBox (                                          )
+    ##########################################################################
+    if                            ( r in self . EmptySet                   ) :
+      return
+    ##########################################################################
+    if                            ( not Enabled                            ) :
+      return
+    ##########################################################################
+    ics      = QMetaMethod . fromSignal         ( r . currentIndexChanged    )
+    ##########################################################################
+    if                            ( r . isSignalConnected ( ics )          ) :
+      ########################################################################
+      r      . currentIndexChanged . disconnect (                            )
+
+    ##########################################################################
+    r        . currentIndexChanged . connect    ( self . ratioChanged        )
+    ##########################################################################
+    self     . FitZoomRatio       ( r                                        )
+    ##########################################################################
+    r        . setEditable        ( False                                    )
+    r        . setEnabled         ( True                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ToggleSideTools                         ( self , Enabled             ) :
+    ##########################################################################
+    if                                        ( self . isFullScreen        ) :
+      ########################################################################
+      self . HandleActions [ 1 ] . setVisible ( False                        )
+      self . HandleActions [ 2 ] . setVisible ( True                         )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . HandleActions [ 1 ] . setVisible ( True                         )
+      self . HandleActions [ 2 ] . setVisible ( False                        )
+    ##########################################################################
+    if                                        ( 0 == self . AtPlace        ) :
+      ########################################################################
+      self . HandleActions [ 3 ] . setVisible ( True                         )
+      self . HandleActions [ 4 ] . setVisible ( False                        )
+      ########################################################################
+    elif                                      ( 1 == self . AtPlace        ) :
+      ########################################################################
+      self . HandleActions [ 3 ] . setVisible ( False                        )
+      self . HandleActions [ 4 ] . setVisible ( True                         )
+    ##########################################################################
+    self   . HandleActions [ 0 ] . setEnabled ( self . isEditable (        ) )
+    ##########################################################################
+    self   . HandleZoomRatio                  ( Enabled                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions        ( self      ,                  Enabled          ) :
+    ##########################################################################
+    self . LinkAction      ( "ZoomIn"  , self . ZoomIn  , Enabled            )
+    self . LinkAction      ( "ZoomOut" , self . ZoomOut , Enabled            )
+    self . ToggleSideTools (                              Enabled            )
     ##########################################################################
     return
   ############################################################################
@@ -170,12 +298,21 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def Shutdown               ( self                                        ) :
+  def Shutdown                              ( self                         ) :
     ##########################################################################
-    self . setActionLabel    ( "Label" , ""                                  )
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    self . Leave . emit      ( self                                          )
+    r    = self . GetRatioBox               (                                )
+    ##########################################################################
+    if                                      ( r not in self . EmptySet     ) :
+      ########################################################################
+      r  . setToolTip                       ( ""                             )
+      r  . currentIndexChanged . disconnect (                                )
+      r  . setEditable                      ( True                           )
+      r  . setEnabled                       ( False                          )
+    ##########################################################################
+    self . setActionLabel                   ( "Label" , ""                   )
+    self . AttachActions                    ( False                          )
+    self . detachActionsTool                (                                )
+    self . Leave . emit                     ( self                           )
     ##########################################################################
     return True
   ############################################################################
@@ -233,6 +370,40 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
+  def GoFullScreen               ( self                                    ) :
+    ##########################################################################
+    self . emitFullScreen . emit (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def GoNormalWindow               ( self                                  ) :
+    ##########################################################################
+    self . emitNormalWindow . emit (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def setFullScreen ( self , FULL                                          ) :
+    ##########################################################################
+    self . isFullScreen = FULL
+    ##########################################################################
+    return
+  ############################################################################
+  def ratioChanged            ( self , ID                                  ) :
+    ##########################################################################
+    if                        ( ID < 0                                     ) :
+      return
+    ##########################################################################
+    r    = self . GetRatioBox (                                              )
+    ##########################################################################
+    if                        ( r in self . EmptySet                       ) :
+      return
+    ##########################################################################
+    zv   = r . itemData       ( ID                                           )
+    self . ZoomLevel = int    ( zv / 10                                      )
+    self . doZoom             (                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareProgress      ( self                                          ) :
     ##########################################################################
     if                     ( self . LoadingPB not in self . EmptySet       ) :
@@ -251,6 +422,7 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     self  . LoadingPB . setValue           ( 0                               )
     ##########################################################################
     WPLAN . statusBar . addPermanentWidget ( self . LoadingPB                )
+    self  . LoadingPB . hide               (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -262,6 +434,7 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     M    = self . LoadingPB
     self . LoadingPB = None
     ##########################################################################
+    M    . hide        (                                                     )
     M    . deleteLater (                                                     )
     ##########################################################################
     return
@@ -277,6 +450,7 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     if                          ( self . NotOkay ( self  . LoadingPB )     ) :
       return
     ##########################################################################
+    self . LoadingPB . show     (                                            )
     self . LoadingPB . setRange ( 0 , Total                                  )
     self . LoadingPB . setValue (     Index                                  )
     ##########################################################################
@@ -306,8 +480,8 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
       return PIX
     ##########################################################################
     WS  = image        . size   (                                            )
-    SW  = ws           . width  (                                            )
-    SH  = ws           . height (                                            )
+    SW  = WS           . width  (                                            )
+    SH  = WS           . height (                                            )
     RW  = self . Ratio . width  (                                            )
     RH  = self . Ratio . height (                                            )
     WW  = int                   ( int ( SW * RW ) / 100                      )
@@ -316,17 +490,40 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return PIX
   ############################################################################
-  def AssignPixmap          ( self                                         ) :
+  def AssignPixmap                ( self                                   ) :
     ##########################################################################
-    if                      ( self . Image in self . EmptySet              ) :
+    if                            ( self . Image in self . EmptySet        ) :
       return
     ##########################################################################
-    PIX   = self . toPixmap ( self . Image                                   )
+    WS    = self . Image . size   (                                          )
+    SW    = WS           . width  (                                          )
+    SH    = WS           . height (                                          )
     ##########################################################################
-    label = QLabel          (                                                )
-    label . setAlignment    ( Qt . AlignCenter                               )
-    label . setPixmap       ( PIX                                            )
-    self  . setWidget       ( label                                          )
+    PIX   = self . toPixmap       ( self . Image                             )
+    ##########################################################################
+    CPIX  = QWidget               (                                          )
+    label = QLabel                ( CPIX                                     )
+    label . setAlignment          ( Qt . AlignCenter                         )
+    label . setPixmap             ( PIX                                      )
+    ##########################################################################
+    self  . SOLO = label
+    ##########################################################################
+    TT    = ""
+    ##########################################################################
+    if                            ( self . PictureUuid > 0                 ) :
+      ########################################################################
+      FMT = self . getMenuItem    ( "PictureUuid"                            )
+      TT  = FMT  . format         ( self . PictureUuid , SW , SH             )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      FMT = self . getMenuItem    ( "PictureSize"                            )
+      TT  = FMT  . format         (                      SW , SH             )
+    ##########################################################################
+    label . setToolTip            ( TT                                       )
+    ##########################################################################
+    self  . setWidget             ( CPIX                                     )
+    self  . SoloResize            (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -337,51 +534,75 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def setGallery              ( self , Pictures                            ) :
+  def setGallery                 ( self , Pictures                         ) :
     ##########################################################################
+    FMT1    = self . getMenuItem ( "PictureUuid"                             )
+    FMT2    = self . getMenuItem ( "PictureSize"                             )
     WW      = 0
     HH      = 0
-    G       = 8
-    GW      = G * int         ( len ( Pictures ) + 1                         )
-    PIXs    =                 [                                              ]
+    B1      = self . Border
+    B2      = int                ( B1 + B1                                   )
+    PLEN    = len                ( Pictures                                  )
+    GW      = B1 * int           ( PLEN + 1                                  )
+    PIXs    =                    [                                           ]
     ##########################################################################
     for IMAGE in Pictures                                                    :
       ########################################################################
-      PIX   = self . toPixmap ( IMAGE                                        )
+      PIX   = self . toPixmap    ( IMAGE                                     )
       ########################################################################
-      if                      ( PIX in self . EmptySet                     ) :
+      if                         ( PIX in self . EmptySet                  ) :
         continue
       ########################################################################
-      PIXs  . append          ( PIX                                          )
-      WX    = PIX  . width    (                                              )
-      WY    = PIX  . height   (                                              )
+      PIXs  . append             ( PIX                                       )
+      WX    = PIX  . width       (                                           )
+      WY    = PIX  . height      (                                           )
       ########################################################################
-      if                      ( WX > WW                                    ) :
+      if                         ( WX > WW                                 ) :
        WW   = WX
       ########################################################################
       HH    = HH   + WY
     ##########################################################################
-    WIDGET  = QWidget         (                                              )
-    WIDGET  . resize          ( WW , HH + GW                                 )
+    WIDGET  = QWidget            (                                           )
+    WIDGET  . resize             ( WW + B2 , HH + GW                         )
     ##########################################################################
-    YY      = 0
-    self . MaxWidth  = WW
-    self . LABELs = [ ]
+    YY      = B1
+    CNT     = 0
+    self    . MaxWidth = WW
+    self    . LABELs   =         [                                           ]
+    ##########################################################################
     for PIX in PIXs                                                          :
       ########################################################################
-      WY    = PIX  . height   (                                              )
-      YY    = YY + G
+      WY    = PIX  . height      (                                           )
       ########################################################################
-      label = QLabel          ( WIDGET                                       )
-      label . setAlignment    ( Qt . AlignCenter                             )
-      label . setPixmap       ( PIX                                          )
+      label = QLabel             ( WIDGET                                    )
+      label . setAlignment       ( Qt . AlignCenter                          )
+      label . setPixmap          ( PIX                                       )
       ########################################################################
-      label . setGeometry     ( 0 , YY , WW , WY                             )
-      self . LABELs . append  ( label                                        )
+      label . setGeometry        ( 0 , YY , WW , WY                          )
       ########################################################################
-      YY    = YY + WY
+      TT    = ""
+      PIMG  = Pictures           [ CNT                                       ]
+      WS    = PIMG . size        (                                           )
+      SW    = WS   . width       (                                           )
+      SH    = WS   . height      (                                           )
+      ########################################################################
+      if                         ( "Gallery" == self . Method              ) :
+        ######################################################################
+        PID = self . PCIDs       [ CNT                                       ]
+        TT  = FMT1 . format      ( PID , SW , SH                             )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        TT  = FMT2 . format      (       SW , SH                             )
+      ########################################################################
+      label . setToolTip         ( TT                                        )
+      self  . LABELs . append    ( label                                     )
+      ########################################################################
+      YY    = int                ( YY + WY + B1                              )
+      CNT   = int                ( CNT + 1                                   )
     ##########################################################################
-    self    . setWidget       ( WIDGET                                       )
+    self    . setWidget          ( WIDGET                                    )
+    self    . MultipleResize     (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -407,68 +628,102 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def ZoomIn            ( self                                             ) :
+  def ZoomIn               ( self                                          ) :
     ##########################################################################
     self . ZoomLevel = self . ZoomLevel + 1
     ##########################################################################
-    self . doZoom       (                                                    )
+    self . TryFitZoomRatio (                                                 )
+    self . doZoom          (                                                 )
     ##########################################################################
     return
   ############################################################################
-  def ZoomOut           ( self                                             ) :
+  def ZoomOut              ( self                                          ) :
     ##########################################################################
-    if                  ( self . ZoomLevel <= 1                            ) :
+    if                     ( self . ZoomLevel <= 1                         ) :
       return
     ##########################################################################
     self . ZoomLevel = self . ZoomLevel - 1
     ##########################################################################
-    self . doZoom       (                                                    )
+    self . TryFitZoomRatio (                                                 )
+    self . doZoom          (                                                 )
     ##########################################################################
     return
   ############################################################################
-  def SoloResize ( self                                                    ) :
+  def SoloResize                  ( self                                   ) :
     ##########################################################################
-    if           ( self . Image in self . EmptySet                         ) :
+    if                            ( self . Image in self . EmptySet        ) :
       return
     ##########################################################################
+    WX     = self . width         (                                          )
+    WY     = self . height        (                                          )
+    WIDGET = self . widget        (                                          )
+    PIX    = self . SOLO . pixmap (                                          )
+    WW     = PIX  . width         (                                          )
+    HH     = PIX  . height        (                                          )
     ##########################################################################
-    return
-  ############################################################################
-  def MultipleResize ( self ) :
+    XX     = 0
+    B1     = int                  ( self . Border                            )
+    B2     = int                  ( B1 + B1                                  )
+    WX     = int                  ( WX - 20 - B2                             )
     ##########################################################################
-    if ( len ( self . Pictures ) <= 0 ) :
-      return
-    ##########################################################################
-    if                         ( len ( self . LABELs   ) <= 0              ) :
-      return
-    ##########################################################################
-    return
-    ##########################################################################
-    WIDGET   = self . widget   (                                             )
-    VSW      = self . verticalScrollBar (                                    )
-    ##########################################################################
-    DW       = 0
-    if                         ( VSW not in self . EmptySet                ) :
-      DW     = VSW . width     (                                             )
-    ##########################################################################
-    MX       = self . MaxWidth + DW + 2
-    WX       = self   . width  (                                             )
-    WY       = self   . height (                                             )
-    WW       = WIDGET . width  (                                             )
-    HH       = WIDGET . height (                                             )
-    LW       = WW
-    ##########################################################################
-    if                         ( MX >= WX                                  ) :
-      LW     = self . MaxWidth
+    if                            ( WW > WX                                ) :
+      ########################################################################
+      WX   = WW
+      ########################################################################
     else                                                                     :
-      LW     = WX - DW - 2
+      ########################################################################
+      XX   = int                  ( int ( WX - WW ) / 2                      )
     ##########################################################################
-    WIDGET   . resize          ( LW , HH                                     )
+    WIDGET .        setGeometry   (       0 ,  0 , WX + B2 , HH + B2         )
+    self   . SOLO . setGeometry   ( XX + B1 , B1 , WW      , HH              )
+    ##########################################################################
+    return
+  ############################################################################
+  def MultipleResize         ( self                                        ) :
+    ##########################################################################
+    if                       ( len ( self . Pictures ) <= 0                ) :
+      return
+    ##########################################################################
+    if                       ( len ( self . LABELs   ) <= 0                ) :
+      return
+    ##########################################################################
+    B1      = int            ( self . Border                                 )
+    B2      = int            ( B1 + B1                                       )
+    WX      = self . width   (                                               )
+    WY      = self . height  (                                               )
+    WX      = int            ( WX - 20 - B2                                  )
+    WIDGET  = self . widget  (                                               )
+    ##########################################################################
+    MW      = 0
+    MH      = B1
     ##########################################################################
     for LABEL in self . LABELs                                               :
       ########################################################################
-      H      = LABEL . height  (                                             )
-      LABEL  . resize          ( LW , H                                      )
+      WW    = LABEL . width  (                                               )
+      HH    = LABEL . height (                                               )
+      ########################################################################
+      if                     ( WW > MW                                     ) :
+        MW  = WW
+      ########################################################################
+      MH    = int            ( MH + HH + B1                                  )
+    ##########################################################################
+    if                       ( MW > WX                                     ) :
+      ########################################################################
+      WX    = MW
+    ##########################################################################
+    WIDGET  . setGeometry    ( 0 , 0 , WX + B2 , MH                          )
+    ##########################################################################
+    YY      = B1
+    ##########################################################################
+    for LABEL in self . LABELs                                               :
+      ########################################################################
+      WW    = LABEL . width  (                                               )
+      HH    = LABEL . height (                                               )
+      XX    = int            ( int ( WX - WW ) / 2                           )
+      ########################################################################
+      LABEL . setGeometry    ( XX + B1 , YY , WW , HH                        )
+      ########################################################################
+      YY    = int            ( YY + HH + B1                                  )
     ##########################################################################
     return
   ############################################################################
@@ -577,6 +832,8 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     TOTAL       = len                ( UUIDs                                 )
     INDEX       = 0
     ##########################################################################
+    self . PCIDs = UUIDs
+    ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
       INDEX     = int                ( INDEX + 1                             )
@@ -645,19 +902,83 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
+  def CloseView               ( self                                       ) :
+    ##########################################################################
+    self . CloseViewer . emit ( self                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def EditPicture                ( self                                    ) :
+    ##########################################################################
+    if                           ( self . PictureUuid > 0                  ) :
+      ########################################################################
+      PCID = self . PictureUuid
+      PXID = f"{PCID}"
+      self . emitEditUuid . emit ( PXID , self . Tables                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( len ( self . Filename ) > 0             ) :
+      ########################################################################
+      self . emitEditFile        ( self . Filename                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( len ( self . PCIDs ) <= 0               ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def isEditable ( self                                                    ) :
+    ##########################################################################
+    if           ( self . PictureUuid > 0                                  ) :
+      return   True
+    ##########################################################################
+    FLEN = len   ( self . Filename                                           )
+    ##########################################################################
+    if           ( FLEN > 0                                                ) :
+      return   True
+    ##########################################################################
+    PLEN = len   ( self . PCIDs                                              )
+    ##########################################################################
+    if           ( PLEN > 0                                                ) :
+      if         ( self . PickedUuid > 0                                   ) :
+        return True
+    ##########################################################################
+    return     False
+  ############################################################################
   def loadFile ( self , filename                                           ) :
+    ##########################################################################
+    self . Method   = "File"
+    self . Filename = filename
     ##########################################################################
     self . Go  ( self . BackgroundLoadFile , ( filename , )                  )
     ##########################################################################
     return
   ############################################################################
-  def loadUuid ( self , Uuid                                               ) :
+  def loadFiles ( self , FILEs                                             ) :
     ##########################################################################
-    self . Go  ( self . FetchImage , ( Uuid , )                              )
+    self . Method = "Files"
+    self . FILEs  = FILEs
+    ##########################################################################
+    ## self . Go  ( self . BackgroundLoadFile , ( filename , )                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def loadUuid               ( self , Uuid                                 ) :
+    ##########################################################################
+    self . Method      = "Uuid"
+    ##########################################################################
+    self . PictureUuid = int ( Uuid                                          )
+    ##########################################################################
+    self . Go                ( self . FetchImage , ( Uuid , )                )
     ##########################################################################
     return
   ############################################################################
   def loadGallery          ( self , T1 , UUID , RELATED                    ) :
+    ##########################################################################
+    self . Method = "Gallery"
     ##########################################################################
     self . PrepareProgress (                                                 )
     ARGS =                 ( T1 , UUID , RELATED ,                           )
@@ -665,8 +986,87 @@ class PictureViewer      ( QScrollArea , VirtualGui                        ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                            ( self , pos                         ) :
+  def Menu                      ( self , pos                               ) :
     ##########################################################################
+    mm     = MenuManager        ( self                                       )
+    ##########################################################################
+    if                          ( self . isEditable (                    ) ) :
+      ########################################################################
+      MSG  = self . getMenuItem ( "EditPicture"                              )
+      ICON = QIcon              ( ":/images/edit.png"                        )
+      mm   . addActionWithIcon  ( 1001 , ICON , MSG                          )
+    ##########################################################################
+    if                          ( self . isFullScreen                      ) :
+      ########################################################################
+      MSG  = self . getMenuItem ( "NormalWindow"                             )
+      ICON = QIcon              ( ":/images/GUI.png"                         )
+      mm   . addActionWithIcon  ( 1102 , ICON , MSG                          )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      MSG  = self . getMenuItem ( "FullScreen"                               )
+      ICON = QIcon              ( ":/images/fullscreen.png"                  )
+      mm   . addActionWithIcon  ( 1101 , ICON , MSG                          )
+    ##########################################################################
+    if                          ( 0 == self . AtPlace                      ) :
+      ########################################################################
+      MSG  = self . getMenuItem ( "MDI"                                      )
+      ICON = QIcon              ( ":/images/hidespeech.png"                  )
+      mm   . addActionWithIcon  ( 1202 , ICON , MSG                          )
+      ########################################################################
+    elif                        ( 1 == self . AtPlace                      ) :
+      ########################################################################
+      MSG  = self . getMenuItem ( "Stack"                                    )
+      ICON = QIcon              ( ":/images/computer.png"                    )
+      mm   . addActionWithIcon  ( 1201 , ICON , MSG                          )
+    ##########################################################################
+    MSG    = self . getMenuItem ( "CloseView"                                )
+    ICON   = QIcon              ( ":/images/delete.png"                      )
+    mm     . addActionWithIcon  ( 2001 , ICON , MSG                          )
+    ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
+    mm     . setFont            ( self    . menuFont ( )                     )
+    aa     = mm . exec_         ( QCursor . pos      ( )                     )
+    at     = mm . at            ( aa                                         )
+    ##########################################################################
+    self   . AtMenu = False
+    ##########################################################################
+    if                          ( at == 1001                               ) :
+      ########################################################################
+      self . EditPicture        (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 1101                               ) :
+      ########################################################################
+      self . GoFullScreen       (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 1102                               ) :
+      ########################################################################
+      self . GoNormalWindow     (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 1201                               ) :
+      ########################################################################
+      self . DoStack            (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 1202                               ) :
+      ########################################################################
+      self . DoMdi              (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 2001                               ) :
+      ########################################################################
+      self . CloseView          (                                            )
+      ########################################################################
+      return True
     ##########################################################################
     return True
 ##############################################################################
