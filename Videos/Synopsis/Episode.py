@@ -420,7 +420,7 @@ class Episode    (                                                         ) :
       M3U   = f"{F}/Album.m3u"
       SPs   =                                 [                              ]
       ########################################################################
-      os    . chdir                           ( D                            )
+      os    . chdir                           ( F                            )
       ########################################################################
       FILEs = GetFilmsInCurrentDirectory      (                              )
       M3UPF = Path                            ( M3U                          )
