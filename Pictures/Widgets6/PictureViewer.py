@@ -27,8 +27,28 @@ from   AITK    . Qt6                   import *
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . Pictures   . Picture6 import Picture as Picture
+from   AITK    . Pictures   . Picture6 import Picture as PictureItem
 from   AITK    . Pictures   . Gallery  import Gallery as GalleryItem
+##############################################################################
+class pvLabel            ( QLabel                                          ) :
+  ############################################################################
+  emitClicked = Signal   ( int                                               )
+  ############################################################################
+  def __init__           ( self , parent = None                            ) :
+    ##########################################################################
+    super ( ) . __init__ (        parent                                     )
+    ##########################################################################
+    self      . ID = -1
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseDoubleClickEvent           ( self , event                       ) :
+    ##########################################################################
+    self      . emitClicked . emit    ( self . ID                            )
+    ##########################################################################
+    super ( ) . mouseDoubleClickEvent ( event                                )
+    ##########################################################################
+    return
 ##############################################################################
 class PictureViewer         ( QScrollArea , VirtualGui                     ) :
   ############################################################################
@@ -72,6 +92,7 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     self . MaxWidth      = 0
     self . Border        = 10
     self . AtPlace       = 0
+    self . imageIndex    = -1
     self . isFullScreen  = False
     self . AtMenu        = False
     self . LoadingPB     = None
@@ -472,6 +493,43 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     ##########################################################################
     return   False
   ############################################################################
+  def labelClicked           ( self , ID                                   ) :
+    ##########################################################################
+    if                       ( self . Method not in [ "Files","Gallery"  ] ) :
+      return
+    ##########################################################################
+    if                       ( self . Method     in [ "Files"            ] ) :
+      ########################################################################
+      L = len                ( self . FILEs                                  )
+      ########################################################################
+      if                     ( ID >= L                                     ) :
+        return
+      ########################################################################
+      self . imageIndex = ID
+      ########################################################################
+      M = self . FILEs       [ ID                                            ]
+      self . statusMessage   ( f"{M}"                                        )
+      self . ToggleSideTools ( True                                          )
+      ########################################################################
+      return
+    ##########################################################################
+    if                       ( self . Method     in [         "Gallery"  ] ) :
+      ########################################################################
+      L = len                ( self . PCIDs                                  )
+      ########################################################################
+      if                     ( ID >= L                                     ) :
+        return
+      ########################################################################
+      self . imageIndex = ID
+      ########################################################################
+      U = self . PCIDs       [ ID                                            ]
+      self . statusMessage   ( f"{U}"                                        )
+      self . ToggleSideTools ( True                                          )
+      ########################################################################
+      return
+    ##########################################################################
+    return
+  ############################################################################
   def toPixmap                  ( self , image                             ) :
     ##########################################################################
     PIX = QPixmap . fromImage   (        image                               )
@@ -502,7 +560,7 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     PIX   = self . toPixmap       ( self . Image                             )
     ##########################################################################
     CPIX  = QWidget               (                                          )
-    label = QLabel                ( CPIX                                     )
+    label = pvLabel               ( CPIX                                     )
     label . setAlignment          ( Qt . AlignCenter                         )
     label . setPixmap             ( PIX                                      )
     ##########################################################################
@@ -574,7 +632,9 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
       ########################################################################
       WY    = PIX  . height      (                                           )
       ########################################################################
-      label = QLabel             ( WIDGET                                    )
+      label = pvLabel            ( WIDGET                                    )
+      label . ID = CNT
+      label . emitClicked . connect ( self . labelClicked                    )
       label . setAlignment       ( Qt . AlignCenter                          )
       label . setPixmap          ( PIX                                       )
       ########################################################################
@@ -603,13 +663,6 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     ##########################################################################
     self    . setWidget          ( WIDGET                                    )
     self    . MultipleResize     (                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def BackgroundLoadFile      ( self , filename                            ) :
-    ##########################################################################
-    IMG  = QImage             ( filename                                     )
-    self . AssignImage . emit ( IMG                                          )
     ##########################################################################
     return
   ############################################################################
@@ -753,25 +806,22 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     ##########################################################################
     FOUND    = False
     SUFFIX   = ""
-    BLOB     = None
+    IMG      = None
     PICTAB   = self . Tables    [ "Information"                              ]
-    DPTTAB   = self . Tables    [ "Depot"                                    ]
+    DOPTAB   = self . Tables    [ "Depot"                                    ]
+    PICOP    = PictureItem      (                                            )
     ##########################################################################
-    QQ       = f"select `suffix` from {PICTAB} where ( `uuid` = {Uuid} ) ;"
-    DB       . Query            ( QQ                                         )
-    INF      = DB . FetchOne    (                                            )
-    if                          ( ( INF != None ) and ( len ( INF ) > 0 )  ) :
-      SUFFIX = INF              [ 0                                          ]
-      FOUND  = True
+    INFO     = PICOP . GetInformation ( DB , PICTAB , Uuid                   )
     ##########################################################################
-    if                          ( FOUND                                    ) :
-      QQ     = f"select `file` from {DPTTAB} where ( `uuid` = {Uuid} ) ;"
-      DB     . Query            ( QQ                                         )
-      BLOBs  = DB . FetchOne    (                                            )
-      if ( ( BLOBs != None ) and ( len ( BLOBs ) > 0 )                     ) :
-        BLOB = BLOBs            [ 0                                          ]
-      else                                                                   :
-        FOUND  = False
+    if                          ( INFO not in [ False , None ]             ) :
+      ########################################################################
+      QQ     = f"select `file` from {DOPTAB} where ( `uuid` = {Uuid} ) ;"
+      OKAY   = PICOP . FromDB   ( DB , QQ                                    )
+      ########################################################################
+      if                        ( OKAY                                     ) :
+        ######################################################################
+        IMG  = PICOP . toQImage (                                            )
+        FOUND = True
     ##########################################################################
     self    . setVacancy        (                                            )
     self    . DoRelax           (                                            )
@@ -780,125 +830,107 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     if                          ( not FOUND                                ) :
       return
     ##########################################################################
-    if                          ( len ( SUFFIX ) <= 0                      ) :
+    if                          ( IMG in self . EmptySet                   ) :
       return
-    ##########################################################################
-    if                          ( BLOB == None                             ) :
-      return
-    ##########################################################################
-    SS        = SUFFIX
-    SS        = SS . lower      (                                            )
-    ALLOWED   =                 [ "jpeg" , "jpg" , "png"                     ]
-    if                          ( SS in ALLOWED                            ) :
-      IMG     = QImage          (                                            )
-      IMG     . loadFromData    ( BLOB , SUFFIX                              )
-    else                                                                     :
-      INTL    = Image           ( blob = bytes ( BLOB )                      )
-      INTL    . format = "png"
-      DAT     = BytesIO         (                                            )
-      INTL    . save            ( file = DAT                                 )
-      BLOB    = DAT . getvalue  (                                            )
-      IMG     = QImage          (                                            )
-      IMG     . loadFromData    ( BLOB , "png"                               )
     ##########################################################################
     self . AssignImage . emit   ( IMG                                        )
     ##########################################################################
     return
   ############################################################################
-  def FetchGallery                   ( self , T1 , UUID , RELATED          ) :
+  def FetchGallery                 ( self , T1 , UUID , RELATED            ) :
     ##########################################################################
-    DB          = self . ConnectDB   ( UsePure = True                        )
-    if                               ( self . NotOkay ( DB )               ) :
+    DB        = self . ConnectDB   ( UsePure = True                          )
+    if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
-    self        . DoBusy             (                                       )
-    self        . setBustle          (                                       )
+    self      . DoBusy             (                                         )
+    self      . setBustle          (                                         )
     ##########################################################################
-    self        . Tables = self . ObtainsOwnerVariantTables                ( \
-                                       DB                                  , \
-                                       str ( UUID )                        , \
-                                       int ( T1 )                          , \
-                                       "PicturesView"                      , \
-                                       self . Tables                         )
+    self      . Tables = self . ObtainsOwnerVariantTables                  ( \
+                                     DB                                    , \
+                                     str ( UUID )                          , \
+                                     int ( T1 )                            , \
+                                     "PicturesView"                        , \
+                                     self . Tables                           )
     ##########################################################################
-    PICTAB      = self . Tables      [ "Information"                         ]
-    DPTTAB      = self . Tables      [ "Depot"                               ]
-    RELTAB      = self . Tables      [ "Relation"                            ]
+    PICTAB    = self . Tables      [ "Information"                           ]
+    DOPTAB    = self . Tables      [ "Depot"                                 ]
+    RELTAB    = self . Tables      [ "Relation"                              ]
     ##########################################################################
-    Pictures    =                    [                                       ]
-    GALM        = GalleryItem        (                                       )
-    UUIDs       = GALM . GetPictures ( DB , RELTAB , UUID , T1 , RELATED     )
+    Pictures  =                    [                                         ]
+    GALM      = GalleryItem        (                                         )
+    UUIDs     = GALM . GetPictures ( DB , RELTAB , UUID , T1 , RELATED       )
     ##########################################################################
-    TOTAL       = len                ( UUIDs                                 )
-    INDEX       = 0
+    TOTAL     = len                ( UUIDs                                   )
+    INDEX     = 0
     ##########################################################################
     self . PCIDs = UUIDs
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      INDEX     = int                ( INDEX + 1                             )
-      self      . setProgress        ( INDEX , TOTAL                         )
+      INDEX   = int                ( INDEX + 1                               )
+      self    . setProgress        ( INDEX , TOTAL                           )
       ########################################################################
-      FOUND     = False
-      SUFFIX    = ""
-      BLOB      = None
+      PICOP   = PictureItem        (                                         )
+      INFO    = PICOP . GetInformation ( DB , PICTAB , UUID                  )
       ########################################################################
-      QQ        = f"select `suffix` from {PICTAB} where ( `uuid` = {UUID} ) ;"
-      DB        . Query              ( QQ                                    )
-      INF       = DB . FetchOne      (                                       )
-      ########################################################################
-      if ( ( INF != None ) and ( len ( INF ) > 0 ) )                         :
-        SUFFIX  = INF                [ 0                                     ]
-        FOUND   = True
-      ########################################################################
-      if                             ( FOUND                               ) :
-        QQ      = f"select `file` from {DPTTAB} where ( `uuid` = {UUID} ) ;"
-        DB      . Query              ( QQ                                    )
-        BLOBs   = DB . FetchOne      (                                       )
-        if ( ( BLOBs != None ) and ( len ( BLOBs ) > 0 )                   ) :
-          BLOB  = BLOBs              [ 0                                     ]
-        else                                                                 :
-          FOUND = False
-      ########################################################################
-      if                             ( not FOUND                           ) :
-        continue
-      ########################################################################
-      if                             ( len ( SUFFIX ) <= 0                 ) :
-        continue
-      ########################################################################
-      if                             ( BLOB == None                        ) :
-        continue
-      ########################################################################
-      SS        = SUFFIX
-      SS        = SS . lower         (                                       )
-      ALLOWED   =                    [ "jpeg" , "jpg" , "png"                ]
-      ########################################################################
-      if                             ( SS in ALLOWED                       ) :
-        IMG     = QImage             (                                       )
-        IMG     . loadFromData       ( BLOB , SUFFIX                         )
-      else                                                                   :
-        INTL    = Image              ( blob = bytes ( BLOB )                 )
-        INTL    . format = "png"
-        DAT     = BytesIO            (                                       )
-        INTL    . save               ( file = DAT                            )
-        BLOB    = DAT . getvalue     (                                       )
-        IMG     = QImage             (                                       )
-        IMG     . loadFromData       ( BLOB , "png"                          )
-      ########################################################################
-      if                             ( IMG not in self . EmptySet          ) :
-        Pictures . append            ( IMG                                   )
-      else                                                                   :
-        print ( "Missing : " , UUID )
+      if                           ( INFO not in [ False , None ]          ) :
+        ######################################################################
+        QQ    = f"select `file` from {DOPTAB} where ( `uuid` = {UUID} ) ;"
+        OKAY  = PICOP . FromDB     ( DB , QQ                                 )
+        ######################################################################
+        if                         ( OKAY                                  ) :
+          ####################################################################
+          IMG = PICOP . toQImage   (                                         )
+          ####################################################################
+          if                       ( IMG not in self . EmptySet            ) :
+            Pictures . append      ( IMG                                     )
     ##########################################################################
-    self        . stopProgress       (                                       )
-    self        . setVacancy         (                                       )
-    self        . DoRelax            (                                       )
+    self      . stopProgress       (                                         )
+    self      . setVacancy         (                                         )
+    self      . DoRelax            (                                         )
     ##########################################################################
-    DB          . Close              (                                       )
+    DB        . Close              (                                         )
     ##########################################################################
     self . Pictures = Pictures
     ##########################################################################
-    self . AssignGallery . emit      ( Pictures                              )
+    self . AssignGallery . emit    ( Pictures                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def BackgroundLoadFile      ( self , filename                            ) :
+    ##########################################################################
+    IMG  = QImage             ( filename                                     )
+    self . AssignImage . emit ( IMG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def BackgroundLoadFiles           ( self , FILEs                         ) :
+    ##########################################################################
+    self     . DoBusy               (                                        )
+    self     . setBustle            (                                        )
+    ##########################################################################
+    TOTAL    = len                  ( FILEs                                  )
+    INDEX    = 0
+    PICs     =                      [                                        ]
+    ##########################################################################
+    for F in FILEs                                                           :
+      ########################################################################
+      INDEX  = int                  ( INDEX + 1                              )
+      self   . setProgress          ( INDEX , TOTAL                          )
+      ########################################################################
+      IMG    = QImage               ( F                                      )
+      ########################################################################
+      if                            ( IMG not in self . EmptySet           ) :
+        PICs . append               ( IMG                                    )
+    ##########################################################################
+    self     . stopProgress         (                                        )
+    self     . setVacancy           (                                        )
+    self     . DoRelax              (                                        )
+    ##########################################################################
+    self     . Pictures = PICs
+    ##########################################################################
+    self     . AssignGallery . emit ( PICs                                   )
     ##########################################################################
     return
   ############################################################################
@@ -920,13 +952,36 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     ##########################################################################
     if                           ( len ( self . Filename ) > 0             ) :
       ########################################################################
-      self . emitEditFile        ( self . Filename                           )
+      self . emitEditFile . emit ( self . Filename                           )
       ########################################################################
       return
     ##########################################################################
-    if                           ( len ( self . PCIDs ) <= 0               ) :
+    if                           ( self . imageIndex < 0                   ) :
       return
     ##########################################################################
+    if                           ( self . Method in [ "Files"            ] ) :
+      ########################################################################
+      L    = len                 ( self . FILEs                              )
+      ########################################################################
+      if                         ( self . imageIndex >= L                  ) :
+        return
+      ########################################################################
+      F    = self . FILEs        [ self . imageIndex                         ]
+      self . emitEditFile . emit ( F                                         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( self . Method in [ "Gallery"          ] ) :
+      ########################################################################
+      L = len                    ( self . PCIDs                              )
+      ########################################################################
+      if                         ( self . imageIndex >= L                  ) :
+        return
+      ########################################################################
+      U    = self . PCIDs        [ self . imageIndex                         ]
+      self . emitEditUuid . emit ( str ( U ) , self . Tables                 )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
@@ -946,6 +1001,27 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
       if         ( self . PickedUuid > 0                                   ) :
         return True
     ##########################################################################
+    if           ( self . imageIndex < 0                                   ) :
+      return False
+    ##########################################################################
+    if           ( self . Method in [ "Files"                            ] ) :
+      ########################################################################
+      L  = len   ( self . FILEs                                              )
+      ########################################################################
+      if         ( self . imageIndex >= L                                  ) :
+        return False
+      ########################################################################
+      return   True
+    ##########################################################################
+    if           ( self . Method in [ "Gallery"                          ] ) :
+      ########################################################################
+      L  = len   ( self . PCIDs                                              )
+      ########################################################################
+      if         ( self . imageIndex >= L                                  ) :
+        return False
+      ########################################################################
+      return   True
+    ##########################################################################
     return     False
   ############################################################################
   def loadFile ( self , filename                                           ) :
@@ -957,12 +1033,13 @@ class PictureViewer         ( QScrollArea , VirtualGui                     ) :
     ##########################################################################
     return
   ############################################################################
-  def loadFiles ( self , FILEs                                             ) :
+  def loadFiles            ( self , FILEs                                  ) :
     ##########################################################################
     self . Method = "Files"
     self . FILEs  = FILEs
     ##########################################################################
-    ## self . Go  ( self . BackgroundLoadFile , ( filename , )                  )
+    self . PrepareProgress (                                                 )
+    self . Go              ( self . BackgroundLoadFiles , ( FILEs , )        )
     ##########################################################################
     return
   ############################################################################

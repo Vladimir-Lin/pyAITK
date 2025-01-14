@@ -35,7 +35,7 @@ from   AITK    . Documents  . JSON      import Load         as LoadJson
 from   AITK    . Documents  . JSON      import Save         as SaveJson
 ##############################################################################
 from   AITK    . Essentials . Object    import Object       as Object
-from   AITK    . Pictures   . Picture   import Picture      as PictureItem
+from   AITK    . Pictures   . Picture6  import Picture      as PictureItem
 from   AITK    . Pictures   . Gallery   import Gallery      as GalleryItem
 ##############################################################################
 from   AITK    . People . Faces  . Face import Face         as FaceItem
