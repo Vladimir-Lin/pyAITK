@@ -21,10 +21,12 @@ from   AITK    . Essentials . Relation              import Relation
 from   AITK    . Calendars  . StarDate              import StarDate
 from   AITK    . Biology    . Sexuality . Sexuality import Sexuality
 ##############################################################################
-class SexualityListings        ( MajorListings                             ) :
+class SexualityListings        ( TreeDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
+  emitNamesShow       = Signal (                                             )
+  emitAllNames        = Signal ( dict                                        )
   emitAssignAmounts   = Signal ( str , int , int                             )
   PeopleGroup         = Signal ( str , int , str                             )
   ShowPersonalGallery = Signal ( str , int , str , QIcon                     )
@@ -35,17 +37,18 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
-    self . ClassTag         = "SexualityListings"
-    self . FetchTableKey    = "SexualityListings"
+    self . EditAllNames       = None
     ##########################################################################
-    self . IncludeUndecided = True
-    self . GType            = 77
-    self . CreatureUuid     = 5431231000000000001
-    self . UsedOptions      = [ 1 , 2 , 3 , 4 , 5                            ]
-    self . PeopleBtn        = None
-    self . NameBtn          = None
+    self . ClassTag           = "SexualityListings"
+    self . FetchTableKey      = "SexualityListings"
     ##########################################################################
-    self . SEXUALITY        = Sexuality (                                    )
+    self . IncludeUndecided   = True
+    self . GType              = 77
+    self . SortOrder          = "asc"
+    self . CreatureUuid       = 5431231000000000001
+    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5                          ]
+    ##########################################################################
+    self . SEXUALITY          = Sexuality (                                  )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -54,105 +57,92 @@ class SexualityListings        ( MajorListings                             ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction     ( self . FunctionDocking , True                   )
-    self . setFunction     ( self . HavingMenu      , True                   )
+    self . setFunction                 ( self . FunctionDocking , True       )
+    self . setFunction                 ( self . HavingMenu      , True       )
     ##########################################################################
-    self . setColumnCount  ( 3                                               )
-    self . setColumnHidden ( 1 , True                                        )
-    self . setColumnHidden ( 2 , True                                        )
+    self . setColumnCount              ( 3                                   )
+    self . setColumnHidden             ( 1 , True                            )
+    self . setColumnHidden             ( 2 , True                            )
     ##########################################################################
-    self . setDragEnabled  ( False                                           )
-    self . setDragDropMode ( QAbstractItemView . DropOnly                    )
+    self . setRootIsDecorated          ( False                               )
+    self . setAlternatingRowColors     ( True                                )
     ##########################################################################
+    self . MountClicked                ( 1                                   )
+    self . MountClicked                ( 2                                   )
+    ##########################################################################
+    self . assignSelectionMode         ( "ExtendedSelection"                 )
+    ##########################################################################
+    self . emitNamesShow     . connect ( self . show                         )
+    self . emitAllNames      . connect ( self . refresh                      )
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    ##########################################################################
+    self . setAcceptDrops              ( True                                )
+    self . setDragEnabled              ( True                                )
+    self . setDragDropMode             ( QAbstractItemView . DragDrop        )
+    ##########################################################################
+    self . setMinimumSize              ( 80 , 80                             )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 440 )                       )
   ############################################################################
-  def PrepareForActions                   ( self                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    msg  = self . getMenuItem             ( "Crowds"                         )
-    A    = QAction                        (                                  )
-    IC   = QIcon                          ( ":/images/peoplegroups.png"      )
-    A    . setIcon                        ( IC                               )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . GotoItemCrowd             )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PeopleBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    self . AppendToolNamingAction         (                                  )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled           ( False                            )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/viewpeople.png"            , \
+                                      self . GotoItemCrowd                   )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                       Enabled       ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
-    self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
-    self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . defaultCloseEvent ( event                                         )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    return
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . PeopleBtn not in self . EmptySet            ) :
-      ########################################################################
-      self . PeopleBtn . setEnabled ( Enabled                                )
-    ##########################################################################
-    if                ( self . NameBtn   not in self . EmptySet            ) :
-      ########################################################################
-      self . NameBtn   . setEnabled ( Enabled                                )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item , column                          ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def selectionsChanged            ( self                                  ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
+    self . defaultSingleClicked (        item , column                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def twiceClicked              ( self , item , column                     ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainsInformation  ( self , DB                                      ) :
+    ##########################################################################
+    self . ReloadLocality (        DB                                        )
     ##########################################################################
     return
   ############################################################################
@@ -173,6 +163,20 @@ class SexualityListings        ( MajorListings                             ) :
                   order by `id` asc ;"""
     ##########################################################################
     return " " . join                 ( QQ . split ( )                       )
+  ############################################################################
+  def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , str ( UUID )                               )
+    IT   . setData          ( 0 , Qt . UserRole , str ( UUID )               )
+    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    ##########################################################################
+    for COL in              [ 0 , 1 , 2                                    ] :
+      ########################################################################
+      IT . setBackground    ( COL , BRUSH                                    )
+    ##########################################################################
+    return IT
   ############################################################################
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
@@ -216,6 +220,37 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     return
   ############################################################################
+  def RefreshToolTip              ( self , Total                           ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def refresh                     ( self , JSON                            ) :
+    ##########################################################################
+    self   . clear                (                                          )
+    self   . setEnabled           ( False                                    )
+    ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      IT   = self . PrepareItem   ( U                                      , \
+                                    NAMEs [ U ]                            , \
+                                    self . TreeBrushes [ CNT ]               )
+      self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
+    ##########################################################################
+    self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . setEnabled           ( True                                     )
+    self   . emitNamesShow . emit (                                          )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                        ( self                                ) :
     ##########################################################################
     DB     = self . ConnectDB        (                                       )
@@ -253,6 +288,19 @@ class SexualityListings        ( MajorListings                             ) :
       self . Go                      ( self . ReportBelongings , VAL         )
     ##########################################################################
     self   . Notify                  ( 5                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "sexuality/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
     ##########################################################################
     return
   ############################################################################
@@ -372,9 +420,26 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     return
   ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard ( False                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyUuidToClipboard         ( self , item                            ) :
+    ##########################################################################
+    uuid = item . data            ( 0 , Qt . UserRole                        )
+    uuid = int                    ( uuid                                     )
+    qApp . clipboard ( ). setText ( f"{uuid}"                                )
+    self . Notify                 ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "SexualityListings" , 2                          )
+    self . defaultPrepare ( self . ClassTag , 2                              )
+    ##########################################################################
+    self . LoopRunning = False
     ##########################################################################
     return
   ############################################################################
@@ -488,10 +553,7 @@ class SexualityListings        ( MajorListings                             ) :
     ##########################################################################
     if                              ( at == 38521001                       ) :
       ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
-      self . Notify                 ( 5                                      )
+      self . CopyUuidToClipboard    ( item                                   )
       ########################################################################
       return True
     ##########################################################################

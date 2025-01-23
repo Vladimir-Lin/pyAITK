@@ -69,6 +69,7 @@ class HumanBloodListings     ( TreeDock                               ) :
     self . MountClicked                ( 2                                   )
     ##########################################################################
     self . assignSelectionMode         ( "ExtendedSelection"                 )
+    ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
