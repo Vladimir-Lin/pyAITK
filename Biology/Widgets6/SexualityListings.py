@@ -9,16 +9,17 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                                      import QtCore
+from   PySide6                                      import QtGui
+from   PySide6                                      import QtWidgets
+from   PySide6 . QtCore                             import *
+from   PySide6 . QtGui                              import *
+from   PySide6 . QtWidgets                          import *
+from   AITK    . Qt6                                import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Essentials . Relation              import Relation
+from   AITK    . Calendars  . StarDate              import StarDate
+from   AITK    . Biology    . Sexuality . Sexuality import Sexuality
 ##############################################################################
 class SexualityListings        ( MajorListings                             ) :
   ############################################################################
@@ -43,6 +44,8 @@ class SexualityListings        ( MajorListings                             ) :
     self . UsedOptions      = [ 1 , 2 , 3 , 4 , 5                            ]
     self . PeopleBtn        = None
     self . NameBtn          = None
+    ##########################################################################
+    self . SEXUALITY        = Sexuality (                                    )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
