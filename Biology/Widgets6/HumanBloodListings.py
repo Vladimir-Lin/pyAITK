@@ -9,21 +9,24 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                              import QtCore
+from   PySide6                              import QtGui
+from   PySide6                              import QtWidgets
+from   PySide6 . QtCore                     import *
+from   PySide6 . QtGui                      import *
+from   PySide6 . QtWidgets                  import *
+from   AITK    . Qt6                        import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Essentials . Relation      import Relation
+from   AITK    . Calendars  . StarDate      import StarDate
+from   AITK    . Biology    . Blood . Blood import Blood
 ##############################################################################
-class HumanBloodListings     ( MajorListings                               ) :
+class HumanBloodListings     ( TreeDock                               ) :
   ############################################################################
   HavingMenu        = 1371434312
   ############################################################################
+  emitNamesShow     = Signal (                                               )
+  emitAllNames      = Signal ( dict                                          )
   emitAssignAmounts = Signal ( str , int , int                               )
   PeopleGroup       = Signal ( str , int , str                               )
   OpenLogHistory    = Signal ( str , str , str , str , str                   )
@@ -33,14 +36,17 @@ class HumanBloodListings     ( MajorListings                               ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
+    self . EditAllNames       = None
+    ##########################################################################
     self . ClassTag           = "BloodListings"
     self . FetchTableKey      = "BloodListings"
     self . GType              = 203
+    self . SortOrder          = "asc"
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5                          ]
     self . GroupOptions       = [ 1                                          ]
     ## self . GroupOptions       = [ 1 , 4                                      ]
-    self . PeopleBtn          = None
-    self . NameBtn            = None
+    ##########################################################################
+    self . BLOOD              = Blood (                                      )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -49,120 +55,113 @@ class HumanBloodListings     ( MajorListings                               ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction       ( self . FunctionDocking , True                 )
-    self . setFunction       ( self . HavingMenu      , True                 )
+    self . setFunction                 ( self . FunctionDocking , True       )
+    self . setFunction                 ( self . HavingMenu      , True       )
     ##########################################################################
-    self . setColumnCount    ( 3                                             )
-    self . setColumnHidden   ( 1 , True                                      )
-    self . setColumnHidden   ( 2 , True                                      )
+    self . setColumnCount              ( 3                                   )
+    self . setColumnHidden             ( 1 , True                            )
+    self . setColumnHidden             ( 2 , True                            )
     ##########################################################################
-    self . setDragEnabled    ( False                                         )
-    self . setDragDropMode   ( QAbstractItemView . DropOnly                  )
+    self . setRootIsDecorated          ( False                               )
+    self . setAlternatingRowColors     ( True                                )
     ##########################################################################
+    self . MountClicked                ( 1                                   )
+    self . MountClicked                ( 2                                   )
+    ##########################################################################
+    self . assignSelectionMode         ( "ExtendedSelection"                 )
+    self . emitNamesShow     . connect ( self . show                         )
+    self . emitAllNames      . connect ( self . refresh                      )
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    ##########################################################################
+    self . setAcceptDrops              ( True                                )
+    self . setDragEnabled              ( True                                )
+    self . setDragDropMode             ( QAbstractItemView . DragDrop        )
+    ##########################################################################
+    self . setMinimumSize              ( 80 , 80                             )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 200 , 160 )                       )
   ############################################################################
-  def PrepareForActions                   ( self                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    msg  = self . getMenuItem             ( "Crowds"                         )
-    A    = QAction                        (                                  )
-    IC   = QIcon                          ( ":/images/peoplegroups.png"      )
-    A    . setIcon                        ( IC                               )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . GotoItemCrowd             )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PeopleBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    self . AppendToolNamingAction         (                                  )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled           ( False                            )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/viewpeople.png"            , \
+                                      self . GotoItemCrowd                   )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                       Enabled       ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
-    self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
-    self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . defaultCloseEvent ( event                                         )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    return
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . PeopleBtn not in self . EmptySet            ) :
-      ########################################################################
-      self . PeopleBtn . setEnabled ( Enabled                                )
-    ##########################################################################
-    if                ( self . NameBtn   not in self . EmptySet            ) :
-      ########################################################################
-      self . NameBtn   . setEnabled ( Enabled                                )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item , column                          ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def selectionsChanged            ( self                                  ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery    ( self                                           ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
-    TABLE = self . Tables [ "Bloods"                                         ]
-    UOPTS = " , " . join  ( str(x) for x in self . UsedOptions               )
-    GOPTS = " , " . join  ( str(x) for x in self . GroupOptions              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` in ( {UOPTS} ) )
-                  and ( `group` in ( {GOPTS} ) )
-                order by `id` asc ;"""
+    return
+  ############################################################################
+  def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
-    return " " . join     ( QQ . split (                                   ) )
+    self . ReloadLocality (        DB                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainUuidsQuery                ( self                               ) :
+    return self . BLOOD . QuerySyntax ( self . Tables [ "Bloods" ]         , \
+                                        self . UsedOptions                 , \
+                                        self . GroupOptions                , \
+                                        self . SortOrder                     )
+  ############################################################################
+  def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , str ( UUID )                               )
+    IT   . setData          ( 0 , Qt . UserRole , str ( UUID )               )
+    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    ##########################################################################
+    for COL in              [ 0 , 1 , 2                                    ] :
+      ########################################################################
+      IT . setBackground    ( COL , BRUSH                                    )
+    ##########################################################################
+    return IT
   ############################################################################
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
@@ -206,6 +205,37 @@ class HumanBloodListings     ( MajorListings                               ) :
     ##########################################################################
     return
   ############################################################################
+  def RefreshToolTip              ( self , Total                           ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def refresh                     ( self , JSON                            ) :
+    ##########################################################################
+    self   . clear                (                                          )
+    self   . setEnabled           ( False                                    )
+    ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      IT   = self . PrepareItem   ( U                                      , \
+                                    NAMEs [ U ]                            , \
+                                    self . TreeBrushes [ CNT ]               )
+      self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
+    ##########################################################################
+    self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . setEnabled           ( True                                     )
+    self   . emitNamesShow . emit (                                          )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                        ( self                                ) :
     ##########################################################################
     DB     = self . ConnectDB        (                                       )
@@ -243,6 +273,19 @@ class HumanBloodListings     ( MajorListings                               ) :
       self . Go                      ( self . ReportBelongings , VAL         )
     ##########################################################################
     self   . Notify                  ( 5                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "blood/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
     ##########################################################################
     return
   ############################################################################
@@ -367,9 +410,26 @@ class HumanBloodListings     ( MajorListings                               ) :
     ##########################################################################
     return
   ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard ( False                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyUuidToClipboard         ( self , item                            ) :
+    ##########################################################################
+    uuid = item . data            ( 0 , Qt . UserRole                        )
+    uuid = int                    ( uuid                                     )
+    qApp . clipboard ( ). setText ( f"{uuid}"                                )
+    self . Notify                 ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 2                              )
+    ##########################################################################
+    self . LoopRunning = False
     ##########################################################################
     return
   ############################################################################
@@ -483,10 +543,7 @@ class HumanBloodListings     ( MajorListings                               ) :
     ##########################################################################
     if                              ( at == 38521001                       ) :
       ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
-      self . Notify                 ( 5                                      )
+      self . CopyUuidToClipboard    ( item                                   )
       ########################################################################
       return True
     ##########################################################################

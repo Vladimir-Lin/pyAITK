@@ -30,11 +30,11 @@ DefaultBloodJson =                                                           {
   "-"  : 5433123000000090011                                                 ,
   "+"  : 5433123000000090012                                                 }
 ##############################################################################
-BLOODREL         = "`affiliations`.`relations_people_0009`"
-BLOODPARAM       = "`cios`.`parameters`"
-BloodShortType   = 203
-BloodLongType    = 1100000000000000203
-BloodTypeName    = "Blood"
+BLOODREL       = "`affiliations`.`relations_people_0009`"
+BLOODPARAM     = "`cios`.`parameters`"
+BloodShortType = 203
+BloodLongType  = 1100000000000000203
+BloodTypeName  = "Blood"
 ##############################################################################
 class Blood              ( Columns                                         ) :
   ############################################################################
@@ -167,6 +167,24 @@ class Blood              ( Columns                                         ) :
                "Name"    : self . Name                                     , \
                "Comment" : self . Comment                                  , \
                "Wiki"    : self . Wiki                                       }
+  ############################################################################
+  ## 查詢語法
+  ############################################################################
+  def QuerySyntax        ( self                                            , \
+                           TABLE                                           , \
+                           UsedOptions                                     , \
+                           GroupOptions                                    , \
+                           ORDER                                           ) :
+    ##########################################################################
+    UOPTS = " , " . join ( str(x) for x in UsedOptions                       )
+    GOPTS = " , " . join ( str(x) for x in GroupOptions                      )
+    ##########################################################################
+    QQ    = f"""select `uuid` from {TABLE}
+                where ( `used` in ( {UOPTS} ) )
+                  and ( `group` in ( {GOPTS} ) )
+                order by `id` {ORDER} ;"""
+    ##########################################################################
+    return " " . join    ( QQ . split (                                   ) )
   ############################################################################
   ## 血型名稱轉血型長編號
   ## Name : 血型名稱
