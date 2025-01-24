@@ -166,9 +166,9 @@ class EyeColorListings           ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery                    ( self                           ) :
-    return self . IRIS . ObtainUuidsQuery ( self . Tables [ "Eyes" ]       , \
-                                            self . SortOrder                 )
+  def ObtainUuidsQuery               ( self                                ) :
+    return self . IRIS . QuerySyntax ( self . Tables [ "Eyes" ]            , \
+                                       self . SortOrder                      )
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################

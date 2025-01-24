@@ -91,16 +91,15 @@ class HairColorListings        ( TreeDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 280 )                       )
   ############################################################################
-  def PrepareForActions                    ( self                          ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . AppendSideActionWithIcon        ( "Crowds"                      , \
-                                             ":/images/viewpeople.png"     , \
-                                             self . GotoItemCrowd            )
-    self . AppendSideActionWithIcon        ( "HairGallery"                 , \
-                                             ":/images/gallery.png"        , \
-                                             self . GotoItemGallery          )
-    self . AppendWindowToolSeparatorAction (                                 )
-    self . AppendToolNamingAction          (                                 )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/viewpeople.png"            , \
+                                      self . GotoItemCrowd                   )
+    self . AppendSideActionWithIcon ( "HairGallery"                        , \
+                                      ":/images/gallery.png"               , \
+                                      self . GotoItemGallery                 )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -148,14 +147,9 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery      ( self                                         ) :
-    ##########################################################################
-    HAIRTAB = self . Tables [ "Hairs"                                        ]
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"select `uuid` from {HAIRTAB} order by `id` {ORDER} ;"
-    ##########################################################################
-    return QQ
+  def ObtainUuidsQuery                ( self                               ) :
+    return self . HAIRS . QuerySyntax ( self . Tables [ "Hairs"          ] , \
+                                        self . SortOrder                     )
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
@@ -198,35 +192,29 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportDyeHairs               ( self , UUIDs                          ) :
+  def ReportDyeHairs                    ( self , UUIDs                     ) :
     ##########################################################################
-    time   . sleep                 ( 1.0                                     )
+    time   . sleep                      ( 1.0                                )
     ##########################################################################
-    RELTAB = self . Tables         [ "RelationPeople"                        ]
-    REL    = Relation              (                                         )
-    REL    . setT1                 ( "Hairs"                                 )
-    REL    . setT2                 ( "People"                                )
-    REL    . setRelation           ( "Contains"                              )
+    RELTAB = self . Tables              [ "RelationPeople"                   ]
     ##########################################################################
-    DB     = self . ConnectDB      (                                         )
+    DB     = self . ConnectDB           (                                    )
     ##########################################################################
-    if                             ( self . NotOkay ( DB )                 ) :
+    if                                  ( self . NotOkay ( DB )            ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit        (                                         )
+    self   . OnBusy  . emit             (                                    )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                           ( not self . StayAlive                  ) :
+      if                                ( not self . StayAlive             ) :
         continue
       ########################################################################
-      REL  . set                   ( "first" , UUID                          )
-      CNT  = REL . CountSecond     ( DB , RELTAB                             )
-      ########################################################################
-      self . emitDyeAmounts . emit ( str ( UUID ) , CNT , 3                  )
+      CNT  = self . HAIRS . CountCrowds ( DB , RELTAB , "Contains" , UUID    )
+      self . emitDyeAmounts . emit      ( str ( UUID ) , CNT , 3             )
     ##########################################################################
-    self   . GoRelax . emit        (                                         )
-    DB     . Close                 (                                         )
+    self   . GoRelax . emit             (                                    )
+    DB     . Close                      (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -240,35 +228,32 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
+  def ReportBelongings                  ( self , UUIDs                     ) :
     ##########################################################################
-    time   . sleep                    ( 1.0                                  )
+    time   . sleep                      ( 1.0                                )
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Hairs"                              )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
+    RELTAB = self . Tables              [ "RelationPeople"                   ]
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
+    DB     = self . ConnectDB           (                                    )
     ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
+    if                                  ( self . NotOkay ( DB )            ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit           (                                      )
+    self   . OnBusy  . emit             (                                    )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                              ( not self . StayAlive               ) :
+      if                                ( not self . StayAlive             ) :
         continue
       ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2               )
+      CNT  = self . HAIRS . CountCrowds ( DB                               , \
+                                          RELTAB                           , \
+                                          "Subordination"                  , \
+                                          UUID                               )
+      self . emitAssignAmounts . emit   ( str ( UUID ) , CNT , 2             )
     ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
+    self   . GoRelax . emit             (                                    )
+    DB     . Close                      (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -308,39 +293,7 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     HAIRTAB = self . Tables           [ "Hairs"                              ]
     NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      QQ    = f"""select `id`,`name`,`formula`,`parameter`,`R`,`G`,`B` from {HAIRTAB}
-                 where ( `uuid` = {UUID} ) ;"""
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if                              ( self . NotOkay ( RR )              ) :
-        continue
-      ########################################################################
-      if                              ( len ( RR ) != 7                    ) :
-        continue
-      ########################################################################
-      ID    = int                     ( RR [ 0                             ] )
-      NA    = self . assureString     ( RR [ 1                             ] )
-      FM    = int                     ( RR [ 2                             ] )
-      PA    = float                   ( RR [ 3                             ] )
-      R     = int                     ( RR [ 4                             ] )
-      G     = int                     ( RR [ 5                             ] )
-      B     = int                     ( RR [ 6                             ] )
-      ########################################################################
-      J     =                         { "Id"         : ID                  , \
-                                        "Uuid"       : UUID                , \
-                                        "Name"       : NAMEs [ UUID ]      , \
-                                        "Identifier" : NA                  , \
-                                        "Formula"    : FM                  , \
-                                        "Parameter"  : PA                  , \
-                                        "R"          : R                   , \
-                                        "G"          : G                   , \
-                                        "B"          : B                     }
-      LISTs . append                  ( J                                    )
+    LISTs   = self . HAIRS . GetHairListings ( DB , HAIRTAB , UUIDs , NAMEs  )
     ##########################################################################
     return UUIDs , LISTs
   ############################################################################
@@ -525,43 +478,41 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def PeopleAppending           ( self , atUuid , NAME , JSON              ) :
+  def PeopleAppending               ( self , atUuid , NAME , JSON          ) :
     ##########################################################################
-    UUIDs  = JSON               [ "UUIDs"                                    ]
-    if                          ( len ( UUIDs ) <= 0                       ) :
+    UUIDs  = JSON                   [ "UUIDs"                                ]
+    if                              ( len ( UUIDs ) <= 0                   ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( self . NotOkay ( DB )                    ) :
+    DB     = self . ConnectDB       (                                        )
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationPeople"                           ]
+    RELTAB = self . Tables          [ "RelationPeople"                       ]
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Hairs"                                    )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( self . JoinRelate                          )
+    DB     . LockWrites             ( [ RELTAB                             ] )
+    self   . HAIRS . PeopleJoinHair ( DB                                   , \
+                                      RELTAB                               , \
+                                      self . JoinRelate                    , \
+                                      atUuid                               , \
+                                      UUIDs                                  )
+    DB     . UnlockTables           (                                        )
     ##########################################################################
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
+    DB     . Close                  (                                        )
     ##########################################################################
-    DB     . UnlockTables       (                                            )
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
+    RR     =                        ( not self . isColumnHidden ( 1 )        )
     ##########################################################################
-    RR     =                    ( not self . isColumnHidden ( 1 )            )
-    ##########################################################################
-    if                          ( not self . isColumnHidden ( 2 )          ) :
+    if                              ( not self . isColumnHidden ( 2 )      ) :
       RR   = True
     ##########################################################################
-    if                          ( RR                                       ) :
+    if                              ( RR                                   ) :
       ########################################################################
-      self . emitRestart . emit (                                            )
+      self . emitRestart . emit     (                                        )
     ##########################################################################
     return
   ############################################################################

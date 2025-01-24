@@ -4,31 +4,39 @@
 ##############################################################################
 import os
 import sys
+import getopt
 import time
 import datetime
 import requests
 import threading
 ##############################################################################
-from   io                           import BytesIO
-from   wand . image                 import Image
-from   PIL                          import Image as Pillow
+import mysql . connector
+from   mysql . connector                   import Error
 ##############################################################################
-import cv2
-import dlib
-import skimage
-import numpy                                     as np
-import mediapipe                                 as mp
+import AITK
+from   AITK  . Database   . Query          import Query
+from   AITK  . Database   . Connection     import Connection
+from   AITK  . Database   . Pair           import Pair
+from   AITK  . Database   . Columns        import Columns
 ##############################################################################
-from   AITK . Essentials . Relation import Relation
-from   AITK . Calendars  . StarDate import StarDate
+from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
+from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-class Iris (                                                               ) :
+IRISREL       = "`affiliations`.`relations_people_0009`"
+EPICREL        = "`affiliations`.`relations_pictures_0009`"
+IRISNAM       = "`appellations`.`names_commons_0014`"
+IRISNOTE      = "`notez`.`notes_commons_0027`"
+IRISPARAM     = "`cios`.`parameters`"
+IrisShortType = 19
+IrisLongType  = 1100000000000000019
+IrisTypeName  = "Eyes"
+##############################################################################
+class Iris               ( Columns                                         ) :
   ############################################################################
-  def __init__     ( self                                                  ) :
+  def __init__           ( self                                            ) :
     ##########################################################################
-    self . UUIDs = [                                                         ]
-    self . NAMEs = {                                                         }
-    self . LISTs = {                                                         }
+    super ( ) . __init__ (                                                   )
+    self      . Clear    (                                                   )
     ##########################################################################
     return
   ############################################################################
@@ -36,6 +44,152 @@ class Iris (                                                               ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def Clear            ( self                                              ) :
+    ##########################################################################
+    self . Columns   = [                                                     ]
+    self . UUIDs     = [                                                     ]
+    self . NAMEs     = {                                                     }
+    self . LISTs     = {                                                     }
+    self . Id        =  -1
+    self . Uuid      =   0
+    self . HType     =   1
+    self . Name      =  ""
+    self . Formula   =   0
+    self . Parameter = 1.0
+    self . R         =   0
+    self . G         =   0
+    self . B         =   0
+    self . ltime     =   0
+    ##########################################################################
+    return
+  ############################################################################
+  def assign ( self , item                                                 ) :
+    ##########################################################################
+    self . Columns   = item . Columns
+    self . UUIDs     = item . UUIDs
+    self . NAMEs     = item . NAMEs
+    self . LISTs     = item . LISTs
+    self . Id        = item . Id
+    self . Uuid      = item . Uuid
+    self . HType     = item . Type
+    self . Name      = item . Name
+    self . Formula   = item . Formula
+    self . Parameter = item . Parameter
+    self . R         = item . R
+    self . G         = item . G
+    self . B         = item . B
+    self . ltime     = item . ltime
+    ##########################################################################
+    return
+  ############################################################################
+  def set            ( self , item , value                                 ) :
+    ##########################################################################
+    a = item . lower (                                                       )
+    ##########################################################################
+    if               ( "id"        == a                                    ) :
+      self . Id        = value
+    ##########################################################################
+    elif             ( "uuid"      == a                                    ) :
+      self . Uuid      = value
+    ##########################################################################
+    elif             ( "type"      == a                                    ) :
+      self . HType     = value
+    ##########################################################################
+    elif             ( "name"      == a                                    ) :
+      self . Name      = value
+    ##########################################################################
+    elif             ( "formula"   == a                                    ) :
+      self . Formula   = value
+    ##########################################################################
+    elif             ( "parameter" == a                                    ) :
+      self . Parameter = value
+    ##########################################################################
+    elif             ( "r"         == a                                    ) :
+      self . R         = value
+    ##########################################################################
+    elif             ( "g"         == a                                    ) :
+      self . G         = value
+    ##########################################################################
+    elif             ( "b"         == a                                    ) :
+      self . B         = value
+    ##########################################################################
+    elif             ( "ltime"     == a                                    ) :
+      self . ltime     = value
+    ##########################################################################
+    return
+  ############################################################################
+  def get            ( self , item                                         ) :
+    ##########################################################################
+    a = item . lower (                                                       )
+    ##########################################################################
+    if               ( "id"        == a                                    ) :
+      return self . Id
+    ##########################################################################
+    if               ( "uuid"      == a                                    ) :
+      return self . Uuid
+    ##########################################################################
+    if               ( "type"      == a                                    ) :
+      return self . HType
+    ##########################################################################
+    if               ( "name"      == a                                    ) :
+      return self . Name
+    ##########################################################################
+    if               ( "formula"   == a                                    ) :
+      return self . Formula
+    ##########################################################################
+    if               ( "parameter" == a                                    ) :
+      return self . Parameter
+    ##########################################################################
+    if               ( "r"         == a                                    ) :
+      return self . R
+    ##########################################################################
+    if               ( "g"         == a                                    ) :
+      return self . G
+    ##########################################################################
+    if               ( "b"         == a                                    ) :
+      return self . B
+    ##########################################################################
+    if               ( "ltime"     == a                                    ) :
+      return self . ltime
+    ##########################################################################
+    return ""
+  ############################################################################
+  def tableItems        ( self                                             ) :
+    return [ "id"                                                            ,
+             "uuid"                                                          ,
+             "type"                                                          ,
+             "name"                                                          ,
+             "formula"                                                       ,
+             "parameter"                                                     ,
+             "r"                                                             ,
+             "g"                                                             ,
+             "b"                                                             ,
+             "ltime"                                                         ]
+  ############################################################################
+  def pair              ( self , item                                      ) :
+    v = self . get      (        item                                        )
+    return f"`{item}` = {v}"
+  ############################################################################
+  def valueItems        ( self                                             ) :
+    return [ "type"                                                          ,
+             "name"                                                          ,
+             "formula"                                                       ,
+             "parameter"                                                     ,
+             "r"                                                             ,
+             "g"                                                             ,
+             "b"                                                             ]
+  ############################################################################
+  def toJson ( self                                                        ) :
+    return   { "Id"        : self . Id                                     , \
+               "Uuid"      : self . Uuid                                   , \
+               "Type"      : self . HType                                  , \
+               "Name"      : self . Name                                   , \
+               "Formula"   : self . Formula                                , \
+               "Parameter" : self . Parameter                              , \
+               "R"         : self . R                                      , \
+               "G"         : self . G                                      , \
+               "B"         : self . B                                        }
   ############################################################################
   def assureString     ( self , pb                                         ) :
     ##########################################################################
@@ -48,10 +202,10 @@ class Iris (                                                               ) :
     ##########################################################################
     return BB
   ############################################################################
-  def ObtainUuidsQuery ( self , EYETAB , ORDER                             ) :
+  def QuerySyntax ( self , EYETAB , ORDER                                  ) :
     return f"select `uuid` from {EYETAB} order by `id` {ORDER} ;"
   ############################################################################
-  def QuerySyntax     ( self , EYETAB , UUID                               ) :
+  def QueryItemSyntax ( self , EYETAB , UUID                               ) :
     ##########################################################################
     QQ = f"""select `id`,`name`,`formula`,`parameter`,`R`,`G`,`B`
              from {EYETAB}
@@ -79,32 +233,32 @@ class Iris (                                                               ) :
                                "G"          : G                            , \
                                "B"          : B                              }
   ############################################################################
-  def QueryAllDetails              ( self , DB , EYETAB , UUIDs , NAMEs    ) :
+  def QueryAllDetails                ( self , DB , EYETAB , UUIDs , NAMEs  ) :
     ##########################################################################
-    LISTs   =                      [                                         ]
+    LISTs   =                        [                                       ]
     ##########################################################################
-    if                             ( len ( UUIDs ) <= 0                    ) :
+    if                               ( len ( UUIDs ) <= 0                  ) :
       return LISTs
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      QQ    = self . QuerySyntax   ( EYETAB , UUID                           )
-      DB    . Query                ( QQ                                      )
-      RR    = DB . FetchOne        (                                         )
+      QQ    = self . QueryItemSyntax ( EYETAB , UUID                         )
+      DB    . Query                  ( QQ                                    )
+      RR    = DB . FetchOne          (                                       )
       ########################################################################
-      if                           ( RR in [ False , None ]                ) :
+      if                             ( RR in [ False , None ]              ) :
         continue
       ########################################################################
-      if                           ( 7 != len ( RR )                       ) :
+      if                             ( 7 != len ( RR )                     ) :
         continue
       ########################################################################
       NN    = ""
       ########################################################################
-      if                           ( UUID in NAMEs                         ) :
-        NN  = NAMEs                [ UUID                                    ]
+      if                             ( UUID in NAMEs                       ) :
+        NN  = NAMEs                  [ UUID                                  ]
       ########################################################################
-      J     = self . ColumnsToJson ( RR , UUID , NAMEs [ UUID ]              )
-      LISTs . append               ( J                                       )
+      J     = self . ColumnsToJson   ( RR , UUID , NAMEs [ UUID ]            )
+      LISTs . append                 ( J                                     )
     ##########################################################################
     return LISTs
   ############################################################################
@@ -127,20 +281,32 @@ class Iris (                                                               ) :
                         UUIDs                                              , \
                         RELATED = "Subordination"                          ) :
     ##########################################################################
+    global IrisTypeName
+    ##########################################################################
     REL = Relation    (                                                      )
     REL . set         ( "first" , atUuid                                     )
-    REL . setT1       ( "Eyes"                                               )
+    REL . setT1       ( IrisTypeName                                         )
     REL . setT2       ( "People"                                             )
     REL . setRelation ( RELATED                                              )
     REL . Joins       ( DB , RELTAB , UUIDs                                  )
     ##########################################################################
     return
   ############################################################################
+  def PeopleJoinDefaultIris ( self , DB , RELATE , UUID , UUIDs            ) :
+    ##########################################################################
+    global IRISREL
+    ##########################################################################
+    self . CrowdsJoinIris   ( DB , IRISREL , UUID , UUIDs , RELATE           )
+    ##########################################################################
+    return
+  ############################################################################
   def FetchPeopleIris        ( self , DB , RELTAB , PUID                   ) :
+    ##########################################################################
+    global IrisTypeName
     ##########################################################################
     REL        = Relation    (                                               )
     REL        . set         ( "second" , PUID                               )
-    REL        . setT1       ( "Eyes"                                        )
+    REL        . setT1       ( IrisTypeName                                  )
     REL        . setT2       ( "People"                                      )
     REL        . setRelation ( "Subordination"                               )
     return REL . GetOwners   ( DB , RELTAB                                   )
@@ -153,19 +319,29 @@ class Iris (                                                               ) :
                                EUID                                        , \
                                RELATE = "Subordination"                    ) :
     ##########################################################################
+    global IrisTypeName
+    ##########################################################################
     REL        = Relation    (                                               )
     REL        . set         ( "first" , EUID                                )
-    REL        . setT1       ( "Eyes"                                        )
+    REL        . setT1       ( IrisTypeName                                  )
     REL        . setT2       ( "People"                                      )
     REL        . setRelation ( RELATE                                        )
     ##########################################################################
     return REL . CountSecond ( DB , RELTAB                                   )
   ############################################################################
+  def CountDefaultCrowds               ( self , DB , RELATE , UUID         ) :
+    ##########################################################################
+    global IRISREL
+    ##########################################################################
+    return self . CountIrisPeopleTotal ( DB , IRISREL , UUID , RELATE        )
+  ############################################################################
   def GalleriesJoinIris ( self , DB , RELTAB , atUuid , UUIDs              ) :
+    ##########################################################################
+    global IrisTypeName
     ##########################################################################
     REL = Relation      (                                                    )
     REL . set           ( "first" , atUuid                                   )
-    REL . setT1         ( "Eyes"                                             )
+    REL . setT1         ( IrisTypeName                                       )
     REL . setT2         ( "Gallery"                                          )
     REL . setRelation   ( "Subordination"                                    )
     REL . Joins         ( DB , RELTAB , UUIDs                                )
