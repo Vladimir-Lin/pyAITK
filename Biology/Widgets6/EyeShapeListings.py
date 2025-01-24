@@ -92,16 +92,15 @@ class EyeShapeListings         ( TreeDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 320 )                       )
   ############################################################################
-  def PrepareForActions                    ( self                          ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . AppendSideActionWithIcon        ( "Crowds"                      , \
-                                             ":/images/viewpeople.png"     , \
-                                             self . GotoItemCrowd            )
-    self . AppendSideActionWithIcon        ( "EyeShapeGallery"             , \
-                                             ":/images/gallery.png"        , \
-                                             self . GotoItemGallery          )
-    self . AppendWindowToolSeparatorAction (                                 )
-    self . AppendToolNamingAction          (                                 )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/viewpeople.png"            , \
+                                      self . GotoItemCrowd                   )
+    self . AppendSideActionWithIcon ( "EyeShapeGallery"                    , \
+                                      ":/images/gallery.png"               , \
+                                      self . GotoItemGallery                 )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################

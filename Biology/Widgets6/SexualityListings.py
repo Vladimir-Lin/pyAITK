@@ -146,23 +146,15 @@ class SexualityListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery                ( self                               ) :
+  def ObtainUuidsQuery                    ( self                           ) :
     ##########################################################################
-    TABLE   = self . Tables           [ "Sexuality"                          ]
-    LISTs   =                         [ self . CreatureUuid                  ]
+    TABLE = self . Tables                 [ "Sexuality"                      ]
     ##########################################################################
-    if                                ( self . IncludeUndecided            ) :
-      LISTs . append                  ( 0                                    )
-    ##########################################################################
-    LQ      = " , " . join            ( str(x) for x in LISTs                )
-    UQ      = " , " . join            ( str(x) for x in self . UsedOptions   )
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` in ( {UQ} ) )
-                  and ( `creature` in ( {LQ} ) )
-                  order by `id` asc ;"""
-    ##########################################################################
-    return " " . join                 ( QQ . split ( )                       )
+    return self . SEXUALITY . QuerySyntax ( TABLE                          , \
+                                            self . CreatureUuid            , \
+                                            self . IncludeUndecided        , \
+                                            self . UsedOptions             , \
+                                            self . SortOrder                 )
   ############################################################################
   def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
     ##########################################################################
@@ -193,10 +185,6 @@ class SexualityListings        ( TreeDock                                  ) :
     time   . sleep                    ( 1.0                                  )
     ##########################################################################
     RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Sexuality"                          )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
     ##########################################################################
     DB     = self . ConnectDB         (                                      )
     ##########################################################################
@@ -210,9 +198,10 @@ class SexualityListings        ( TreeDock                                  ) :
       if                              ( not self . StayAlive               ) :
         continue
       ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
+      CNT  = self . SEXUALITY . CountCrowds ( DB                           , \
+                                              RELTAB                       , \
+                                              "Subordination"              , \
+                                              UUID                           )
       self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
     ##########################################################################
     self   . GoRelax . emit           (                                      )
@@ -400,16 +389,15 @@ class SexualityListings        ( TreeDock                                  ) :
     ##########################################################################
     RELTAB = self . Tables      [ "RelationPeople"                           ]
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Sexuality"                                )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( "Subordination"                            )
-    ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
-    ##########################################################################
+    self   . SEXUALITY . PeopleJoinSexuality                               ( \
+                                  DB                                       , \
+                                  RELTAB                                   , \
+                                  "Subordination"                          , \
+                                  atUuid                                   , \
+                                  UUIDs                                      )
     DB     . UnlockTables       (                                            )
+    ##########################################################################
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
@@ -601,9 +589,8 @@ class SexualityListings        ( TreeDock                                  ) :
     TRX    = self . Translations
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
-    self   . AppendInsertAction       ( mm , 1101                            )
-    mm     . addSeparator             (                                      )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+    mm     . addSeparator             (                                      )
     ##########################################################################
     self   . GroupsMenu               ( mm ,        atItem                   )
     self   . ColumnsMenu              ( mm                                   )
@@ -645,10 +632,6 @@ class SexualityListings        ( TreeDock                                  ) :
       self . clear                    (                                      )
       self . startup                  (                                      )
       ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 1101                         ) :
-      self . InsertItem               (                                      )
       return True
     ##########################################################################
     OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )

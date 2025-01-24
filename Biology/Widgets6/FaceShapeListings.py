@@ -92,16 +92,15 @@ class FaceShapeListings        ( TreeDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 280 )                       )
   ############################################################################
-  def PrepareForActions                    ( self                          ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . AppendSideActionWithIcon        ( "Crowds"                      , \
-                                             ":/images/viewpeople.png"     , \
-                                             self . GotoItemCrowd            )
-    self . AppendSideActionWithIcon        ( "FaceShapeGallery"            , \
-                                             ":/images/gallery.png"        , \
-                                             self . GotoItemGallery          )
-    self . AppendWindowToolSeparatorAction (                                 )
-    self . AppendToolNamingAction          (                                 )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/viewpeople.png"            , \
+                                      self . GotoItemCrowd                   )
+    self . AppendSideActionWithIcon ( "FaceShapeGallery"                   , \
+                                      ":/images/gallery.png"               , \
+                                      self . GotoItemGallery                 )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################

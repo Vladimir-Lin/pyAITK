@@ -174,35 +174,32 @@ class HumanBloodListings     ( TreeDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
+  def ReportBelongings                  ( self , UUIDs                     ) :
     ##########################################################################
-    time   . sleep                    ( 1.0                                  )
+    time   . sleep                      ( 1.0                                )
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Blood"                              )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
+    RELTAB = self . Tables              [ "RelationPeople"                   ]
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
+    DB     = self . ConnectDB           (                                    )
     ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
+    if                                  ( self . NotOkay ( DB )            ) :
       return
     ##########################################################################
-    self    . OnBusy  . emit          (                                      )
+    self    . OnBusy  . emit            (                                    )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                              ( not self . StayAlive               ) :
+      if                                ( not self . StayAlive             ) :
         continue
       ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      CNT  = self . BLOOD . CountCrowds ( DB                               , \
+                                          RELTAB                           , \
+                                          "Subordination"                  , \
+                                          UUID                               )
+      self . emitAssignAmounts . emit   ( str ( UUID ) , CNT , 1             )
     ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
+    self   . GoRelax . emit             (                                    )
+    DB     . Close                      (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -377,37 +374,35 @@ class HumanBloodListings     ( TreeDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def PeopleJoinBlood           ( self , atUuid , UUIDs                    ) :
+  def PeopleJoinBlood               ( self , atUuid , UUIDs                ) :
     ##########################################################################
-    if                          ( len ( UUIDs ) <= 0                       ) :
+    if                              ( len ( UUIDs ) <= 0                   ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( self . NotOkay ( DB )                    ) :
+    DB     = self . ConnectDB       (                                        )
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationPeople"                           ]
+    RELTAB = self . Tables          [ "RelationPeople"                       ]
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Blood"                                    )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( "Subordination"                            )
+    DB     . LockWrites             ( [ RELTAB                             ] )
+    self   . BLOOD . CrowdJoinBlood ( DB                                   , \
+                                      RELTAB                               , \
+                                      "Subordination"                      , \
+                                      atUuid                               , \
+                                      UUIDs                                  )
+    DB     . UnlockTables           (                                        )
     ##########################################################################
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
+    DB     . Close                  (                                        )
     ##########################################################################
-    DB     . UnlockTables       (                                            )
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    ##########################################################################
-    if                          ( not self . isColumnHidden ( 1 )          ) :
+    if                              ( not self . isColumnHidden ( 1 )      ) :
       ########################################################################
-      self . emitRestart . emit (                                            )
+      self . emitRestart . emit     (                                        )
     ##########################################################################
     return
   ############################################################################
