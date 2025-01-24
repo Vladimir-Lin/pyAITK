@@ -59,10 +59,11 @@ class FaceShapeListings        ( TreeDock                                  ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount                  ( 4                               )
+    self . setColumnCount                  ( 5                               )
     self . setColumnHidden                 ( 1 , True                        )
     self . setColumnHidden                 ( 2 , True                        )
     self . setColumnHidden                 ( 3 , True                        )
+    self . setColumnHidden                 ( 4 , True                        )
     ##########################################################################
     self . setRootIsDecorated              ( False                           )
     self . setAlternatingRowColors         ( True                            )
@@ -148,15 +149,9 @@ class FaceShapeListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery    ( self                                           ) :
-    ##########################################################################
-    TABLE = self . Tables [ "FaceShapes"                                     ]
-    ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` >0 )
-                order by `id` asc ;"""
-    ##########################################################################
-    return " " . join     ( QQ . split (                                   ) )
+  def ObtainUuidsQuery                 ( self                              ) :
+    return self . SHAPES . QuerySyntax ( self . Tables [ "FaceShapes"    ] , \
+                                         self . SortOrder                    )
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
@@ -164,16 +159,17 @@ class FaceShapeListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
+  def PrepareItem           ( self , UUID , NAME , ID , BRUSH              ) :
     ##########################################################################
     IT   = QTreeWidgetItem  (                                                )
     IT   . setText          ( 0 , NAME                                       )
     IT   . setToolTip       ( 0 , str ( UUID )                               )
     IT   . setData          ( 0 , Qt . UserRole , str ( UUID )               )
-    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    IT   . setText          ( 1 , ID                                         )
     IT   . setTextAlignment ( 2 , Qt . AlignRight                            )
+    IT   . setTextAlignment ( 3 , Qt . AlignRight                            )
     ##########################################################################
-    for COL in              [ 0 , 1 , 2 , 3                                ] :
+    for COL in              [ 0 , 1 , 2 , 3 , 4                            ] :
       ########################################################################
       IT . setBackground    ( COL , BRUSH                                    )
     ##########################################################################
@@ -189,35 +185,29 @@ class FaceShapeListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportPossible                    ( self , UUIDs                     ) :
+  def ReportPossible                     ( self , UUIDs                    ) :
     ##########################################################################
-    time   . sleep                      ( 1.0                                )
+    time   . sleep                       ( 1.0                               )
     ##########################################################################
-    RELTAB = self . Tables              [ "RelationPeople"                   ]
-    REL    = Relation                   (                                    )
-    REL    . setT1                      ( "FaceShape"                        )
-    REL    . setT2                      ( "People"                           )
-    REL    . setRelation                ( "Contains"                         )
+    RELTAB = self . Tables               [ "RelationPeople"                  ]
     ##########################################################################
-    DB     = self . ConnectDB           (                                    )
+    DB     = self . ConnectDB            (                                   )
     ##########################################################################
-    if                                  ( self . NotOkay ( DB )            ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit             (                                    )
+    self   . OnBusy  . emit              (                                   )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                                ( not self . StayAlive             ) :
+      if                                 ( not self . StayAlive            ) :
         continue
       ########################################################################
-      REL  . set                        ( "first" , UUID                     )
-      CNT  = REL . CountSecond          ( DB , RELTAB                        )
-      ########################################################################
-      self . emitPossibleAmounts . emit ( str ( UUID ) , CNT , 2             )
+      CNT  = self . SHAPES . CountCrowds ( DB , RELTAB , "Contains" , UUID   )
+      self . emitPossibleAmounts . emit  ( str ( UUID ) , CNT , 3            )
     ##########################################################################
-    self   . GoRelax . emit             (                                    )
-    DB     . Close                      (                                    )
+    self   . GoRelax . emit              (                                   )
+    DB     . Close                       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -231,35 +221,32 @@ class FaceShapeListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
+  def ReportBelongings                   ( self , UUIDs                    ) :
     ##########################################################################
-    time   . sleep                    ( 1.0                                  )
+    time   . sleep                       ( 1.0                               )
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "FaceShape"                          )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
+    RELTAB = self . Tables               [ "RelationPeople"                  ]
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
+    DB     = self . ConnectDB            (                                   )
     ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit           (                                      )
+    self   . OnBusy  . emit              (                                   )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                              ( not self . StayAlive               ) :
+      if                                 ( not self . StayAlive            ) :
         continue
       ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      CNT  = self . SHAPES . CountCrowds ( DB                              , \
+                                           RELTAB                          , \
+                                           "Subordination"                 , \
+                                           UUID                              )
+      self . emitAssignAmounts . emit    ( str ( UUID ) , CNT , 2            )
     ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
+    self   . GoRelax . emit              (                                   )
+    DB     . Close                       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -277,12 +264,14 @@ class FaceShapeListings        ( TreeDock                                  ) :
     MOD    = len                  ( self . TreeBrushes                       )
     ##########################################################################
     UUIDs  = JSON                 [ "UUIDs"                                  ]
+    IDFs   = JSON                 [ "Identifiers"                            ]
     NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
       IT   = self . PrepareItem   ( U                                      , \
                                     NAMEs [ U ]                            , \
+                                    IDFs  [ U ]                            , \
                                     self . TreeBrushes [ CNT ]               )
       self . addTopLevelItem      ( IT                                       )
       ########################################################################
@@ -309,8 +298,10 @@ class FaceShapeListings        ( TreeDock                                  ) :
     MSG    = FMT . format            ( self . windowTitle ( )                )
     self   . ShowStatus              ( MSG                                   )
     ##########################################################################
+    FSPTAB = self . Tables           [ "FaceShapes"                          ]
     UUIDs  = self . ObtainsItemUuids ( DB                                    )
     NAMEs  = self . ObtainsUuidNames ( DB , UUIDs                            )
+    IDFs   = self . SHAPES . GetIdentifiers ( DB , FSPTAB , UUIDs            )
     ##########################################################################
     self   . setVacancy              (                                       )
     self   . GoRelax . emit          (                                       )
@@ -321,16 +312,18 @@ class FaceShapeListings        ( TreeDock                                  ) :
       self . emitNamesShow . emit    (                                       )
       return
     ##########################################################################
-    JSON   =                         {  "UUIDs" : UUIDs , "NAMEs" : NAMEs    }
+    JSON   =                         { "UUIDs"       : UUIDs               , \
+                                       "Identifiers" : IDFs                , \
+                                       "NAMEs"       : NAMEs                 }
     ##########################################################################
     self   . emitAllNames . emit     ( JSON                                  )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 1                                     )
+    OKAY   = self . isColumnHidden   ( 2                                     )
     if                               ( not OKAY                            ) :
       VAL  =                         ( UUIDs ,                               )
       self . Go                      ( self . ReportBelongings , VAL         )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 2                                     )
+    OKAY   = self . isColumnHidden   ( 3                                     )
     if                               ( not OKAY                            ) :
       VAL  =                         ( UUIDs ,                               )
       self . Go                      ( self . ReportPossible   , VAL         )
@@ -467,16 +460,15 @@ class FaceShapeListings        ( TreeDock                                  ) :
     ##########################################################################
     RELTAB = self . Tables      [ "RelationPeople"                           ]
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "FaceShape"                                )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( self . JoinRelate                          )
-    ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
-    ##########################################################################
+    self   . SHAPES . PeopleJoinFaceShapes                                 ( \
+                                  DB                                       , \
+                                  RELTAB                                   , \
+                                  self . JoinRelate                        , \
+                                  atUuid                                   , \
+                                  UUIDs                                      )
     DB     . UnlockTables       (                                            )
+    ##########################################################################
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
@@ -517,7 +509,7 @@ class FaceShapeListings        ( TreeDock                                  ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -638,13 +630,13 @@ class FaceShapeListings        ( TreeDock                                  ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9004 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
+      if                           ( ( at in [ 9002 , 9003 ] ) and ( hid ) ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################

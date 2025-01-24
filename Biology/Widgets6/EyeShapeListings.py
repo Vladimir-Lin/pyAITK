@@ -59,10 +59,11 @@ class EyeShapeListings         ( TreeDock                                  ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount                 ( 4                                )
+    self . setColumnCount                 ( 5                                )
     self . setColumnHidden                ( 1 , True                         )
     self . setColumnHidden                ( 2 , True                         )
     self . setColumnHidden                ( 3 , True                         )
+    self . setColumnHidden                ( 4 , True                         )
     ##########################################################################
     self . setRootIsDecorated             ( False                            )
     self . setAlternatingRowColors        ( True                             )
@@ -158,16 +159,17 @@ class EyeShapeListings         ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
+  def PrepareItem           ( self , UUID , NAME , ID , BRUSH              ) :
     ##########################################################################
     IT   = QTreeWidgetItem  (                                                )
     IT   . setText          ( 0 , NAME                                       )
     IT   . setToolTip       ( 0 , str ( UUID )                               )
     IT   . setData          ( 0 , Qt . UserRole , str ( UUID )               )
-    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    IT   . setText          ( 1 , ID                                         )
     IT   . setTextAlignment ( 2 , Qt . AlignRight                            )
+    IT   . setTextAlignment ( 3 , Qt . AlignRight                            )
     ##########################################################################
-    for COL in              [ 0 , 1 , 2 , 3                                ] :
+    for COL in              [ 0 , 1 , 2 , 3 , 4                            ] :
       ########################################################################
       IT . setBackground    ( COL , BRUSH                                    )
     ##########################################################################
@@ -202,7 +204,7 @@ class EyeShapeListings         ( TreeDock                                  ) :
         continue
       ########################################################################
       CNT  = self . SHAPES . CountCrowds ( DB , RELTAB , "Contains" , UUID   )
-      self . emitPossibleAmounts . emit  ( str ( UUID ) , CNT , 2            )
+      self . emitPossibleAmounts . emit  ( str ( UUID ) , CNT , 3            )
     ##########################################################################
     self   . GoRelax . emit              (                                   )
     DB     . Close                       (                                   )
@@ -241,7 +243,7 @@ class EyeShapeListings         ( TreeDock                                  ) :
                                            RELTAB                          , \
                                            "Subordination"                 , \
                                            UUID                              )
-      self . emitAssignAmounts . emit    ( str ( UUID ) , CNT , 1            )
+      self . emitAssignAmounts . emit    ( str ( UUID ) , CNT , 2            )
     ##########################################################################
     self   . GoRelax . emit              (                                   )
     DB     . Close                       (                                   )
@@ -262,12 +264,14 @@ class EyeShapeListings         ( TreeDock                                  ) :
     MOD    = len                  ( self . TreeBrushes                       )
     ##########################################################################
     UUIDs  = JSON                 [ "UUIDs"                                  ]
+    IDFs   = JSON                 [ "Identifiers"                            ]
     NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
       IT   = self . PrepareItem   ( U                                      , \
                                     NAMEs [ U ]                            , \
+                                    IDFs  [ U ]                            , \
                                     self . TreeBrushes [ CNT ]               )
       self . addTopLevelItem      ( IT                                       )
       ########################################################################
@@ -294,8 +298,10 @@ class EyeShapeListings         ( TreeDock                                  ) :
     MSG    = FMT . format            ( self . windowTitle ( )                )
     self   . ShowStatus              ( MSG                                   )
     ##########################################################################
+    ESPTAB = self . Tables           [ "EyeShapes"                           ]
     UUIDs  = self . ObtainsItemUuids ( DB                                    )
     NAMEs  = self . ObtainsUuidNames ( DB , UUIDs                            )
+    IDFs   = self . SHAPES . GetIdentifiers ( DB , ESPTAB , UUIDs            )
     ##########################################################################
     self   . setVacancy              (                                       )
     self   . GoRelax . emit          (                                       )
@@ -306,16 +312,18 @@ class EyeShapeListings         ( TreeDock                                  ) :
       self . emitNamesShow . emit    (                                       )
       return
     ##########################################################################
-    JSON   =                         { "UUIDs" : UUIDs , "NAMEs" : NAMEs     }
+    JSON   =                         { "UUIDs"       : UUIDs               , \
+                                       "Identifiers" : IDFs                , \
+                                       "NAMEs"       : NAMEs                 }
     ##########################################################################
     self   . emitAllNames . emit     ( JSON                                  )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 1                                     )
+    OKAY   = self . isColumnHidden   ( 2                                     )
     if                               ( not OKAY                            ) :
       VAL  =                         ( UUIDs ,                               )
       self . Go                      ( self . ReportBelongings , VAL         )
     ##########################################################################
-    OKAY   = self . isColumnHidden   ( 2                                     )
+    OKAY   = self . isColumnHidden   ( 3                                     )
     if                               ( not OKAY                            ) :
       VAL  =                         ( UUIDs ,                               )
       self . Go                      ( self . ReportPossible   , VAL         )
@@ -501,7 +509,7 @@ class EyeShapeListings         ( TreeDock                                  ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -622,13 +630,13 @@ class EyeShapeListings         ( TreeDock                                  ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9004 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
+      if                           ( ( at in [ 9002 , 9003 ] ) and ( hid ) ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
