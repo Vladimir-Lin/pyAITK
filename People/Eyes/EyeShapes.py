@@ -22,6 +22,15 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
+ESHAPEREL         = "`affiliations`.`relations_people_0009`"
+EPICREL           = "`affiliations`.`relations_pictures_0009`"
+ESHAPENAM         = "`appellations`.`names_commons_0008`"
+ESHAPENOTE        = "`notez`.`notes_commons_0027`"
+ESHAPEPARAM       = "`cios`.`parameters`"
+EyeShapeShortType = 162
+EyeShapeLongType  = 1100000000000000162
+EyeShapeTypeName  = "EyesShape"
+##############################################################################
 class EyeShapes          ( Columns                                         ) :
   ############################################################################
   def __init__           ( self                                            ) :
@@ -132,13 +141,54 @@ class EyeShapes          ( Columns                                         ) :
                "Name"    : self . Name                                     , \
                "Comment" : self . Comment                                    }
   ############################################################################
+  ## 查詢語法
   ############################################################################
+  def QuerySyntax        ( self , TABLE , ORDER                            ) :
+    ##########################################################################
+    QQ = f"""select `uuid` from {TABLE}
+             where ( `used` > 0 )
+             order by `id` {ORDER} ;"""
+    ##########################################################################
+    return " " . join     ( QQ . split (                                   ) )
   ############################################################################
+  ## 計算眼睛外形所擁有的人物族群
   ############################################################################
+  def CountCrowds            ( self , DB , TABLE , RELATE , UUID           ) :
+    ##########################################################################
+    REL        = Relation    (                                               )
+    REL        . set         ( "first" , UUID                                )
+    REL        . setT1       ( "EyesShape"                                   )
+    REL        . setT2       ( "People"                                      )
+    REL        . setRelation ( RELATE                                        )
+    ##########################################################################
+    return REL . CountSecond ( DB , TABLE                                    )
   ############################################################################
+  def CountDefaultCrowds      ( self , DB ,             RELATE , UUID      ) :
+    ##########################################################################
+    global ESHAPEREL
+    ##########################################################################
+    return self . CountCrowds (        DB , ESHAPEREL , RELATE , UUID        )
   ############################################################################
+  ## 人物加入眼睛外形族群
   ############################################################################
+  def PeopleJoinEyeShapes ( self , DB , TABLE , RELATE , UUID , UUIDs      ) :
+    ##########################################################################
+    REL = Relation        (                                                  )
+    REL . set             ( "first" , UUID                                   )
+    REL . setT1           ( "EyesShape"                                      )
+    REL . setT2           ( "People"                                         )
+    REL . setRelation     ( RELATE                                           )
+    REL . Joins           ( DB , TABLE , UUIDs                               )
+    ##########################################################################
+    return
   ############################################################################
+  def PeopleJoinDefaultEyeShapes ( self , DB , RELATE , UUID , UUIDs       ) :
+    ##########################################################################
+    global ESHAPEREL
+    ##########################################################################
+    self . PeopleJoinEyeShapes   ( DB , ESHAPEREL , RELATE , UUID , UUIDs    )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
 ##############################################################################

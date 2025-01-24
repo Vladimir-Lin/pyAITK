@@ -148,15 +148,9 @@ class EyeShapeListings         ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery    ( self                                           ) :
-    ##########################################################################
-    TABLE = self . Tables [ "EyeShapes"                                      ]
-    ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` > 0 )
-                order by `id` asc ;"""
-    ##########################################################################
-    return " " . join     ( QQ . split (                                   ) )
+  def ObtainUuidsQuery                 ( self                              ) :
+    return self . SHAPES . QuerySyntax ( self . Tables [ "EyeShapes"     ] , \
+                                         self . SortOrder                    )
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
@@ -189,35 +183,29 @@ class EyeShapeListings         ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportPossible                    ( self , UUIDs                     ) :
+  def ReportPossible                     ( self , UUIDs                    ) :
     ##########################################################################
-    time   . sleep                      ( 1.0                                )
+    time   . sleep                       ( 1.0                               )
     ##########################################################################
-    RELTAB = self . Tables              [ "RelationPeople"                   ]
-    REL    = Relation                   (                                    )
-    REL    . setT1                      ( "EyesShape"                        )
-    REL    . setT2                      ( "People"                           )
-    REL    . setRelation                ( "Contains"                         )
+    RELTAB = self . Tables               [ "RelationPeople"                  ]
     ##########################################################################
-    DB     = self . ConnectDB           (                                    )
+    DB     = self . ConnectDB            (                                   )
     ##########################################################################
-    if                                  ( self . NotOkay ( DB )            ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit             (                                    )
+    self   . OnBusy  . emit              (                                   )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                                ( not self . StayAlive             ) :
+      if                                 ( not self . StayAlive            ) :
         continue
       ########################################################################
-      REL  . set                        ( "first" , UUID                     )
-      CNT  = REL . CountSecond          ( DB , RELTAB                        )
-      ########################################################################
-      self . emitPossibleAmounts . emit ( str ( UUID ) , CNT , 2             )
+      CNT  = self . SHAPES . CountCrowds ( DB , RELTAB , "Contains" , UUID   )
+      self . emitPossibleAmounts . emit  ( str ( UUID ) , CNT , 2            )
     ##########################################################################
-    self   . GoRelax . emit             (                                    )
-    DB     . Close                      (                                    )
+    self   . GoRelax . emit              (                                   )
+    DB     . Close                       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -231,35 +219,32 @@ class EyeShapeListings         ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
+  def ReportBelongings                   ( self , UUIDs                    ) :
     ##########################################################################
-    time   . sleep                    ( 1.0                                  )
+    time   . sleep                       ( 1.0                               )
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "EyesShape"                          )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
+    RELTAB = self . Tables               [ "RelationPeople"                  ]
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
+    DB     = self . ConnectDB            (                                   )
     ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit           (                                      )
+    self   . OnBusy  . emit              (                                   )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                              ( not self . StayAlive               ) :
+      if                                 ( not self . StayAlive            ) :
         continue
       ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      CNT  = self . SHAPES . CountCrowds ( DB                              , \
+                                           RELTAB                          , \
+                                           "Subordination"                 , \
+                                           UUID                              )
+      self . emitAssignAmounts . emit    ( str ( UUID ) , CNT , 1            )
     ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
+    self   . GoRelax . emit              (                                   )
+    DB     . Close                       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -467,16 +452,15 @@ class EyeShapeListings         ( TreeDock                                  ) :
     ##########################################################################
     RELTAB = self . Tables      [ "RelationPeople"                           ]
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "EyesShape"                                )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( self . JoinRelate                          )
-    ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
-    ##########################################################################
+    self   . SHAPES . PeopleJoinEyeShapes                                  ( \
+                                  DB                                       , \
+                                  RELTAB                                   , \
+                                  self . JoinRelate                        , \
+                                  atUuid                                   , \
+                                  UUIDs                                      )
     DB     . UnlockTables       (                                            )
+    ##########################################################################
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
