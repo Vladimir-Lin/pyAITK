@@ -54,7 +54,7 @@ class EyeColorListings           ( TreeDock                                ) :
     self . SortOrder          = "asc"
     self . JoinRelate         = "Subordination"
     ##########################################################################
-    self . IRIS               = Iris (                                       )
+    self . IRIS               = Iris   (                                     )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -63,31 +63,32 @@ class EyeColorListings           ( TreeDock                                ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 5                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
-    self . setColumnHidden         ( 4 , True                                )
-    self . setRootIsDecorated      ( False                                   )
-    self . setAlternatingRowColors ( True                                    )
+    self . setColumnCount              ( 5                                   )
+    self . setColumnHidden             ( 1 , True                            )
+    self . setColumnHidden             ( 2 , True                            )
+    self . setColumnHidden             ( 3 , True                            )
+    self . setColumnHidden             ( 4 , True                            )
     ##########################################################################
-    self . MountClicked            ( 1                                       )
-    self . MountClicked            ( 2                                       )
+    self . setRootIsDecorated          ( False                               )
+    self . setAlternatingRowColors     ( True                                )
     ##########################################################################
-    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    self . MountClicked                ( 1                                   )
+    self . MountClicked                ( 2                                   )
+    ##########################################################################
+    self . assignSelectionMode         ( "ExtendedSelection"                 )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
-    self . setFunction             ( self . FunctionDocking , True           )
-    self . setFunction             ( self . HavingMenu      , True           )
+    self . setFunction                 ( self . FunctionDocking , True       )
+    self . setFunction                 ( self . HavingMenu      , True       )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops              ( True                                )
+    self . setDragEnabled              ( True                                )
+    self . setDragDropMode             ( QAbstractItemView . DragDrop        )
     ##########################################################################
-    self . setMinimumSize          ( 80 , 80                                 )
+    self . setMinimumSize              ( 80 , 80                             )
     ##########################################################################
     return
   ############################################################################
@@ -276,7 +277,7 @@ class EyeColorListings           ( TreeDock                                ) :
       ########################################################################
       CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
-    self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . RefreshToolTip       ( len ( LISTs )                            )
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################

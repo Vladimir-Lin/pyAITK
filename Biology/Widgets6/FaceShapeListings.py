@@ -9,21 +9,26 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                                   import QtCore
+from   PySide6                                   import QtGui
+from   PySide6                                   import QtWidgets
+from   PySide6 . QtCore                          import *
+from   PySide6 . QtGui                           import *
+from   PySide6 . QtWidgets                       import *
+from   AITK    . Qt6                             import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Essentials . Relation           import Relation
+from   AITK    . Calendars  . StarDate           import StarDate
+from   AITK    . Calendars  . Periode            import Periode
+from   AITK    . People     . People             import People
+from   AITK    . People     . Faces . FaceShapes import FaceShapes
 ##############################################################################
-class FaceShapeListings        ( MajorListings                             ) :
+class FaceShapeListings        ( TreeDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
+  emitNamesShow       = Signal (                                             )
+  emitAllNames        = Signal ( dict                                        )
   emitAssignAmounts   = Signal ( str , int , int                             )
   emitPossibleAmounts = Signal ( str , int , int                             )
   PeopleGroup         = Signal ( str , int , str                             )
@@ -37,14 +42,15 @@ class FaceShapeListings        ( MajorListings                             ) :
     ##########################################################################
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
+    self . EditAllNames       = None
+    ##########################################################################
     self . ClassTag           = "FaceShapeListings"
     self . FetchTableKey      = "FaceShapeListings"
     self . GType              = 159
     self . SortOrder          = "asc"
     self . JoinRelate         = "Subordination"
-    self . PeopleBtn          = None
-    self . GalleryBtn         = None
-    self . NameBtn            = None
+    ##########################################################################
+    self . SHAPES             = FaceShapes (                                 )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -53,55 +59,48 @@ class FaceShapeListings        ( MajorListings                             ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount      ( 4                                           )
-    self . setColumnHidden     ( 1 , True                                    )
-    self . setColumnHidden     ( 2 , True                                    )
-    self . setColumnHidden     ( 3 , True                                    )
+    self . setColumnCount                  ( 4                               )
+    self . setColumnHidden                 ( 1 , True                        )
+    self . setColumnHidden                 ( 2 , True                        )
+    self . setColumnHidden                 ( 3 , True                        )
     ##########################################################################
-    self . emitAssignAmounts   . connect ( self . AssignAmounts              )
-    self . emitPossibleAmounts . connect ( self . PossibleAmounts            )
+    self . setRootIsDecorated              ( False                           )
+    self . setAlternatingRowColors         ( True                            )
     ##########################################################################
-    self . setFunction         ( self . FunctionDocking , True               )
-    self . setFunction         ( self . HavingMenu      , True               )
+    self . MountClicked                    ( 1                               )
+    self . MountClicked                    ( 2                               )
     ##########################################################################
-    self . setAcceptDrops      ( True                                        )
-    self . setDragEnabled      ( True                                        )
-    self . setDragDropMode     ( QAbstractItemView . DragDrop                )
+    self . assignSelectionMode             ( "ExtendedSelection"             )
+    ##########################################################################
+    self . emitNamesShow       . connect   ( self . show                     )
+    self . emitAllNames        . connect   ( self . refresh                  )
+    self . emitAssignAmounts   . connect   ( self . AssignAmounts            )
+    self . emitPossibleAmounts . connect   ( self . PossibleAmounts          )
+    ##########################################################################
+    self . setFunction                     ( self . FunctionDocking , True   )
+    self . setFunction                     ( self . HavingMenu      , True   )
+    ##########################################################################
+    self . setAcceptDrops                  ( True                            )
+    self . setDragEnabled                  ( True                            )
+    self . setDragDropMode                 ( QAbstractItemView . DragDrop    )
+    ##########################################################################
+    self . setMinimumSize                  ( 80 , 80                         )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 280 )                       )
   ############################################################################
-  def PrepareForActions                   ( self                           ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    msg  = self . getMenuItem             ( "Crowds"                         )
-    A    = QAction                        (                                  )
-    IC   = QIcon                          ( ":/images/peoplegroups.png"      )
-    A    . setIcon                        ( IC                               )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . GotoItemCrowd             )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PeopleBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "FaceShapeGallery"               )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/gallery.png"           )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered     . connect        ( self . GotoItemGallery           )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . GalleryBtn    = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    self . AppendToolNamingAction         (                                  )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled           ( False                            )
+    self . AppendSideActionWithIcon        ( "Crowds"                      , \
+                                             ":/images/viewpeople.png"     , \
+                                             self . GotoItemCrowd            )
+    self . AppendSideActionWithIcon        ( "FaceShapeGallery"            , \
+                                             ":/images/gallery.png"        , \
+                                             self . GotoItemGallery          )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendToolNamingAction          (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -115,64 +114,37 @@ class FaceShapeListings        ( MajorListings                             ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . defaultCloseEvent ( event                                         )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    return
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . GalleryBtn not in self . EmptySet           ) :
-      ########################################################################
-      self . GalleryBtn . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . PeopleBtn not in self . EmptySet            ) :
-      ########################################################################
-      self . PeopleBtn  . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . NameBtn   not in self . EmptySet            ) :
-      ########################################################################
-      self . NameBtn    . setEnabled ( Enabled                               )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item , column                          ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def selectionsChanged            ( self                                  ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
+    self . defaultSingleClicked (        item , column                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def twiceClicked              ( self , item , column                     ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -185,6 +157,27 @@ class FaceShapeListings        ( MajorListings                             ) :
                 order by `id` asc ;"""
     ##########################################################################
     return " " . join     ( QQ . split (                                   ) )
+  ############################################################################
+  def ObtainsInformation  ( self , DB                                      ) :
+    ##########################################################################
+    self . ReloadLocality (        DB                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem           ( self , UUID , NAME , BRUSH                   ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , str ( UUID )                               )
+    IT   . setData          ( 0 , Qt . UserRole , str ( UUID )               )
+    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    IT   . setTextAlignment ( 2 , Qt . AlignRight                            )
+    ##########################################################################
+    for COL in              [ 0 , 1 , 2 , 3                                ] :
+      ########################################################################
+      IT . setBackground    ( COL , BRUSH                                    )
+    ##########################################################################
+    return IT
   ############################################################################
   def PossibleAmounts      ( self , UUID , Amounts , Column                ) :
     ##########################################################################
@@ -267,6 +260,37 @@ class FaceShapeListings        ( MajorListings                             ) :
     ##########################################################################
     self   . GoRelax . emit           (                                      )
     DB     . Close                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def RefreshToolTip              ( self , Total                           ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def refresh                     ( self , JSON                            ) :
+    ##########################################################################
+    self   . clear                (                                          )
+    self   . setEnabled           ( False                                    )
+    ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      IT   = self . PrepareItem   ( U                                      , \
+                                    NAMEs [ U ]                            , \
+                                    self . TreeBrushes [ CNT ]               )
+      self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
+    ##########################################################################
+    self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . setEnabled           ( True                                     )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -494,6 +518,8 @@ class FaceShapeListings        ( MajorListings                             ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 3                              )
+    ##########################################################################
+    self . LoopRunning = False
     ##########################################################################
     return
   ############################################################################

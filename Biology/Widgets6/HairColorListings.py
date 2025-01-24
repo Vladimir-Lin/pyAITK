@@ -9,18 +9,19 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                              import QtCore
+from   PySide6                              import QtGui
+from   PySide6                              import QtWidgets
+from   PySide6 . QtCore                     import *
+from   PySide6 . QtGui                      import *
+from   PySide6 . QtWidgets                  import *
+from   AITK    . Qt6                        import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . People     . People   import People
+from   AITK    . Essentials . Relation      import Relation
+from   AITK    . Calendars  . StarDate      import StarDate
+from   AITK    . Calendars  . Periode       import Periode
+from   AITK    . People     . People        import People
+from   AITK    . People     . Hairs . Hairs import Hairs
 ##############################################################################
 class HairColorListings        ( TreeDock                                  ) :
   ############################################################################
@@ -47,9 +48,8 @@ class HairColorListings        ( TreeDock                                  ) :
     self . GType              = 20
     self . SortOrder          = "asc"
     self . JoinRelate         = "Subordination"
-    self . PeopleBtn          = None
-    self . GalleryBtn         = None
-    self . NameBtn            = None
+    ##########################################################################
+    self . HAIRS              = Hairs  (                                     )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -58,64 +58,49 @@ class HairColorListings        ( TreeDock                                  ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
-    self . setRootIsDecorated      ( False                                   )
-    self . setAlternatingRowColors ( True                                    )
+    self . setColumnCount              ( 5                                   )
+    self . setColumnHidden             ( 1 , True                            )
+    self . setColumnHidden             ( 2 , True                            )
+    self . setColumnHidden             ( 3 , True                            )
+    self . setColumnHidden             ( 4 , True                            )
     ##########################################################################
-    self . MountClicked            ( 1                                       )
-    self . MountClicked            ( 2                                       )
+    self . setRootIsDecorated          ( False                               )
+    self . setAlternatingRowColors     ( True                                )
     ##########################################################################
-    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    self . MountClicked                ( 1                                   )
+    self . MountClicked                ( 2                                   )
+    ##########################################################################
+    self . assignSelectionMode         ( "ExtendedSelection"                 )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
     self . emitAssignAmounts . connect ( self . AssignAmounts                )
     self . emitDyeAmounts    . connect ( self . DyeAmounts                   )
     ##########################################################################
-    self . setFunction             ( self . FunctionDocking , True           )
-    self . setFunction             ( self . HavingMenu      , True           )
+    self . setFunction                 ( self . FunctionDocking , True       )
+    self . setFunction                 ( self . HavingMenu      , True       )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops              ( True                                )
+    self . setDragEnabled              ( True                                )
+    self . setDragDropMode             ( QAbstractItemView . DragDrop        )
+    ##########################################################################
+    self . setMinimumSize              ( 80 , 80                             )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 280 )                       )
   ############################################################################
-  def PrepareForActions            ( self                                  ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    msg  = self . getMenuItem      ( "Crowds"                                )
-    A    = QAction                 (                                         )
-    A    . setIcon                 ( QIcon ( ":/images/viewpeople.png" )     )
-    A    . setToolTip              ( msg                                     )
-    A    . triggered     . connect ( self . GotoItemCrowd                    )
-    A    . setEnabled              ( False                                   )
-    ##########################################################################
-    self . PeopleBtn     = A
-    ##########################################################################
-    self . WindowActions . append  ( A                                       )
-    ##########################################################################
-    msg  = self . getMenuItem      ( "HairGallery"                           )
-    A    = QAction                 (                                         )
-    A    . setIcon                 ( QIcon ( ":/images/gallery.png" )        )
-    A    . setToolTip              ( msg                                     )
-    A    . triggered     . connect ( self . GotoItemGallery                  )
-    A    . setEnabled              ( False                                   )
-    ##########################################################################
-    self . GalleryBtn    = A
-    ##########################################################################
-    self . WindowActions . append  ( A                                       )
-    ##########################################################################
+    self . AppendSideActionWithIcon        ( "Crowds"                      , \
+                                             ":/images/viewpeople.png"     , \
+                                             self . GotoItemCrowd            )
+    self . AppendSideActionWithIcon        ( "HairGallery"                 , \
+                                             ":/images/gallery.png"        , \
+                                             self . GotoItemGallery          )
     self . AppendWindowToolSeparatorAction (                                 )
-    ##########################################################################
-    self . AppendToolNamingAction  (                                         )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled    ( False                                   )
+    self . AppendToolNamingAction          (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -129,60 +114,30 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
     ##########################################################################
-    return
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
+    self . Leave . emit      ( self                                          )
     ##########################################################################
-    if                ( self . GalleryBtn not in self . EmptySet           ) :
-      ########################################################################
-      self . GalleryBtn . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . PeopleBtn  not in self . EmptySet           ) :
-      ########################################################################
-      self . PeopleBtn  . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . NameBtn    not in self . EmptySet           ) :
-      ########################################################################
-      self . NameBtn    . setEnabled ( Enabled                               )
-    ##########################################################################
-    return
+    return True
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    self . Notify               ( 0                                          )
-    self . SwitchSideTools      ( True                                       )
     self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
@@ -190,13 +145,6 @@ class HairColorListings        ( TreeDock                                  ) :
   def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
     self . defaultSingleClicked (        item , column                       )
-    ##########################################################################
-    return
-  ############################################################################
-  def selectionsChanged            ( self                                  ) :
-    ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
     ##########################################################################
     return
   ############################################################################
@@ -215,10 +163,11 @@ class HairColorListings        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                 ( self , JSON                            ) :
+  def PrepareItem                 ( self , JSON , BRUSH                    ) :
     ##########################################################################
     UUID = JSON                   [ "Uuid"                                   ]
     NAME = JSON                   [ "Name"                                   ]
+    IDF  = JSON                   [ "Identifier"                             ]
     R    = JSON                   [ "R"                                      ]
     G    = JSON                   [ "G"                                      ]
     B    = JSON                   [ "B"                                      ]
@@ -227,10 +176,15 @@ class HairColorListings        ( TreeDock                                  ) :
     IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
     IT   . setIcon                ( 0 , ICON                                 )
     ##########################################################################
-    IT   . setTextAlignment       ( 1 , Qt . AlignRight                      )
+    IT   . setText                ( 1 , IDF                                  )
     IT   . setTextAlignment       ( 2 , Qt . AlignRight                      )
+    IT   . setTextAlignment       ( 3 , Qt . AlignRight                      )
     ##########################################################################
-    IT   . setData                ( 3 , Qt . UserRole , JSON                 )
+    IT   . setData                ( 4 , Qt . UserRole , JSON                 )
+    ##########################################################################
+    for COL in                    [ 0 , 1 , 2 , 3                          ] :
+      ########################################################################
+      IT . setBackground          ( COL , BRUSH                              )
     ##########################################################################
     return IT
   ############################################################################
@@ -269,7 +223,7 @@ class HairColorListings        ( TreeDock                                  ) :
       REL  . set                   ( "first" , UUID                          )
       CNT  = REL . CountSecond     ( DB , RELTAB                             )
       ########################################################################
-      self . emitDyeAmounts . emit ( str ( UUID ) , CNT , 2                  )
+      self . emitDyeAmounts . emit ( str ( UUID ) , CNT , 3                  )
     ##########################################################################
     self   . GoRelax . emit        (                                         )
     DB     . Close                 (                                         )
@@ -311,10 +265,15 @@ class HairColorListings        ( TreeDock                                  ) :
       REL  . set                      ( "first" , UUID                       )
       CNT  = REL . CountSecond        ( DB , RELTAB                          )
       ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2               )
     ##########################################################################
     self   . GoRelax . emit           (                                      )
     DB     . Close                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def RefreshToolTip              ( self , Total                           ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -323,11 +282,17 @@ class HairColorListings        ( TreeDock                                  ) :
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
     for JSON in LISTs                                                        :
       ########################################################################
-      IT   = self . PrepareItem   ( JSON                                     )
+      IT   = self . PrepareItem   ( JSON , self . TreeBrushes [ CNT ]        )
       self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
+    self   . RefreshToolTip       ( len ( LISTs )                            )
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
@@ -666,7 +631,9 @@ class HairColorListings        ( TreeDock                                  ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
+    ##########################################################################
+    self . LoopRunning = False
     ##########################################################################
     return
   ############################################################################
@@ -745,13 +712,13 @@ class HairColorListings        ( TreeDock                                  ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9004 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
+      if                           ( ( at in [ 9002 , 9003 ] ) and ( hid ) ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
