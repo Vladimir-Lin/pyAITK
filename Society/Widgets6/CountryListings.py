@@ -670,7 +670,7 @@ class CountryListings          ( TreeDock                                  ) :
     if                                     ( COUNT <= 0                    ) :
       return
     ##########################################################################
-    Hide    = self . isColumnHidden        ( 1                               )
+    Hide    = self . isColumnHidden        ( 8                               )
     ##########################################################################
     DB      = self . ConnectDB             (                                 )
     if                                     ( DB == None                    ) :
