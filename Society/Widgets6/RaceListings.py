@@ -96,7 +96,7 @@ class RaceListings           ( TreeDock                                    ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 280 , 640 )                       )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
@@ -104,6 +104,9 @@ class RaceListings           ( TreeDock                                    ) :
                                       ":/images/viewpeople.png"            , \
                                       self . GotoItemCrowd                   )
     self . AppendToolNamingAction   (                                        )
+    self . AppendSideActionWithIcon ( "Description"                        , \
+                                      ":/images/documents.png"             , \
+                                      self . GotoItemDescription             )
     ##########################################################################
     return
   ############################################################################
@@ -312,6 +315,17 @@ class RaceListings           ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
+  def SearchingTitle           ( self                                      ) :
+    ##########################################################################
+    if                         ( self . Method not in [ "Searching" ]      ) :
+      return
+    ##########################################################################
+    T    = self . Translations [ self . ClassTag ] [ "Title"                 ]
+    K    = self . SearchKey
+    self . setWindowTitle      ( f"{T}:{K}"                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def RefreshToolTip          ( self , Total                               ) :
     ##########################################################################
     FMT  = self . getMenuItem ( "DisplayTotal"                               )
@@ -342,16 +356,8 @@ class RaceListings           ( TreeDock                                    ) :
       ########################################################################
       CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
+    self   . SearchingTitle       (                                          )
     self   . RefreshToolTip       ( len ( UUIDs )                            )
-    ##########################################################################
-    if                            ( self . Method in [ "Searching" ]       ) :
-      ########################################################################
-      T    = self . Translations  [ "RaceListings" ] [ "Title"               ]
-      K    = self . SearchKey
-      T    = f"{T}:{K}"
-      ########################################################################
-      self . setWindowTitle       ( T                                        )
-    ##########################################################################
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
@@ -813,36 +819,22 @@ class RaceListings           ( TreeDock                                    ) :
     mm   . addActionFromMenuWithIcon ( COL , 1201 , ICON , msg               )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
-    mm   . addActionFromMenu         ( COL , 1202        , msg               )
+    ICON = QIcon                     ( ":/images/documents.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 1202 , ICON , msg               )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu                 ( self , at , item                     ) :
+  def RunGroupsMenu             ( self , at , item                         ) :
     ##########################################################################
-    if                              ( at == 1201                           ) :
+    if                          ( at == 1201                               ) :
       ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      head = item . text            ( 0                                      )
-      self . PeopleGroup . emit     ( head , self . GType , str ( uuid )     )
+      self . OpenItemCrowd      ( item                                       )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1202                           ) :
+    if                          ( at == 1202                               ) :
       ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      head = item . text            ( 0                                      )
-      nx   = ""
-      ########################################################################
-      if                            ( "Notes" in self . Tables             ) :
-        nx = self . Tables          [ "Notes"                                ]
-      ########################################################################
-      self . OpenLogHistory . emit  ( head                                   ,
-                                      str ( uuid )                           ,
-                                      "Description"                          ,
-                                      nx                                     ,
-                                      str ( self . getLocality ( ) )         )
+      self . EmitOpenLogHistory ( item , 0                                   )
       ########################################################################
       return True
     ##########################################################################
@@ -933,11 +925,13 @@ class RaceListings           ( TreeDock                                    ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    if                                ( self   . RunAmountIndexMenu ( at ) ) :
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
+    ##########################################################################
+    if                                ( OKAY                               ) :
       ########################################################################
       self . restart                  (                                      )
       ########################################################################
-      return
+      return True
     ##########################################################################
     if                                ( self . RunDocking   ( mm , aa )    ) :
       return True

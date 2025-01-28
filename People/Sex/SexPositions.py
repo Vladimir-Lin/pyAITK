@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 職業
+## 種族
 ##############################################################################
 import os
 import sys
@@ -22,15 +22,14 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-OCCPREL       = "`affiliations`.`relations_people`"
-OCCPNAM       = "`appellations`.`names_commons_0013`"
-OCCPNOTE      = "`notez`.`notes_commons_0013`"
-OCCPPARAM     = "`cios`.`parameters`"
-OccpShortType = 40
-OccpLongType  = 1100000000000000040
-OccpTypeName  = "Occupation"
+RACEREL       = "`affiliations`.`relations_people`"
+RACENAM       = "`appellations`.`names_commons_0019`"
+RACEPARAM     = "`cios`.`parameters`"
+RaceShortType = 34
+RaceLongType  = 1100000000000000034
+RaceTypeName  = "Race"
 ##############################################################################
-class Occupations        ( Columns                                         ) :
+class Races              ( Columns                                         ) :
   ############################################################################
   def __init__           ( self                                            ) :
     ##########################################################################
@@ -50,6 +49,8 @@ class Occupations        ( Columns                                         ) :
     self . Id      = -1
     self . Uuid    =  0
     self . Used    =  0
+    self . Name    =  ""
+    self . Comment =  ""
     self . ltime   =  0
     ##########################################################################
     return
@@ -60,6 +61,8 @@ class Occupations        ( Columns                                         ) :
     self . Id      = item . Id
     self . Uuid    = item . Uuid
     self . Used    = item . Used
+    self . Name    = item . Name
+    self . Comment = item . Comment
     self . ltime   = item . ltime
     ##########################################################################
     return
@@ -76,6 +79,12 @@ class Occupations        ( Columns                                         ) :
     ##########################################################################
     elif             ( "used"    == a                                      ) :
       self . Used    = value
+    ##########################################################################
+    elif             ( "name"    == a                                      ) :
+      self . Name    = value
+    ##########################################################################
+    elif             ( "comment" == a                                      ) :
+      self . Comment = value
     ##########################################################################
     elif             ( "ltime"   == a                                      ) :
       self . ltime   = value
@@ -95,6 +104,12 @@ class Occupations        ( Columns                                         ) :
     if               ( "used"    == a                                      ) :
       return self . Used
     ##########################################################################
+    if               ( "name"    == a                                      ) :
+      return self . Name
+    ##########################################################################
+    if               ( "comment" == a                                      ) :
+      return self . Comment
+    ##########################################################################
     if               ( "ltime"   == a                                      ) :
       return self . ltime
     ##########################################################################
@@ -104,6 +119,8 @@ class Occupations        ( Columns                                         ) :
     return [ "id"                                                            ,
              "uuid"                                                          ,
              "used"                                                          ,
+             "name"                                                          ,
+             "comment"                                                       ,
              "ltime"                                                         ]
   ############################################################################
   def pair              ( self , item                                      ) :
@@ -111,12 +128,16 @@ class Occupations        ( Columns                                         ) :
     return f"`{item}` = {v}"
   ############################################################################
   def valueItems        ( self                                             ) :
-    return [ "used"                                                          ]
+    return [ "used"                                                          ,
+             "name"                                                          ,
+             "comment"                                                       ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"   : self . Id                                          , \
-               "Uuid" : self . Uuid                                        , \
-               "Used" : self . Used                                          }
+    return   { "Id"      : self . Id                                       , \
+               "Uuid"    : self . Uuid                                     , \
+               "Used"    : self . Used                                     , \
+               "Name"    : self . Name                                     , \
+               "Comment" : self . Comment                                    }
   ############################################################################
   def assureString     ( self , pb                                         ) :
     ##########################################################################
@@ -171,15 +192,43 @@ class Occupations        ( Columns                                         ) :
     ##########################################################################
     return DB . ObtainUuids ( " " . join ( QQ . split ( ) ) , 0              )
   ############################################################################
-  ## 職業所擁有的人物族群
+  ## 取得種族辨識字
+  ############################################################################
+  def GetIdentifiers           ( self , DB , TABLE , UUIDs                 ) :
+    ##########################################################################
+    IDFs =                     {                                             }
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ = f"select `name` from {TABLE} where ( `uuid` = {UUID} ) ;"
+      NN = DB   . GetOne       ( QQ , ""                                     )
+      NA = self . assureString ( NN                                          )
+      ########################################################################
+      IDFs [ UUID ] = NA
+    ##########################################################################
+    return IDFs
+  ############################################################################
+  ## 更新種族辨識字
+  ############################################################################
+  def UpdateIdentifier ( self , DB , TABLE , UUID , NAME                   ) :
+    ##########################################################################
+    QQ = f"""update {TABLE}
+             set `name` = '{NAME}'
+             where ( `uuid` = {UUID} ) ;"""
+    ##########################################################################
+    DB . Query         ( " " . join ( QQ . split (                       ) ) )
+    ##########################################################################
+    return
+  ############################################################################
+  ## 種族所擁有的人物族群
   ############################################################################
   def CountCrowds            ( self , DB , TABLE , RELATE , UUID           ) :
     ##########################################################################
-    global OccpTypeName
+    global RaceTypeName
     ##########################################################################
     REL        = Relation    (                                               )
     REL        . set         ( "first" , UUID                                )
-    REL        . setT1       ( OccpTypeName                                  )
+    REL        . setT1       ( RaceTypeName                                  )
     REL        . setT2       ( "People"                                      )
     REL        . setRelation ( RELATE                                        )
     ##########################################################################
@@ -187,30 +236,30 @@ class Occupations        ( Columns                                         ) :
   ############################################################################
   def CountDefaultCrowds      ( self , DB ,           RELATE , UUID        ) :
     ##########################################################################
-    global OCCPREL
+    global RACEREL
     ##########################################################################
-    return self . CountCrowds (        DB , OCCPREL , RELATE , UUID          )
+    return self . CountCrowds (        DB , RACEREL , RELATE , UUID          )
   ############################################################################
-  ## 人物加入職業
+  ## 人物加入種族
   ############################################################################
-  def PeopleJoinOccupation ( self , DB , TABLE , RELATE , UUID , UUIDs     ) :
+  def PeopleJoinRace  ( self , DB , TABLE , RELATE , UUID , UUIDs          ) :
     ##########################################################################
-    global OccpTypeName
+    global RaceTypeName
     ##########################################################################
-    REL = Relation         (                                                 )
-    REL . set              ( "first" , UUID                                  )
-    REL . setT1            ( OccpTypeName                                    )
-    REL . setT2            ( "People"                                        )
-    REL . setRelation      ( RELATE                                          )
-    REL . Joins            ( DB , TABLE , UUIDs                              )
+    REL = Relation    (                                                      )
+    REL . set         ( "first" , UUID                                       )
+    REL . setT1       ( RaceTypeName                                         )
+    REL . setT2       ( "People"                                             )
+    REL . setRelation ( RELATE                                               )
+    REL . Joins       ( DB , TABLE , UUIDs                                   )
     ##########################################################################
     return
   ############################################################################
-  def PeopleJoinDefaultOccupation ( self , DB , RELATE , UUID , UUIDs      ) :
+  def PeopleJoinDefaultRace ( self , DB , RELATE , UUID , UUIDs            ) :
     ##########################################################################
-    global OCCPREL
+    global RACEREL
     ##########################################################################
-    self . PeopleJoinOccupation   ( DB , OCCPREL , RELATE , UUID , UUIDs     )
+    self . PeopleJoinRace   ( DB , RACEREL , RELATE , UUID , UUIDs           )
     ##########################################################################
     return
   ############################################################################
