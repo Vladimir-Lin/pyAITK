@@ -22,10 +22,12 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-OCCPREL       = "`affiliations`.`relations_people`"
+OCPTAB        = "`cios`.`occupations`"
+OCCPREL       = "`affiliations`.`relations_people_0004`"
 OCCPNAM       = "`appellations`.`names_commons_0013`"
 OCCPNOTE      = "`notez`.`notes_commons_0013`"
 OCCPPARAM     = "`cios`.`parameters`"
+OCCPVAR       = "`cios`.`variables`"
 OccpShortType = 40
 OccpLongType  = 1100000000000000040
 OccpTypeName  = "Occupation"
