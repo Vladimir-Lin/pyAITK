@@ -172,7 +172,7 @@ class Sexuality          ( Columns                                         ) :
     QQ      = f"""select `uuid` from {TABLE}
                   where ( `used` in ( {UQ} ) )
                   and ( `creature` in ( {LQ} ) )
-                  order by `id` asc ;"""
+                  order by `id` {ORDER} ;"""
     ##########################################################################
     return " " . join      ( QQ . split (                                  ) )
   ############################################################################

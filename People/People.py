@@ -148,13 +148,19 @@ class People          (                                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def ConnectToPeople ( self , DB , TABLE , UUID , T1 , UUIDs              ) :
+  def ConnectToPeople ( self  ,
+                        DB    ,
+                        TABLE ,
+                        UUID  ,
+                        T1    ,
+                        UUIDs ,
+                        RELATE = "Subordination" ) :
     ##########################################################################
     REL = Relation    (                                                      )
     REL . set         ( "first" , UUID                                       )
     REL . setT1       ( T1                                                   )
     REL . setT2       ( "People"                                             )
-    REL . setRelation ( "Subordination"                                      )
+    REL . setRelation ( RELATE                                               )
     REL . Joins       ( DB , TABLE , UUIDs                                   )
     ##########################################################################
     return
@@ -181,13 +187,18 @@ class People          (                                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def CountBelongs           ( self , DB , TABLE , UUID , T1               ) :
+  def CountBelongs           ( self                                        , \
+                               DB                                          , \
+                               TABLE                                       , \
+                               UUID                                        , \
+                               T1                                          , \
+                               RELATE = "Subordination"                    ) :
     ##########################################################################
     REL = Relation           (                                               )
     REL . set                ( "first" , UUID                                )
     REL . setT1              ( T1                                            )
     REL . setT2              ( "People"                                      )
-    REL . setRelation        ( "Subordination"                               )
+    REL . setRelation        ( RELATE                                        )
     ##########################################################################
     return REL . CountSecond ( DB , TABLE                                    )
   ############################################################################
