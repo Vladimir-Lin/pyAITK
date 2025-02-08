@@ -61,6 +61,7 @@ class IconDock                    ( ListDock                               ) :
     self . PrivateIcon     = False
     self . PrivateGroup    = False
     self . ExtraINFOs      = False
+    self . DoReposition    = False
     self . LoopRunning     = True
     self . SpinStartId     = None
     self . SpinAmount      = None
@@ -1714,12 +1715,20 @@ class IconDock                    ( ListDock                               ) :
     if                                        ( self . isSubordination ( ) ) :
       ########################################################################
       self  . Relation  . Joins               ( DB , RELTAB , UUIDs          )
+      ########################################################################
+      if                                      ( not self . DoReposition    ) :
+        return
+      ########################################################################
       OPTS  = f"order by `position` asc , `reverse` asc"
       PUIDs = self . Relation . Subordination ( DB , RELTAB , OPTS           )
       ########################################################################
     elif                                      ( self . isReverse       ( ) ) :
       ########################################################################
       self  . Relation  . JoinsFirst          ( DB , RELTAB , UUIDs          )
+      ########################################################################
+      if                                      ( not self . DoReposition    ) :
+        return
+      ########################################################################
       OPTS  = f"order by `reverse` asc , `position` asc"
       PUIDs = self . Relation . GetOwners     ( DB , RELTAB , OPTS           )
       ########################################################################

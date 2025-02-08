@@ -50,22 +50,17 @@ class GalleriesView            ( IconDock                                  ) :
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
     self . ClassTag           = "GalleriesView"
+    self . FetchTableKey      = self . ClassTag
     self . Total              =  0
     self . StartId            =  0
     self . Amount             = 60
     self . GType              = 64
     self . SortOrder          = "asc"
-    self . FetchTableKey      = "GalleriesView"
     self . SortByName         = False
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6                      ]
     self . GalleryOPTs        = {                                            }
-    ##########################################################################
-    self . PicturesBtn        = None
-    self . PeopleBtn          = None
-    self . AlbumBtn           = None
-    self . NameBtn            = None
     ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -112,49 +107,23 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions                   ( self                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . PrepareFetchTableKey           (                                  )
+    self . PrepareFetchTableKey     (                                        )
     ##########################################################################
-    msg  = self . Translations            [ "UI::PersonalGallery"            ]
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/pictures.png"          )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentGallery        )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PicturesBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "BelongsCrowd"                   )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/peoplegroups.png"      )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentCrowds         )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PeopleBtn   = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "BelongsAlbums"                  )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/videos.png"            )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentAlbums         )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . AlbumBtn    = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    self . AppendToolNamingAction         (                                  )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled           ( False                            )
+    self . AppendSideActionWithIcon ( "PersonalGallery"                    , \
+                                      ":/images/pictures.png"              , \
+                                      self . OpenCurrentGallery              )
+    self . AppendSideActionWithIcon ( "ViewFullPictures"                   , \
+                                      ":/images/searchimages.png"          , \
+                                      self . ViewCurrentGallery              )
+    self . AppendSideActionWithIcon ( "BelongsCrowd"                       , \
+                                      ":/images/peoplegroups.png"          , \
+                                      self . OpenCurrentCrowds               )
+    self . AppendSideActionWithIcon ( "BelongsAlbums"                      , \
+                                      ":/images/videos.png"                , \
+                                      self . OpenCurrentAlbums               )
+    self . AppendToolNamingAction   (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -201,42 +170,28 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
-    self . statusMessage     ( self . windowTitle (                        ) )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . setActionLabel    ( "Label" , ""                                )
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . setActionLabel    ( "Label" , ""                                  )
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
     ##########################################################################
-    return
+    self . Leave . emit      ( self                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
@@ -294,55 +249,17 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return QIcon                      ( PIX                                  )
   ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
+  def singleClicked             ( self , item                              ) :
     ##########################################################################
-    if                ( self . PicturesBtn not in self . EmptySet          ) :
-      ########################################################################
-      self . PicturesBtn . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . PeopleBtn   not in self . EmptySet          ) :
-      ########################################################################
-      self . PeopleBtn   . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . AlbumBtn    not in self . EmptySet          ) :
-      ########################################################################
-      self . AlbumBtn    . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . NameBtn     not in self . EmptySet          ) :
-      ########################################################################
-      self . NameBtn     . setEnabled ( Enabled                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item                                   ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
     return True
   ############################################################################
-  def doubleClicked                   ( self , item                        ) :
+  def doubleClicked        ( self , item                                   ) :
     ##########################################################################
-    uuid = item . data                ( Qt . UserRole                        )
-    uuid = int                        ( uuid                                 )
-    ##########################################################################
-    if                                ( uuid <= 0                          ) :
-      return False
-    ##########################################################################
-    text = item . text                (                                      )
-    icon = item . icon                (                                      )
-    xsid = str                        ( uuid                                 )
-    ##########################################################################
-    self . ShowPersonalGallery . emit ( text , 64 , xsid , icon              )
+    self . OpenItemGallery (        item                                     )
     ##########################################################################
     return True
-  ############################################################################
-  def selectionsChanged            ( self                                  ) :
-    ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
-    ##########################################################################
-    return
   ############################################################################
   def FetchRegularDepotCount        ( self , DB                            ) :
     ##########################################################################
@@ -956,7 +873,7 @@ class GalleriesView            ( IconDock                                  ) :
     icon = item . icon                (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( text , 64 , xsid , icon              )
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
     ##########################################################################
     return True
   ############################################################################
@@ -990,6 +907,31 @@ class GalleriesView            ( IconDock                                  ) :
       return False
     ##########################################################################
     return self . OpenItemGallery ( atItem                                   )
+  ############################################################################
+  def ViewItemGallery             ( self , item                            ) :
+    ##########################################################################
+    uuid = item . data            ( Qt . UserRole                            )
+    uuid = int                    ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return False
+    ##########################################################################
+    text = item . text            (                                          )
+    icon = item . icon            (                                          )
+    xsid = str                    ( uuid                                     )
+    ##########################################################################
+    self . ViewFullGallery . emit ( text , self . GType , xsid , 1 , icon    )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ViewCurrentGallery          ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( atItem == None                         ) :
+      return False
+    ##########################################################################
+    return self . ViewItemGallery ( atItem                                   )
   ############################################################################
   def OpenCurrentCrowds           ( self                                   ) :
     ##########################################################################
@@ -1071,12 +1013,21 @@ class GalleriesView            ( IconDock                                  ) :
       msg = self . getMenuItem   ( "GroupsToCLI"                             )
       mm  . addActionFromMenu    ( LOM , 1302 , msg                          )
     ##########################################################################
+    self . DoReposition
+    ##########################################################################
+    msg   = self . getMenuItem   ( "DoReposition"                            )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   1303                                    , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . DoReposition                       )
+    ##########################################################################
     msg   = self . getMenuItem   ( "ReportTables"                            )
-    mm    . addActionFromMenu    ( LOM , 1303 , msg                          )
+    mm    . addActionFromMenu    ( LOM , 1304 , msg                          )
     ##########################################################################
     msg   = self . getMenuItem   ( "SortByName"                              )
     mm    . addActionFromMenu    ( LOM                                     , \
-                                   1304                                    , \
+                                   1305                                    , \
                                    msg                                     , \
                                    True                                    , \
                                    self . SortByName                         )
@@ -1128,11 +1079,17 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     if                                 ( at == 1303                        ) :
       ########################################################################
+      self . DoReposition = not self . DoReposition
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1304                        ) :
+      ########################################################################
       self . emitLog . emit            ( json . dumps ( self . Tables      ) )
       ########################################################################
       return True
     ##########################################################################
-    if            ( at == 1304                                             ) :
+    if            ( at == 1305                                             ) :
       ########################################################################
       if          ( self . SortByName                                      ) :
         self . SortByName = False
@@ -1429,12 +1386,13 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       mm   . addSeparator           (                                        )
       ########################################################################
-      msg  = TRX                    [ "UI::PersonalGallery"                  ]
+      msg  = self . getMenuItem     ( "PersonalGallery"                      )
       icon = QIcon                  ( ":/images/pictures.png"                )
       mm   . addActionWithIcon      ( 1201 , icon , msg                      )
       ########################################################################
       msg  = self . getMenuItem     ( "ViewFullPictures"                     )
-      mm   . addAction              ( 1202 , msg                             )
+      icon = QIcon                  ( ":/images/searchimages.png"            )
+      mm   . addActionWithIcon      ( 1202 , icon , msg                      )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
@@ -1521,11 +1479,7 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     if                              ( at == 1202                           ) :
       ########################################################################
-      text = atItem . text          (                                        )
-      icon = atItem . icon          (                                        )
-      xsid = str                    ( uuid                                   )
-      ########################################################################
-      self . ViewFullGallery . emit ( text , 64 , xsid , 1 , icon            )
+      self . ViewItemGallery        ( atItem                                 )
       ########################################################################
       return True
     ##########################################################################
