@@ -325,7 +325,7 @@ class GalleriesView            ( IconDock                                  ) :
         FNT   = self . font           (                                      )
         FNT   . setPixelSize          ( TIW - 4                              )
         FNT   . setBold               ( True                                 )
-        RTS   = QRectF                ( 4                                  , \
+        RTS   = QRectF                ( 2                                  , \
                                         ISIZE . height ( ) - TIH           , \
                                         ISIZE . width  ( ) / 2             , \
                                         TIH                                  )
