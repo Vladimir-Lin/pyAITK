@@ -1373,7 +1373,7 @@ class GalleriesView            ( IconDock                                  ) :
       mm   . addAction              ( 7401 , msg                             )
     ##########################################################################
     self   . StopIconMenu           ( mm                                     )
-    self   . AmountIndexMenu        ( mm                                     )
+    self   . AmountIndexMenu        ( mm , True                              )
     self   . AppendRefreshAction    ( mm , 1001                              )
     self   . AppendInsertAction     ( mm , 1101                              )
     ##########################################################################
@@ -1412,7 +1412,7 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu (                                     )
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
     if                              ( OKAY                                 ) :
       ########################################################################
       self . restart                (                                        )
