@@ -2209,7 +2209,10 @@ class IconDock                    ( ListDock                               ) :
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . GotoItemNamesEditor               )
+    A    . setEnabled             ( False                                    )
+    ##########################################################################
     self . WindowActions . append ( A                                        )
+    self . HandleActions . append ( A                                        )
     ##########################################################################
     return
   ############################################################################
