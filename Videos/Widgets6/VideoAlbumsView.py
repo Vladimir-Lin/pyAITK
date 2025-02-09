@@ -80,15 +80,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . SortByName         = False
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
+    self . Watermarking       = True
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6                      ]
     self . AlbumOPTs          = {                                            }
-    ##########################################################################
-    self . ConnectBtn         = None
-    self . PicturesBtn        = None
-    self . PeopleBtn          = None
-    self . GalleryBtn         = None
-    self . SubgroupBtn        = None
-    self . NameBtn            = None
     ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -137,73 +131,26 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions                   ( self                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . PrepareFetchTableKey           (                                  )
+    self . PrepareFetchTableKey     (                                        )
     ##########################################################################
-    msg  = self . getMenuItem             ( "ConnectAlbum"                   )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/sqltable.png"          )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . ConnectDirectoryToAlbum   )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . ConnectBtn  = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "AlbumGallery"                   )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/pictures.png"          )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentGallery        )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PicturesBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "GalleriesGroups"                )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/galleries.png"         )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentGalleries      )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . GalleryBtn  = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "Crowds"                         )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/peoplegroups.png"      )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenCurrentCrowds         )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . PeopleBtn   = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    msg  = self . getMenuItem             ( "AlbumSubgroups"                 )
-    A    = QAction                        (                                  )
-    ICON = QIcon                          ( ":/images/modifyproject.png"     )
-    A    . setIcon                        ( ICON                             )
-    A    . setToolTip                     ( msg                              )
-    A    . triggered . connect            ( self . OpenEpisodesSubgroup      )
-    A    . setEnabled                     ( False                            )
-    ##########################################################################
-    self . SubgroupBtn = A
-    ##########################################################################
-    self . WindowActions . append         ( A                                )
-    ##########################################################################
-    self . AppendToolNamingAction         (                                  )
-    self . NameBtn = self . WindowActions [ -1                               ]
-    self . NameBtn . setEnabled           ( False                            )
+    self . AppendToolNamingAction   (                                        )
+    self . AppendSideActionWithIcon ( "ConnectAlbum"                       , \
+                                      ":/images/sqltable.png"              , \
+                                      self . ConnectDirectoryToAlbum         )
+    self . AppendSideActionWithIcon ( "AlbumGallery"                       , \
+                                      ":/images/pictures.png"              , \
+                                      self . OpenCurrentGallery              )
+    self . AppendSideActionWithIcon ( "GalleriesGroups"                    , \
+                                      ":/images/galleries.png"             , \
+                                      self . OpenCurrentGalleries            )
+    self . AppendSideActionWithIcon ( "Crowds"                             , \
+                                      ":/images/peoplegroups.png"          , \
+                                      self . OpenCurrentCrowds               )
+    self . AppendSideActionWithIcon ( "AlbumSubgroups"                     , \
+                                      ":/images/modifyproject.png"         , \
+                                      self . OpenEpisodesSubgroup            )
     ##########################################################################
     return
   ############################################################################
@@ -256,37 +203,28 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . statusMessage     ( self . windowTitle (                        ) )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
+    self . setActionLabel    ( "Label" , ""                                  )
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
-    self . defaultCloseEvent ( event                                         )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    return
+    self . Leave . emit      ( self                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
@@ -297,85 +235,120 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return self . defaultGetUuidIcon ( DB , RELTAB , "Album" , UUID          )
   ############################################################################
-  def FetchIcon                       ( self , DB , PUID                   ) :
+  def FetchBaseINFO                  ( self , DB , UUID , PUID             ) :
     ##########################################################################
-    if                                ( PUID <= 0                          ) :
-      return None
+    ICZ    = self . FetchEntityImage (        DB , PUID                      )
     ##########################################################################
-    TUBTAB     = self . Tables        [ "Thumb"                              ]
-    WH         = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
-    OPTS       = "order by `id` desc limit 0 , 1"
-    QQ         = f"select `thumb` from {TUBTAB} {WH} {OPTS} ;"
-    DB         . Query                ( QQ                                   )
-    THUMB      = DB . FetchOne        (                                      )
+    if                               ( ICZ in self . EmptySet              ) :
+      return
     ##########################################################################
-    if                                ( THUMB == None                      ) :
-      return None
-    ##########################################################################
-    if                                ( len ( THUMB ) <= 0                 ) :
-      return None
-    ##########################################################################
-    BLOB       = THUMB                [ 0                                    ]
-    if                                ( isinstance ( BLOB , bytearray )    ) :
-      BLOB = bytes                    ( BLOB                                 )
-    ##########################################################################
-    if                                ( len ( BLOB ) <= 0                  ) :
-      return None
-    ##########################################################################
-    IMG        = QImage               (                                      )
-    IMG        . loadFromData         ( QByteArray ( BLOB ) , "PNG"          )
-    TSIZE      = IMG . size           (                                      )
-    ##########################################################################
-    ISIZE      = self . iconSize      (                                      )
-    ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
-    ICZ        . fill                 ( QColor ( 255 , 255 , 255 )           )
-    ##########################################################################
-    W          = int       ( ( ISIZE . width  ( ) - TSIZE . width  ( ) ) / 2 )
-    H          = int       ( ( ISIZE . height ( ) - TSIZE . height ( ) ) / 2 )
-    PTS        = QPoint               ( W , H                                )
-    ##########################################################################
-    p          = QPainter             (                                      )
-    p          . begin                ( ICZ                                  )
-    p          . drawImage            ( PTS , IMG                            )
-    p          . end                  (                                      )
-    ##########################################################################
-    PIX        = QPixmap              (                                      )
-    PIX        . convertFromImage     ( ICZ                                  )
-    ##########################################################################
-    return QIcon                      ( PIX                                  )
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . ConnectBtn  not in self . EmptySet          ) :
+    if                               ( UUID in self . AlbumOPTs            ) :
       ########################################################################
-      self . ConnectBtn  . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . PicturesBtn not in self . EmptySet          ) :
+      self . AlbumOPTs [ UUID ] [ "Image" ] = ICZ
+      self . AlbumOPTs [ UUID ] [ "PUID"  ] = PUID
       ########################################################################
-      self . PicturesBtn . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . PeopleBtn   not in self . EmptySet          ) :
+    else                                                                     :
       ########################################################################
-      self . PeopleBtn   . setEnabled ( Enabled                              )
+      self . AlbumOPTs [ UUID ] =    { "Image" : ICZ                       , \
+                                       "PUID"  : PUID                        }
     ##########################################################################
-    if                ( self . GalleryBtn  not in self . EmptySet          ) :
-      ########################################################################
-      self . GalleryBtn  . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . SubgroupBtn not in self . EmptySet          ) :
-      ########################################################################
-      self . SubgroupBtn . setEnabled ( Enabled                              )
-    ##########################################################################
-    if                ( self . NameBtn     not in self . EmptySet          ) :
-      ########################################################################
-      self . NameBtn     . setEnabled ( Enabled                              )
+    self   . EmitInfoIcon            ( UUID                                  )
     ##########################################################################
     return
   ############################################################################
-  def singleClicked        ( self , item                                   ) :
+  def EmitInfoIcon                    ( self , UUID                        ) :
     ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
+    if                                ( UUID not in self . UuidItemMaps    ) :
+      return
+    ##########################################################################
+    if                                ( UUID not in self . AlbumOPTs       ) :
+      return
+    ##########################################################################
+    GOPTs     = self . AlbumOPTs      [ UUID                                 ]
+    ##########################################################################
+    if                                ( "Image" not in GOPTs               ) :
+      return
+    ##########################################################################
+    item      = self . UuidItemMaps   [ UUID                                 ]
+    IMG       = GOPTs                 [ "Image"                              ]
+    ##########################################################################
+    TIW       = 16
+    TIH       = 16
+    USED      = -1
+    DINFO     = False
+    ##########################################################################
+    if                                ( "Used"     in GOPTs                ) :
+      ########################################################################
+      USED    = GOPTs                 [ "Used"                               ]
+      ########################################################################
+      if                              ( USED in [ 3 , 5 , 6 ]              ) :
+        DINFO = True
+    ##########################################################################
+    if                                ( not self . Watermarking            ) :
+      ########################################################################
+      DINFO   = False
+    ##########################################################################
+    if                                ( DINFO                              ) :
+      ########################################################################
+      ISIZE   = IMG . size            (                                      )
+      ICZ     = QImage                ( ISIZE , QImage . Format_ARGB32       )
+      ICZ     . fill                  ( QColor ( 255 , 255 , 255 )           )
+      ########################################################################
+      PTS     = QPoint                ( 0 , 0                                )
+      ########################################################################
+      p       = QPainter              (                                      )
+      p       . begin                 ( ICZ                                  )
+      ########################################################################
+      p       . drawImage             ( PTS , IMG                            )
+      ########################################################################
+      if                              ( 3 == USED                          ) :
+        ######################################################################
+        WIMG  = QImage                ( ":/images/flowend.png"               )
+        WIMG  = WIMG . scaled         ( TIW , TIH                            )
+        ######################################################################
+        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
+                                        ISIZE . height ( ) - TIH             )
+        p     . drawImage             ( PTS , WIMG                           )
+      ########################################################################
+      elif                            ( 5 == USED                          ) :
+        ######################################################################
+        WIMG  = QImage                ( ":/images/astrophysics.png"          )
+        WIMG  = WIMG . scaled         ( TIW , TIH                            )
+        ######################################################################
+        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
+                                        ISIZE . height ( ) - TIH             )
+        p     . drawImage             ( PTS , WIMG                           )
+      ########################################################################
+      elif                            ( 6 == USED                          ) :
+        ######################################################################
+        WIMG  = QImage                ( ":/images/apprentice.png"            )
+        WIMG  = WIMG . scaled         ( TIW , TIH                            )
+        ######################################################################
+        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
+                                        ISIZE . height ( ) - TIH             )
+        p     . drawImage             ( PTS , WIMG                           )
+      ########################################################################
+      p       . end                   (                                      )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      ICZ     = IMG
+    ##########################################################################
+    icon      = self . ImageToIcon    ( ICZ                                  )
+    ##########################################################################
+    self      . emitAssignIcon . emit ( item , icon                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ParallelFetchIcons      ( self , ID , UUIDs                          ) :
+    ##########################################################################
+    self . ParallelFetchINFOs (        ID , UUIDs                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked             ( self , item                              ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
     return True
   ############################################################################
@@ -579,6 +552,8 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
+    self . AlbumOPTs =                    {                                  }
+    ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
@@ -625,6 +600,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     item   = self . UuidItemMaps      [ UUID                                 ]
     self   . emitAssignToolTip . emit ( item , text                          )
+    self   . EmitInfoIcon             ( UUID                                 )
     ##########################################################################
     return
   ############################################################################
@@ -660,13 +636,23 @@ class VideoAlbumsView             ( IconDock                               ) :
       if                               ( U not in self . UuidItemMaps      ) :
         continue
       ########################################################################
-      self       . AlbumOPTs [ U ] =   { "Used"      : 1                   , \
+      GJSON      =                     { "Used"      : 1                   , \
                                          "States"    : 0                   , \
                                          "Pictures"  : 0                   , \
                                          "Galleries" : 0                   , \
                                          "Subgroups" : 0                   , \
                                          "People"    : 0                   , \
                                          "Videos"    : 0                     }
+      ########################################################################
+      if                               ( U in self . AlbumOPTs             ) :
+        ######################################################################
+        GOPTs    = self . AlbumOPTs    [ U                                   ]
+        ######################################################################
+        if                             ( "Image" in GOPTs                  ) :
+          ####################################################################
+          GJSON [ "Image" ] = GOPTs    [ "Image"                             ]
+      ########################################################################
+      self       . AlbumOPTs [ U ] = GJSON
       ########################################################################
       UMSG       = ""
       QQ         = f"""select `used` , `states` from {ALMTAB}
@@ -2379,6 +2365,18 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
   def FunctionsMenu              ( self , mm , uuid , item                 ) :
     ##########################################################################
     MSG   = self . getMenuItem   ( "Functions"                               )
@@ -2397,6 +2395,20 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       msg = self . getMenuItem   ( "GroupsToCLI"                             )
       mm  . addActionFromMenu    ( LOM , 34621303 , msg                      )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "DoReposition"                            )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   34621304                                , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . DoReposition                       )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "Watermarking"                            )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   34621305                                , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . Watermarking                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ShowIdentifier"                          )
     mm    . addActionFromMenu    ( LOM                                     , \
@@ -2465,6 +2477,20 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                                 ( at == 34621303                    ) :
       ########################################################################
       self . EmitRelateParameters      (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621304                    ) :
+      ########################################################################
+      self . DoReposition = not self . DoReposition
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621305                    ) :
+      ########################################################################
+      self . Watermarking = not self . Watermarking
+      ########################################################################
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
@@ -2864,7 +2890,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       mm   . addAction             ( 7401 , msg                              )
     ##########################################################################
     self   . StopIconMenu          ( mm                                      )
-    self   . AmountIndexMenu       ( mm                                      )
+    self   . AmountIndexMenu       ( mm , True                               )
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
     if                             ( uuid > 0                              ) :
@@ -2890,7 +2916,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu (                                     )
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
     if                             ( OKAY                                  ) :
       ########################################################################
       self . restart               (                                         )

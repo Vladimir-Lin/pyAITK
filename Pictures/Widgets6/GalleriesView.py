@@ -1114,8 +1114,6 @@ class GalleriesView            ( IconDock                                  ) :
       msg = self . getMenuItem   ( "GroupsToCLI"                             )
       mm  . addActionFromMenu    ( LOM , 1302 , msg                          )
     ##########################################################################
-    self . DoReposition
-    ##########################################################################
     msg   = self . getMenuItem   ( "DoReposition"                            )
     mm    . addActionFromMenu    ( LOM                                     , \
                                    1303                                    , \
