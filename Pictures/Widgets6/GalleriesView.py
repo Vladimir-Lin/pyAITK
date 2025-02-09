@@ -321,7 +321,7 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       elif                            ( 5 == USED                          ) :
         ######################################################################
-        WIMG  = QImage                ( ":/images/waves.png"                 )
+        WIMG  = QImage                ( ":/images/monitor.png"               )
         WIMG  = WIMG . scaled         ( TIW , TIH                            )
         ######################################################################
         PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
