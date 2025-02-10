@@ -39,6 +39,7 @@ class CommandInterface    ( TextEdit                                       ) :
   emitInsertText = Signal ( str                                              )
   emitLog        = Signal ( str                                              )
   emitCommand    = Signal ( str                                              )
+  emitSelection  = Signal ( str                                              )
   ############################################################################
   def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -56,6 +57,7 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     self . TZ              = "Asia/Taipei"
     ##########################################################################
+    self . defaultFont     = self . font (                                   )
     self . Filename        = ""
     self . defaultLocality = 1002
     ##########################################################################
@@ -130,12 +132,16 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return
   ############################################################################
-  def ZoomIn                       ( self                                  ) :
-    self . zoomIn                  ( 1                                       )
+  def ZoomIn       ( self                                                  ) :
+    ##########################################################################
+    self . zoomIn  ( 1                                                       )
+    ##########################################################################
     return
   ############################################################################
-  def ZoomOut                      ( self                                  ) :
-    self . zoomOut                 ( 1                                       )
+  def ZoomOut      ( self                                                  ) :
+    ##########################################################################
+    self . zoomOut ( 1                                                       )
+    ##########################################################################
     return
   ############################################################################
   def LoadFileContent        ( self , Filename                             ) :
@@ -216,6 +222,8 @@ class CommandInterface    ( TextEdit                                       ) :
     return
   ############################################################################
   def startup         ( self                                               ) :
+    ##########################################################################
+    self   . defaultFont = self . font (                                     )
     ##########################################################################
     if                ( not self . isPrepared ( )                          ) :
       self . Prepare  (                                                      )
@@ -339,20 +347,34 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return False
   ############################################################################
-  def TextingMenu              ( self , mm                                 ) :
+  def TextingMenu                   ( self , mm                            ) :
     ##########################################################################
     TRX = self . Translations
-    LOM = mm   . addMenu       (              TRX [ "UI::Texting"          ] )
     ##########################################################################
-    mm  . addActionFromMenu    ( LOM , 1001 , TRX [ "UI::Cut"              ] )
-    mm  . addActionFromMenu    ( LOM , 1002 , TRX [ "UI::CopyToClipboard"  ] )
-    mm  . addActionFromMenu    ( LOM , 1003 , TRX [ "UI::Paste"            ] )
-    mm  . addSeparatorFromMenu ( LOM                                         )
-    mm  . addActionFromMenu    ( LOM , 1011 , TRX [ "UI::Undo"             ] )
-    mm  . addActionFromMenu    ( LOM , 1012 , TRX [ "UI::Redo"             ] )
-    mm  . addSeparatorFromMenu ( LOM                                         )
-    mm  . addActionFromMenu    ( LOM , 1021 , TRX [ "UI::ClearAll"         ] )
-    mm  . addActionFromMenu    ( LOM , 1022 , TRX [ "UI::SelectAll"        ] )
+    LOM = mm   . addMenu            ( TRX [ "UI::Texting"                  ] )
+    ##########################################################################
+    mm  . addActionFromMenuWithIcon ( LOM                                  , \
+                                      1001                                 , \
+                                      QIcon ( ":/images/cut.png"         ) , \
+                                      TRX   [ "UI::Cut"                  ]   )
+    mm  . addActionFromMenuWithIcon ( LOM                                  , \
+                                      1002                                 , \
+                                      QIcon ( ":/images/copy.png"        ) , \
+                                      TRX   [ "UI::CopyToClipboard"      ]   )
+    mm  . addActionFromMenuWithIcon ( LOM                                  , \
+                                      1003                                 , \
+                                      QIcon ( ":/images/paste.png"       ) , \
+                                      TRX   [ "UI::Paste"                ]   )
+    ##########################################################################
+    mm  . addSeparatorFromMenu      ( LOM                                    )
+    ##########################################################################
+    mm  . addActionFromMenu         ( LOM , 1011 , TRX [ "UI::Undo"        ] )
+    mm  . addActionFromMenu         ( LOM , 1012 , TRX [ "UI::Redo"        ] )
+    ##########################################################################
+    mm  . addSeparatorFromMenu      ( LOM                                    )
+    ##########################################################################
+    mm  . addActionFromMenu         ( LOM , 1021 , TRX [ "UI::ClearAll"    ] )
+    mm  . addActionFromMenu         ( LOM , 1022 , TRX [ "UI::SelectAll"   ] )
     ##########################################################################
     return mm
   ############################################################################
@@ -416,38 +438,58 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return   False
   ############################################################################
-  def Menu                       ( self , pos                              ) :
+  def Menu                        ( self , pos                             ) :
     ##########################################################################
-    doMenu = self . isFunction   ( self . HavingMenu                         )
-    if                           ( not doMenu                              ) :
+    doMenu = self . isFunction    ( self . HavingMenu                        )
+    if                            ( not doMenu                             ) :
       return False
     ##########################################################################
-    mm     = MenuManager         ( self                                      )
+    mm     = MenuManager          ( self                                     )
     ##########################################################################
     TRX    = self . Translations
+    TEXT   = qApp . clipboard     ( ) . text (                               )
     ##########################################################################
-    mm     = self . TextingMenu  ( mm                                        )
-    mm     = self . DisplayMenu  ( mm                                        )
-    mm     . addSeparator        (                                           )
+    if                            ( len ( TEXT ) > 0                       ) :
+      ########################################################################
+      mm   . addAction            ( 4001 , TRX [ "CMD::SelectionToCommand" ] )
     ##########################################################################
-    mm     = self . LocalityMenu ( mm                                        )
-    self   . DockingMenu         ( mm                                        )
+    mm     . addAction            ( 4002 , TRX [ "UI::DefaultFont"         ] )
+    mm     . addSeparator         (                                          )
     ##########################################################################
-    self   . Notify              ( 0                                         )
-    mm     . setFont             ( self    . menuFont ( )                    )
-    aa     = mm . exec_          ( QCursor . pos      ( )                    )
-    at     = mm . at             ( aa                                        )
+    mm     = self . TextingMenu   ( mm                                       )
+    mm     = self . DisplayMenu   ( mm                                       )
+    mm     . addSeparator         (                                          )
     ##########################################################################
-    if                           ( self . RunDocking      ( mm , aa )      ) :
+    mm     = self . LocalityMenu  ( mm                                       )
+    self   . DockingMenu          ( mm                                       )
+    ##########################################################################
+    self   . Notify               ( 0                                        )
+    mm     . setFont              ( self    . menuFont ( )                   )
+    aa     = mm . exec_           ( QCursor . pos      ( )                   )
+    at     = mm . at              ( aa                                       )
+    ##########################################################################
+    if                            ( self . RunDocking      ( mm , aa )     ) :
       return True
     ##########################################################################
-    if                           ( self . RunLocalityMenu ( at      )      ) :
+    if                            ( self . RunLocalityMenu ( at      )     ) :
       return True
     ##########################################################################
-    if                           ( self . RunTextingMenu  ( at      )      ) :
+    if                            ( self . RunTextingMenu  ( at      )     ) :
       return True
     ##########################################################################
-    if                           ( self . RunDisplayMenu  ( at      )      ) :
+    if                            ( self . RunDisplayMenu  ( at      )     ) :
+      return True
+    ##########################################################################
+    if                            ( 4001 == at                             ) :
+      ########################################################################
+      self . emitSelection . emit ( TEXT                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 4002 == at                             ) :
+      ########################################################################
+      self . setFont              ( self . defaultFont                       )
+      ########################################################################
       return True
     ##########################################################################
     return True
