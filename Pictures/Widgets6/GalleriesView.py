@@ -163,7 +163,7 @@ class GalleriesView            ( IconDock                                  ) :
     self . LinkAction ( "PageUp"     , self . PageUp         , Enabled       )
     self . LinkAction ( "PageDown"   , self . PageDown       , Enabled       )
     self . LinkAction ( "Select"     , self . SelectOne      , Enabled       )
-    ## self . LinkAction ( "Reversal"   , self . ReversalSelect , Enabled       )
+    self . LinkAction ( "Reversal"   , self . ReversalSelect , Enabled       )
     self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
     self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
     self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )

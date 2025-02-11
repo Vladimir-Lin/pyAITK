@@ -22,49 +22,51 @@ from   PySide6 . QtWidgets  import *
 ##############################################################################
 from           . VirtualGui import VirtualGui as VirtualGui
 ##############################################################################
-class ListWidget               ( QListWidget , VirtualGui                  ) :
+class ListWidget                 ( QListWidget , VirtualGui                ) :
   ############################################################################
-  pickSelectionMode   = Signal ( str                                         )
-  SubmitStatusMessage = Signal ( str , int                                   )
-  Leave               = Signal ( QWidget                                     )
-  emitSelectOne       = Signal (                                             )
-  emitSelectAll       = Signal (                                             )
-  emitSelectNone      = Signal (                                             )
-  emitAssignToolTip   = Signal ( QListWidgetItem , str                       )
-  emitBustle          = Signal (                                             )
-  emitVacancy         = Signal (                                             )
-  OnBusy              = Signal (                                             )
-  GoRelax             = Signal (                                             )
+  pickSelectionMode     = Signal ( str                                       )
+  SubmitStatusMessage   = Signal ( str , int                                 )
+  Leave                 = Signal ( QWidget                                   )
+  emitSelectOne         = Signal (                                           )
+  emitSelectAll         = Signal (                                           )
+  emitReverseSelections = Signal (                                           )
+  emitSelectNone        = Signal (                                           )
+  emitAssignToolTip     = Signal ( QListWidgetItem , str                     )
+  emitBustle            = Signal (                                           )
+  emitVacancy           = Signal (                                           )
+  OnBusy                = Signal (                                           )
+  GoRelax               = Signal (                                           )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                   ( self , parent = None , plan = None      ) :
     ##########################################################################
-    super (                   ) . __init__ ( parent                          )
-    super ( VirtualGui , self ) . __init__ (                                 )
-    self . Initialize                      ( self                            )
-    self . setPlanFunction                 ( plan                            )
-    self . DefaultItemIcon   = QIcon       (                                 )
+    super (                   ) . __init__  ( parent                         )
+    super ( VirtualGui , self ) . __init__  (                                )
+    self . Initialize                       ( self                           )
+    self . setPlanFunction                  ( plan                           )
+    self . DefaultItemIcon   = QIcon        (                                )
     ##########################################################################
-    self . setAttribute                    ( Qt . WA_InputMethodEnabled      )
-    self . setAcceptDrops                  ( True                            )
-    self . setDragDropMode                 ( QAbstractItemView . DragDrop    )
-    self . setHorizontalScrollBarPolicy    ( Qt . ScrollBarAsNeeded          )
-    self . setVerticalScrollBarPolicy      ( Qt . ScrollBarAsNeeded          )
-    self . setFunction                     ( self . FunctionDocking , False  )
+    self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
+    self . setAcceptDrops                   ( True                           )
+    self . setDragDropMode                  ( QAbstractItemView . DragDrop   )
+    self . setHorizontalScrollBarPolicy     ( Qt . ScrollBarAsNeeded         )
+    self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
+    self . setFunction                      ( self . FunctionDocking , False )
     ##########################################################################
-    self . itemSelectionChanged . connect  ( self . selectionsChanged        )
-    self . pickSelectionMode    . connect  ( self . assignSelectionMode      )
-    self . SubmitStatusMessage  . connect  ( self . AssignStatusMessage      )
-    self . emitSelectOne        . connect  ( self . SelectOne                )
-    self . emitSelectAll        . connect  ( self . SelectAll                )
-    self . emitSelectNone       . connect  ( self . SelectNone               )
-    self . emitAssignToolTip    . connect  ( self . AcceptToolTip            )
-    self . emitBustle           . connect  ( self . DoBustle                 )
-    self . emitVacancy          . connect  ( self . DoVacancy                )
-    self . OnBusy               . connect  ( self . AtBusy                   )
-    self . GoRelax              . connect  ( self . OnRelax                  )
+    self . itemSelectionChanged  . connect  ( self . selectionsChanged       )
+    self . pickSelectionMode     . connect  ( self . assignSelectionMode     )
+    self . SubmitStatusMessage   . connect  ( self . AssignStatusMessage     )
+    self . emitSelectOne         . connect  ( self . SelectOne               )
+    self . emitSelectAll         . connect  ( self . SelectAll               )
+    self . emitReverseSelections . connect  ( self . ReversalSelect          )
+    self . emitSelectNone        . connect  ( self . SelectNone              )
+    self . emitAssignToolTip     . connect  ( self . AcceptToolTip           )
+    self . emitBustle            . connect  ( self . DoBustle                )
+    self . emitVacancy           . connect  ( self . DoVacancy               )
+    self . OnBusy                . connect  ( self . AtBusy                  )
+    self . GoRelax               . connect  ( self . OnRelax                 )
     ##########################################################################
     self . droppingAction = False
-    self . VoiceJSON      =                {                                 }
+    self . VoiceJSON      =                 {                                }
     ##########################################################################
     self . EditItem       = None
     self . EditWidget     = None
@@ -511,6 +513,28 @@ class ListWidget               ( QListWidget , VirtualGui                  ) :
   def DoSelectAll                ( self                                    ) :
     ##########################################################################
     self . emitSelectAll  . emit (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReversalSelect           ( self                                      ) :
+    ##########################################################################
+    if                         ( self . count ( ) <= 0                     ) :
+      return
+    ##########################################################################
+    m    = self . Translations [ "UI::ReverseSelections"                     ]
+    self . Talk                ( m , self . getLocality ( )                  )
+    ##########################################################################
+    for i in range             ( 0 , self . count ( )                      ) :
+      ########################################################################
+      it = self . item         ( i                                           )
+      ########################################################################
+      it . setSelected         ( not it . isSelected (                     ) )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoReversalSelect                  ( self                             ) :
+    ##########################################################################
+    self . emitReverseSelections . emit (                                    )
     ##########################################################################
     return
   ############################################################################
