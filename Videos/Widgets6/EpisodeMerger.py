@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PeopleMerger
+## EpisodeMerger
 ##############################################################################
 import os
 import sys
@@ -19,20 +19,14 @@ from   PySide6 . QtGui                    import *
 from   PySide6 . QtWidgets                import *
 from   AITK    . Qt6                      import *
 ##############################################################################
-from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6        . TreeDock    import TreeDock    as TreeDock
-from   AITK    . Qt6        . LineEdit    import LineEdit    as LineEdit
-from   AITK    . Qt6        . ComboBox    import ComboBox    as ComboBox
-from   AITK    . Qt6        . SpinBox     import SpinBox     as SpinBox
-##############################################################################
-from   AITK    . Documents  . JSON        import Load        as LoadJson
+from   AITK    . Documents  . JSON        import Load as LoadJson
 from   AITK    . Essentials . Relation    import Relation
 ##############################################################################
 from   AITK    . Calendars  . StarDate    import StarDate
 from   AITK    . Calendars  . Periode     import Periode
-from   AITK    . People     . People      import People      as PeopleItem
+from   AITK    . Videos     . Film        import Film as FilmItem
 ##############################################################################
-class PeopleMerger          ( TreeDock                                     ) :
+class EpisodeMerger         ( TreeDock                                     ) :
   ############################################################################
   HavingMenu       = 1371434312
   ############################################################################
@@ -93,7 +87,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup            , Enabled   )
     self . LinkAction ( "Delete"     , self . DeleteItems        , Enabled   )
-    self . LinkAction ( "Start"      , self . ExecuteMergePeople , Enabled   )
+    self . LinkAction ( "Start"      , self . ExecuteMergeEpisode , Enabled  )
     self . LinkAction ( "Copy"       , self . CopyToClipboard    , Enabled   )
     self . LinkAction ( "Paste"      , self . PasteItems         , Enabled   )
     self . LinkAction ( "Import"     , self . ImportGroups       , Enabled   )
@@ -189,9 +183,9 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def allowedMimeTypes     ( self , mime                                   ) :
+    formats = "album/uuids"
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -215,7 +209,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     mtype   = self . DropInJSON          [ "Mime"                            ]
     UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
     ##########################################################################
-    if                                   ( mtype in [ "people/uuids" ]     ) :
+    if                                   ( mtype in [ "album/uuids" ]      ) :
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                        ( UUIDs                             )
@@ -228,15 +222,15 @@ class PeopleMerger          ( TreeDock                                     ) :
   def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
     return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptAlbumsDrop ( self                                              ) :
     return True
   ############################################################################
-  def dropPeople                    ( self , source , pos , JSON           ) :
+  def dropAlbums                    ( self , source , pos , JSON           ) :
     return self . defaultDropInside ( source                               , \
                                       JSON                                 , \
-                                      self . PeopleToMerge                   )
+                                      self . EpisodeToMerge                  )
   ############################################################################
-  def PeopleToMerge                  ( self , UUIDs                        ) :
+  def EpisodeToMerge                 ( self , UUIDs                        ) :
     ##########################################################################
     COUNT  = len                     ( UUIDs                                 )
     if                               ( COUNT <= 0                          ) :
@@ -277,7 +271,7 @@ class PeopleMerger          ( TreeDock                                     ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "PeopleMerger" , 2                               )
+    self . defaultPrepare ( "EpisodeMerger" , 2                              )
     ##########################################################################
     return
   ############################################################################
@@ -318,11 +312,11 @@ class PeopleMerger          ( TreeDock                                     ) :
     if                         ( DB in [ False , None ]                    ) :
       return
     ##########################################################################
-    PIT  = PeopleItem          (                                             )
-    PIT  . Settings = self . Settings
-    PIT  . Tables   = self . Tables
+    ## PIT  = PeopleItem          (                                             )
+    ## PIT  . Settings = self . Settings
+    ## PIT  . Tables   = self . Tables
     ##########################################################################
-    PIT  . MergeAll            ( DB   , UUID , PUIDs , ICON                  )
+    ## PIT  . MergeAll            ( DB   , UUID , PUIDs , ICON                  )
     ##########################################################################
     DB   . Close               (                                             )
     ##########################################################################
@@ -340,7 +334,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def ExecuteMergePeople              ( self                               ) :
+  def ExecuteMergeEpisode             ( self                               ) :
     ##########################################################################
     Total  = self . topLevelItemCount (                                      )
     IT     = self . topLevelItem      ( 0                                    )
@@ -394,66 +388,66 @@ class PeopleMerger          ( TreeDock                                     ) :
       return
     ##########################################################################
     VAL      =                    ( Name ,                                   )
-    self     . Go                 ( self . ImportPeopleGroups , VAL          )
+    self     . Go                 ( self . ImportEpisodeGroups , VAL         )
     ##########################################################################
     return
   ############################################################################
-  def ImportPeopleGroups           ( self , Filename                       ) :
+  def ImportEpisodeGroups          ( self , Filename                       ) :
     ##########################################################################
-    GROUPs    = LoadJson           ( Filename                                )
+    ## GROUPs    = LoadJson           ( Filename                                )
     ##########################################################################
-    if                             ( len ( GROUPs ) <= 0                   ) :
-      self    . Notify             ( 1                                       )
-      return
+    ## if                             ( len ( GROUPs ) <= 0                   ) :
+    ##   self    . Notify             ( 1                                       )
+    ##   return
     ##########################################################################
-    DB        = self . ConnectDB   ( UsePure = True                          )
-    if                             ( self . NotOkay ( DB )                 ) :
-      return
+    ## DB        = self . ConnectDB   ( UsePure = True                          )
+    ## if                             ( self . NotOkay ( DB )                 ) :
+    ##   return
     ##########################################################################
-    PIT       = PeopleItem         (                                         )
-    PIT       . Settings = self . Settings
-    PIT       . Tables   = self . Tables
+    ## PIT       = PeopleItem         (                                         )
+    ## PIT       . Settings = self . Settings
+    ## PIT       . Tables   = self . Tables
     ##########################################################################
-    PLAN      = self . GetPlan     (                                         )
-    TOTAL     = len                ( GROUPs                                  )
+    ## PLAN      = self . GetPlan     (                                         )
+    ## TOTAL     = len                ( GROUPs                                  )
     ##########################################################################
-    NAME      = self . getMenuItem ( "GroupMerge"                            )
-    SECSC     = self . getMenuItem ( "SecsCounting"                          )
-    ITEMC     = self . getMenuItem ( "ItemCounting"                          )
+    ## NAME      = self . getMenuItem ( "GroupMerge"                            )
+    ## SECSC     = self . getMenuItem ( "SecsCounting"                          )
+    ## ITEMC     = self . getMenuItem ( "ItemCounting"                          )
     ##########################################################################
-    PID       = PLAN . Progress    ( NAME , "%v / %m"                        )
-    PLAN      . ProgressText       ( PID  , f"{TOTAL}"                       )
-    PLAN      . setRange           ( PID  , 0 , TOTAL                        )
-    AT        = 0
-    PLAN      . Start              ( PID  , AT , True                        )
-    PLAN      . ProgressReady      ( PID                                     )
-    PLAN      . setFrequency       ( PID  , SECSC , ITEMC                    )
+    ## PID       = PLAN . Progress    ( NAME , "%v / %m"                        )
+    ## PLAN      . ProgressText       ( PID  , f"{TOTAL}"                       )
+    ## PLAN      . setRange           ( PID  , 0 , TOTAL                        )
+    ## AT        = 0
+    ## PLAN      . Start              ( PID  , AT , True                        )
+    ## PLAN      . ProgressReady      ( PID                                     )
+    ## PLAN      . setFrequency       ( PID  , SECSC , ITEMC                    )
     ##########################################################################
-    for GROUP in GROUPs                                                      :
-      ########################################################################
-      AT      = AT + 1
-      ########################################################################
-      RUNNING = PLAN . isProgressRunning ( PID                               )
-      if                           ( not RUNNING                           ) :
-        continue
-      ########################################################################
-      NAME    = "," . join         ( str ( u ) for u in GROUP                )
-      PLAN    . setProgressValue   ( PID , AT                                )
-      PLAN    . ProgressText       ( PID , NAME                              )
-      ########################################################################
-      if                           ( len ( GROUP ) > 1                     ) :
-        ######################################################################
-        UUID  = GROUP              [ 0                                       ]
-        ICON  = GROUP              [ 0                                       ]
-        ######################################################################
-        PIT   . MergeAll           ( DB   , UUID , GROUP , ICON              )
+    ## for GROUP in GROUPs                                                      :
+    ##   ########################################################################
+    ##   AT      = AT + 1
+    ##   ########################################################################
+    ##   RUNNING = PLAN . isProgressRunning ( PID                               )
+    ##   if                           ( not RUNNING                           ) :
+    ##     continue
+    ##   ########################################################################
+    ##   NAME    = "," . join         ( str ( u ) for u in GROUP                )
+    ##   PLAN    . setProgressValue   ( PID , AT                                )
+    ##   PLAN    . ProgressText       ( PID , NAME                              )
+    ##   ########################################################################
+    ##   if                           ( len ( GROUP ) > 1                     ) :
+    ##     ######################################################################
+    ##     UUID  = GROUP              [ 0                                       ]
+    ##     ICON  = GROUP              [ 0                                       ]
+    ##     ######################################################################
+    ##     PIT   . MergeAll           ( DB   , UUID , GROUP , ICON              )
     ##########################################################################
-    time      . sleep              ( 1.0                                     )
-    PLAN      . Finish             ( PID                                     )
+    ## time      . sleep              ( 1.0                                     )
+    ## PLAN      . Finish             ( PID                                     )
     ##########################################################################
-    DB        . Close              (                                         )
+    ## DB        . Close              (                                         )
     ##########################################################################
-    self      . Notify             ( 5                                       )
+    ## self      . Notify             ( 5                                       )
     ##########################################################################
     return True
   ############################################################################
@@ -529,7 +523,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     if                                ( at == 7001                         ) :
       ########################################################################
-      self . ExecuteMergePeople       (                                      )
+      self . ExecuteMergeEpisode      (                                      )
       ########################################################################
       return True
     ##########################################################################

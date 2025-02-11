@@ -39,6 +39,8 @@ class PeopleMerger          ( TreeDock                                     ) :
   emitNamesShow    = Signal (                                                )
   emitAppendPeople = Signal ( dict                                           )
   emitComplete     = Signal (                                                )
+  emitAnalysis     = Signal (                                                )
+  emitLog          = Signal ( str                                            )
   ############################################################################
   def __init__              ( self , parent = None , plan = None           ) :
     ##########################################################################
@@ -63,6 +65,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAppendPeople  . connect ( self . appending                    )
     self . emitComplete      . connect ( self . CompleteMerge                )
+    self . emitAnalysis      . connect ( self . CompleteAnalysis             )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -457,6 +460,74 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return True
   ############################################################################
+  def ExecuteAnalysis          ( self , UUID , PUIDs , ICON                ) :
+    ##########################################################################
+    DB   = self . ConnectDB    ( UsePure = True                              )
+    if                         ( DB in [ False , None ]                    ) :
+      return
+    ##########################################################################
+    PIT  = PeopleItem          (                                             )
+    PIT  . Settings = self . Settings
+    PIT  . Tables   = self . Tables
+    ##########################################################################
+    ## PIT  . MergeAll            ( DB   , UUID , PUIDs , ICON                  )
+    ##########################################################################
+    DB   . Close               (                                             )
+    ##########################################################################
+    self . emitAnalysis . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def CompleteAnalysis        ( self                                       ) :
+    ##########################################################################
+    self . setEnabled         ( True                                         )
+    ##########################################################################
+    msg  = self . getMenuItem ( "FinishAnalysis"                             )
+    self . ShowStatus         ( msg                                          )
+    self . Notify             ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def AnalysisMergePeople             ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    ICON   = 0
+    for i in range                    ( 0 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      CHK  = IT   . checkState        ( 0                                    )
+      ########################################################################
+      if                              ( CHK == Qt . Checked                ) :
+        ICON = PUID
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartAnalysis"                      )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs , ICON ,                )
+    self   . Go                       ( self . ExecuteAnalysis , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -489,6 +560,11 @@ class PeopleMerger          ( TreeDock                                     ) :
       msg  = self . getMenuItem       ( "Merge"                              )
       icon = QIcon                    ( ":/images/play.png"                  )
       mm   . addActionWithIcon        ( 7001 , icon , msg                    )
+      mm   . addSeparator             (                                      )
+      ########################################################################
+      msg  = self . getMenuItem       ( "Analysis"                           )
+      icon = QIcon                    ( ":/images/checklist.png"             )
+      mm   . addActionWithIcon        ( 7002 , icon , msg                    )
       mm   . addSeparator             (                                      )
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
@@ -530,6 +606,12 @@ class PeopleMerger          ( TreeDock                                     ) :
     if                                ( at == 7001                         ) :
       ########################################################################
       self . ExecuteMergePeople       (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 7002                         ) :
+      ########################################################################
+      self . AnalysisMergePeople      (                                      )
       ########################################################################
       return True
     ##########################################################################

@@ -460,12 +460,17 @@ class PeopleView                 ( IconDock                                ) :
     USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
     STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
     ##########################################################################
+    FAV    = 0
     USD    = self . PeopleOPTs        [ UUID ] [ "Used"                      ]
     SSS    = self . PeopleOPTs        [ UUID ] [ "State"                     ]
     PICs   = self . PeopleOPTs        [ UUID ] [ "Pictures"                  ]
     GALs   = self . PeopleOPTs        [ UUID ] [ "Galleries"                 ]
     SGPs   = self . PeopleOPTs        [ UUID ] [ "Subgroups"                 ]
     VIDs   = self . PeopleOPTs        [ UUID ] [ "Albums"                    ]
+    ##########################################################################
+    if                                ( UUID in self . Favourites          ) :
+      ########################################################################
+      FAV  = self . Favourites        [ UUID                                 ]
     ##########################################################################
     UMSG   = ""
     ##########################################################################
@@ -474,6 +479,7 @@ class PeopleView                 ( IconDock                                ) :
       UMSG = USAGE                    [ f"{USD}"                             ]
     ##########################################################################
     text   = FMT . format             ( UUID                               , \
+                                        FAV                                , \
                                         PICs                               , \
                                         GALs                               , \
                                         SGPs                               , \
