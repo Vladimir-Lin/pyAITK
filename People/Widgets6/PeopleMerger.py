@@ -618,7 +618,6 @@ class PeopleMerger          ( TreeDock                                     ) :
       msg  = self . getMenuItem       ( "Merge"                              )
       icon = QIcon                    ( ":/images/play.png"                  )
       mm   . addActionWithIcon        ( 7001 , icon , msg                    )
-      mm   . addSeparator             (                                      )
       ########################################################################
       msg  = self . getMenuItem       ( "LimitedMerge"                       )
       icon = QIcon                    ( ":/images/first.png"                 )
