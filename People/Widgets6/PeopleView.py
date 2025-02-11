@@ -172,30 +172,30 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self         ,                            Enabled  ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Load"       , self . AppendingPeople , Enabled      )
-    self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
-    self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
-    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
-    self . LinkAction ( "Search"     , self . Search          , Enabled      )
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "Reversal"   , self . ReversalSelect  , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
+    self . LinkAction ( "Refresh"    , self . startup           , Enabled    )
+    self . LinkAction ( "Load"       , self . AppendingPeople   , Enabled    )
+    self . LinkAction ( "Import"     , self . ImportPeople      , Enabled    )
+    self . LinkAction ( "Export"     , self . ExportSameNames   , Enabled    )
+    self . LinkAction ( "Insert"     , self . InsertItem        , Enabled    )
+    self . LinkAction ( "Rename"     , self . RenamePeople      , Enabled    )
+    self . LinkAction ( "Delete"     , self . DeleteItems       , Enabled    )
+    self . LinkAction ( "Cut"        , self . DeleteItems       , Enabled    )
+    self . LinkAction ( "Copy"       , self . DoCopyItemText    , Enabled    )
+    self . LinkAction ( "Paste"      , self . PasteItems        , Enabled    )
+    self . LinkAction ( "Search"     , self . Search            , Enabled    )
+    self . LinkAction ( "Home"       , self . PageHome          , Enabled    )
+    self . LinkAction ( "End"        , self . PageEnd           , Enabled    )
+    self . LinkAction ( "PageUp"     , self . PageUp            , Enabled    )
+    self . LinkAction ( "PageDown"   , self . PageDown          , Enabled    )
+    self . LinkAction ( "Select"     , self . SelectByClipboard , Enabled    )
+    self . LinkAction ( "Reversal"   , self . ReversalSelect    , Enabled    )
+    self . LinkAction ( "SelectAll"  , self . SelectAll         , Enabled    )
+    self . LinkAction ( "SelectNone" , self . SelectNone        , Enabled    )
+    self . LinkAction ( "Font"       , self . ChangeItemFont    , Enabled    )
     ##########################################################################
-    self . TellStory  (                                         Enabled      )
+    self . TellStory  (                                           Enabled    )
     ##########################################################################
     return
   ############################################################################
@@ -909,13 +909,6 @@ class PeopleView                 ( IconDock                                ) :
   def looking             ( self , name                                    ) :
     ##########################################################################
     self . SearchingForT2 ( name , "People" , "Names"                        )
-    ##########################################################################
-    return
-  ############################################################################
-  ## 複製MIME列表到剪貼簿
-  ############################################################################
-  def CopyItems                    ( self                                  ) :
-    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -1895,7 +1888,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     if                                  ( at == 24231101                   ) :
       ########################################################################
-      qApp . clipboard ( ). setText     ( f"{uuid}"                          )
+      qApp . clipboard ( ) . setText    ( f"{uuid}"                          )
       ########################################################################
       return
     ##########################################################################

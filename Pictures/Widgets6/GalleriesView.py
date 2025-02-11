@@ -152,23 +152,25 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                         Enabled     ) :
+  def AttachActions   ( self         ,                            Enabled  ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup        , Enabled       )
-    self . LinkAction ( "Insert"     , self . InsertItem     , Enabled       )
-    self . LinkAction ( "Delete"     , self . DeleteItems    , Enabled       )
-    self . LinkAction ( "Rename"     , self . RenameItem     , Enabled       )
-    self . LinkAction ( "Home"       , self . PageHome       , Enabled       )
-    self . LinkAction ( "End"        , self . PageEnd        , Enabled       )
-    self . LinkAction ( "PageUp"     , self . PageUp         , Enabled       )
-    self . LinkAction ( "PageDown"   , self . PageDown       , Enabled       )
-    self . LinkAction ( "Select"     , self . SelectOne      , Enabled       )
-    self . LinkAction ( "Reversal"   , self . ReversalSelect , Enabled       )
-    self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
-    self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
-    self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
+    self . LinkAction ( "Refresh"    , self . startup           , Enabled    )
+    self . LinkAction ( "Insert"     , self . InsertItem        , Enabled    )
+    self . LinkAction ( "Delete"     , self . DeleteItems       , Enabled    )
+    self . LinkAction ( "Cut"        , self . DeleteItems       , Enabled    )
+    self . LinkAction ( "Copy"       , self . DoCopyItemText    , Enabled    )
+    self . LinkAction ( "Rename"     , self . RenameItem        , Enabled    )
+    self . LinkAction ( "Home"       , self . PageHome          , Enabled    )
+    self . LinkAction ( "End"        , self . PageEnd           , Enabled    )
+    self . LinkAction ( "PageUp"     , self . PageUp            , Enabled    )
+    self . LinkAction ( "PageDown"   , self . PageDown          , Enabled    )
+    self . LinkAction ( "Select"     , self . SelectByClipboard , Enabled    )
+    self . LinkAction ( "Reversal"   , self . ReversalSelect    , Enabled    )
+    self . LinkAction ( "SelectAll"  , self . SelectAll         , Enabled    )
+    self . LinkAction ( "SelectNone" , self . SelectNone        , Enabled    )
+    self . LinkAction ( "Font"       , self . ChangeItemFont    , Enabled    )
     ##########################################################################
-    self . TellStory  (                                        Enabled       )
+    self . TellStory  (                                           Enabled    )
     ##########################################################################
     return
   ############################################################################
