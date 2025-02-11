@@ -111,8 +111,8 @@ class GalleriesView            ( IconDock                                  ) :
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . PrepareFetchTableKey     (                                        )
-    ##########################################################################
     self . AppendToolNamingAction   (                                        )
+    ##########################################################################
     self . AppendSideActionWithIcon ( "PersonalGallery"                    , \
                                       ":/images/pictures.png"              , \
                                       self . OpenCurrentGallery              )

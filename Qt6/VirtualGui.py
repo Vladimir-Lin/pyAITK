@@ -277,18 +277,26 @@ class VirtualGui              ( AbstractGui                                ) :
     ##########################################################################
     return
   ############################################################################
-  def AppendSideActionWithIcon     ( self , MKEY , IKEY , FUNC             ) :
+  def AppendSideActionWithIcon       ( self                                , \
+                                       MKEY                                , \
+                                       IKEY                                , \
+                                       FUNC                                , \
+                                       ENABLED  = False                    , \
+                                       HANDLING = True                     ) :
     ##########################################################################
-    MSG  = self . getMenuItem      ( MKEY                                    )
-    A    = QAction                 (                                         )
-    ICON = QIcon                   ( IKEY                                    )
-    A    . setIcon                 ( ICON                                    )
-    A    . setToolTip              ( MSG                                     )
-    A    . triggered     . connect ( FUNC                                    )
-    A    . setEnabled              ( False                                   )
+    MSG    = self . getMenuItem      ( MKEY                                  )
+    A      = QAction                 (                                       )
+    ICON   = QIcon                   ( IKEY                                  )
+    A      . setIcon                 ( ICON                                  )
+    A      . setToolTip              ( MSG                                   )
+    A      . triggered     . connect ( FUNC                                  )
+    A      . setEnabled              ( ENABLED                               )
     ##########################################################################
-    self . WindowActions . append  ( A                                       )
-    self . HandleActions . append  ( A                                       )
+    self   . WindowActions . append  ( A                                     )
+    ##########################################################################
+    if                               ( HANDLING                            ) :
+      ########################################################################
+      self . HandleActions . append  ( A                                     )
     ##########################################################################
     return A
   ############################################################################

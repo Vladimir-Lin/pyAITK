@@ -45,23 +45,34 @@ class PeopleView                 ( IconDock                                ) :
   ShowVideoAlbums       = Signal ( str , int , str  ,       QIcon            )
   ShowWebPages          = Signal ( str , int , str  , str , QIcon            )
   OwnedOccupation       = Signal ( str , int , str  , str , QIcon            )
-  OpenVariantTables     = Signal ( str , str , int  , str , dict             )
-  ShowLodListings       = Signal ( str , str              , QIcon            )
-  OpenLogHistory        = Signal ( str , str , str  , str , str              )
   OpenBodyShape         = Signal ( str , str , dict                          )
   emitOpenSmartNote     = Signal ( str                                       )
+  ShowLodListings       = Signal ( str , str              , QIcon            )
+  OpenVariantTables     = Signal ( str , str , int  , str , dict             )
+  OpenLogHistory        = Signal ( str , str , str  , str , str              )
   emitLog               = Signal ( str                                       )
   ############################################################################
   def __init__                   ( self , parent = None , plan = None      ) :
     ##########################################################################
     super ( ) . __init__         (        parent        , plan               )
     ##########################################################################
+    self . ClassTag           = "PeopleView"
+    self . FetchTableKey      = self . ClassTag
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 60
+    self . GType              = 7
+    self . SortOrder          = "asc"
+    self . SortByName         = False
+    ## self . ExtraINFOs         = True
+    self . RefreshOpts        = True
+    self . Watermarking       = False
+    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
+    self . PeopleOPTs         = {                                            }
+    ##########################################################################
     self . Favourite          = 0
     self . Favourites         = {                                            }
-    self . SortOrder          = "asc"
+    ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
@@ -80,6 +91,9 @@ class PeopleView                 ( IconDock                                ) :
     self . Relation . setT2        ( "People"                                )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
+    self . MountClicked            ( 1                                       )
+    self . MountClicked            ( 2                                       )
+    ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
     self . setAcceptDrops          ( True                                    )
@@ -92,6 +106,119 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
+  ############################################################################
+  def PrepareFetchTableKey       ( self                                    ) :
+    ##########################################################################
+    ## self . subgroupFetchTableKey (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareForActions                    ( self                          ) :
+    ##########################################################################
+    self . PrepareFetchTableKey            (                                 )
+    self . AppendToolNamingAction          (                                 )
+    ##########################################################################
+    self . AppendSideActionWithIcon        ( "PeopleDetails"               , \
+                                             ":/images/actor.png"          , \
+                                             self . OpenPeopleDetails        )
+    self . AppendSideActionWithIcon        ( "Search"                      , \
+                                             ":/images/search.png"         , \
+                                             self . Search                 , \
+                                             True                          , \
+                                             False                           )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "Galleries"                   , \
+                                             ":/images/galleries.png"      , \
+                                             self . OpenPersonalGalleries    )
+    self . AppendSideActionWithIcon        ( "PersonalGallery"             , \
+                                             ":/images/gallery.png"        , \
+                                             self . OpenPersonalGallery      )
+    self . AppendSideActionWithIcon        ( "Videos"                      , \
+                                             ":/images/video.png"          , \
+                                             self . OpenPeopleVideos         )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "BodyShapes"                  , \
+                                             ":/images/android.png"        , \
+                                             self . DoOpenBodyShape          )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
+                                             ":/images/webfind.png"        , \
+                                             self . OpenIdentifierWebPages   )
+    ##########################################################################
+    return
+  ############################################################################
+  def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    GG   = self . Grouping
+    TT   = self . windowTitle (                                              )
+    MM   = self . getMenuItem ( "PeopleViewParameter"                        )
+    FF   = self . Relation . First
+    ST   = self . Relation . Second
+    T1   = self . Relation . T1
+    T2   = self . Relation . T2
+    RT   = self . Relation . Relation
+    LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
+    ##########################################################################
+    if                        ( Enabled                                    ) :
+      ########################################################################
+      LL = f"{LL} Enter"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LL = f"{LL} Leave"
+    ##########################################################################
+    self . emitLog . emit     ( LL                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Load"       , self . AppendingPeople , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
+    self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Search"     , self . Search          , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
+    ##########################################################################
+    self . TellStory  (                                         Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
@@ -145,6 +272,18 @@ class PeopleView                 ( IconDock                                ) :
     PIX        . convertFromImage     ( ICZ                                  )
     ##########################################################################
     return QIcon                      ( PIX                                  )
+  ############################################################################
+  def singleClicked             ( self , item                              ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item                                )
+    ##########################################################################
+    return True
+  ############################################################################
+  def doubleClicked        ( self , item                                   ) :
+    ##########################################################################
+    ## self . OpenItemGallery (        item                                     )
+    ##########################################################################
+    return True
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
@@ -216,145 +355,9 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
+    self . PeopleOPTs =                   {                                  }
+    ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareForActions           ( self                                   ) :
-    ##########################################################################
-    self . AppendToolNamingAction (                                          )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Search"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . Search                            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    self . AppendWindowToolSeparatorAction (                                 )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Galleries"                              )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/galleries.png" )       )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenPersonalGalleries             )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "PersonalGallery"                        )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenPersonalGallery               )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Videos"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenPeopleVideos                  )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    A    = QAction                (                                          )
-    A    . setSeparator           ( True                                     )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "BodyShapes"                             )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/android.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . DoOpenBodyShape                   )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    A    = QAction                (                                          )
-    A    . setSeparator           ( True                                     )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "IdentWebPage"                           )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
-    ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Load"       , self . AppendingPeople , Enabled      )
-    self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
-    self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
-    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
-    self . LinkAction ( "Search"     , self . Search          , Enabled      )
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
-    ##########################################################################
-    if                ( self . isGrouping ( )                              ) :
-      ########################################################################
-      GG   = self . Grouping
-      TT   = self . windowTitle (                                            )
-      MM   = self . getMenuItem ( "PeopleViewParameter"                      )
-      FF   = self . Relation . First
-      ST   = self . Relation . Second
-      T1   = self . Relation . T1
-      T2   = self . Relation . T2
-      RT   = self . Relation . Relation
-      LL   = f"{MM} {FF} {ST} ( {GG} : {T1} , {T2} , {RT} ) - {TT}"
-      ########################################################################
-      if              ( Enabled                                            ) :
-        ######################################################################
-        LL = f"{LL} Enter"
-        ######################################################################
-      else                                                                   :
-        ######################################################################
-        LL = f"{LL} Leave"
-      ########################################################################
-      self . emitLog . emit  ( LL                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def FocusIn                ( self                                        ) :
-    ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
-      return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                 ( self                                      ) :
-    ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
-    ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -1252,6 +1255,29 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemPeopleDetails           ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( Qt . UserRole                        )
+    uuid = int                        ( uuid                                 )
+    text = item . text                (                                      )
+    icon = item . icon                (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    ## self . ShowPersonalGallery . emit ( text , 7 , xsid , icon               )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPeopleDetails            ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( self . NotOkay ( atItem )             ) :
+      return
+    ##########################################################################
+    self   . OpenItemPeopleDetails ( atItem                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def DoOpenBodyShape             ( self                                   ) :
     ##########################################################################
     atItem = self . currentItem   (                                          )
@@ -1810,6 +1836,78 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return   False
   ############################################################################
+  def DisplayMenu                ( self , mm                               ) :
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "DisplayUsage"                            )
+    COL   = mm    . addMenu      ( MSG                                       )
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    KEYs  = USAGE . keys         (                                           )
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "RefreshOptions"                          )
+    mm    . addActionFromMenu    ( COL                                     , \
+                                   29432101                                , \
+                                   MSG                                     , \
+                                   True                                    , \
+                                   self . RefreshOpts                        )
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    BAID  = 29432000
+    ##########################################################################
+    for ID in KEYs                                                           :
+      ########################################################################
+      VID = int                  ( ID                                        )
+      CHK =                      ( VID in self . UsedOptions                 )
+      MSG = USAGE                [ ID                                        ]
+      BXD = int                  ( VID + BAID                                )
+      ########################################################################
+      mm  . addActionFromMenu    ( COL , BXD , MSG , True , CHK              )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunDisplayMenu              ( self , at                              ) :
+    ##########################################################################
+    if                            ( at == 29432101                         ) :
+      ########################################################################
+      if                          ( self . RefreshOpts                     ) :
+        self . RefreshOpts = False
+      else                                                                   :
+        self . RefreshOpts = True
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( at < 29432000                          ) :
+      return False
+    ##########################################################################
+    if                            ( at > 29432100                          ) :
+      return False
+    ##########################################################################
+    VID    = int                  ( at - 29432000                            )
+    VSD    = f"{VID}"
+    USAGE  = self  . Translations [ self . ClassTag ] [ "Usage"              ]
+    ##########################################################################
+    if                            ( VSD not in USAGE                       ) :
+      return False
+    ##########################################################################
+    if                            ( VID in self . UsedOptions              ) :
+      ########################################################################
+      ROP  =                      [                                          ]
+      ########################################################################
+      for ID in self . UsedOptions                                           :
+        ######################################################################
+        if                        ( VID != ID                              ) :
+          ROP . append            ( ID                                       )
+      ########################################################################
+      self . UsedOptions = ROP
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . UsedOptions . append ( VID                                      )
+    ##########################################################################
+    if                            ( self . RefreshOpts                     ) :
+      self   . restart            (                                          )
+    ##########################################################################
+    return True
+  ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
     doMenu = self . isFunction         ( self . HavingMenu                   )
@@ -1834,6 +1932,10 @@ class PeopleView                 ( IconDock                                ) :
     if                                 ( uuid > 0                          ) :
       ########################################################################
       self . PeopleFavourite           ( mm , uuid , atItem                  )
+      ########################################################################
+      msg  = self . getMenuItem        ( "PeopleDetails"                     )
+      icon = QIcon                     ( ":/images/actor.png"                )
+      mm   . addActionWithIcon         ( 5001 , icon , msg                   )
     ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1101                           )
@@ -1850,6 +1952,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     self   . FunctionsMenu             ( mm , uuid , atItem                  )
     self   . GroupsMenu                ( mm , uuid , atItem                  )
+    self   . DisplayMenu               ( mm                                  )
     self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
     self   . DockingMenu               ( mm                                  )
@@ -1890,6 +1993,10 @@ class PeopleView                 ( IconDock                                ) :
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
+    OKAY   = self . RunDisplayMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
     OKAY   = self . RunSortingMenu     ( at                                  )
     if                                 ( OKAY                              ) :
       ########################################################################
@@ -1903,6 +2010,12 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     OKAY   = self . RunStopIconMenu    ( at                                  )
     if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 5001                        ) :
+      ########################################################################
+      self . OpenItemPeopleDetails     ( atItem                              )
+      ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 1001                        ) :
