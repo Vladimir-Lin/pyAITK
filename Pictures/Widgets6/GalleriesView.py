@@ -911,26 +911,39 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateGalleryUsage         ( self , uuid , usage                     ) :
+  def UpdateGalleryUsage             ( self , uuid , usage                 ) :
     ##########################################################################
-    DB     = self . ConnectDB    (                                           )
-    if                           ( self . NotOkay ( DB )                   ) :
+    if                               ( uuid <= 0                           ) :
       return
     ##########################################################################
-    GALTAB = self . Tables       [ "Galleries"                               ]
+    UUIDs  = self . getSelectedUuids (                                       )
+    UUIDz  =                         [ str ( u ) for u in UUIDs              ]
     ##########################################################################
-    DB     . LockWrites          ( [ GALTAB                                ] )
+    if                               ( len ( UUIDz ) <= 0                  ) :
+      return
+    ##########################################################################
+    UUIDw  = "," . join              ( UUIDz                                 )
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( self . NotOkay ( DB )               ) :
+      return
+    ##########################################################################
+    GALTAB = self . Tables           [ "Galleries"                           ]
+    ##########################################################################
+    DB     . LockWrites              ( [ GALTAB                            ] )
     ##########################################################################
     QQ     = f"""update {GALTAB}
                  set `used` = {usage}
-                 where ( `uuid` = {uuid} ) ; """
-    DB     . Query               ( " " . join ( QQ . split (             ) ) )
+                 where ( `uuid` in ( {UUIDw} ) ) ; """
+    DB     . Query                   ( " " . join ( QQ . split (         ) ) )
     ##########################################################################
-    DB     . UnlockTables        (                                           )
-    DB     . Close               (                                           )
+    DB     . UnlockTables            (                                       )
+    DB     . Close                   (                                       )
     ##########################################################################
-    self   . GalleryOPTs         [ uuid ] [ "Used" ] = usage
-    self   . GenerateItemToolTip ( uuid                                      )
+    for u in UUIDs                                                           :
+      ########################################################################
+      self . GalleryOPTs             [ u ] [ "Used" ] = usage
+      self . GenerateItemToolTip     ( u                                     )
     ##########################################################################
     return
   ############################################################################
