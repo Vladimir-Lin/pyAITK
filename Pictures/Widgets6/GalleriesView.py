@@ -163,6 +163,7 @@ class GalleriesView            ( IconDock                                  ) :
     self . LinkAction ( "PageUp"     , self . PageUp         , Enabled       )
     self . LinkAction ( "PageDown"   , self . PageDown       , Enabled       )
     self . LinkAction ( "Select"     , self . SelectOne      , Enabled       )
+    ## self . LinkAction ( "Reversal"   , self . ReversalSelect , Enabled       )
     self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
     self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
     self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
@@ -534,10 +535,6 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
     ##########################################################################
-    FMT          = self . getMenuItem  ( "GalleryToolTip"                    )
-    USAGE        = self . Translations [ self . ClassTag ] [ "Usage"         ]
-    STATEs       = self . Translations [ self . ClassTag ] [ "States"        ]
-    ##########################################################################
     DB           = self . ConnectDB    (                                     )
     if                                 ( self . NotOkay ( DB )             ) :
       return
@@ -580,7 +577,6 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       self       . GalleryOPTs [ U ] = GJSON
       ########################################################################
-      UMSG       = ""
       QQ         = f"""select `used` , `states` from {GALTAB}
                        where ( `uuid` = {U} ) ;"""
       DB         . Query               ( " " . join ( QQ . split (       ) ) )
@@ -592,11 +588,9 @@ class GalleriesView            ( IconDock                                  ) :
           ####################################################################
           USD    = int                 ( RR [ 0                            ] )
           SSS    = int                 ( RR [ 1                            ] )
+          ####################################################################
           self   . GalleryOPTs [ U ] [ "Used"   ] = USD
           self   . GalleryOPTs [ U ] [ "States" ] = SSS
-          ####################################################################
-          if                           ( f"{USD}" in USAGE                 ) :
-            UMSG = USAGE               [ f"{USD}"                            ]
       ########################################################################
       REL        . set                 ( "first" , U                         )
       REL        . setT1               ( "Gallery"                           )

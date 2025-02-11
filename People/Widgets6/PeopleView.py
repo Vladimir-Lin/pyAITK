@@ -37,6 +37,7 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   HavingMenu            = 1371434312
   ############################################################################
+  ShowPeopleDetails     = Signal ( str , str ,              QIcon            )
   ShowPersonalGallery   = Signal ( str , int , str  ,       QIcon            )
   ShowPersonalIcons     = Signal ( str , int , str  , str , QIcon            )
   ShowPersonalFaces     = Signal ( str , str                                 )
@@ -64,7 +65,7 @@ class PeopleView                 ( IconDock                                ) :
     self . GType              = 7
     self . SortOrder          = "asc"
     self . SortByName         = False
-    ## self . ExtraINFOs         = True
+    self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = False
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
@@ -189,6 +190,7 @@ class PeopleView                 ( IconDock                                ) :
     self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
     self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    ## self . LinkAction ( "Reversal"   , self . ReversalSelect  , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled      )
@@ -443,6 +445,140 @@ class PeopleView                 ( IconDock                                ) :
     self . PeopleOPTs =                   {                                  }
     ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def GenerateItemToolTip             ( self , UUID                        ) :
+    ##########################################################################
+    if                                ( UUID not in self . UuidItemMaps    ) :
+      return
+    ##########################################################################
+    if                                ( UUID not in self . PeopleOPTs      ) :
+      return
+    ##########################################################################
+    FMT    = self . getMenuItem       ( "PeopleToolTip"                      )
+    USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
+    STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
+    ##########################################################################
+    USD    = self . PeopleOPTs        [ UUID ] [ "Used"                      ]
+    SSS    = self . PeopleOPTs        [ UUID ] [ "State"                     ]
+    PICs   = self . PeopleOPTs        [ UUID ] [ "Pictures"                  ]
+    GALs   = self . PeopleOPTs        [ UUID ] [ "Galleries"                 ]
+    SGPs   = self . PeopleOPTs        [ UUID ] [ "Subgroups"                 ]
+    VIDs   = self . PeopleOPTs        [ UUID ] [ "Albums"                    ]
+    ##########################################################################
+    UMSG   = ""
+    ##########################################################################
+    if                                ( f"{USD}" in USAGE                  ) :
+      ########################################################################
+      UMSG = USAGE                    [ f"{USD}"                             ]
+    ##########################################################################
+    text   = FMT . format             ( UUID                               , \
+                                        PICs                               , \
+                                        GALs                               , \
+                                        SGPs                               , \
+                                        VIDs                               , \
+                                        UMSG                                 )
+    ##########################################################################
+    if                                ( UUID in self . UuidItemNames       ) :
+      ########################################################################
+      TIT  = self . UuidItemNames     [ UUID                                 ]
+      text = f"{TIT}\n\n{text}"
+    ##########################################################################
+    item   = self . UuidItemMaps      [ UUID                                 ]
+    self   . emitAssignToolTip . emit ( item , text                          )
+    self   . EmitInfoIcon             ( UUID                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    DB           = self . ConnectDB    (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
+    ##########################################################################
+    PEOTAB       = self . Tables       [ "People"                            ]
+    PICTAB       = self . Tables       [ "Relation"                          ]
+    ## PICTAB       = self . Tables       [ "RelationPictures"                  ]
+    GALTAB       = self . Tables       [ "Relation"                          ]
+    RELTAB       = self . Tables       [ "Relation"                          ]
+    SGPTAB       = self . Tables       [ "Relation"                          ]
+    ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
+    ALMTAB       = self . Tables       [ "Relation"                          ]
+    ## ALMTAB       = self . Tables       [ "RelationPeople"                    ]
+    VIDTAB       = self . Tables       [ "Relation"                          ]
+    ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
+    REL          = Relation            (                                     )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . StayAlive              ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      GJSON      =                     { "Used"      : 1                   , \
+                                         "State"     : 0                   , \
+                                         "Pictures"  : 0                   , \
+                                         "Galleries" : 0                   , \
+                                         "Subgroups" : 0                   , \
+                                         "Albums"    : 0                     }
+      ########################################################################
+      if                               ( U in self . PeopleOPTs            ) :
+        ######################################################################
+        GOPTs    = self . PeopleOPTs   [ U                                   ]
+        ######################################################################
+        if                             ( "Image" in GOPTs                  ) :
+          ####################################################################
+          GJSON [ "Image" ] = GOPTs    [ "Image"                             ]
+      ########################################################################
+      self       . PeopleOPTs [ U ] = GJSON
+      ########################################################################
+      QQ         = f"""select `used` , `state` from {PEOTAB}
+                       where ( `uuid` = {U} ) ;"""
+      DB         . Query               ( " " . join ( QQ . split (       ) ) )
+      RR         = DB . FetchOne       (                                     )
+      ########################################################################
+      if                               ( RR not in self . EmptySet         ) :
+        ######################################################################
+        if                             ( 2 == len ( RR )                   ) :
+          ####################################################################
+          USD    = int                 ( RR [ 0                            ] )
+          SSS    = int                 ( RR [ 1                            ] )
+          ####################################################################
+          self   . PeopleOPTs [ U ] [ "Used"   ] = USD
+          self   . PeopleOPTs [ U ] [ "State" ] = SSS
+      ########################################################################
+      REL        . set                 ( "first" , U                         )
+      REL        . setT1               ( "People"                            )
+      REL        . setT2               ( "Picture"                           )
+      REL        . setRelation         ( "Subordination"                     )
+      PICs       = REL . CountSecond   ( DB , PICTAB                         )
+      ########################################################################
+      self       . PeopleOPTs [ U ] [ "Pictures" ] = PICs
+      ########################################################################
+      REL        . setT2               ( "Gallery"                           )
+      GALs       = REL . CountSecond   ( DB , GALTAB                         )
+      ########################################################################
+      self       . PeopleOPTs [ U ] [ "Galleries" ] = GALs
+      ########################################################################
+      REL        . setT2               ( "Album"                             )
+      VIDs       = REL . CountSecond   ( DB , ALMTAB                         )
+      ########################################################################
+      self       . PeopleOPTs [ U ] [ "Albums" ] = VIDs
+      ########################################################################
+      REL        . set                 ( "second" , U                        )
+      REL        . setT2               ( "People"                            )
+      ########################################################################
+      REL        . setT1               ( "Subgroup"                          )
+      SGPs       = REL . CountFirst    ( DB , SGPTAB                         )
+      ########################################################################
+      self       . PeopleOPTs [ U ] [ "Subgroups" ] = SGPs
+      ########################################################################
+      self       . GenerateItemToolTip ( U                                   )
+    ##########################################################################
+    DB           . Close               (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -1260,6 +1396,29 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def UpdateGalleryUsage         ( self , uuid , usage                     ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
+      return
+    ##########################################################################
+    PEOTAB = self . Tables       [ "People"                                  ]
+    ##########################################################################
+    DB     . LockWrites          ( [ PEOTAB                                ] )
+    ##########################################################################
+    QQ     = f"""update {PEOTAB}
+                 set `used` = {usage}
+                 where ( `uuid` = {uuid} ) ; """
+    DB     . Query               ( " " . join ( QQ . split (             ) ) )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    DB     . Close               (                                           )
+    ##########################################################################
+    self   . PeopleOPTs          [ uuid ] [ "Used" ] = usage
+    self   . GenerateItemToolTip ( uuid                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenIdentifierWebPages        ( self                                 ) :
     ##########################################################################
     atItem = self . currentItem     (                                        )
@@ -1340,15 +1499,15 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenItemPeopleDetails           ( self , item                        ) :
+  def OpenItemPeopleDetails         ( self , item                          ) :
     ##########################################################################
-    uuid = item . data                ( Qt . UserRole                        )
-    uuid = int                        ( uuid                                 )
-    text = item . text                (                                      )
-    icon = item . icon                (                                      )
-    xsid = str                        ( uuid                                 )
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
     ##########################################################################
-    ## self . ShowPersonalGallery . emit ( text , 7 , xsid , icon               )
+    self . ShowPeopleDetails . emit ( text , xsid , icon                     )
     ##########################################################################
     return
   ############################################################################
@@ -1976,6 +2135,61 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return   False
   ############################################################################
+  def UsageMenu                  ( self , mm , item                        ) :
+    ##########################################################################
+    if                           ( self . NotOkay ( item                 ) ) :
+      return
+    ##########################################################################
+    uuid  = item  . data         ( Qt . UserRole                             )
+    uuid  = int                  ( uuid                                      )
+    ##########################################################################
+    if                           ( uuid not in self . PeopleOPTs           ) :
+      return
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "PeopleUsage"                             )
+    COL   = mm    . addMenu      ( MSG                                       )
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    KEYs  = USAGE . keys         (                                           )
+    USED  = self  . PeopleOPTs   [ uuid ] [ "Used"                           ]
+    BAID  = 29431000
+    ##########################################################################
+    for ID in KEYs                                                           :
+      ########################################################################
+      VID = int                  ( ID                                        )
+      CHK =                      ( USED == VID                               )
+      MSG = USAGE                [ ID                                        ]
+      BXD = int                  ( VID + BAID                                )
+      ########################################################################
+      mm  . addActionFromMenu    ( COL , BXD , MSG , True , CHK              )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunUsageMenu               ( self , at , item                        ) :
+    ##########################################################################
+    if                           ( at < 29431000                           ) :
+      return False
+    ##########################################################################
+    if                           ( at > 29431100                           ) :
+      return False
+    ##########################################################################
+    uuid  = item  . data         ( Qt . UserRole                             )
+    uuid  = int                  ( uuid                                      )
+    ##########################################################################
+    if                           ( uuid not in self . PeopleOPTs           ) :
+      return
+    ##########################################################################
+    VID   = int                  ( at - 29431000                             )
+    VSD   = f"{VID}"
+    USAGE = self  . Translations [ self . ClassTag ] [ "Usage"               ]
+    ##########################################################################
+    if                           ( VSD not in USAGE                        ) :
+      return False
+    ##########################################################################
+    VP    =                      ( uuid , VID ,                              )
+    self  . Go                   ( self . UpdatePeopleUsage , VP             )
+    ##########################################################################
+    return True
+  ############################################################################
   def DisplayMenu                ( self , mm                               ) :
     ##########################################################################
     MSG   = self  . getMenuItem  ( "DisplayUsage"                            )
@@ -2094,6 +2308,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     self   . FunctionsMenu             ( mm , uuid , atItem                  )
     self   . GroupsMenu                ( mm , uuid , atItem                  )
+    self   . UsageMenu                 ( mm ,        atItem                  )
     self   . DisplayMenu               ( mm                                  )
     self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
@@ -2135,8 +2350,12 @@ class PeopleView                 ( IconDock                                ) :
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunDisplayMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunUsageMenu       ( at , atItem                         )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunDisplayMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . RunSortingMenu     ( at                                  )
