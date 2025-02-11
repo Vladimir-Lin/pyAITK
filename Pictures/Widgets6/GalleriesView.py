@@ -308,7 +308,7 @@ class GalleriesView            ( IconDock                                  ) :
         ######################################################################
         CLR   = QColor                ( 255 , 0 , 0 , 192                    )
         FNT   = self . font           (                                      )
-        FNT   . setPixelSize          ( TIW - 4                              )
+        FNT   . setPixelSize          ( TIW - 6                              )
         FNT   . setBold               ( True                                 )
         RTS   = QRectF                ( 2                                  , \
                                         ISIZE . height ( ) - TIH           , \
