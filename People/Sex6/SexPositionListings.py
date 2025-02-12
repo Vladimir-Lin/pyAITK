@@ -114,6 +114,11 @@ class SexPositionListings      ( TreeDock                                  ) :
     self . AppendSideActionWithIcon ( "Galleries"                          , \
                                       ":/images/galleries.png"             , \
                                       self . OpenPersonalGalleries           )
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "Videos"                             , \
+                                      ":/images/video.png"                 , \
+                                      self . OpenPersonalAlbums              )
+    ##########################################################################
     self . AppendSideActionWithIcon ( "Description"                        , \
                                       ":/images/notes.png"                 , \
                                       self . GotoItemNote                    )
@@ -340,7 +345,8 @@ class SexPositionListings      ( TreeDock                                  ) :
     RELTAB  = self . Tables           [ "RelationGroups"                     ]
     NAMTAB  = self . Tables           [ "Names"                              ]
     LIC     = self . getLocality      (                                      )
-    LIKE    = f"%{name}%"
+    LNAME   = name . lower            (                                      )
+    LIKE    = f"%{LNAME}%"
     UUIDs   =                         [                                      ]
     ##########################################################################
     T1      = self . Relation . get   ( "t1"                                 )
@@ -367,7 +373,7 @@ class SexPositionListings      ( TreeDock                                  ) :
     QQ      = f"""select `uuid` from {NAMTAB}
                   where ( `locality` = {LIC} )
                   and ( `uuid` in ( {RQ} ) )
-                  and ( `name` like %s )
+                  and ( lower ( convert ( `name` using utf8 ) ) like %s )
                   group by `uuid` asc ;"""
     QQ      = " " . join              ( QQ . split ( )                       )
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
@@ -452,36 +458,11 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids                ( self , DB                            ) :
+  def FetchRegularDepotCount             ( self , DB                       ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "SexPosition"                          ]
-    STID   = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder (                                        )
+    SEXTAB = self . Tables               [ "SexPosition"                     ]
     ##########################################################################
-    QQ     = f"""select `uuid` from {TABLE}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ     = " " . join             ( QQ . split ( )                         )
-    ##########################################################################
-    return DB . ObtainUuids         ( QQ , 0                                 )
-  ############################################################################
-  def FetchRegularDepotCount ( self , DB                                   ) :
-    ##########################################################################
-    SEXTAB = self . Tables   [ "SexPosition"                                 ]
-    QQ     = f"select count(*) from {SEXTAB} where ( `used` > 0 ) ;"
-    DB     . Query           ( QQ                                            )
-    ONE    = DB . FetchOne   (                                               )
-    ##########################################################################
-    if                       ( ONE == None                                 ) :
-      return 0
-    ##########################################################################
-    if                       ( len ( ONE ) <= 0                            ) :
-      return 0
-    ##########################################################################
-    return ONE               [ 0                                             ]
+    return self . POSTURE . CountOptions (        DB , SEXTAB                )
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
@@ -495,19 +476,14 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery              ( self                                 ) :
+  def ObtainUuidsQuery                  ( self                             ) :
     ##########################################################################
-    SEXTAB = self . Tables          [ "SexPosition"                          ]
+    SEXTAB = self . Tables              [ "SexPosition"                      ]
     STID   = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder (                                        )
+    ORDER  = self . getSortingOrder     (                                    )
     ##########################################################################
-    QQ     = f"""select `uuid` from {SEXTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    return " " . join               ( QQ . split ( )                         )
+    return self . POSTURE . QuerySyntax ( SEXTAB , ORDER , STID , AMOUNT     )
   ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
@@ -906,6 +882,40 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenPersonalGalleries     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self . OpenItemGalleries    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenAlbumItem               ( self , item                            ) :
+    ##########################################################################
+    uuid = item . data            ( 0 , Qt . UserRole                        )
+    uuid = int                    ( uuid                                     )
+    text = item . text            ( 0                                        )
+    icon = self . windowIcon      (                                          )
+    xsid = str                    ( uuid                                     )
+    ##########################################################################
+    self . ShowVideoAlbums . emit ( text , self . GType , xsid , icon        )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPersonalAlbums        ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenAlbumItem      ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNote               ( self , item                             ) :
     ##########################################################################
     uuid = item . data           ( 0 , Qt . UserRole                         )
@@ -1059,13 +1069,7 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     if                                ( at == 38522004                     ) :
       ########################################################################
-      uuid = item . data              ( 0 , Qt . UserRole                    )
-      uuid = int                      ( uuid                                 )
-      text = item . text              ( 0                                    )
-      icon = self . windowIcon        (                                      )
-      xsid = str                      ( uuid                                 )
-      ########################################################################
-      self . ShowVideoAlbums . emit   ( text , self . GType , xsid , icon    )
+      self . OpenAlbumItem            ( item                                 )
       ########################################################################
       return True
     ##########################################################################
