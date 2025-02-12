@@ -22,12 +22,15 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-RACEREL       = "`affiliations`.`relations_people`"
-RACENAM       = "`appellations`.`names_commons_0019`"
-RACEPARAM     = "`cios`.`parameters`"
-RaceShortType = 34
-RaceLongType  = 1100000000000000034
-RaceTypeName  = "Race"
+SEXREL       = "`affiliations`.`relations`"
+GRPREL       = "`affiliations`.`relations_commons_0011`"
+PICREL       = "`affiliations`.`relations_pictures_0011`"
+SEXNAM       = "`appellations`.`names_commons_0026`"
+SEXNOTE      = "`notez`.`notes_commons_0021`"
+SEXPARAM     = "`cios`.`parameters`"
+SexShortType = 210
+SexLongType  = 1100000000000000210
+SexTypeName  = "SexPosition"
 ##############################################################################
 class SexPositions       ( Columns                                         ) :
   ############################################################################
@@ -49,8 +52,7 @@ class SexPositions       ( Columns                                         ) :
     self . Id      = -1
     self . Uuid    =  0
     self . Used    =  0
-    self . Name    =  ""
-    self . Comment =  ""
+    self . SType   =  1
     self . ltime   =  0
     ##########################################################################
     return
@@ -61,8 +63,7 @@ class SexPositions       ( Columns                                         ) :
     self . Id      = item . Id
     self . Uuid    = item . Uuid
     self . Used    = item . Used
-    self . Name    = item . Name
-    self . Comment = item . Comment
+    self . SType   = item . SType
     self . ltime   = item . ltime
     ##########################################################################
     return
@@ -80,11 +81,8 @@ class SexPositions       ( Columns                                         ) :
     elif             ( "used"    == a                                      ) :
       self . Used    = value
     ##########################################################################
-    elif             ( "name"    == a                                      ) :
-      self . Name    = value
-    ##########################################################################
-    elif             ( "comment" == a                                      ) :
-      self . Comment = value
+    elif             ( "type"    == a                                      ) :
+      self . SType   = value
     ##########################################################################
     elif             ( "ltime"   == a                                      ) :
       self . ltime   = value
@@ -104,11 +102,8 @@ class SexPositions       ( Columns                                         ) :
     if               ( "used"    == a                                      ) :
       return self . Used
     ##########################################################################
-    if               ( "name"    == a                                      ) :
-      return self . Name
-    ##########################################################################
-    if               ( "comment" == a                                      ) :
-      return self . Comment
+    if               ( "type"    == a                                      ) :
+      return self . SType
     ##########################################################################
     if               ( "ltime"   == a                                      ) :
       return self . ltime
@@ -119,8 +114,7 @@ class SexPositions       ( Columns                                         ) :
     return [ "id"                                                            ,
              "uuid"                                                          ,
              "used"                                                          ,
-             "name"                                                          ,
-             "comment"                                                       ,
+             "type"                                                          ,
              "ltime"                                                         ]
   ############################################################################
   def pair              ( self , item                                      ) :
@@ -129,15 +123,13 @@ class SexPositions       ( Columns                                         ) :
   ############################################################################
   def valueItems        ( self                                             ) :
     return [ "used"                                                          ,
-             "name"                                                          ,
-             "comment"                                                       ]
+             "type"                                                          ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Id"      : self . Id                                       , \
-               "Uuid"    : self . Uuid                                     , \
-               "Used"    : self . Used                                     , \
-               "Name"    : self . Name                                     , \
-               "Comment" : self . Comment                                    }
+    return   { "Id"   : self . Id                                          , \
+               "Uuid" : self . Uuid                                        , \
+               "Used" : self . Used                                        , \
+               "Type" : self . SType                                         }
   ############################################################################
   def assureString     ( self , pb                                         ) :
     ##########################################################################

@@ -10,18 +10,19 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                                   import QtCore
+from   PySide6                                   import QtGui
+from   PySide6                                   import QtWidgets
+from   PySide6 . QtCore                          import *
+from   PySide6 . QtGui                           import *
+from   PySide6 . QtWidgets                       import *
+from   AITK    . Qt6                             import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . People     . People   import People
+from   AITK    . Essentials . Relation           import Relation
+from   AITK    . Calendars  . StarDate           import StarDate
+from   AITK    . Calendars  . Periode            import Periode
+from   AITK    . People     . People             import People
+from   AITK    . People     . Sex . SexPositions import SexPositions as SexPositionsItem
 ##############################################################################
 class SexPositionListings      ( TreeDock                                  ) :
   ############################################################################
@@ -41,21 +42,25 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
+    self . ClassTag           = "SexPositionListings"
+    self . FetchTableKey      = self . ClassTag
     self . GType              = 210
+    self . SortOrder          = "asc"
+    ##########################################################################
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 45
-    self . SortOrder          = "asc"
+    ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
+    ##########################################################################
+    self . POSTURE            = SexPositionsItem (                           )
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
-    ##########################################################################
-    self . FetchTableKey      = "SexPositionListings"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -77,10 +82,9 @@ class SexPositionListings      ( TreeDock                                  ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
-    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -89,26 +93,30 @@ class SexPositionListings      ( TreeDock                                  ) :
     self . setDragEnabled          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
+    self . setMinimumSize          ( 80 , 80                                 )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    msg  = self . Translations    [ "UI::EditNames"                          ]
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenSexPositionNames              )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Search"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . Search                            )
-    self . WindowActions . append ( A                                        )
+    self . AppendToolNamingAction   (                                        )
+    self . AppendSideActionWithIcon ( "Search"                             , \
+                                      ":/images/search.png"                , \
+                                      self . Search                        , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "PersonalGallery"                    , \
+                                      ":/images/gallery.png"               , \
+                                      self . OpenPersonalGallery             )
+    self . AppendSideActionWithIcon ( "Galleries"                          , \
+                                      ":/images/galleries.png"             , \
+                                      self . OpenPersonalGalleries           )
+    self . AppendSideActionWithIcon ( "Description"                        , \
+                                      ":/images/notes.png"                 , \
+                                      self . GotoItemNote                    )
     ##########################################################################
     return
   ############################################################################
@@ -136,25 +144,27 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
-    ##########################################################################
-    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
@@ -162,16 +172,18 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked            ( self , item , column                       ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                          ( column not in [ 0 ]                      ) :
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    line = self . setLineEdit   ( item                                     , \
+                                  0                                        , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+    line . setFocus             ( Qt . TabFocusReason                        )
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -848,20 +860,6 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenSexPositionNames      ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
-    uuid   = int                ( uuid                                       )
-    head   = atItem . text      ( 0                                          )
-    NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "SexPosition" , uuid , NAM          )
-    ##########################################################################
-    return
-  ############################################################################
   def OpenItemGalleries         ( self , item                              ) :
     ##########################################################################
     uuid = item . data          ( 0 , Qt . UserRole                          )
@@ -905,6 +903,43 @@ class SexPositionListings      ( TreeDock                                  ) :
       return
     ##########################################################################
     self   . OpenGalleryItem    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemNote               ( self , item                             ) :
+    ##########################################################################
+    uuid = item . data           ( 0 , Qt . UserRole                         )
+    uuid = int                   ( uuid                                      )
+    head = item . text           ( 0                                         )
+    nx   = ""
+    ##########################################################################
+    if                           ( "Notes" in self . Tables                ) :
+      nx = self . Tables         [ "Notes"                                   ]
+    ##########################################################################
+    self . OpenLogHistory . emit ( head                                    , \
+                                   str ( uuid )                            , \
+                                   "Description"                           , \
+                                   nx                                      , \
+                                   str ( self . getLocality ( ) )            )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemNote              ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemNote       ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item                               , \
+                                        0                                  , \
+                                        "SexPosition"                      , \
+                                        "NamesEditing"                       )
     ##########################################################################
     return
   ############################################################################
@@ -1036,129 +1071,118 @@ class SexPositionListings      ( TreeDock                                  ) :
     ##########################################################################
     if                                ( at == 38523001                     ) :
       ########################################################################
-      uuid = item . data              ( 0 , Qt . UserRole                    )
-      uuid = int                      ( uuid                                 )
-      head = item . text              ( 0                                    )
-      nx   = ""
-      ########################################################################
-      if                              ( "Notes" in self . Tables           ) :
-        nx = self . Tables            [ "Notes"                              ]
-      ########################################################################
-      self . OpenLogHistory . emit    ( head                                 ,
-                                        str ( uuid )                         ,
-                                        "Description"                        ,
-                                        nx                                   ,
-                                        str ( self . getLocality ( ) )       )
+      self . GotoItemNote             ( item                                 )
       ########################################################################
       return True
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                                 ( not self . isPrepared ( )         ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                    ( 0                                   )
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
-    if                             ( self . isSearching ( )                ) :
+    if                                 ( self . isSearching ( )            ) :
       ########################################################################
-      msg  = self . getMenuItem    ( "NotSearch"                             )
-      mm   . addAction             ( 1002 , msg                              )
+      msg  = self . getMenuItem        ( "NotSearch"                         )
+      mm   . addAction                 ( 1002 , msg                          )
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addSeparator          (                                         )
+    mm     = self . AmountIndexMenu    ( mm , True                           )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendInsertAction    ( mm , 1101                               )
-    self   . AppendRenameAction    ( mm , 1102                               )
-    self   . AppendDeleteAction    ( mm , 1103                               )
-    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1101                           )
+    self   . AppendRenameAction        ( mm , 1102                           )
+    self   . AppendDeleteAction        ( mm , 1103                           )
+    self   . TryAppendEditNamesAction  ( atItem , mm , 1601                  )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . FunctionsMenu         ( mm , uuid , atItem                      )
-    self   . GroupsMenu            ( mm ,        atItem                      )
-    self   . ColumnsMenu           ( mm                                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    self   . FunctionsMenu             ( mm , uuid , atItem                  )
+    self   . GroupsMenu                ( mm ,        atItem                  )
+    self   . ColumnsMenu               ( mm                                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    self   . AtMenu = True
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu (                                     )
-    if                             ( OKAY                                  ) :
+    mm     . setFont                   ( self    . menuFont ( )              )
+    aa     = mm . exec_                ( QCursor . pos      ( )              )
+    at     = mm . at                   ( aa                                  )
+    ##########################################################################
+    self   . AtMenu = False
+    ##########################################################################
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
+    ##########################################################################
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
-      return
-    ##########################################################################
-    OKAY   = self . RunDocking     ( mm , aa                                 )
-    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu  ( at , uuid , atItem                   )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunColumnsMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
-    if                             ( OKAY                                  ) :
-      return True
-    ##########################################################################
-    if                             ( at == 1001                            ) :
-      ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1002                            ) :
+    OKAY   = self . RunGroupsMenu      ( at , atItem                         )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 1001                        ) :
+      ########################################################################
+      self . restart                   (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1002                        ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                                 ( at == 1101                        ) :
+      self . InsertItem                (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . RenameItem            (                                         )
+    if                                 ( at == 1102                        ) :
+      self . RenameItem                (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . DeleteItems           (                                         )
+    if                                 ( at == 1103                        ) :
+      self . DeleteItems               (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      ########################################################################
-      uuid = self . itemUuid       ( atItem , 0                              )
-      NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "SexPosition" , uuid , NAM       )
-      ########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     return True

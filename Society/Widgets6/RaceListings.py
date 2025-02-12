@@ -42,7 +42,7 @@ class RaceListings           ( TreeDock                                    ) :
     self . EditAllNames       = None
     ##########################################################################
     self . ClassTag           = "RaceListings"
-    self . FetchTableKey      = "RaceListings"
+    self . FetchTableKey      = self . ClassTag
     self . GType              = 34
     self . SortOrder          = "asc"
     self . Method             = "Original"
