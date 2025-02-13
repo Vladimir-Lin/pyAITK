@@ -133,7 +133,14 @@ class PicturesView           ( IconDock                                    ) :
                                       self . DoAssignAsIcon                  )
     self . AppendSideActionWithIcon ( "ImportPictures"                     , \
                                       ":/images/imagecollection.png"       , \
-                                      self . ImportPictures                  )
+                                      self . ImportPictures                , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "SaveAllPictures"                    , \
+                                      ":/images/saveall.png"               , \
+                                      self . SaveAllPictures               , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -931,7 +938,7 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     if                               ( not INSIDE                          ) :
       ########################################################################
-      GALM . JoinIcon                ( DB , RELTAB , FIRST , T1 , UUID       )
+      GALM . JoinIconByT1            ( DB , RELTAB , FIRST , T1 , UUID       )
     ##########################################################################
     GALM   . RepositionIcons         ( DB , RELTAB , FIRST , T1 , UUIDs      )
     DB     . UnlockTables            (                                       )
@@ -1091,18 +1098,26 @@ class PicturesView           ( IconDock                                    ) :
       msg = self . getMenuItem   ( "AssignTables"                            )
       mm  . addActionFromMenu    ( COL , 34471101 , msg                      )
     ##########################################################################
-    msg   = self . getMenuItem   ( "Watermarking"                            )
+    msg   = self . getMenuItem   ( "DoReposition"                            )
     mm    . addActionFromMenu    ( COL                                     , \
                                    34471102                                , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . DoReposition                       )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "Watermarking"                            )
+    mm    . addActionFromMenu    ( COL                                     , \
+                                   34471103                                , \
                                    msg                                     , \
                                    True                                    , \
                                    self . Watermarking                       )
     ##########################################################################
     msg   = self . getMenuItem   ( "ReportTables"                            )
-    mm    . addActionFromMenu    ( COL , 34471103 , msg                      )
+    mm    . addActionFromMenu    ( COL , 34471104 , msg                      )
     ##########################################################################
     msg   = self . getMenuItem   ( "SaveAllPictures"                         )
-    mm    . addActionFromMenu    ( COL , 34471201 , msg                      )
+    ICON  = QIcon                ( ":/images/saveall.png"                    )
+    mm    . addActionFromMenuWithIcon ( COL , 34471201 , ICON , msg          )
     ##########################################################################
     mm    . addSeparatorFromMenu ( COL                                       )
     ##########################################################################
@@ -1151,13 +1166,19 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     if                  ( at == 34471102                                   ) :
       ########################################################################
+      self . DoReposition = not self . DoReposition
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 34471103                                   ) :
+      ########################################################################
       self . Watermarking = not self . Watermarking
       ########################################################################
       self . restart    (                                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                  ( at == 34471103                                   ) :
+    if                  ( at == 34471104                                   ) :
       ########################################################################
       self . emitLog . emit ( json . dumps ( self . Tables                 ) )
       ########################################################################

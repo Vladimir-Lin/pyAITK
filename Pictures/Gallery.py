@@ -83,15 +83,27 @@ class Gallery     (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def JoinIcon           ( self , DB , TABLE , UUID , T1 , PUID            ) :
+  def JoinIcon        ( self , DB , TABLE , UUID , T1 , PUID               ) :
     ##########################################################################
-    REL = Relation       (                                                   )
-    REL . set            ( "first"  , UUID                                   )
-    REL . set            ( "second" , PUID                                   )
-    REL . setT1          ( T1                                                )
-    REL . setT2          ( "Picture"                                         )
-    REL . setRelation    ( "Using"                                           )
-    REL . Join           ( DB , TABLE                                        )
+    REL = Relation    (                                                      )
+    REL . set         ( "first"  , UUID                                      )
+    REL . set         ( "second" , PUID                                      )
+    REL . setT1       ( T1                                                   )
+    REL . setT2       ( "Picture"                                            )
+    REL . setRelation ( "Using"                                              )
+    REL . Join        ( DB , TABLE                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinIconByT1    ( self , DB , TABLE , UUID , T1 , PUID               ) :
+    ##########################################################################
+    REL = Relation    (                                                      )
+    REL . set         ( "first"  , UUID                                      )
+    REL . set         ( "second" , PUID                                      )
+    REL . set         ( "t1"     , T1                                        )
+    REL . setT2       ( "Picture"                                            )
+    REL . setRelation ( "Using"                                              )
+    REL . Join        ( DB , TABLE                                           )
     ##########################################################################
     return
   ############################################################################
