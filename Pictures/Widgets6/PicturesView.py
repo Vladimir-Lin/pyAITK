@@ -36,6 +36,7 @@ class PicturesView           ( IconDock                                    ) :
   OpenPictureEditor = Signal ( str , dict                                    )
   OpenVariantTables = Signal ( str , str , int , str , dict                  )
   OpenLogHistory    = Signal ( str , str , str , str , str                   )
+  emitLog           = Signal ( str                                           )
   ############################################################################
   def __init__               ( self , parent = None , plan = None          ) :
     ##########################################################################
@@ -49,6 +50,10 @@ class PicturesView           ( IconDock                                    ) :
     self . Amount        = 60
     self . SortOrder     = "asc"
     self . UsingName     = False
+    self . ExtraINFOs    = True
+    self . RefreshOpts   = True
+    self . Watermarking  = False
+    self . PictureOPTs   =         {                                         }
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
@@ -57,7 +62,6 @@ class PicturesView           ( IconDock                                    ) :
     ## self . Grouping   = "Subordination"
     ## self . Grouping   = "Reverse"
     ##########################################################################
-    self . Property   =            {                                         }
     self . Naming     = ""
     ## self . Naming     = "Size"
     ## self . Naming     = "Name"
@@ -66,6 +70,9 @@ class PicturesView           ( IconDock                                    ) :
     self . Relation  = Relation    (                                         )
     self . Relation  . setT2       ( "Picture"                               )
     self . Relation  . setRelation ( "Subordination"                         )
+    ##########################################################################
+    self . MountClicked            ( 1                                       )
+    self . MountClicked            ( 2                                       )
     ##########################################################################
     self . setFunction             ( self . HavingMenu , True                )
     ##########################################################################
@@ -105,62 +112,153 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareFetchTableKey ( self                                          ) :
     ##########################################################################
-    msg  = self . getMenuItem     ( "EditPicture"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/interfaces.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . EditCurrentPicture                )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "ImportPictures"                         )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/imagecollection.png" ) )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . ImportPictures                    )
-    self . WindowActions . append ( A                                        )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Import"     , self . ImportPictures  , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . PrepareFetchTableKey     (                                        )
+    self . AppendToolNamingAction   (                                        )
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "EditPicture"                        , \
+                                      ":/images/interfaces.png"            , \
+                                      self . EditCurrentPicture              )
+    self . AppendSideActionWithIcon ( "ImportPictures"                     , \
+                                      ":/images/imagecollection.png"       , \
+                                      self . ImportPictures                  )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def AttachActions   ( self         ,                         Enabled     ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . LinkAction ( "Refresh"    , self . startup        , Enabled       )
+    self . LinkAction ( "Import"     , self . ImportPictures , Enabled       )
+    self . LinkAction ( "Delete"     , self . DeleteItems    , Enabled       )
+    self . LinkAction ( "Cut"        , self . DeleteItems    , Enabled       )
+    self . LinkAction ( "Home"       , self . PageHome       , Enabled       )
+    self . LinkAction ( "End"        , self . PageEnd        , Enabled       )
+    self . LinkAction ( "PageUp"     , self . PageUp         , Enabled       )
+    self . LinkAction ( "PageDown"   , self . PageDown       , Enabled       )
+    ## self . LinkAction ( "Select"     , self . SelectOne      , Enabled       )
+    self . LinkAction ( "Reversal"   , self . ReversalSelect , Enabled       )
+    self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
+    self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent             ( self , event                                ) :
+  def GetUuidIcon ( self , DB , Uuid                                       ) :
+    return Uuid
+  ############################################################################
+  def FetchBaseINFO                  ( self , DB , UUID , PUID             ) :
     ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    ICZ    = self . FetchEntityImage (        DB , PUID                      )
+    ##########################################################################
+    if                               ( ICZ in self . EmptySet              ) :
+      return
+    ##########################################################################
+    if                               ( UUID in self . PictureOPTs          ) :
+      ########################################################################
+      self . PictureOPTs [ UUID ] [ "Image" ] = ICZ
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . PictureOPTs [ UUID ] =  { "Image" : ICZ                         }
+    ##########################################################################
+    self   . EmitInfoIcon            ( UUID                                  )
     ##########################################################################
     return
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
+  def EmitInfoIcon                    ( self , UUID                        ) :
     ##########################################################################
-    return Uuid
+    if                                ( UUID not in self . UuidItemMaps    ) :
+      return
+    ##########################################################################
+    if                                ( UUID not in self . PictureOPTs     ) :
+      return
+    ##########################################################################
+    GOPTs     = self . PictureOPTs    [ UUID                                 ]
+    ##########################################################################
+    if                                ( "Image" not in GOPTs               ) :
+      return
+    ##########################################################################
+    item      = self . UuidItemMaps   [ UUID                                 ]
+    IMG       = GOPTs                 [ "Image"                              ]
+    ##########################################################################
+    TIW       = 16
+    TIH       = 16
+    DINFO     = False
+    ##########################################################################
+    if                                ( not self . Watermarking            ) :
+      ########################################################################
+      DINFO   = False
+    ##########################################################################
+    if                                ( DINFO                              ) :
+      ########################################################################
+      ISIZE   = IMG . size            (                                      )
+      ICZ     = QImage                ( ISIZE , QImage . Format_ARGB32       )
+      ICZ     . fill                  ( QColor ( 255 , 255 , 255 )           )
+      ########################################################################
+      PTS     = QPoint                ( 0 , 0                                )
+      ########################################################################
+      p       = QPainter              (                                      )
+      p       . begin                 ( ICZ                                  )
+      ########################################################################
+      p       . drawImage             ( PTS , IMG                            )
+      ########################################################################
+      p       . end                   (                                      )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      ICZ     = IMG
+    ##########################################################################
+    icon      = self . ImageToIcon    ( ICZ                                  )
+    ##########################################################################
+    self      . emitAssignIcon . emit ( item , icon                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ParallelFetchIcons      ( self , ID , UUIDs                          ) :
+    ##########################################################################
+    self . ParallelFetchINFOs (        ID , UUIDs                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked             ( self , item                              ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item                                )
+    ##########################################################################
+    return True
+  ############################################################################
+  def doubleClicked        ( self , item                                   ) :
+    ##########################################################################
+    self . EditPictureItem (        item                                     )
+    ##########################################################################
+    return True
   ############################################################################
   def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
@@ -225,7 +323,92 @@ class PicturesView           ( IconDock                                    ) :
   ############################################################################
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
+    self . PictureOPTs =                  {                                  }
+    ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def GenerateItemToolTip             ( self , UUID                        ) :
+    ##########################################################################
+    if                                ( UUID not in self . UuidItemMaps    ) :
+      return
+    ##########################################################################
+    if                                ( UUID not in self . PictureOPTs     ) :
+      return
+    ##########################################################################
+    FMT    = self . getMenuItem       ( "PictureToolTip"                     )
+    ##########################################################################
+    WIDTH  = self . PictureOPTs       [ UUID ] [ "Width"                     ]
+    HEIGHT = self . PictureOPTs       [ UUID ] [ "Height"                    ]
+    FORMAT = self . PictureOPTs       [ UUID ] [ "Format"                    ]
+    FSIZE  = self . PictureOPTs       [ UUID ] [ "FileSize"                  ]
+    ##########################################################################
+    text   = FMT . format             ( UUID                               , \
+                                        WIDTH                              , \
+                                        HEIGHT                             , \
+                                        FORMAT                             , \
+                                        FSIZE                                )
+    ##########################################################################
+    item   = self . UuidItemMaps      [ UUID                                 ]
+    self   . emitAssignToolTip . emit ( item , text                          )
+    self   . EmitInfoIcon             ( UUID                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    DB           = self . ConnectDB    (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
+    ##########################################################################
+    PICTAB       = self . Tables       [ "Information"                       ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . StayAlive              ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      GJSON      =                     { "Width"    : 0                    , \
+                                         "Height"   : 0                    , \
+                                         "Format"   : ""                   , \
+                                         "FileSize" : 0                      }
+      ########################################################################
+      if                               ( U in self . PictureOPTs           ) :
+        ######################################################################
+        GOPTs    = self . PictureOPTs  [ U                                   ]
+        ######################################################################
+        if                             ( "Image" in GOPTs                  ) :
+          ####################################################################
+          GJSON [ "Image" ] = GOPTs    [ "Image"                             ]
+      ########################################################################
+      self       . PictureOPTs [ U ] = GJSON
+      ########################################################################
+      QQ         = f"""select `width` , `height` , `filesize` , `suffix` from {PICTAB}
+                       where ( `uuid` = {U} ) ;"""
+      DB         . Query               ( " " . join ( QQ . split (       ) ) )
+      RR         = DB . FetchOne       (                                     )
+      ########################################################################
+      if                               ( RR not in self . EmptySet         ) :
+        ######################################################################
+        if                             ( 4 == len ( RR )                   ) :
+          ####################################################################
+          WW     = int                 ( RR [ 0                            ] )
+          HH     = int                 ( RR [ 1                            ] )
+          SS     = int                 ( RR [ 2                            ] )
+          FF     = self . BlobToString ( RR [ 3                            ] )
+          ####################################################################
+          self   . PictureOPTs [ U ] [ "Width"    ] = WW
+          self   . PictureOPTs [ U ] [ "Height"   ] = HH
+          self   . PictureOPTs [ U ] [ "Format"   ] = FF
+          self   . PictureOPTs [ U ] [ "FileSize" ] = SS
+      ########################################################################
+      self       . GenerateItemToolTip ( U                                   )
+    ##########################################################################
+    DB           . Close               (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -811,17 +994,23 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def EditCurrentPicture              ( self                               ) :
+  def EditPictureItem                 ( self , item                        ) :
     ##########################################################################
-    atItem = self . currentItem       (                                      )
-    ##########################################################################
-    if                                ( atItem == None                     ) :
-      return False
-    ##########################################################################
-    uuid   = atItem . data            ( Qt . UserRole                        )
+    uuid   = item . data              ( Qt . UserRole                        )
     uuid   = int                      ( uuid                                 )
     ##########################################################################
     self   . OpenPictureEditor . emit ( str ( uuid ) , self . Tables         )
+    ##########################################################################
+    return
+  ############################################################################
+  def EditCurrentPicture        ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( atItem == None                           ) :
+      return
+    ##########################################################################
+    self   . EditPictureItem    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -830,6 +1019,18 @@ class PicturesView           ( IconDock                                    ) :
     self . defaultOpenItemNamesEditor ( item , "Picture" , "NamesEditing"    )
     ##########################################################################
     return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def PropertiesMenu             ( self , mm                               ) :
     ##########################################################################
@@ -840,6 +1041,16 @@ class PicturesView           ( IconDock                                    ) :
       ########################################################################
       msg = self . getMenuItem   ( "AssignTables"                            )
       mm  . addActionFromMenu    ( COL , 34471101 , msg                      )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "Watermarking"                            )
+    mm    . addActionFromMenu    ( COL                                     , \
+                                   34471102                                , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . Watermarking                       )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "ReportTables"                            )
+    mm    . addActionFromMenu    ( COL , 34471103 , msg                      )
     ##########################################################################
     msg   = self . getMenuItem   ( "SaveAllPictures"                         )
     mm    . addActionFromMenu    ( COL , 34471201 , msg                      )
@@ -886,6 +1097,20 @@ class PicturesView           ( IconDock                                    ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 34471102                                   ) :
+      ########################################################################
+      self . Watermarking = not self . Watermarking
+      ########################################################################
+      self . restart    (                                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 34471103                                   ) :
+      ########################################################################
+      self . emitLog . emit ( json . dumps ( self . Tables                 ) )
       ########################################################################
       return True
     ##########################################################################
@@ -1017,7 +1242,7 @@ class PicturesView           ( IconDock                                    ) :
     TRX    = self . Translations
     ##########################################################################
     self   . StopIconMenu               ( mm                                 )
-    self   . AmountIndexMenu            ( mm                                 )
+    self   . AmountIndexMenu            ( mm , True                          )
     self   . AppendRefreshAction        ( mm , 1001                          )
     ##########################################################################
     if                                  ( uuid > 0                         ) :
@@ -1045,11 +1270,15 @@ class PicturesView           ( IconDock                                    ) :
     self   . LocalityMenu               ( mm                                 )
     self   . DockingMenu                ( mm                                 )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                    ( self    . menuFont ( )             )
     aa     = mm . exec_                 ( QCursor . pos      ( )             )
     at     = mm . at                    ( aa                                 )
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu  (                                    )
+    self   . AtMenu = False
+    ##########################################################################
+    OKAY   = self . RunAmountIndexMenu  ( at                                 )
     if                                  ( OKAY                             ) :
       ########################################################################
       self . restart                    (                                    )

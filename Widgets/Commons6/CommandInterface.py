@@ -373,7 +373,7 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     mm  . addSeparatorFromMenu      ( LOM                                    )
     ##########################################################################
-    mm  . addActionFromMenu         ( LOM , 1021 , TRX [ "UI::ClearAll"    ] )
+    ## mm  . addActionFromMenu         ( LOM , 1021 , TRX [ "UI::ClearAll"    ] )
     mm  . addActionFromMenu         ( LOM , 1022 , TRX [ "UI::SelectAll"   ] )
     ##########################################################################
     return mm
@@ -454,6 +454,7 @@ class CommandInterface    ( TextEdit                                       ) :
       mm   . addAction            ( 4001 , TRX [ "CMD::SelectionToCommand" ] )
     ##########################################################################
     mm     . addAction            ( 4002 , TRX [ "UI::DefaultFont"         ] )
+    mm     . addAction            ( 4003 , TRX [ "UI::ClearAll"            ] )
     mm     . addSeparator         (                                          )
     ##########################################################################
     mm     = self . TextingMenu   ( mm                                       )
@@ -490,6 +491,10 @@ class CommandInterface    ( TextEdit                                       ) :
       ########################################################################
       self . setFont              ( self . defaultFont                       )
       ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 4003 == at                             ) :
+      self . clear                (                                          )
       return True
     ##########################################################################
     return True

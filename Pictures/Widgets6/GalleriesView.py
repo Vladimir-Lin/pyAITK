@@ -90,7 +90,7 @@ class GalleriesView            ( IconDock                                  ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . setFunction             ( self . HavingMenu      , True           )
+    self . setFunction             ( self . HavingMenu , True                )
     ##########################################################################
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )
@@ -1491,146 +1491,146 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    if                              ( not self . isPrepared ( )            ) :
+    if                                 ( not self . isPrepared (         ) ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    self   . Notify                    ( 0                                   )
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    if                              ( self . isSearching ( )               ) :
+    if                                 ( self . isSearching (            ) ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "NotSearch"                            )
-      mm   . addAction              ( 7401 , msg                             )
+      msg  = self . getMenuItem        ( "NotSearch"                         )
+      mm   . addAction                 ( 7401 , msg                          )
     ##########################################################################
-    self   . StopIconMenu           ( mm                                     )
-    self   . AmountIndexMenu        ( mm , True                              )
-    self   . AppendRefreshAction    ( mm , 1001                              )
-    self   . AppendInsertAction     ( mm , 1101                              )
+    self   . StopIconMenu              ( mm                                  )
+    self   . AmountIndexMenu           ( mm , True                           )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1101                           )
     ##########################################################################
-    if                              ( uuid > 0                             ) :
+    if                                 ( uuid > 0                          ) :
       ########################################################################
-      mm   . addSeparator           (                                        )
+      mm   . addSeparator              (                                     )
       ########################################################################
-      self . AppendRenameAction     ( mm , 1102                              )
-      self . AssureEditNamesAction  ( mm , 1601 , atItem                     )
+      self . AppendRenameAction        ( mm , 1102                           )
+      self . AssureEditNamesAction     ( mm , 1601 , atItem                  )
       ########################################################################
-      mm   . addSeparator           (                                        )
+      mm   . addSeparator              (                                     )
       ########################################################################
-      msg  = self . getMenuItem     ( "PersonalGallery"                      )
-      icon = QIcon                  ( ":/images/pictures.png"                )
-      mm   . addActionWithIcon      ( 1201 , icon , msg                      )
+      msg  = self . getMenuItem        ( "PersonalGallery"                   )
+      icon = QIcon                     ( ":/images/pictures.png"             )
+      mm   . addActionWithIcon         ( 1201 , icon , msg                   )
       ########################################################################
-      msg  = self . getMenuItem     ( "ViewFullPictures"                     )
-      icon = QIcon                  ( ":/images/searchimages.png"            )
-      mm   . addActionWithIcon      ( 1202 , icon , msg                      )
+      msg  = self . getMenuItem        ( "ViewFullPictures"                  )
+      icon = QIcon                     ( ":/images/searchimages.png"         )
+      mm   . addActionWithIcon         ( 1202 , icon , msg                   )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . BlocMenu               ( mm , atItem , uuid                     )
-    self   . PropertiesMenu         ( mm , atItem                            )
-    self   . UsageMenu              ( mm , atItem                            )
-    self   . DisplayMenu            ( mm                                     )
-    self   . SortingMenu            ( mm                                     )
-    self   . LocalityMenu           ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    self   . BlocMenu                  ( mm , atItem , uuid                  )
+    self   . PropertiesMenu            ( mm , atItem                         )
+    self   . UsageMenu                 ( mm , atItem                         )
+    self   . DisplayMenu               ( mm                                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . setFont                   ( self    . menuFont ( )              )
+    aa     = mm . exec_                ( QCursor . pos      ( )              )
+    at     = mm . at                   ( aa                                  )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu ( at                                  )
-    if                              ( OKAY                                 ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart                (                                        )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunDocking      ( mm , aa                                )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                              ( OKAY                                 ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunBlocMenu     ( at , atItem , uuid                     )
-    if                              ( OKAY                                 ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunPropertiesMenu ( at , atItem                          )
-    if                              ( OKAY                                 ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunUsageMenu    ( at , atItem                            )
-    if                              ( OKAY                                 ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunDisplayMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunSortingMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
-      ########################################################################
-      self . restart                (                                        )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunStopIconMenu ( at                                     )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunBlocMenu        ( at , atItem , uuid                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                              ( at == 1001                           ) :
-      ########################################################################
-      self . restart                (                                        )
-      ########################################################################
+    OKAY   = self . RunPropertiesMenu  ( at , atItem                         )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                              ( at == 1101                           ) :
-      self . InsertItem             (                                        )
+    OKAY   = self . RunUsageMenu       ( at , atItem                         )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                              ( at == 1102                           ) :
-      self . RenameItem             (                                        )
+    OKAY   = self . RunDisplayMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                              ( at == 1201                           ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . OpenItemGallery        ( atItem                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 1202                           ) :
-      ########################################################################
-      self . ViewItemGallery        ( atItem                                 )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunStopIconMenu    ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                              ( at == 7401                           ) :
+    if                                 ( at == 1001                        ) :
+      ########################################################################
+      self . restart                   (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1101                        ) :
+      self . InsertItem                (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 1102                        ) :
+      self . RenameItem                (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 1201                        ) :
+      ########################################################################
+      self . OpenItemGallery           ( atItem                              )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1202                        ) :
+      ########################################################################
+      self . ViewItemGallery           ( atItem                              )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 7401                        ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . restart                (                                        )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
