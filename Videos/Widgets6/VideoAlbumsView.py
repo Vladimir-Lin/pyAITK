@@ -188,7 +188,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . LinkAction ( "Rename"     , self . RenameVideo    , Enabled       )
     self . LinkAction ( "Delete"     , self . DeleteItems    , Enabled       )
     self . LinkAction ( "Cut"        , self . DeleteItems    , Enabled       )
-    self . LinkAction ( "Copy"       , self . CopyItems      , Enabled       )
+    self . LinkAction ( "Copy"       , self . DoCopyItemText , Enabled       )
     self . LinkAction ( "Paste"      , self . PasteItems     , Enabled       )
     self . LinkAction ( "Search"     , self . Search         , Enabled       )
     self . LinkAction ( "Home"       , self . PageHome       , Enabled       )

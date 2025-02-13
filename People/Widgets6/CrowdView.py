@@ -163,7 +163,7 @@ class CrowdView              ( IconDock                                    ) :
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Copy"       , self . DoCopyItemText  , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
