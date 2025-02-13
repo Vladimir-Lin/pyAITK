@@ -41,12 +41,14 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
+    self . ClassTag      = "PicturesView"
+    self . FetchTableKey = self . ClassTag
+    ##########################################################################
     self . Total         = 0
     self . StartId       = 0
     self . Amount        = 60
     self . SortOrder     = "asc"
     self . UsingName     = False
-    self . FetchTableKey = "PicturesView"
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
@@ -55,7 +57,7 @@ class PicturesView           ( IconDock                                    ) :
     ## self . Grouping   = "Subordination"
     ## self . Grouping   = "Reverse"
     ##########################################################################
-    self . Property   =             {                                        }
+    self . Property   =            {                                         }
     self . Naming     = ""
     ## self . Naming     = "Size"
     ## self . Naming     = "Name"
