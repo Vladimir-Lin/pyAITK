@@ -37,34 +37,30 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
-    self . ClassTag     = "GalleryGroupView"
-    self . GTYPE        = 64
-    self . SortOrder    = "asc"
-    self . PrivateIcon  = True
-    self . PrivateGroup = True
-    self . ExtraINFOs   = True
+    self . ClassTag      = "GalleryGroupView"
+    self . FetchTableKey = self . ClassTag
     ##########################################################################
-    self . GroupBtn     = None
-    self . GalleryBtn   = None
-    self . NameBtn      = None
+    self . GTYPE         = 64
+    self . SortOrder     = "asc"
+    self . PrivateIcon   = True
+    self . PrivateGroup  = True
+    self . ExtraINFOs    = True
     ##########################################################################
-    self . dockingPlace = Qt . RightDockWidgetArea
+    self . dockingPlace  = Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation     = Relation    (                                      )
-    self . Relation     . set         ( "first" , 0                          )
-    self . Relation     . set         ( "t1"    , 75                         )
-    self . Relation     . set         ( "t2"    , 158                        )
-    self . Relation     . setRelation ( "Subordination"                      )
+    self . Relation      = Relation    (                                     )
+    self . Relation      . set         ( "first" , 0                         )
+    self . Relation      . set         ( "t1"    , 75                        )
+    self . Relation      . set         ( "t2"    , 158                       )
+    self . Relation      . setRelation ( "Subordination"                     )
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
-    self . Grouping     = "Tag"
-    self . OldGrouping  = "Tag"
-    ## self . Grouping     = "Catalog"
-    ## self . Grouping     = "Subgroup"
-    ## self . Grouping     = "Reverse"
-    ##########################################################################
-    self . FetchTableKey = "GalleryGroupView"
+    self . Grouping      = "Tag"
+    self . OldGrouping   = "Tag"
+    ## self . Grouping      = "Catalog"
+    ## self . Grouping      = "Subgroup"
+    ## self . Grouping      = "Reverse"
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
@@ -88,39 +84,20 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions                     ( self                         ) :
+  def PrepareForActions               ( self                               ) :
     ##########################################################################
-    self . PrepareFetchTableKey             (                                )
+    self   . PrepareFetchTableKey     (                                      )
     ##########################################################################
-    msg    = self . getMenuItem             ( "Subgroup"                     )
-    A      = QAction                        (                                )
-    ICON   = QIcon                          ( ":/images/catalog.png"         )
-    A      . setIcon                        ( ICON                           )
-    A      . setToolTip                     ( msg                            )
-    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
-    A      . setEnabled                     ( False                          )
+    self   . AppendToolNamingAction   (                                      )
+    self   . AppendSideActionWithIcon ( "Subgroup"                         , \
+                                        ":/images/catalog.png"             , \
+                                        self . OpenCurrentSubgroup           )
     ##########################################################################
-    self   . GroupBtn   = A
-    ##########################################################################
-    self   . WindowActions . append         ( A                              )
-    ##########################################################################
-    if                                      ( self . isCatalogue (       ) ) :
+    if                                ( self . isCatalogue (             ) ) :
       ########################################################################
-      msg  = self . getMenuItem             ( "Galleries"                    )
-      A    = QAction                        (                                )
-      ICON = QIcon                          ( ":/images/galleries.png"       )
-      A    . setIcon                        ( ICON                           )
-      A    . setToolTip                     ( msg                            )
-      A    . triggered . connect            ( self . OpenCurrentGalleries    )
-      A    . setEnabled                     ( False                          )
-      ########################################################################
-      self . GalleryBtn = A
-      ########################################################################
-      self . WindowActions . append         ( A                              )
-    ##########################################################################
-    self   . AppendToolNamingAction         (                                )
-    self   . NameBtn = self . WindowActions [ -1                             ]
-    self   . NameBtn . setEnabled           ( False                          )
+      self . AppendSideActionWithIcon ( "Galleries"                        , \
+                                        ":/images/galleries.png"           , \
+                                        self . OpenCurrentGalleries          )
     ##########################################################################
     return
   ############################################################################
@@ -142,40 +119,40 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared        ( )            ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
-    self . statusMessage     ( self . windowTitle (                        ) )
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                 ( self                                      ) :
+  def singleClicked             ( self , item                              ) :
     ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      ## self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
+    return True
   ############################################################################
-  def closeEvent             ( self , event                                ) :
+  def doubleClicked         ( self , item                                  ) :
     ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    ## self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
+    self . OpenItemSubgroup (        item                                    )
     ##########################################################################
-    return
+    return True
   ############################################################################
   def setGrouping ( self , group                                           ) :
     ##########################################################################
@@ -184,42 +161,6 @@ class GalleryGroupView       ( IconDock                                    ) :
     self . FetchTableKey = f"GalleryGroupView-{group}"
     ##########################################################################
     return self . Grouping
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . GroupBtn   not in self . EmptySet           ) :
-      ########################################################################
-      self . GroupBtn   . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . GalleryBtn not in self . EmptySet           ) :
-      ########################################################################
-      self . GalleryBtn . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . NameBtn    not in self . EmptySet           ) :
-      ########################################################################
-      self . NameBtn    . setEnabled ( Enabled                               )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item                                   ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
-    ##########################################################################
-    return True
-  ############################################################################
-  def selectionsChanged            ( self                                  ) :
-    ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def doubleClicked         ( self , item                                  ) :
-    ##########################################################################
-    self . OpenItemSubgroup (        item                                    )
-    ##########################################################################
-    return True
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
     TABLE = "RelationPictures"
@@ -523,7 +464,7 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
-    NAMTAB   = self . Tables             [ "Names"                           ]
+    NAMTAB   = self . Tables             [ "NamesEditing"                    ]
     RELTAB   = self . Tables             [ "RelationGroup"                   ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
@@ -586,6 +527,8 @@ class GalleryGroupView       ( IconDock                                    ) :
     return
   ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    time . sleep                       ( 1.0                                 )
     ##########################################################################
     if                                 ( len ( UUIDs ) <= 0                ) :
       return
@@ -658,10 +601,10 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage             ( self                               ) :
+  def UpdateLocalityUsage                    ( self                        ) :
     ##########################################################################
-    OKAY = catalogUpdateLocalityUsage (                                      )
-    self . emitRestart . emit         (                                      )
+    OKAY = self . catalogUpdateLocalityUsage (                               )
+    self . emitRestart . emit                (                               )
     ##########################################################################
     return OKAY
   ############################################################################
@@ -713,6 +656,12 @@ class GalleryGroupView       ( IconDock                                    ) :
       return False
     ##########################################################################
     return self . OpenItemGalleries ( atItem                                 )
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item , "Gallery" , "NamesEditing"    )
+    ##########################################################################
+    return
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
@@ -790,114 +739,115 @@ class GalleryGroupView       ( IconDock                                    ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                           ( self , pos                          ) :
+  def Menu                              ( self , pos                       ) :
     ##########################################################################
-    if                               ( not self . isPrepared ( )           ) :
+    if                                  ( not self . isPrepared (        ) ) :
       return False
     ##########################################################################
-    doMenu  = self . isFunction      ( self . HavingMenu                     )
-    if                               ( not doMenu                          ) :
+    doMenu  = self . isFunction         ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
-    self   . Notify                  ( 0                                     )
+    self   . Notify                     ( 0                                  )
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm      = MenuManager            ( self                                  )
+    mm      = MenuManager               ( self                               )
     ##########################################################################
     TRX     = self . Translations
     ##########################################################################
-    self    . StopIconMenu           ( mm                                    )
+    self    . StopIconMenu              ( mm                                 )
     ##########################################################################
-    if                               ( uuid > 0                            ) :
+    if                                  ( uuid > 0                         ) :
       ########################################################################
-      msg   = self . getMenuItem     ( "Subgroup"                            )
-      mm    . addAction              ( 2001 , msg                            )
+      msg   = self . getMenuItem        ( "Subgroup"                         )
+      mm    . addAction                 ( 2001 , msg                         )
       ########################################################################
-      if                             ( self . Grouping == "Subgroup"       ) :
+      if                                ( self . Grouping == "Subgroup"    ) :
         ######################################################################
-        msg = self . getMenuItem     ( "Galleries"                           )
-        mm  . addAction              ( 2002 , msg                            )
+        msg = self . getMenuItem        ( "Galleries"                        )
+        mm  . addAction                 ( 2002 , msg                         )
         ######################################################################
-      mm    . addSeparator           (                                       )
+      mm    . addSeparator              (                                    )
     ##########################################################################
-    self    . AppendRefreshAction    ( mm , 1001                             )
-    self    . AppendInsertAction     ( mm , 1101                             )
+    self    . AppendRefreshAction       ( mm , 1001                          )
+    self    . AppendInsertAction        ( mm , 1101                          )
     ##########################################################################
-    if                               ( uuid > 0                            ) :
+    if                                  ( uuid > 0                         ) :
       ########################################################################
-      mm    . addSeparator           (                                       )
+      mm    . addSeparator              (                                    )
       ########################################################################
-      self  . AppendRenameAction     ( mm , 1102                             )
-      self  . AssureEditNamesAction  ( mm , 1601 , atItem                    )
+      self  . AppendRenameAction        ( mm , 1102                          )
+      self  . AssureEditNamesAction     ( mm , 1601 , atItem                 )
     ##########################################################################
-    mm      . addSeparator           (                                       )
+    mm      . addSeparator              (                                    )
     ##########################################################################
-    self    . FunctionsMenu          ( mm , uuid , atItem                    )
-    self    . SortingMenu            ( mm                                    )
-    self    . LocalityMenu           ( mm                                    )
-    self    . DockingMenu            ( mm                                    )
+    self    . FunctionsMenu             ( mm , uuid , atItem                 )
+    self    . SortingMenu               ( mm                                 )
+    self    . LocalityMenu              ( mm                                 )
+    self    . DockingMenu               ( mm                                 )
     ##########################################################################
-    mm      . setFont                ( self    . menuFont ( )                )
-    aa      = mm . exec_             ( QCursor . pos      ( )                )
-    at      = mm . at                ( aa                                    )
+    self    . AtMenu = True
     ##########################################################################
-    if                               ( self . RunDocking   ( mm , aa )     ) :
+    mm      . setFont                   ( self    . menuFont ( )             )
+    aa      = mm . exec_                ( QCursor . pos      ( )             )
+    at      = mm . at                   ( aa                                 )
+    ##########################################################################
+    self    . AtMenu = False
+    ##########################################################################
+    if                                  ( self . RunDocking   ( mm , aa )  ) :
       return True
     ##########################################################################
-    OKAY    = self . RunFunctionsMenu ( at , uuid , atItem                   )
-    if                               ( OKAY                                ) :
+    OKAY    = self . RunFunctionsMenu   ( at , uuid , atItem                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
     OKAY    = self . HandleLocalityMenu ( at                                 )
-    if                               ( OKAY                                ) :
+    if                                  ( OKAY                             ) :
       ########################################################################
-      self  . restart                (                                       )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY    = self . RunSortingMenu  ( at                                    )
-    if                               ( OKAY                                ) :
-      ########################################################################
-      self  . restart                (                                       )
+      self  . restart                   (                                    )
       ########################################################################
       return True
     ##########################################################################
-    OKAY    = self . RunStopIconMenu ( at                                    )
-    if                               ( OKAY                                ) :
-      return True
-    ##########################################################################
-    if                               ( at == 1001                          ) :
+    OKAY    = self . RunSortingMenu     ( at                                 )
+    if                                  ( OKAY                             ) :
       ########################################################################
-      self  . restart                (                                       )
+      self  . restart                   (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 1101                          ) :
-      self  . InsertItem             (                                       )
+    OKAY    = self . RunStopIconMenu    ( at                                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    if                               ( at == 1102                          ) :
-      self . RenameItem              (                                       )
-      return True
-    ##########################################################################
-    if                               ( at == 1601                          ) :
+    if                                  ( at == 1001                       ) :
       ########################################################################
-      NAM   = self . Tables          [ "Names"                               ]
-      self  . EditAllNames           ( self , "Gallery" , uuid , NAM         )
+      self  . restart                   (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 2001                          ) :
+    if                                  ( at == 1101                       ) :
+      self  . InsertItem                (                                    )
+      return True
+    ##########################################################################
+    if                                  ( at == 1102                       ) :
+      self . RenameItem                 (                                    )
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor   ( at , 1601 , atItem                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
+    if                                  ( at == 2001                       ) :
       ########################################################################
-      title = atItem . text          (                                       )
-      tid   = self . Relation . get  ( "t2"                                  )
-      self  . GallerySubgroup . emit ( title , tid , str ( uuid )            )
+      title = atItem . text             (                                    )
+      tid   = self . Relation . get     ( "t2"                               )
+      self  . GallerySubgroup . emit    ( title , tid , str ( uuid )         )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 2002                          ) :
+    if                                  ( at == 2002                       ) :
       ########################################################################
-      self . OpenItemGalleries       ( atItem                                )
+      self . OpenItemGalleries          ( atItem                             )
       ########################################################################
       return True
     ##########################################################################

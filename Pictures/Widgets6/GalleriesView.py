@@ -51,6 +51,7 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self . ClassTag           = "GalleriesView"
     self . FetchTableKey      = self . ClassTag
+    ##########################################################################
     self . Total              =  0
     self . StartId            =  0
     self . Amount             = 60
