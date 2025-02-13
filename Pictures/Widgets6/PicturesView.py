@@ -125,6 +125,12 @@ class PicturesView           ( IconDock                                    ) :
     self . AppendSideActionWithIcon ( "EditPicture"                        , \
                                       ":/images/interfaces.png"            , \
                                       self . EditCurrentPicture              )
+    self . AppendSideActionWithIcon ( "ViewPicture"                        , \
+                                      ":/images/searchimages.png"          , \
+                                      self . OpenPictureViewer               )
+    self . AppendSideActionWithIcon ( "AssignIcon"                         , \
+                                      ":/images/games.png"                 , \
+                                      self . DoAssignAsIcon                  )
     self . AppendSideActionWithIcon ( "ImportPictures"                     , \
                                       ":/images/imagecollection.png"       , \
                                       self . ImportPictures                  )
@@ -911,21 +917,44 @@ class PicturesView           ( IconDock                                    ) :
     if                               ( DB in [ False , None ]              ) :
       return
     ##########################################################################
-    RELTAB = self . Tables           [ "Relation"                            ]
+    RELTAB = self . Tables           [ "RelationPictures"                    ]
     ##########################################################################
     FIRST  = self . Relation . get   ( "first"                               )
     T1     = self . Relation . get   ( "t1"                                  )
     ##########################################################################
     GALM   = GalleryItem             (                                       )
     ICONs  = GALM . GetPictures      ( DB , RELTAB , FIRST , T1 , 12         )
+    INSIDE =                         ( UUID in ICONs                         )
     UUIDs  = GALM . PlaceUuidToFirst ( UUID , ICONs                          )
     ##########################################################################
     DB     . LockWrites              ( [ RELTAB                            ] )
+    ##########################################################################
+    if                               ( not INSIDE                          ) :
+      ########################################################################
+      GALM . JoinIcon                ( DB , RELTAB , FIRST , T1 , UUID       )
+    ##########################################################################
     GALM   . RepositionIcons         ( DB , RELTAB , FIRST , T1 , UUIDs      )
     DB     . UnlockTables            (                                       )
     ##########################################################################
     DB     . Close                   (                                       )
     self   . Notify                  ( 5                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoAssignAsIcon              ( self                                   ) :
+    ##########################################################################
+    atItem = self   . currentItem (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data        ( Qt . UserRole                            )
+    uuid   = int                  ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return
+    ##########################################################################
+    self . Go                     ( self . AssignAsIcon , ( uuid , )         )
     ##########################################################################
     return
   ############################################################################
@@ -1011,6 +1040,26 @@ class PicturesView           ( IconDock                                    ) :
       return
     ##########################################################################
     self   . EditPictureItem    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ViewPictureItem         ( self , item                                ) :
+    ##########################################################################
+    uuid = item . data        ( Qt . UserRole                                )
+    uuid = int                ( uuid                                         )
+    ##########################################################################
+    self . ShowPicture . emit ( str ( uuid )                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPictureViewer         ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( atItem == None                           ) :
+      return
+    ##########################################################################
+    self   . ViewPictureItem    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -1254,10 +1303,12 @@ class PicturesView           ( IconDock                                    ) :
       mm   . addActionWithIcon          ( 1101 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "ViewPicture"                      )
-      mm   . addAction                  ( 1102 , msg                         )
+      icon = QIcon                      ( ":/images/searchimages.png"        )
+      mm   . addActionWithIcon          ( 1102 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "AssignIcon"                       )
-      mm   . addAction                  ( 1103 , msg                         )
+      icon = QIcon                      ( ":/images/games.png"               )
+      mm   . addActionWithIcon          ( 1103 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "ImportPictures"                   )
     icon   = QIcon                      ( ":/images/imagecollection.png"     )
@@ -1323,7 +1374,7 @@ class PicturesView           ( IconDock                                    ) :
       return True
     ##########################################################################
     if                                  ( at == 1102                       ) :
-      self . ShowPicture       . emit   ( str ( uuid )                       )
+      self . ViewPictureItem            ( atItem                             )
       return True
     ##########################################################################
     if                                  ( at == 1103                       ) :
