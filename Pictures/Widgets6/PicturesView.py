@@ -122,6 +122,8 @@ class PicturesView           ( IconDock                                    ) :
     self . PrepareFetchTableKey     (                                        )
     self . AppendToolNamingAction   (                                        )
     ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
     self . AppendSideActionWithIcon ( "EditPicture"                        , \
                                       ":/images/interfaces.png"            , \
                                       self . EditCurrentPicture              )
@@ -131,11 +133,20 @@ class PicturesView           ( IconDock                                    ) :
     self . AppendSideActionWithIcon ( "AssignIcon"                         , \
                                       ":/images/games.png"                 , \
                                       self . DoAssignAsIcon                  )
+    ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
     self . AppendSideActionWithIcon ( "ImportPictures"                     , \
                                       ":/images/imagecollection.png"       , \
                                       self . ImportPictures                , \
                                       True                                 , \
                                       False                                  )
+    ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "SavePicture"                        , \
+                                      ":/images/save.png"                  , \
+                                      self . SaveCurrentPicture              )
     self . AppendSideActionWithIcon ( "SaveAllPictures"                    , \
                                       ":/images/saveall.png"               , \
                                       self . SaveAllPictures               , \
@@ -839,6 +850,23 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
+  def SaveCurrentPicture          ( self                                   ) :
+    ##########################################################################
+    atItem = self   . currentItem (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data        ( Qt . UserRole                            )
+    uuid   = int                  ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return
+    ##########################################################################
+    self   . SavePicture          ( uuid                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def ImportPictures               ( self                                  ) :
     ##########################################################################
     FILTERS   = self . getMenuItem ( "OpenImageFilters"                      )
@@ -1244,7 +1272,8 @@ class PicturesView           ( IconDock                                    ) :
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "SavePicture"                               )
-    mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
+    ICN = QIcon                ( ":/images/save.png"                         )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231101 , ICN , msg             )
     ##########################################################################
     msg = self . getMenuItem   ( "SaveSelections"                            )
     mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )

@@ -120,11 +120,20 @@ class Variables ( Columns )                                                  :
   ############################################################################
   def AssureValue            ( self , DB , TABLE                           ) :
     ##########################################################################
+    UU  = self . Uuid
+    TT  = self . Type
+    NN  = self . Name
     VAL =                    ( self . Uuid                                 , \
                                self . Type                                 , \
                                self . Name                                 , \
                                self . Value                                , )
-    QQ  = f"""replace into {TABLE}
+    QQ  = f"""delete from {TABLE}
+              where ( `uuid` = {UU} )
+                and ( `type` = {TT} )
+                and ( `name` = '{NN}' ) ;"""
+    QQ  = " " . join         ( QQ . split ( )                                )
+    DB  . Query              ( QQ                                            )
+    QQ  = f"""insert into {TABLE}
               ( `uuid`,`type`,`name`,`value` )
               values
               ( %s,%s,%s,%s ) ;"""

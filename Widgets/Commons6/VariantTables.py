@@ -313,6 +313,7 @@ class VariantTables      ( TreeDock                                        ) :
       pass
     ##########################################################################
     VARTAB  = self . Tables           [ "Variables"                          ]
+    ## VARTAB  = "`factors`.`variables_apps_0031`"
     DB      . LockWrites              ( [ VARTAB                           ] )
     VARI    = VariableItem            (                                      )
     VARI    . Uuid  = self . Uuid
