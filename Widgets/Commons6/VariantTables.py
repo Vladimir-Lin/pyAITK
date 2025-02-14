@@ -98,10 +98,19 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     self . AppendSideActionWithIcon   ( "CopyTableToClipboard"             , \
                                         ":/images/copy.png"                , \
-                                        self . CopyTableToClipboard          )
+                                        self . CopyTableToClipboard        , \
+                                        True                               , \
+                                        False                                )
     self . AppendSideActionWithIcon   ( "PasteFromClipboard"               , \
                                         ":/images/paste.png"               , \
-                                        self . PasteFromClipboard            )
+                                        self . PasteFromClipboard          , \
+                                        True                               , \
+                                        False                                )
+    self . AppendSideActionWithIcon   ( "Save"                             , \
+                                        ":/images/save.png"                , \
+                                        self . SaveToDatabase              , \
+                                        True                               , \
+                                        False                                )
     ##########################################################################
     return
   ############################################################################
@@ -313,38 +322,42 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def PushTablesToDatabase            ( self                               ) :
+  def PushTablesToDatabase      ( self                                     ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB in [ False , None ]             ) :
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB in self . EmptySet                    ) :
       return
     ##########################################################################
-    BODY    = json . dumps            ( self . JSON , ensure_ascii = False   )
+    BODY   = json . dumps       ( self . JSON , ensure_ascii = False         )
     try                                                                      :
-      BODY  = BODY . encode           ( 'utf8'                               )
+      BODY = BODY . encode      ( 'utf8'                                     )
     except                                                                   :
       pass
     ##########################################################################
-    VARTAB  = self . Tables           [ "Variables"                          ]
-    ## VARTAB  = "`factors`.`variables_apps_0031`"
-    DB      . LockWrites              ( [ VARTAB                           ] )
-    VARI    = VariableItem            (                                      )
-    VARI    . Uuid  = self . Uuid
-    VARI    . Type  = self . Type
-    VARI    . Name  = self . Name
-    VARI    . Value = BODY
-    VARI    . AssureValue             ( DB,VARTAB                            )
-    DB      . UnlockTables            (                                      )
+    VARTAB = self . Tables      [ "Variables"                                ]
+    ## VARTAB = "`factors`.`variables_apps_0031`"
+    DB     . LockWrites         ( [ VARTAB                                 ] )
+    VARI   = VariableItem       (                                            )
+    VARI   . Uuid  = self . Uuid
+    VARI   . Type  = self . Type
+    VARI   . Name  = self . Name
+    VARI   . Value = BODY
+    VARI   . AssureValue        ( DB , VARTAB                                )
+    DB     . UnlockTables       (                                            )
     ##########################################################################
-    DB      . Close                   (                                      )
+    DB     . Close              (                                            )
     ##########################################################################
-    self . Notify                     ( 5                                    )
+    self   . Notify             ( 5                                          )
+    MSG    = self . getMenuItem ( "SaveCompleted"                            )
+    self   . Talk               ( MSG , self . getLocality (               ) )
     ##########################################################################
     return
   ############################################################################
   def CopyTableToClipboard         ( self                                  ) :
     ##########################################################################
     qApp . clipboard ( ) . setText ( json . dumps ( self . JSON            ) )
+    ##########################################################################
+    self . Notify                  ( 0                                       )
     ##########################################################################
     return
   ############################################################################

@@ -136,6 +136,14 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
+    self . AppendSideActionWithIcon ( "AssignTables"                       , \
+                                      ":/images/tables.png"                , \
+                                      self . EditVariantTables             , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
     self . AppendSideActionWithIcon ( "ImportPictures"                     , \
                                       ":/images/imagecollection.png"       , \
                                       self . ImportPictures                , \
@@ -1098,6 +1106,20 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
+  def EditVariantTables              ( self                                ) :
+    ##########################################################################
+    TITLE = self . windowTitle       (                                       )
+    UUID  = self . Relation  . get   ( "first"                               )
+    TYPE  = self . Relation  . get   ( "t1"                                  )
+    TYPE  = int                      ( TYPE                                  )
+    self  . OpenVariantTables . emit ( str ( TITLE )                       , \
+                                       str ( UUID  )                       , \
+                                       TYPE                                , \
+                                       self . FetchTableKey                , \
+                                       self . Tables                         )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item , "Picture" , "NamesEditing"    )
@@ -1124,7 +1146,8 @@ class PicturesView           ( IconDock                                    ) :
     if                           ( self . isSubordination ( )              ) :
       ########################################################################
       msg = self . getMenuItem   ( "AssignTables"                            )
-      mm  . addActionFromMenu    ( COL , 34471101 , msg                      )
+      ICN = QIcon                ( ":/images/tables.png"                     )
+      mm  . addActionFromMenuWithIcon ( COL , 34471101 , ICN , msg           )
     ##########################################################################
     msg   = self . getMenuItem   ( "DoReposition"                            )
     mm    . addActionFromMenu    ( COL                                     , \
@@ -1180,15 +1203,7 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     if                  ( at == 34471101                                   ) :
       ########################################################################
-      TITLE = self . windowTitle       (                                     )
-      UUID  = self . Relation  . get   ( "first"                             )
-      TYPE  = self . Relation  . get   ( "t1"                                )
-      TYPE  = int                      ( TYPE                                )
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
-                                         self . FetchTableKey              , \
-                                         self . Tables                       )
+      self . EditVariantTables (                                             )
       ########################################################################
       return True
     ##########################################################################
