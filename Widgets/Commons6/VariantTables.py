@@ -55,6 +55,8 @@ class VariantTables      ( TreeDock                                        ) :
     self . CallbackFunction   = None
     self . JSON               = { }
     self . SortOrder          = "desc"
+    self . TITLE              = ""
+    self . MODIFIED           = False
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -71,7 +73,7 @@ class VariantTables      ( TreeDock                                        ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -83,73 +85,81 @@ class VariantTables      ( TreeDock                                        ) :
     self . setDragEnabled          ( False                                   )
     self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
+    self . setMinimumSize          ( 160 , 160                               )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 480 , 320 )                       )
   ############################################################################
-  def FocusIn              ( self                                          ) :
+  def PrepareForActions               ( self                               ) :
     ##########################################################################
-    if                     ( not self . isPrepared ( )                     ) :
+    self . TITLE = self . windowTitle (                                      )
+    ##########################################################################
+    self . AppendSideActionWithIcon   ( "CopyTableToClipboard"             , \
+                                        ":/images/copy.png"                , \
+                                        self . CopyTableToClipboard          )
+    self . AppendSideActionWithIcon   ( "PasteFromClipboard"               , \
+                                        ":/images/paste.png"               , \
+                                        self . PasteFromClipboard            )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Save"       , self . SaveToDatabase  , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
-    self . LinkAction      ( "Refresh"    , self . startup                   )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    self . LinkAction      ( "Insert"     , self . InsertItem                )
-    self . LinkAction      ( "Delete"     , self . DeleteItems               )
-    self . LinkAction      ( "Save"       , self . SaveToDatabase            )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
-    ##########################################################################
-    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
-    self . LinkAction      ( "SelectNone" , self . SelectNone                )
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut ( self                                                      ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    ##########################################################################
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Save"       , self . SaveToDatabase  , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    ##########################################################################
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def twiceClicked                ( self , item , column                   ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def twiceClicked              ( self , item , column                     ) :
-    ##########################################################################
-    if                          ( column not in [ 0 , 1 ]                  ) :
+    if                            ( column not in [ 0 , 1 ]                ) :
+      ########################################################################
+      self . defaultSingleClicked (        item , column                     )
+      ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [ 0 , 1 ]                  ) :
+    if                            ( column     in [ 0 , 1 ]                ) :
       ########################################################################
-      line = self . setLineEdit ( item                                       ,
-                                  column                                     ,
-                                  "editingFinished"                          ,
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+      line = self . setLineEdit   ( item                                     ,
+                                    column                                   ,
+                                    "editingFinished"                        ,
+                                    self . nameChanged                       )
+      line . setFocus             ( Qt . TabFocusReason                      )
     ##########################################################################
     return
   ############################################################################
@@ -197,7 +207,8 @@ class VariantTables      ( TreeDock                                        ) :
     IT   = QTreeWidgetItem (                                                 )
     IT   . setData         ( 0 , Qt . UserRole , 0                           )
     self . addTopLevelItem ( IT                                              )
-    self . doubleClicked   ( IT , 0                                          )
+    self . twiceClicked    ( IT , 0                                          )
+    self . Notify          ( 0                                               )
     ##########################################################################
     return
   ############################################################################
@@ -207,23 +218,23 @@ class VariantTables      ( TreeDock                                        ) :
     for item in items                                                        :
       self . pendingRemoveItem . emit   ( item                               )
     ##########################################################################
-    self   . Notify                     ( 0                                  )
+    self   . Notify                     ( 4                                  )
     self   . JSON = self . GetTableJson (                                    )
     self   . FeedbackToCallback         (                                    )
     ##########################################################################
     return
   ############################################################################
-  def refresh                     ( self                                   ) :
+  def refresh                        ( self                                ) :
     ##########################################################################
-    self   . clear                (                                          )
+    self   . clear                   (                                       )
     ##########################################################################
-    for K , V in self . JSON . items ( )                                     :
+    for K , V in self . JSON . items (                                     ) :
       ########################################################################
-      IT   = self . PrepareItem   ( K , V                                    )
-      self . addTopLevelItem      ( IT                                       )
+      IT   = self . PrepareItem      ( K , V                                 )
+      self . addTopLevelItem         ( IT                                    )
     ##########################################################################
-    self   . emitNamesShow . emit (                                          )
-    self   . Notify               ( 5                                        )
+    self   . emitNamesShow . emit    (                                       )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
@@ -269,7 +280,9 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def FeedbackToCallback    ( self                                           ) :
+  def FeedbackToCallback    ( self                                         ) :
+    ##########################################################################
+    self . Notify           ( 0                                              )
     ##########################################################################
     if                      ( self . Mode not in [ 1 ]                     ) :
       return
@@ -325,7 +338,33 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
-    self . Notify ( 5 )
+    self . Notify                     ( 5                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyTableToClipboard         ( self                                  ) :
+    ##########################################################################
+    qApp . clipboard ( ) . setText ( json . dumps ( self . JSON            ) )
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteFromClipboard                ( self                             ) :
+    ##########################################################################
+    JTEXT = qApp . clipboard ( ) . text (                                    )
+    ##########################################################################
+    if                                  ( len ( JTEXT ) <= 0               ) :
+      return
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      JT  = json . loads                ( JTEXT                              )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
+    self  . JSON = JT
+    ##########################################################################
+    self  . refresh                     (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -359,6 +398,16 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
+    msg    = self . getMenuItem    ( "CopyTableToClipboard"                  )
+    icon   = QIcon                 ( ":/images/copy.png"                     )
+    mm     . addActionWithIcon     ( 4001 , icon , msg                       )
+    ##########################################################################
+    msg    = self . getMenuItem    ( "PasteFromClipboard"                    )
+    icon   = QIcon                 ( ":/images/paste.png"                    )
+    mm     . addActionWithIcon     ( 4002 , icon , msg                       )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
+    ##########################################################################
     self   . SortingMenu           ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -380,15 +429,33 @@ class VariantTables      ( TreeDock                                        ) :
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
+      ########################################################################
       self . InsertItem            (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
+      ########################################################################
       self . SaveToDatabase        (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1103                            ) :
+      ########################################################################
       self . DeleteItems           (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( 4001 == at                            ) :
+      ########################################################################
+      self . CopyTableToClipboard  (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( 4002 == at                            ) :
+      ########################################################################
+      self . PasteFromClipboard    (                                         )
+      ########################################################################
       return True
     ##########################################################################
     return True
