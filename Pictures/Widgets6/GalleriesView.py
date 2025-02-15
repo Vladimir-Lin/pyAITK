@@ -1542,6 +1542,7 @@ class GalleriesView            ( IconDock                                  ) :
     self   . DisplayMenu               ( mm                                  )
     self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
+    self   . ScrollBarMenu             ( mm                                  )
     self   . DockingMenu               ( mm                                  )
     ##########################################################################
     self   . AtMenu = True
@@ -1591,6 +1592,10 @@ class GalleriesView            ( IconDock                                  ) :
       ########################################################################
       self . restart                   (                                     )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunScrollBarMenu   ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . RunStopIconMenu    ( at                                  )
