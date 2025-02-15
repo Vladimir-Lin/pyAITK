@@ -42,30 +42,33 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     super ( ) . __init__     (        parent        , plan                   )
     ##########################################################################
-    self . ClassTag      = "PicturesView"
-    self . FetchTableKey = self . ClassTag
+    self . GetImportDIR   = self . defaultGetBrowseDirectory
+    self . StoreImportDIR = self . defaultUpdateBrowseDirectory
     ##########################################################################
-    self . Total         = 0
-    self . StartId       = 0
-    self . Amount        = 60
-    self . SortOrder     = "asc"
-    self . UsingName     = False
-    self . ExtraINFOs    = True
-    self . RefreshOpts   = True
-    self . Watermarking  = False
-    self . PictureOPTs   =         {                                         }
+    self . ClassTag       = "PicturesView"
+    self . FetchTableKey  = self . ClassTag
+    ##########################################################################
+    self . Total          = 0
+    self . StartId        = 0
+    self . Amount         = 60
+    self . SortOrder      = "asc"
+    self . UsingName      = False
+    self . ExtraINFOs     = True
+    self . RefreshOpts    = True
+    self . Watermarking   = False
+    self . PictureOPTs    =         {                                         }
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
-    self . Grouping      = "Original"
-    self . OldGrouping   = "Original"
-    ## self . Grouping   = "Subordination"
-    ## self . Grouping   = "Reverse"
+    self . Grouping       = "Original"
+    self . OldGrouping    = "Original"
+    ## self . Grouping       = "Subordination"
+    ## self . Grouping       = "Reverse"
     ##########################################################################
-    self . Naming     = ""
-    ## self . Naming     = "Size"
-    ## self . Naming     = "Name"
-    ## self . Naming     = "Uuid"
+    self . Naming         = ""
+    ## self . Naming         = "Size"
+    ## self . Naming         = "Name"
+    ## self . Naming         = "Uuid"
     ##########################################################################
     self . Relation  = Relation    (                                         )
     self . Relation  . setT2       ( "Picture"                               )
@@ -816,45 +819,69 @@ class PicturesView           ( IconDock                                    ) :
   ############################################################################
   def SaveSelectedPictures          ( self                                 ) :
     ##########################################################################
+    UUIDs = self . getSelectedUuids (                                        )
+    ##########################################################################
+    if                              ( len ( UUIDs ) <= 0                   ) :
+      return
+    ##########################################################################
+    ROOT  = self . GetImportDIR     (                                        )
+    TITLE = self . getMenuItem      ( "SaveSelections"                       )
+    ##########################################################################
     DIR   = QFileDialog . getExistingDirectory                               (
                                       self                                   ,
-                                      "儲存選取圖片" ,
-                                      ""                                     ,
+                                      TITLE                                  ,
+                                      ROOT                                   ,
                                       QFileDialog . ShowDirsOnly             )
     ##########################################################################
-    UUIDs = self . getSelectedUuids (                                        )
+    if                              ( len ( DIR ) <= 0                     ) :
+      return
+    ##########################################################################
+    self  . StoreImportDIR          ( DIR                                    )
+    ##########################################################################
     VALs  =                         ( DIR , UUIDs ,                          )
     self  . Go                      ( self . ExportPictureUUIDs , VALs       )
     ##########################################################################
     return
   ############################################################################
-  def SaveAllPictures ( self                                               ) :
+  def SaveAllPictures           ( self                                     ) :
     ##########################################################################
-    DIR  = QFileDialog . getExistingDirectory                                (
+    ROOT  = self . GetImportDIR (                                            )
+    TITLE = self . getMenuItem  ( "SaveAllPictures"                          )
+    ##########################################################################
+    DIR   = QFileDialog . getExistingDirectory                               (
                         self                                                 ,
-                        "儲存全部圖片" ,
-                        ""                                                   ,
+                        TITLE                                                ,
+                        ROOT                                                 ,
                         QFileDialog . ShowDirsOnly                           )
     ##########################################################################
-    self . Go         ( self . ExportAllPictures , ( DIR , )                 )
+    if                          ( len ( DIR ) <= 0                         ) :
+      return
+    ##########################################################################
+    self  . StoreImportDIR      ( DIR                                        )
+    ##########################################################################
+    self  . Go                  ( self . ExportAllPictures , ( DIR ,       ) )
     ##########################################################################
     return
   ############################################################################
-  def SavePicture                 ( self , UUID                            ) :
+  def SavePicture                  ( self , UUID                           ) :
     ##########################################################################
-    Filename = f"{UUID}.jpg"
-    FILTERS  = self . getMenuItem ( "SaveImageFilters"                       )
+    ROOT     = self . GetImportDIR (                                         )
+    Filename = f"{ROOT}/{UUID}.jpg"
+    TITLE    = self . getMenuItem  ( "StorePictureAs"                        )
+    FILTERS  = self . getMenuItem  ( "SaveImageFilters"                      )
     ##########################################################################
     F , _    = QFileDialog . getSaveFileName ( self                          ,
-                                               "儲存圖片成指定格式" ,
+                                               TITLE                         ,
                                                Filename                      ,
                                                FILTERS                       )
     ##########################################################################
-    if                            ( len ( F ) <= 0                         ) :
+    if                             ( len ( F ) <= 0                        ) :
       return
     ##########################################################################
-    VAL      =                    ( F , UUID ,                               )
-    self     . Go                 ( self . SavePictureAs , VAL               )
+    self     . StoreImportDIR      ( F                                       )
+    ##########################################################################
+    VAL      =                     ( F , UUID ,                              )
+    self     . Go                  ( self . SavePictureAs , VAL              )
     ##########################################################################
     return
   ############################################################################
@@ -875,19 +902,22 @@ class PicturesView           ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportPictures               ( self                                  ) :
+  def ImportPictures                ( self                                 ) :
     ##########################################################################
-    FILTERS   = self . getMenuItem ( "OpenImageFilters"                      )
+    ROOT      = self . GetImportDIR (                                        )
+    TITLE     = self . getMenuItem  ( "ImportPictures"                       )
+    FILTERS   = self . getMenuItem  ( "OpenImageFilters"                     )
     ##########################################################################
     LISTS , _ = QFileDialog . getOpenFileNames ( self                        ,
-                                                 "匯入圖片" ,
-                                                 ""                          ,
+                                                 TITLE                       ,
+                                                 ROOT                        ,
                                                  FILTERS                     )
     ##########################################################################
-    if                             ( len ( LISTS ) <= 0                    ) :
+    if                              ( len ( LISTS ) <= 0                   ) :
       return
     ##########################################################################
-    self      . Go                 ( self . ImportPicturesToDB , ( LISTS , ) )
+    self      . StoreImportDIR      ( LISTS [ 0                            ] )
+    self      . Go                  ( self . ImportPicturesToDB , ( LISTS, ) )
     ##########################################################################
     return
   ############################################################################
@@ -901,13 +931,6 @@ class PicturesView           ( IconDock                                    ) :
     SQLs   = self . GenerateRemoveSQLs ( UUIDs , self . Relation , RELTAB    )
     self   . QuickExecuteSQLs          ( TITLE , 100 , RELTAB , SQLs         )
     self   . loading                   (                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def Prepare                  ( self                                      ) :
-    ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
-    self . setPrepared         ( True                                        )
     ##########################################################################
     return
   ############################################################################
