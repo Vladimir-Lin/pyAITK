@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 行事曆處理回應程序
+## 視覺處理元件
 ##############################################################################
 import os
 import sys
@@ -48,9 +48,18 @@ class Vision   (                                                           ) :
     ObjectDetectorOptions = mediapipe . tasks . vision . ObjectDetectorOptions
     VisionRunningMode     = mediapipe . tasks . vision . RunningMode
     ##########################################################################
+    try                                                                      :
+      ########################################################################
+      with open        ( detection , "rb" ) as mpFile                        :
+        BUFF = mpFile . read (                                               )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
     self . Tron      = None
     self . Detection = detection
-    self . TronOpts  = mediapipe . tasks . BaseOptions ( model_asset_path = detection )
+    ## self . TronOpts  = mediapipe . tasks . BaseOptions ( model_asset_path = detection )
+    self . TronOpts  = mediapipe . tasks . BaseOptions ( model_asset_buffer = BUFF )
     ##########################################################################
     OPTS             = ObjectDetectorOptions                               ( \
                           base_options    = self . TronOpts                , \
@@ -130,9 +139,17 @@ class Vision   (                                                           ) :
     ImageClassifierOptions = mediapipe . tasks . vision . ImageClassifierOptions
     VisionRunningMode      = mediapipe . tasks . vision . RunningMode
     ##########################################################################
+    try                                                                      :
+      ########################################################################
+      with open         ( classifier , "rb" ) as mpFile                      :
+        BUFF = mpFile . read (                                               )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
     self . Catalog    = None
     self . Classifier = classifier
-    self . BaseOpts   = mediapipe . tasks . BaseOptions ( model_asset_path = classifier )
+    self . BaseOpts        = mediapipe . tasks . BaseOptions ( model_asset_buffer = BUFF )
     ##########################################################################
     OPTS              = ImageClassifierOptions                             ( \
                           base_options = self . BaseOpts                   , \
@@ -191,9 +208,18 @@ class Vision   (                                                           ) :
     FaceStylizer        = mediapipe . tasks . vision . FaceStylizer
     FaceStylizerOptions = mediapipe . tasks . vision . FaceStylizerOptions
     ##########################################################################
+    try                                                                      :
+      ########################################################################
+      with open       ( StylePath , "rb" ) as mpFile                         :
+        BUFF = mpFile . read (                                               )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
     self . Stylizer     = None
     self . Style        = StylePath
-    self . StyleOpts    = mediapipe . tasks . BaseOptions ( model_asset_path = StylePath )
+    ## self . StyleOpts    = mediapipe . tasks . BaseOptions ( model_asset_path = StylePath )
+    self . StyleOpts    = mediapipe . tasks . BaseOptions ( model_asset_buffer = BUFF )
     ##########################################################################
     OPTS                = FaceStylizerOptions                              ( \
                           base_options    = self . StyleOpts                 )
