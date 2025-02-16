@@ -709,11 +709,9 @@ class IconDock                    ( ListDock                               ) :
   ############################################################################
   def ScrollBarMenu         ( self , mm                                    ) :
     ##########################################################################
-    VSB = self . verticalScrollBarPolicy   (                                 )
-    HSB = self . horizontalScrollBarPolicy (                                 )
-    ##########################################################################
-    VSK =                   ( Qt . ScrollBarAlwaysOff == VSB                 )
-    HSK =                   ( Qt . ScrollBarAlwaysOn  == HSB                 )
+    VSB = self . verticalScrollBarPolicy (                                   )
+    VSK =                                ( Qt . ScrollBarAlwaysOff == VSB    )
+    HSK = not self . isWrapping          (                                   )
     ##########################################################################
     TRX = self . Translations
     LOM = mm   . addMenu    ( TRX [ "UI::ScrollBar" ]                        )
@@ -730,35 +728,30 @@ class IconDock                    ( ListDock                               ) :
     ##########################################################################
     if                 ( 21300001 == atId                                  ) :
       ########################################################################
-      VSB = self . verticalScrollBarPolicy   (                               )
+      VSB = self . verticalScrollBarPolicy (                                 )
       VSK =            ( Qt . ScrollBarAlwaysOff == VSB                      )
       ########################################################################
       if               ( VSK                                               ) :
         ######################################################################
-        self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAsNeeded         )
+        self . setVerticalScrollBarPolicy  ( Qt . ScrollBarAsNeeded          )
         ######################################################################
       else                                                                   :
         ######################################################################
-        self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff        )
+        self . setVerticalScrollBarPolicy  ( Qt . ScrollBarAlwaysOff         )
       ########################################################################
       return True
     ##########################################################################
     if                 ( atId == 21300002                                  ) :
       ########################################################################
-      HSB = self . horizontalScrollBarPolicy (                               )
-      HSK =            ( Qt . ScrollBarAlwaysOn  == HSB                      )
-      ########################################################################
-      if               ( HSK                                               ) :
+      if               ( self . isWrapping (                             ) ) :
         ######################################################################
-        self . setWrapping                  ( True                           )
-        self . setFlow                      ( Qt . TopToBottom               )
-        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAsNeeded         )
+        self . setWrapping                 ( False                           )
+        self . setFlow                     ( Qt . LeftToRight                )
         ######################################################################
       else                                                                   :
         ######################################################################
-        self . setWrapping                  ( False                          )
-        self . setFlow                      ( Qt . LeftToRight               )
-        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOn         )
+        self . setWrapping                 ( True                            )
+        self . setFlow                     ( Qt . TopToBottom                )
       ########################################################################
       return True
     ##########################################################################
