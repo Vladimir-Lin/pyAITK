@@ -20,6 +20,7 @@ from   AITK    . Qt6                        import *
 from   AITK    . Essentials . Relation      import Relation    as Relation
 from   AITK    . Calendars  . StarDate      import StarDate    as StarDate
 from   AITK    . Calendars  . Periode       import Periode     as Periode
+from   AITK    . Documents  . Variables     import Variables   as VariableItem
 from   AITK    . Pictures   . Picture6      import Picture     as PictureItem
 from   AITK    . Pictures   . Gallery       import Gallery     as GalleryItem
 ##############################################################################
@@ -635,45 +636,40 @@ class PicturesView           ( IconDock                                    ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def DoBasicPictureDescription        ( self , UUID , PIC , INFO          ) :
-    ##########################################################################
-    RECG   = self . GetRecognizer      (                                     )
-    J      =                           {                                     }
-    ##########################################################################
-    if                                 ( RECG in self . EmptySet           ) :
-      return                           ( False , J ,                         )
-    ##########################################################################
-    J      = RECG . DoBasicDescription ( PIC , INFO , { }                    )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    return                             ( True , J ,                          )
   ############################################################################
-  def AnalyzePictureDescription     ( self , DB , UUIDs                    ) :
+  def AnalyzePictureDescription          ( self , DB , UUIDs               ) :
     ##########################################################################
-    PICTAB   = self . Tables        [ "Information"                          ]
-    DOPTAB   = self . Tables        [ "Depot"                                ]
+    RECG     = self . GetRecognizer      (                                   )
+    ##########################################################################
+    if                                   ( RECG in self . EmptySet         ) :
+      return
+    ##########################################################################
+    OPTs     =                           {                                   }
+    PV       = VariableItem              (                                   )
+    PICTAB   = self . Tables             [ "Information"                     ]
+    DOPTAB   = self . Tables             [ "Depot"                           ]
+    VARTAB   = self . Tables             [ "DescribeVariables"               ]
+    ##########################################################################
+    PV       . Type = 9
+    PV       . Name = "Description"
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      PIC    = PictureItem          (                                        )
-      INFO   = PIC . GetInformation ( DB , PICTAB , UUID                     )
+      PIC    = PictureItem               (                                   )
+      INFO   = PIC . GetInformation      ( DB , PICTAB , UUID                )
       ########################################################################
-      if                            ( INFO not in [ False , None ]         ) :
+      if                                 ( INFO not in self . EmptySet     ) :
         ######################################################################
         QQ   = f"select `file` from {DOPTAB} where ( `uuid` = {UUID} ) ;"
-        OKAY = PIC . FromDB         ( DB , QQ                                )
+        OKAY = PIC . FromDB              ( DB , QQ                           )
         ######################################################################
-        if                          ( OKAY                                 ) :
+        if                               ( OKAY                            ) :
           ####################################################################
-          OK , JJ = self . DoBasicPictureDescription ( UUID , PIC , INFO     )
+          J  = RECG . DoBasicDescription ( PIC , INFO , OPTs                 )
           ####################################################################
-          ## if                        ( OK                                   ) :
-          ##   ##################################################################
+          PV . Uuid  = UUID
+          PV . Value = json . dumps      ( J                                 )
+          PV . AssureValue               ( DB , VARTAB                       )
     ##########################################################################
     return
   ############################################################################
