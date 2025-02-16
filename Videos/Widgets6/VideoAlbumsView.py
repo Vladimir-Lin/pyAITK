@@ -2906,6 +2906,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self   . DisplayMenu           ( mm                                      )
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
+    self   . ScrollBarMenu         ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     self   . AtMenu = True
@@ -2955,14 +2956,18 @@ class VideoAlbumsView             ( IconDock                               ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY    = self . RunStopIconMenu ( at                                    )
-    if                               ( OKAY                                ) :
+    OKAY   = self . RunScrollBarMenu   ( at                                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY    = self . RunStopIconMenu   ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :

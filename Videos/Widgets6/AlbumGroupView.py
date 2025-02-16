@@ -842,6 +842,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self   . FunctionsMenu          ( mm , uuid , atItem                     )
     self   . SortingMenu            ( mm                                     )
     self   . LocalityMenu           ( mm                                     )
+    self   . ScrollBarMenu          ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     self   . AtMenu = True
@@ -867,15 +868,19 @@ class AlbumGroupView         ( IconDock                                    ) :
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunSortingMenu   ( at                                    )
+    if                               ( OKAY                                ) :
       ########################################################################
-      self . restart                (                                        )
+      self . restart                 (                                       )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunStopIconMenu ( at                                     )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunScrollBarMenu ( at                                    )
+    if                               ( OKAY                                ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu  ( at                                    )
+    if                               ( OKAY                                ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :

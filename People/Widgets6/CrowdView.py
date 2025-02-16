@@ -899,6 +899,7 @@ class CrowdView              ( IconDock                                    ) :
     self   . FunctionsMenu              ( mm , uuid , atItem                 )
     self   . SortingMenu                ( mm                                 )
     self   . LocalityMenu               ( mm                                 )
+    self   . ScrollBarMenu              ( mm                                 )
     self   . DockingMenu                ( mm                                 )
     ##########################################################################
     self   . AtMenu = True
@@ -926,6 +927,10 @@ class CrowdView              ( IconDock                                    ) :
       ########################################################################
       self . restart                    (                                    )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunScrollBarMenu    ( at                                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
     OKAY   = self . RunStopIconMenu     ( at                                 )
