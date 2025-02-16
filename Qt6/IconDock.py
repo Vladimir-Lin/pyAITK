@@ -750,13 +750,15 @@ class IconDock                    ( ListDock                               ) :
       ########################################################################
       if               ( HSK                                               ) :
         ######################################################################
-        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAsNeeded         )
+        self . setWrapping                  ( True                           )
         self . setFlow                      ( Qt . TopToBottom               )
+        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAsNeeded         )
         ######################################################################
       else                                                                   :
         ######################################################################
-        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOn         )
+        self . setWrapping                  ( False                          )
         self . setFlow                      ( Qt . LeftToRight               )
+        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOn         )
       ########################################################################
       return True
     ##########################################################################
