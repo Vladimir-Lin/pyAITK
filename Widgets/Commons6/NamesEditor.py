@@ -57,13 +57,14 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
   ############################################################################
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 1024 , 480                              )
-    ## return QSize                   (  800 , 480                              )
-    ## return QSize                   ( 1024 , 720                              )
   ############################################################################
   def Prepare                      ( self                                  ) :
     ##########################################################################
     Names  = self . Translations   [ "NamesEditor" ] [ "Labels"              ]
+    MENUs  = self . Translations   [ "NamesEditor" ] [ "Menus"               ]
     Items  = self . tableItems     (                                         )
+    ##########################################################################
+    self   . setMenus              ( MENUs                                   )
     ##########################################################################
     self   . defaultLocality  = 1001
     self   . defaultRelevance =    0
