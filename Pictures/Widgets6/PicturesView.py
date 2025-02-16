@@ -29,19 +29,19 @@ from   AITK    . UUIDs      . UuidListings6 import appendUuids
 from   AITK    . UUIDs      . UuidListings6 import getUuids
 from   AITK    . UUIDs      . UuidListings6 import assignUuids
 ##############################################################################
-class PicturesView           ( IconDock                                    ) :
+class PicturesView              ( IconDock                                 ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu           = 1371434312
   ############################################################################
-  ShowPicture       = Signal ( str                                           )
-  OpenPictureEditor = Signal ( str , dict                                    )
-  OpenVariantTables = Signal ( str , str , int , str , dict                  )
-  OpenLogHistory    = Signal ( str , str , str , str , str                   )
-  emitLog           = Signal ( str                                           )
+  ShowPicture          = Signal ( str                                        )
+  OpenPictureEditor    = Signal ( str , dict                                 )
+  OpenVariantTables    = Signal ( str , str , int , str , dict               )
+  OpenLogHistory       = Signal ( str , str , str , str , str                )
+  emitLog              = Signal ( str                                        )
   ############################################################################
-  def __init__               ( self , parent = None , plan = None          ) :
+  def __init__                  ( self , parent = None , plan = None       ) :
     ##########################################################################
-    super ( ) . __init__     (        parent        , plan                   )
+    super ( ) . __init__        (        parent        , plan                )
     ##########################################################################
     self . GetImportDIR   = self . defaultGetBrowseDirectory
     self . StoreImportDIR = self . defaultUpdateBrowseDirectory

@@ -34,18 +34,20 @@ from   AITK    . People   . Faces6   . VcfFaceRegion    import VcfFaceRegion    
 from   AITK    . People   . Widgets6 . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 from   AITK    . People   . Widgets6 . PeopleDetails    import PeopleDetails    as PeopleDetails
 ##############################################################################
-class PictureEditor      ( VcfWidget                                       ) :
+class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
-  Adjustment   = Signal  ( QWidget , QSize                                   )
-  JsonCallback = Signal  ( dict                                              )
-  Leave        = Signal  ( QWidget                                           )
+  ObtainsCurrentPeople = Signal   ( QWidget                                  )
+  Adjustment           = Signal   ( QWidget , QSize                          )
+  JsonCallback         = Signal   ( dict                                     )
+  Leave                = Signal   ( QWidget                                  )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__ (        parent ,        plan                       )
+    super ( ) . __init__          (        parent ,        plan              )
     ##########################################################################
-    self . MainGui      = None
-    self . MainTables   =         {                                          }
+    self . MainGui       = None
+    self . MainTables    =        {                                          }
+    self . CurrentPeople =        {                                          }
     self . setJsonCaller          ( self . JsonCaller                        )
     self . JsonCallback . connect ( self . JsonAccepter                      )
     ##########################################################################
@@ -153,6 +155,12 @@ class PictureEditor      ( VcfWidget                                       ) :
       self . AttachPeopleDetails ( NAME , ITEM                               )
       ########################################################################
       return
+    ##########################################################################
+    return
+  ############################################################################
+  def setCurrentPeople ( self , JSON                                       ) :
+    ##########################################################################
+    self . CurrentPeople = JSON
     ##########################################################################
     return
   ############################################################################

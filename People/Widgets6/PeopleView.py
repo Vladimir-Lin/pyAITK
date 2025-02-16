@@ -37,6 +37,7 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   HavingMenu            = 1371434312
   ############################################################################
+  AssignCurrentPeople   = Signal ( dict                                      )
   ShowPeopleDetails     = Signal ( str , str ,              QIcon            )
   ShowPersonalGallery   = Signal ( str , int , str  ,       QIcon            )
   ShowPersonalIcons     = Signal ( str , int , str  , str , QIcon            )
@@ -1894,8 +1895,11 @@ class PeopleView                 ( IconDock                                ) :
     msg = self . getMenuItem   ( "CopyPeopleUuid"                            )
     mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "LogHistory"                                )
+    msg = self . getMenuItem   ( "AssignCurrentPeople"                       )
     mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "LogHistory"                                )
+    mm  . addActionFromMenu    ( LOM , 24231103 , msg                        )
     ##########################################################################
     MSG = self . getMenuItem   ( "Occupations"                               )
     mm  . addActionFromMenu    ( LOM , 24231201 , MSG                        )
@@ -1938,6 +1942,14 @@ class PeopleView                 ( IconDock                                ) :
       return
     ##########################################################################
     if                                  ( at == 24231102                   ) :
+      ########################################################################
+      t    = item . text                (                                    )
+      J    =                            { "Uuid" : uuid , "Name" : t         }
+      self . AssignCurrentPeople . emit ( J                                  )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                  ( at == 24231103                   ) :
       ########################################################################
       t    = item . text                (                                    )
       nx   = ""
