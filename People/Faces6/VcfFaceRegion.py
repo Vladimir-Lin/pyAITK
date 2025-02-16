@@ -28,7 +28,7 @@ from   PySide6 . QtCore                          import *
 from   PySide6 . QtGui                           import *
 from   PySide6 . QtWidgets                       import *
 from   AITK    . Qt6                             import *
-from   AITK    . VCF                             import *
+from   AITK    . VCF6                            import *
 ##############################################################################
 from   AITK    . Essentials . Object             import Object       as Object
 from   AITK    . Pictures   . Picture6           import Picture      as PictureItem
@@ -563,7 +563,15 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     for Id in range     ( 21 , 30                                          ) :
       ########################################################################
-      del self . Painter . pathes [ Id                                       ]
+      if                ( Id not in self . Painter . pathes                ) :
+        continue
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        del self . Painter . pathes [ Id                                     ]
+        ######################################################################
+      except                                                                 :
+        pass
     ##########################################################################
     return
   ############################################################################
@@ -638,13 +646,21 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if                                   ( PIC in [ False , None ]         ) :
       return
     ##########################################################################
-    AI        = self . Settings          [ "AI"                              ]
+    DIR       = self . Settings          [ "Data"                            ]
+    AI        = self . Settings          [ "AiData"                          ]
     HAAR      = AI                       [ "HAAR"                            ]
     EYES      = AI                       [ "Eyes"                            ]
     MOUTH     = AI                       [ "Mouth"                           ]
     FIVEMARKS = AI                       [ "Fivemarks"                       ]
     LANDMARKS = AI                       [ "Landmarks"                       ]
     RESNET    = AI                       [ "Resnet"                          ]
+    ##########################################################################
+    HAAR      = f"{DIR}/{HAAR}"
+    EYES      = f"{DIR}/{EYES}"
+    MOUTH     = f"{DIR}/{MOUTH}"
+    FIVEMARKS = f"{DIR}/{FIVEMARKS}"
+    LANDMARKS = f"{DIR}/{LANDMARKS}"
+    RESNET    = f"{DIR}/{RESNET}"
     ##########################################################################
     FC        = cv2  . CascadeClassifier ( HAAR                              )
     EC        = cv2  . CascadeClassifier ( EYES                              )
@@ -749,13 +765,21 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if                                   ( PIC in [ False , None ]         ) :
       return
     ##########################################################################
-    AI        = self . Settings          [ "AI"                              ]
+    DIR       = self . Settings          [ "Data"                            ]
+    AI        = self . Settings          [ "AiData"                          ]
     HAAR      = AI                       [ "HAAR"                            ]
     EYES      = AI                       [ "Eyes"                            ]
     MOUTH     = AI                       [ "Mouth"                           ]
     FIVEMARKS = AI                       [ "Fivemarks"                       ]
     LANDMARKS = AI                       [ "Landmarks"                       ]
     RESNET    = AI                       [ "Resnet"                          ]
+    ##########################################################################
+    HAAR      = f"{DIR}/{HAAR}"
+    EYES      = f"{DIR}/{EYES}"
+    MOUTH     = f"{DIR}/{MOUTH}"
+    FIVEMARKS = f"{DIR}/{FIVEMARKS}"
+    LANDMARKS = f"{DIR}/{LANDMARKS}"
+    RESNET    = f"{DIR}/{RESNET}"
     ##########################################################################
     FC        = cv2  . CascadeClassifier ( HAAR                              )
     EC        = cv2  . CascadeClassifier ( EYES                              )
@@ -892,9 +916,13 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   def NippleRecognition         ( self                                     ) :
     ##########################################################################
-    AI      = self . Settings   [ "AI"                                       ]
+    DIR     = self . Settings   [ "Data"                                     ]
+    AI      = self . Settings   [ "AiData"                                   ]
     SVM     = AI                [ "Boobs-SVM"                                ]
     CASCADE = AI                [ "Boobs-Cascade"                            ]
+    ##########################################################################
+    SVM     = f"{DIR}/{SVM}"
+    CASCADE = f"{DIR}/{CASCADE}"
     ##########################################################################
     IMG     = self . PictureItem . PICOP . toOpenCV (                        )
     GRAY    = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY     )
@@ -1124,11 +1152,13 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   def SyncFaceMesh ( self                                                  ) :
     ##########################################################################
+    return
+    ##########################################################################
     JSON = self . MESHs
-    JSON [ "Measure" ]             = { }
-    JSON [ "Measure" ] [ "P1"    ] = self . MeasureRule [ "P1"    ]
-    JSON [ "Measure" ] [ "P2"    ] = self . MeasureRule [ "P2"    ]
-    JSON [ "Measure" ] [ "Value" ] = self . MeasureRule [ "Value" ]
+    JSON [ "Measure" ]             = {                                       }
+    JSON [ "Measure" ] [ "P1"    ] = self . MeasureRule [ "P1"               ]
+    JSON [ "Measure" ] [ "P2"    ] = self . MeasureRule [ "P2"               ]
+    JSON [ "Measure" ] [ "Value" ] = self . MeasureRule [ "Value"            ]
     ##########################################################################
     for FCB in self . FaceCallbacks                                          :
       ########################################################################
