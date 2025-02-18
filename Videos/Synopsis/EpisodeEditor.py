@@ -33,10 +33,6 @@ from   PySide6 . QtGui                                      import *
 from   PySide6 . QtWidgets                                  import *
 from   AITK    . Qt6                                        import *
 ##############################################################################
-from   AITK    . Qt6      . MenuManager                     import MenuManager         as MenuManager
-from   AITK    . Qt6      . AttachDock                      import AttachDock          as AttachDock
-from   AITK    . Qt6      . Widget                          import Widget              as Widget
-##############################################################################
 from   AITK    . Widgets  . Commons6 . NamesEditor          import NamesEditor
 from   AITK    . People   . Widgets6 . PeopleView           import PeopleView
 from   AITK    . Finance  . Widgets6 . IdentifierListings   import IdentifierListings
