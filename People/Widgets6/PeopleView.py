@@ -564,9 +564,6 @@ class PeopleView                 ( IconDock                                ) :
       if                               ( not self . StayAlive              ) :
         continue
       ########################################################################
-      if                               ( U not in self . UuidItemMaps      ) :
-        continue
-      ########################################################################
       GJSON      =                     { "Used"      : 1                   , \
                                          "State"     : 0                   , \
                                          "Pictures"  : 0                   , \

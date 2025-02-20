@@ -608,9 +608,6 @@ class GalleriesView            ( IconDock                                  ) :
       if                               ( not self . StayAlive              ) :
         continue
       ########################################################################
-      if                               ( U not in self . UuidItemMaps      ) :
-        continue
-      ########################################################################
       GJSON      =                     { "Used"      : 1                   , \
                                          "States"    : 0                   , \
                                          "Pictures"  : 0                   , \

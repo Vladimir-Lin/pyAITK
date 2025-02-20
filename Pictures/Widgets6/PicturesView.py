@@ -247,8 +247,6 @@ class PicturesView              ( IconDock                                 ) :
     item      = self . UuidItemMaps   [ UUID                                 ]
     ##########################################################################
     RECG      = self . GetRecognizer  (                                      )
-    WW        = GOPTs                 [ "Width"                              ]
-    HH        = GOPTs                 [ "Height"                             ]
     ##########################################################################
     if                                ( "Image" in GOPTs                   ) :
       ########################################################################
@@ -287,6 +285,8 @@ class PicturesView              ( IconDock                                 ) :
           if                          ( "Recognition" in GOPTs             ) :
             ##################################################################
             RCOG = GOPTs              [ "Recognition"                        ]
+            WW   = GOPTs              [ "Width"                              ]
+            HH   = GOPTs              [ "Height"                             ]
             self . DrawRecognition    ( p , 128 , 128 , WW , HH , RCOG       )
       ########################################################################
       p       . end                   (                                      )
@@ -431,9 +431,6 @@ class PicturesView              ( IconDock                                 ) :
     for U in UUIDs                                                           :
       ########################################################################
       if                               ( not self . StayAlive              ) :
-        continue
-      ########################################################################
-      if                               ( U not in self . UuidItemMaps      ) :
         continue
       ########################################################################
       GJSON      =                     { "Width"    : 0                    , \
