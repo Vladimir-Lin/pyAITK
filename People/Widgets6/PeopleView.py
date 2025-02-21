@@ -732,9 +732,12 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
-    ## album/uuids
-    ## albumgroup/uuids
-    formats = "people/uuids;picture/uuids;face/uuids"
+    FMTs    = [ "people/uuids"                                             , \
+                "picture/uuids"                                            , \
+                ## "album/uuids"                                              , \
+                ## "albumgroup/uuids"                                         , \
+                "face/uuids"                                                 ]
+    formats = ";" . join   ( FMTs                                            )
     ##########################################################################
     return self . MimeType ( mime , formats                                  )
   ############################################################################
