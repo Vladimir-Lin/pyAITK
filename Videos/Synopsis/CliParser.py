@@ -251,50 +251,91 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return J
   ############################################################################
-  def OrganizeNamesByWestern ( self                                        ) :
+  def OrganizeNamesByWestern  ( self                                       ) :
     ##########################################################################
-    DB     = Connection      (                                               )
+    DB     = Connection       (                                              )
     ##########################################################################
-    if                       ( not DB . ConnectTo ( self . DbConf )        ) :
+    if                        ( not DB . ConnectTo ( self . DbConf )       ) :
       ########################################################################
-      self . LOG             ( json . dumps  ( TABLEs )                      )
+      self . LOG              ( json . dumps  ( TABLEs )                     )
       ########################################################################
       return
     ##########################################################################
-    DB     . Prepare         (                                               )
+    DB     . Prepare          (                                              )
     ##########################################################################
     PEOTAB = "`leagues`.`people_av_0002`"
     WESNAM = "`appellations`.`names_people_0004`"
     JPNNAM = "`appellations`.`names_people_0005`"
-    PEONAM = "`appellations`.`names_people_0020`"
+    PEONAM = "`appellations`.`names_people_0010`"
     OTHNAM = "`appellations`.`names_others_0020`"
     COLS   = "`uuid`,`locality`,`priority`,`relevance`,`flags`,`utf8`,`length`,`name`,`ltime`"
     ##########################################################################
     QQ     = f"""insert into {WESNAM} ( {COLS} )
                  select {COLS} from {OTHNAM}
                  where ( `uuid` in ( select `uuid` from {PEOTAB} ) ) ;"""
-    QQ     = " " . join      ( QQ . split (                                ) )
-    ## DB     . Query           ( QQ                                            )
-    self   . LOG             ( QQ                                            )
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
     ##########################################################################
     QQ     = f"""delete  from {OTHNAM}
                  where ( `uuid` in ( select `uuid` from {PEOTAB} ) ) ;"""
-    QQ     = " " . join      ( QQ . split (                                ) )
-    ## DB     . Query           ( " " . join ( QQ . split (                 ) ) )
-    self   . LOG             ( QQ                                            )
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
     ##########################################################################
+    QQ     = f"""select `uuid` from {JPNNAM}
+                 where ( `uuid` in ( select `uuid` from {PEOTAB} ) )
+                 group by `uuid` asc ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    UUIDs  = DB . ObtainUuids ( QQ                                           )
     ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ   = f"""select `relevance` from {JPNNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                 group by `relevance` asc ;"""
+      QQ   = " " . join       ( QQ . split (                               ) )
+      self . LOG              ( QQ                                           )
+      REVs = DB . ObtainUuids ( QQ                                           )
+      ########################################################################
+      for R in REVs                                                          :
+        ######################################################################
+        QQ = f"""select `priority` from {WESNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} )
+                   order by `priority` desc
+                   limit 0 , 1 ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        PP = DB . GetOne      ( QQ , -1                                      )
+        PP = int              ( int ( PP ) + 1                               )
+        ######################################################################
+        QQ = f"""update {JPNNAM}
+                 set `priority` = `priority` + {PP}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} )
+                 order by `priority` desc ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
+        ######################################################################
+        QQ = f"""insert into {WESNAM} ( {COLS} )
+                 select {COLS} from {JPNNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} ) ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
+        ######################################################################
+        QQ = f"""delete  from {JPNNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} ) ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    DB     . Close           (                                               )
+    DB     . Close            (                                              )
     ##########################################################################
     return
   ############################################################################
