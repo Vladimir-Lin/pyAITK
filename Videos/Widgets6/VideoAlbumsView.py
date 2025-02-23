@@ -715,8 +715,12 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       self       . AlbumOPTs [ U ] [ "Galleries" ] = GALs
       ########################################################################
-      REL        . setT2               ( "Video"                             )
-      VIDs       = REL . CountSecond   ( DB , VIDTAB                         )
+      QQ         = f"""select count(*) from {VIDTAB}
+                       where ( `t1` = 76 )
+                         and ( `t2` = 11 )
+                         and ( `relation` in ( 1 , 11 ) )
+                         and ( `first` = {U} ) ;"""
+      VIDs       = DB . GetOne         ( QQ , 0                              )
       ########################################################################
       self       . AlbumOPTs [ U ] [ "Videos"    ] = VIDs
       ########################################################################
