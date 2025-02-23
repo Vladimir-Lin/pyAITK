@@ -57,7 +57,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 800 , 400 )                       )
+    return self . SizeSuggestion ( QSize ( 800 , 360 )                       )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
