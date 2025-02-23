@@ -254,6 +254,25 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return
   ############################################################################
+  def AssignFileName              ( self                                   ) :
+    ##########################################################################
+    TITLE    = self . getMenuItem ( "AssignTextFile"                         )
+    FILTERs  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    TITLE                                  , \
+                                    ""                                     , \
+                                    FILTERs                                  )
+    ##########################################################################
+    if                            ( len ( NAME ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    CMD  = f"filename {NAME}"
+    self . emitCommand . emit     ( CMD                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def Save              ( self                                             ) :
     ##########################################################################
     if                  ( len ( self . Filename ) > 0                      ) :
@@ -457,6 +476,11 @@ class CommandInterface    ( TextEdit                                       ) :
     mm     . addAction            ( 4003 , TRX [ "UI::ClearAll"            ] )
     mm     . addSeparator         (                                          )
     ##########################################################################
+    MSG    = self . getMenuItem   ( "AssignTextFile"                         )
+    mm     . addAction            ( 4101 , MSG                               )
+    ##########################################################################
+    mm     . addSeparator         (                                          )
+    ##########################################################################
     mm     = self . TextingMenu   ( mm                                       )
     mm     = self . DisplayMenu   ( mm                                       )
     mm     . addSeparator         (                                          )
@@ -495,6 +519,10 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     if                            ( 4003 == at                             ) :
       self . clear                (                                          )
+      return True
+    ##########################################################################
+    if                            ( 4101 == at                             ) :
+      self . AssignFileName       (                                          )
       return True
     ##########################################################################
     return True
