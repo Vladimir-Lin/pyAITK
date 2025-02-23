@@ -55,8 +55,52 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 480                              )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 480 )                      )
+  ############################################################################
+  def PrepareForActions             ( self                                 ) :
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "AddItem"                            , \
+                                      ":/images/plus.png"                  , \
+                                      self . InsertItem                      )
+    self . AppendSideActionWithIcon ( "QuickAdd"                           , \
+                                      ":/images/add.png"                   , \
+                                      self . QuickAppending                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self      ,                          Enabled       ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh" , self . startup         , Enabled         )
+    self . LinkAction ( "Insert"  , self . InsertItem      , Enabled         )
+    self . LinkAction ( "Delete"  , self . DeleteItems     , Enabled         )
+    self . LinkAction ( "Copy"    , self . CopyToClipboard , Enabled         )
+    self . LinkAction ( "Paste"   , self . PasteItems      , Enabled         )
+    self . LinkAction ( "Rename"  , self . RenameItem      , Enabled         )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
+      return False
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def Prepare                      ( self                                  ) :
     ##########################################################################
@@ -117,41 +161,8 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
-  def closeEvent                 ( self , event                            ) :
-    ##########################################################################
-    if                           ( self . TryClose ( )                     ) :
-      event . accept             (                                           )
-    else                                                                     :
-      event . ignore             (                                           )
-    ##########################################################################
-    return
-  ############################################################################
   def Configure                  ( self                                    ) :
     return
-  ############################################################################
-  def FocusIn                    ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      return False
-    ##########################################################################
-    self . setActionLabel        ( "Label"   , self . windowTitle ( )        )
-    self . LinkAction            ( "Refresh" , self . startup                )
-    ##########################################################################
-    self . LinkAction            ( "Insert"  , self . InsertItem             )
-    self . LinkAction            ( "Delete"  , self . DeleteItems            )
-    self . LinkAction            ( "Copy"    , self . CopyToClipboard        )
-    self . LinkAction            ( "Paste"   , self . PasteItems             )
-    ##########################################################################
-    self . LinkAction            ( "Rename"  , self . RenameItem             )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                   ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      return False
-    ##########################################################################
-    return False
   ############################################################################
   def appendJsonItem             ( self , JSON                             ) :
     ##########################################################################
@@ -166,6 +177,8 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     if                           ( self . isItemPicked ( )                 ) :
       if ( column != self . CurrentItem [ "Column" ] )                       :
         self . removeParked      (                                           )
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -602,7 +615,8 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
     msg    = self . getMenuItem    ( "QuickAdd"                              )
-    mm     . addAction             ( 2001 , msg                              )
+    icon   = QIcon                 ( ":/images/add.png"                      )
+    mm     . addActionWithIcon     ( 2001 , icon , msg                       )
     ##########################################################################
     if                             ( len ( items ) > 0                     ) :
       self . AppendDeleteAction    ( mm , 1102                               )
@@ -997,35 +1011,42 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
-  def QuickAppending              ( self                                   ) :
+  def QuickAppending               ( self                                  ) :
     ##########################################################################
-    if                            ( self . get ( "uuid" ) <= 0             ) :
+    NAME     = ""
+    ##########################################################################
+    if                             ( self . topLevelItemCount ( ) > 0      ) :
+      ########################################################################
+      IT     = self . topLevelItem ( 0                                       )
+      NAME   = IT   . text         ( 0                                       )
+    ##########################################################################
+    if                             ( self . get ( "uuid" ) <= 0            ) :
       return
     ##########################################################################
-    DB       = self . ConnectDB   (                                          )
-    if                            ( self . NotOkay ( DB )                  ) :
+    DB       = self . ConnectDB    (                                         )
+    if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
-    for LC in                     [ 1002 , 1003 , 1006                     ] :
+    for LC in                      [ 1002 , 1003 , 1006                    ] :
       ########################################################################
-      TABLE  = self . Tables      [ "Names"                                  ]
+      TABLE  = self . Tables       [ "Names"                                 ]
       ########################################################################
-      self   . set                ( "name"      , ""                         )
-      self   . set                ( "locality"  , LC                         )
-      self   . set                ( "relevance" , self . defaultRelevance    )
-      self   . set                ( "priority"  , 0                          )
-      self   . set                ( "flags"     , 0                          )
-      self   . set                ( "utf8"      , 0                          )
-      self   . set                ( "length"    , 0                          )
+      self   . set                 ( "name"      , NAME                      )
+      self   . set                 ( "locality"  , LC                        )
+      self   . set                 ( "relevance" , self . defaultRelevance   )
+      self   . set                 ( "priority"  , 0                         )
+      self   . set                 ( "flags"     , 0                         )
+      self   . set                 ( "utf8"      , 0                         )
+      self   . set                 ( "length"    , 0                         )
       ########################################################################
-      self   . Append             ( DB , TABLE                               )
-      IDX    = self . GetPosition ( DB , TABLE                               )
+      self   . Append              ( DB , TABLE                              )
+      IDX    = self . GetPosition  ( DB , TABLE                              )
       ########################################################################
-      if                          ( IDX >= 0                               ) :
+      if                           ( IDX >= 0                              ) :
         ######################################################################
         self . Id = IDX
     ##########################################################################
-    DB       . Close              (                                          )
+    DB       . Close               (                                          )
     ##########################################################################
     self     . loading            (                                          )
     ##########################################################################
