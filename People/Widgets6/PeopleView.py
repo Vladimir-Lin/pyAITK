@@ -135,6 +135,9 @@ class PeopleView                 ( IconDock                                ) :
     self . AppendSideActionWithIcon        ( "PersonalGallery"             , \
                                              ":/images/gallery.png"        , \
                                              self . OpenPersonalGallery      )
+    self . AppendSideActionWithIcon        ( "Icons"                       , \
+                                             ":/images/animal.png"         , \
+                                             self . OpenPersonalIcons        )
     self . AppendSideActionWithIcon        ( "Videos"                      , \
                                              ":/images/video.png"          , \
                                              self . OpenPeopleVideos         )
@@ -1532,7 +1535,7 @@ class PeopleView                 ( IconDock                                ) :
     icon = item . icon                (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( text , 7 , xsid , icon               )
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
     ##########################################################################
     return
   ############################################################################
@@ -1544,6 +1547,34 @@ class PeopleView                 ( IconDock                                ) :
       return
     ##########################################################################
     self   . OpenGalleryItem    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenGalleryIcon               ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    relz = "Using"
+    ##########################################################################
+    self . ShowPersonalIcons . emit ( text                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPersonalIcons         ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenGalleryIcon    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -1838,7 +1869,8 @@ class PeopleView                 ( IconDock                                ) :
     mm   . addActionFromMenu         ( LOM , 24231312 , msg                  )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Icons"                               )
-    mm   . addActionFromMenu         ( LOM , 24231313 , MSG                  )
+    icon = QIcon                     ( ":/images/animal.png"                )
+    mm   . addActionFromMenuWithIcon ( LOM , 24231313 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Faces"                               )
     mm   . addActionFromMenu         ( LOM , 24231314 , MSG                  )
@@ -1993,12 +2025,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     if                                  ( at == 24231313                   ) :
       ########################################################################
-      text = item . text                (                                    )
-      icon = item . icon                (                                    )
-      xsid = str                        ( uuid                               )
-      relz = "Using"
-      ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . OpenGalleryIcon            ( item                               )
       ########################################################################
       return True
     ##########################################################################

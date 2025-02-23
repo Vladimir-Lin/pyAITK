@@ -489,6 +489,96 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
+  def RunMergePeopleIcons             ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    ## self   . Go                       ( self . MergePeopleURLs , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunMergePeopleGalleries         ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    ## self   . Go                       ( self . MergePeopleURLs , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunMergePeopleALBUMs            ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    ## self   . Go                       ( self . MergePeopleURLs , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
   def ImportGroups                ( self                                   ) :
     ##########################################################################
     Filters  = self . getMenuItem ( "JsonFilters"                            )
@@ -676,9 +766,24 @@ class PeopleMerger          ( TreeDock                                     ) :
       mm   . addActionWithIcon        ( 7003 , icon , msg                    )
       mm   . addSeparator             (                                      )
       ########################################################################
+      msg  = self . getMenuItem       ( "IconMerge"                          )
+      icon = QIcon                    ( ":/images/gallery.png"               )
+      mm   . addActionWithIcon        ( 7004 , icon , msg                    )
+      mm   . addSeparator             (                                      )
+      ########################################################################
+      msg  = self . getMenuItem       ( "GalleryMerge"                       )
+      icon = QIcon                    ( ":/images/galleries.png"             )
+      mm   . addActionWithIcon        ( 7005 , icon , msg                    )
+      mm   . addSeparator             (                                      )
+      ########################################################################
+      msg  = self . getMenuItem       ( "AlbumMerge"                         )
+      icon = QIcon                    ( ":/images/video.png"                 )
+      mm   . addActionWithIcon        ( 7006 , icon , msg                    )
+      mm   . addSeparator             (                                      )
+      ########################################################################
       msg  = self . getMenuItem       ( "Analysis"                           )
       icon = QIcon                    ( ":/images/checklist.png"             )
-      mm   . addActionWithIcon        ( 7004 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7007 , icon , msg                    )
       mm   . addSeparator             (                                      )
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
@@ -736,6 +841,24 @@ class PeopleMerger          ( TreeDock                                     ) :
       return True
     ##########################################################################
     if                                ( at == 7004                         ) :
+      ########################################################################
+      self . RunMergePeopleIcons      (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 7005                         ) :
+      ########################################################################
+      self . RunMergePeopleGalleries  (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 7006                         ) :
+      ########################################################################
+      self . RunMergePeopleALBUMs     (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 7007                         ) :
       ########################################################################
       self . AnalysisMergePeople      (                                      )
       ########################################################################
