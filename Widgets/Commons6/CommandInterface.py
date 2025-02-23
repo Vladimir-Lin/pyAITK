@@ -258,7 +258,7 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     TITLE    = self . getMenuItem ( "AssignTextFile"                         )
     FILTERs  = self . getMenuItem ( "TextFilters"                            )
-    Name , t = QFileDialog . getOpenFileName                                 (
+    NAME , t = QFileDialog . getOpenFileName                                 (
                                     self                                   , \
                                     TITLE                                  , \
                                     ""                                     , \
@@ -269,7 +269,7 @@ class CommandInterface    ( TextEdit                                       ) :
       return
     ##########################################################################
     CMD  = f"filename {NAME}"
-    self . emitCommand . emit     ( CMD                                      )
+    self . insertPlainText        ( CMD                                      )
     ##########################################################################
     return
   ############################################################################
@@ -526,7 +526,7 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     if                            ( 4101 == at                             ) :
       ########################################################################
-      self . emitCommand . emit   ( "take names from clipboard"              )
+      self . insertPlainText      ( "take names from clipboard"              )
       ########################################################################
       return True
     ##########################################################################
