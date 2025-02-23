@@ -81,7 +81,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = True
-    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6                      ]
+    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
     self . AlbumOPTs          = {                                            }
     ##########################################################################
     self . SearchLine         = None
