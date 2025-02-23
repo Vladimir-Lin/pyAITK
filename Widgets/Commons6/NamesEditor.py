@@ -45,7 +45,8 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
-    self . dockingOrientation = Qt . Horizontal
+    self . dockingOrientation = 0
+    ## self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea
@@ -56,16 +57,20 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 1024 , 480 )                      )
+    return self . SizeSuggestion ( QSize ( 800 , 400 )                       )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "AddItem"                            , \
                                       ":/images/plus.png"                  , \
-                                      self . InsertItem                      )
+                                      self . InsertItem                    , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "QuickAdd"                           , \
                                       ":/images/add.png"                   , \
-                                      self . QuickAppending                  )
+                                      self . QuickAppending                , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -158,6 +163,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     self     . assignSelectionMode ( "ContiguousSelection"                   )
     ##########################################################################
     self     . setPrepared         ( True                                    )
+    self     . PrepareForActions   (                                         )
     ##########################################################################
     return
   ############################################################################

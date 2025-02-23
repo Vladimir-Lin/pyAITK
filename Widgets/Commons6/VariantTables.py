@@ -90,7 +90,7 @@ class VariantTables      ( TreeDock                                        ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 480 , 320 )                       )
+    return self . SizeSuggestion ( QSize ( 480 , 600 )                       )
   ############################################################################
   def PrepareForActions               ( self                               ) :
     ##########################################################################
