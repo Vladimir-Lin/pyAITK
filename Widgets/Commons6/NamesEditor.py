@@ -1024,7 +1024,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     if                             ( self . topLevelItemCount ( ) > 0      ) :
       ########################################################################
       IT     = self . topLevelItem ( 0                                       )
-      NAME   = IT   . text         ( 0                                       )
+      NAME   = IT   . text         ( 1                                       )
     ##########################################################################
     if                             ( self . get ( "uuid" ) <= 0            ) :
       return
