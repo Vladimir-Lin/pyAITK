@@ -1141,9 +1141,10 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
     ##########################################################################
-    ## if                                ( self . ShowCompact                 ) :
-    ##   TOTAL = len                     ( self . KEYs                          )
-    ##   self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
+    if                                ( self . ShowCompact                 ) :
+      ########################################################################
+      TOTAL = len                     ( self . KEYs                          )
+      self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
     ##########################################################################
     return
   ############################################################################
