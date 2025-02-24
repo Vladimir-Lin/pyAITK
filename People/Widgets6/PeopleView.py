@@ -48,9 +48,9 @@ class PeopleView                 ( IconDock                                ) :
   ShowWebPages          = Signal ( str , int , str  , str , QIcon            )
   OwnedOccupation       = Signal ( str , int , str  , str , QIcon            )
   OpenBodyShape         = Signal ( str , str , dict                          )
-  emitOpenSmartNote     = Signal ( str                                       )
   ShowLodListings       = Signal ( str , str              , QIcon            )
   OpenVariantTables     = Signal ( str , str , int  , str , dict             )
+  emitOpenSmartNote     = Signal ( str                                       )
   OpenLogHistory        = Signal ( str , str , str  , str , str              )
   emitLog               = Signal ( str                                       )
   ############################################################################
@@ -149,6 +149,13 @@ class PeopleView                 ( IconDock                                ) :
     self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
                                              ":/images/webfind.png"        , \
                                              self . OpenIdentifierWebPages   )
+    self . AppendSideActionWithIcon        ( "OpenIdentWebPage"            , \
+                                             ":/images/bookmarks.png"      , \
+                                             self . OpenIdentWebPages        )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "LogHistory"                  , \
+                                             ":/images/documents.png"      , \
+                                             self . OpenCurrentLogHistory    )
     ##########################################################################
     return
   ############################################################################
@@ -1327,6 +1334,29 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def DoFetchOpenWebPages        ( self , uuid , related                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
+      return False
+    ##########################################################################
+    RELTAB = "`cios`.`relations`"
+    WEBTAB = "`cios`.`webpages`"
+    ##########################################################################
+    REL    = Relation            (                                           )
+    REL    . set                 ( "first" , uuid                            )
+    REL    . setT1               ( "People"                                  )
+    REL    . setT2               ( "WebPage"                                 )
+    REL    . setRelation         ( related                                   )
+    UUIDs  = REL . Subordination ( DB      , RELTAB                          )
+    ##########################################################################
+    if                           ( len ( UUIDs ) > 0                       ) :
+      self . OpenUrlsByUuids     ( DB , WEBTAB , UUIDs                       )
+    ##########################################################################
+    DB     . Close               (                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
@@ -1479,6 +1509,30 @@ class PeopleView                 ( IconDock                                ) :
     uuid   = atItem . data          ( Qt . UserRole                          )
     uuid   = int                    ( uuid                                   )
     self   . OpenWebPageBelongings  ( uuid , atItem , "Equivalent"           )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenIdentWebPageURLs ( self , item , related                         ) :
+    ##########################################################################
+    uuid = item . data     ( Qt . UserRole                                   )
+    uuid = int             ( uuid                                            )
+    ##########################################################################
+    if                     ( uuid <= 0                                     ) :
+      return
+    ##########################################################################
+    VAL  =                 ( uuid , related ,                                )
+    self . Go              ( self . DoFetchOpenWebPages , VAL                )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenIdentWebPages           ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    self   . OpenIdentWebPageURLs ( atItem , "Equivalent"                    )
     ##########################################################################
     return
   ############################################################################
@@ -1907,54 +1961,60 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return mm
   ############################################################################
-  def GroupsMenu               ( self , mm , uuid , item                   ) :
+  def GroupsMenu                      ( self , mm , uuid , item            ) :
     ##########################################################################
-    if                         ( uuid <= 0                                 ) :
+    if                                ( uuid <= 0                          ) :
       return mm
     ##########################################################################
     TRX = self . Translations
-    FMT = self . getMenuItem   ( "Belongs"                                   )
-    MSG = FMT  . format        ( item . text ( )                             )
-    LOM = mm   . addMenu       ( MSG                                         )
+    FMT = self . getMenuItem          ( "Belongs"                            )
+    MSG = FMT  . format               ( item . text ( )                      )
+    LOM = mm   . addMenu              ( MSG                                  )
     ##########################################################################
-    msg = self . getMenuItem   ( "CopyPeopleUuid"                            )
-    mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
+    msg = self . getMenuItem          ( "CopyPeopleUuid"                     )
+    mm  . addActionFromMenu           ( LOM , 24231101 , msg                 )
     ##########################################################################
-    msg = self . getMenuItem   ( "AssignCurrentPeople"                       )
-    mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
+    msg = self . getMenuItem          ( "AssignCurrentPeople"                )
+    mm  . addActionFromMenu           ( LOM , 24231102 , msg                 )
     ##########################################################################
-    msg = self . getMenuItem   ( "LogHistory"                                )
-    mm  . addActionFromMenu    ( LOM , 24231103 , msg                        )
+    MSG = self . getMenuItem          ( "LogHistory"                         )
+    ICO = QIcon                       ( ":/images/documents.png"             )
+    mm  . addActionFromMenuWithIcon   ( LOM , 24231103 , ICO , MSG           )
     ##########################################################################
-    MSG = self . getMenuItem   ( "Occupations"                               )
-    mm  . addActionFromMenu    ( LOM , 24231201 , MSG                        )
+    MSG = self . getMenuItem          ( "Occupations"                        )
+    mm  . addActionFromMenu           ( LOM , 24231201 , MSG                 )
     ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
+    mm  . addSeparatorFromMenu        ( LOM                                  )
     ##########################################################################
-    MSG = self . getMenuItem   ( "Galleries"                                 )
-    ICO = QIcon                ( ":/images/galleries.png"                    )
+    MSG = self . getMenuItem          ( "Galleries"                          )
+    ICO = QIcon                       ( ":/images/galleries.png"             )
     mm  . addActionFromMenuWithIcon   ( LOM , 24231211 , ICO , MSG           )
     ##########################################################################
     mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
     ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
+    mm  . addSeparatorFromMenu        ( LOM                                  )
     ##########################################################################
-    MSG = self . getMenuItem   ( "BodyShapes"                                )
-    mm  . addActionFromMenu    ( LOM , 24231351 , MSG                        )
+    MSG = self . getMenuItem          ( "BodyShapes"                         )
+    mm  . addActionFromMenu           ( LOM , 24231351 , MSG                 )
     ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
+    mm  . addSeparatorFromMenu        ( LOM                                  )
     ##########################################################################
-    MSG = self . getMenuItem   ( "Videos"                                    )
-    ICO = QIcon                ( ":/images/video.png"                        )
-    mm  . addActionFromMenuWithIcon   ( LOM , 24231411 , ICO , MSG           )
+    MSG = self . getMenuItem        ( "Videos"                               )
+    ICO = QIcon                     ( ":/images/video.png"                   )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231411 , ICO , MSG             )
     ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
+    mm  . addSeparatorFromMenu      ( LOM                                    )
     ##########################################################################
-    MSG = self . getMenuItem   ( "WebPages"                                  )
-    mm  . addActionFromMenu    ( LOM , 24231511 , MSG                        )
+    MSG = self . getMenuItem        ( "WebPages"                             )
+    mm  . addActionFromMenu         ( LOM , 24231511 , MSG                   )
     ##########################################################################
-    MSG = self . getMenuItem   ( "IdentWebPage"                              )
-    mm  . addActionFromMenu    ( LOM , 24231512 , MSG                        )
+    MSG = self . getMenuItem        ( "IdentWebPage"                         )
+    ICO = QIcon                     ( ":/images/webfind.png"                 )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231512 , ICO , MSG             )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "OpenIdentWebPage"                     )
+    ICO = QIcon                     ( ":/images/bookmarks.png"               )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231513 , ICO , MSG             )
     ##########################################################################
     return mm
   ############################################################################
@@ -1976,17 +2036,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     if                                  ( at == 24231103                   ) :
       ########################################################################
-      t    = item . text                (                                    )
-      nx   = ""
-      ########################################################################
-      if                                ( "Notes" in self . Tables         ) :
-        nx = self . Tables              [ "Notes"                            ]
-      ########################################################################
-      self . OpenLogHistory . emit      ( t                                  ,
-                                          str ( uuid )                       ,
-                                          "Description"                      ,
-                                          nx                                 ,
-                                          ""                                 )
+      self . OpenLogHistoryItem         ( item                               )
       ########################################################################
       return True
     ##########################################################################
@@ -2178,6 +2228,12 @@ class PeopleView                 ( IconDock                                ) :
     if                                  ( at == 24231512                   ) :
       ########################################################################
       self . OpenWebPageBelongings      ( uuid , item , "Equivalent"         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231513                   ) :
+      ########################################################################
+      self . OpenIdentWebPageURLs       (        item , "Equivalent"         )
       ########################################################################
       return True
     ##########################################################################

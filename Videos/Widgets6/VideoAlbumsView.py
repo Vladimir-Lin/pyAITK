@@ -62,6 +62,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   ShowWebPages           = Signal ( str , int , str , str , QIcon            )
   OpenVariantTables      = Signal ( str , str , int , str , dict             )
   emitOpenSmartNote      = Signal ( str                                      )
+  OpenLogHistory         = Signal ( str , str , str  , str , str             )
   emitLog                = Signal ( str                                      )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
@@ -133,24 +134,35 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . PrepareFetchTableKey     (                                        )
+    self . PrepareFetchTableKey            (                                 )
     ##########################################################################
-    self . AppendToolNamingAction   (                                        )
-    self . AppendSideActionWithIcon ( "ConnectAlbum"                       , \
-                                      ":/images/sqltable.png"              , \
-                                      self . ConnectDirectoryToAlbum         )
-    self . AppendSideActionWithIcon ( "AlbumGallery"                       , \
-                                      ":/images/pictures.png"              , \
-                                      self . OpenCurrentGallery              )
-    self . AppendSideActionWithIcon ( "GalleriesGroups"                    , \
-                                      ":/images/galleries.png"             , \
-                                      self . OpenCurrentGalleries            )
-    self . AppendSideActionWithIcon ( "Crowds"                             , \
-                                      ":/images/peoplegroups.png"          , \
-                                      self . OpenCurrentCrowds               )
-    self . AppendSideActionWithIcon ( "AlbumSubgroups"                     , \
-                                      ":/images/modifyproject.png"         , \
-                                      self . OpenEpisodesSubgroup            )
+    self . AppendToolNamingAction          (                                 )
+    self . AppendSideActionWithIcon        ( "ConnectAlbum"                , \
+                                             ":/images/sqltable.png"       , \
+                                             self . ConnectDirectoryToAlbum  )
+    self . AppendSideActionWithIcon        ( "AlbumGallery"                , \
+                                             ":/images/pictures.png"       , \
+                                             self . OpenCurrentGallery       )
+    self . AppendSideActionWithIcon        ( "GalleriesGroups"             , \
+                                             ":/images/galleries.png"      , \
+                                             self . OpenCurrentGalleries     )
+    self . AppendSideActionWithIcon        ( "Crowds"                      , \
+                                             ":/images/peoplegroups.png"   , \
+                                             self . OpenCurrentCrowds        )
+    self . AppendSideActionWithIcon        ( "AlbumSubgroups"              , \
+                                             ":/images/modifyproject.png"  , \
+                                             self . OpenEpisodesSubgroup     )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
+                                             ":/images/webfind.png"        , \
+                                             self . OpenIdentifierWebPages   )
+    self . AppendSideActionWithIcon        ( "OpenIdentWebPage"            , \
+                                             ":/images/bookmarks.png"      , \
+                                             self . OpenIdentWebPages        )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "LogHistory"                  , \
+                                             ":/images/documents.png"      , \
+                                             self . OpenCurrentLogHistory    )
     ##########################################################################
     return
   ############################################################################
@@ -2143,6 +2155,29 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def DoFetchOpenWebPages        ( self , uuid , related                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( self . NotOkay ( DB )                   ) :
+      return False
+    ##########################################################################
+    RELTAB = "`cios`.`relations`"
+    WEBTAB = "`cios`.`webpages`"
+    ##########################################################################
+    REL    = Relation            (                                           )
+    REL    . set                 ( "first" , uuid                            )
+    REL    . setT1               ( "Album"                                   )
+    REL    . setT2               ( "WebPage"                                 )
+    REL    . setRelation         ( related                                   )
+    UUIDs  = REL . Subordination ( DB      , RELTAB                          )
+    ##########################################################################
+    if                           ( len ( UUIDs ) > 0                       ) :
+      self . OpenUrlsByUuids     ( DB , WEBTAB , UUIDs                       )
+    ##########################################################################
+    DB     . Close               (                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def UpdateLocalityUsage                     ( self                       ) :
     return self . subgroupUpdateLocalityUsage (                              )
   ############################################################################
@@ -2184,6 +2219,18 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenIdentifierWebPages        ( self                                 ) :
+    ##########################################################################
+    atItem = self . currentItem     (                                        )
+    if                              ( self . NotOkay ( atItem )            ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data          ( Qt . UserRole                          )
+    uuid   = int                    ( uuid                                   )
+    self   . OpenWebPageBelongings  ( uuid , atItem , "Equivalent"           )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenWebPageListings          ( self , Related                        ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
@@ -2216,6 +2263,30 @@ class VideoAlbumsView             ( IconDock                               ) :
     xsid = str                 ( uuid                                        )
     ##########################################################################
     self . ShowWebPages . emit ( text , 76 , xsid , Related , icon           )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenIdentWebPageURLs ( self , item , related                         ) :
+    ##########################################################################
+    uuid = item . data     ( Qt . UserRole                                   )
+    uuid = int             ( uuid                                            )
+    ##########################################################################
+    if                     ( uuid <= 0                                     ) :
+      return
+    ##########################################################################
+    VAL  =                 ( uuid , related ,                                )
+    self . Go              ( self . DoFetchOpenWebPages , VAL                )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenIdentWebPages           ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    self   . OpenIdentWebPageURLs ( atItem , "Equivalent"                    )
     ##########################################################################
     return
   ############################################################################
@@ -2457,7 +2528,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     mm    . addActionFromMenu    ( LOM , 34621321 , MSG                      )
     ##########################################################################
     MSG   = self . getMenuItem   ( "IdentWebPage"                            )
-    mm    . addActionFromMenu    ( LOM , 34621322 , MSG                      )
+    ICO   = QIcon                ( ":/images/webfind.png"                    )
+    mm    . addActionFromMenuWithIcon ( LOM , 34621322 , ICO , MSG           )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -2611,11 +2683,22 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
+    MSG   = self . getMenuItem        ( "LogHistory"                         )
+    ICO   = QIcon                     ( ":/images/documents.png"             )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231401 , ICO , MSG           )
+    ##########################################################################
+    mm    . addSeparatorFromMenu      ( LOM                                  )
+    ##########################################################################
     MSG   = self . getMenuItem        ( "WebPages"                           )
     mm    . addActionFromMenu         ( LOM , 34631321 ,        MSG          )
     ##########################################################################
     MSG   = self . getMenuItem        ( "IdentWebPage"                       )
-    mm    . addActionFromMenu         ( LOM , 34631322 ,        MSG          )
+    ICO   = QIcon                     ( ":/images/webfind.png"               )
+    mm    . addActionFromMenuWithIcon ( LOM , 34631322 , ICO , MSG           )
+    ##########################################################################
+    MSG   = self . getMenuItem        ( "OpenIdentWebPage"                   )
+    ICO   = QIcon                     ( ":/images/bookmarks.png"             )
+    mm    . addActionFromMenuWithIcon ( LOM , 34631323 , ICO , MSG           )
     ##########################################################################
     return mm
   ############################################################################
@@ -2723,6 +2806,18 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
+    if                             ( at == 34631323                        ) :
+      ########################################################################
+      self . OpenIdentWebPageURLs  (        item , "Equivalent"              )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34231401                        ) :
+      ########################################################################
+      self . OpenLogHistoryItem    ( item                                    )
+      ########################################################################
+      return True
+    ##########################################################################
     return False
   ############################################################################
   def VideosMenu               ( self , mm , uuid , item                   ) :
@@ -2764,6 +2859,82 @@ class VideoAlbumsView             ( IconDock                               ) :
     self   . emitOpenVideoGroup . emit ( text , 76 , xsid , relate , icon    )
     ##########################################################################
     return   True
+  ############################################################################
+  def WebSearchMenu            ( self , mm , item                          ) :
+    ##########################################################################
+    if                         ( self . NotOkay ( item                   ) ) :
+      return
+    ##########################################################################
+    uuid = item  . data        ( Qt . UserRole                               )
+    uuid = int                 ( uuid                                        )
+    ##########################################################################
+    if                         ( uuid not in self . AlbumOPTs              ) :
+      return
+    ##########################################################################
+    MSG  = self  . getMenuItem ( "WebSearchAlbum"                            )
+    COL  = mm    . addMenu     ( MSG                                         )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SearchADE"                                 )
+    mm   . addActionFromMenu   ( COL , 29436001 , MSG                        )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SearchIAFD"                                )
+    mm   . addActionFromMenu   ( COL , 29436002 , MSG                        )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SearchPrivate"                             )
+    mm   . addActionFromMenu   ( COL , 29436003 , MSG                        )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SearchBANG"                                )
+    mm   . addActionFromMenu   ( COL , 29436004 , MSG                        )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunWebSearchMenu           ( self , at , item                        ) :
+    ##########################################################################
+    if                           ( at == 29436001                          ) :
+      ########################################################################
+      ubase = "https://www.adultdvdempire.com/allsearch/search?q="
+      pname = item  . text       (                                           )
+      pname = pname . replace    ( " " , "%20"                               )
+      PURL  = f"{ubase}{pname}"
+      ########################################################################
+      QDesktopServices . openUrl ( PURL                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( at == 29436002                          ) :
+      ########################################################################
+      ubase = "https://www.iafd.com/results.asp?searchtype=comprehensive&searchstring="
+      pname = item  . text       (                                           )
+      pname = pname . replace    ( " " , "+"                                 )
+      PURL  = f"{ubase}{pname}"
+      ########################################################################
+      QDesktopServices . openUrl ( PURL                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( at == 29436003                          ) :
+      ########################################################################
+      ubase = "https://www.private.com/search.php?query="
+      pname = item  . text       (                                           )
+      pname = pname . replace    ( " " , "+"                                 )
+      PURL  = f"{ubase}{pname}"
+      ########################################################################
+      QDesktopServices . openUrl ( PURL                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( at == 29436004                          ) :
+      ########################################################################
+      ubase = "https://www.bang.com/videos?term="
+      pname = item  . text       (                                           )
+      pname = pname . replace    ( " " , "+"                                 )
+      PURL  = f"{ubase}{pname}"
+      ########################################################################
+      QDesktopServices . openUrl ( PURL                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
   ############################################################################
   def UsageMenu                  ( self , mm , item                        ) :
     ##########################################################################
@@ -2928,6 +3099,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
     self   . GroupsMenu            ( mm , uuid , atItem                      )
     self   . VideosMenu            ( mm , uuid , atItem                      )
+    self   . WebSearchMenu         ( mm ,        atItem                      )
     self   . UsageMenu             ( mm ,        atItem                      )
     self   . DisplayMenu           ( mm                                      )
     self   . SortingMenu           ( mm                                      )
@@ -2959,6 +3131,10 @@ class VideoAlbumsView             ( IconDock                               ) :
       return True
     ##########################################################################
     OKAY   = self . RunVideosMenu  ( at , uuid , atItem                      )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunWebSearchMenu ( at , atItem                           )
     if                             ( OKAY                                  ) :
       return True
     ##########################################################################
