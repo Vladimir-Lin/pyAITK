@@ -19,20 +19,10 @@ from   PySide6 . QtGui                 import *
 from   PySide6 . QtWidgets             import *
 from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager     import MenuManager as MenuManager
-from   AITK    . Qt6 . TreeDock        import TreeDock    as TreeDock
-##############################################################################
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . Documents  . Notes    import Notes
-##############################################################################
-from   AITK    . Scheduler  . Projects import Projects    as Projects
-from   AITK    . Scheduler  . Project  import Project     as Project
-from   AITK    . Scheduler  . Tasks    import Tasks       as Tasks
-from   AITK    . Scheduler  . Task     import Task        as Task
-from   AITK    . Scheduler  . Events   import Events      as Events
-from   AITK    . Scheduler  . Event    import Event       as Event
 ##############################################################################
 class LogHistory         ( TreeDock                                        ) :
   ############################################################################
@@ -60,15 +50,19 @@ class LogHistory         ( TreeDock                                        ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 8                                       )
+    self . setColumnHidden         ( 2 , True                                )
     self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 4 , True                                )
+    self . setColumnHidden         ( 5 , True                                )
+    self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -80,61 +74,87 @@ class LogHistory         ( TreeDock                                        ) :
     self . setDragEnabled          ( False                                   )
     self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
+    self . setMinimumSize          ( 120 , 80                                )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 480 , 320 )                       )
   ############################################################################
-  def FocusIn              ( self                                          ) :
+  def PrepareForActions ( self                                             ) :
     ##########################################################################
-    if                     ( not self . isPrepared ( )                     ) :
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
-    self . LinkAction      ( "Refresh"    , self . startup                   )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    self . LinkAction      ( "Insert"     , self . InsertItem                )
-    self . LinkAction      ( "Delete"     , self . DeleteItems               )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
-    ##########################################################################
-    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
-    self . LinkAction      ( "SelectNone" , self . SelectNone                )
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut ( self                                                      ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return True
+    if                          ( self . isItemPicked ( )                  ) :
+      if                        ( column != self . CurrentItem ["Column"]  ) :
+        self . removeParked     (                                            )
     ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    ##########################################################################
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    ##########################################################################
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def twiceClicked                ( self , item , column                   ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                            ( column not in [ 0 , 3 , 4 , 5        ] ) :
+      return
     ##########################################################################
-    return
-  ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+    if                            ( column     in [ 0                    ] ) :
+      ########################################################################
+      sb   = self . setSpinBox    ( item                                     ,
+                                    column                                   ,
+                                    column                                   ,
+                                    999999999                                ,
+                                    "editingFinished"                        ,
+                                    self . spinChanged                       )
+      sb   . setAlignment         ( Qt . AlignRight                          )
+      sb   . setFocus             ( Qt . TabFocusReason                      )
     ##########################################################################
+    if                            ( column     in [     3 , 4 , 5        ] ) :
+      ########################################################################
+      line = self . setLineEdit   ( item                                   , \
+                                    column                                 , \
+                                    "editingFinished"                      , \
+                                    self . nameChanged                       )
+      line . setFocus             ( Qt . TabFocusReason                      )
+    ##########################################################################
+    self   . defaultSingleClicked (        item , column                     )
     ##########################################################################
     return
   ############################################################################
@@ -155,6 +175,8 @@ class LogHistory         ( TreeDock                                        ) :
     ID  = int                    ( ID                                        )
     LEN = int                    ( JSON [ "Length"                         ] )
     LEN = int                    ( LEN                                       )
+    NID = int                    ( JSON [ "Id"                             ] )
+    NID = int                    ( NID                                       )
     ##########################################################################
     NOW . Stardate = int         ( JSON [ "Lastest"                        ] )
     DT  = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"        )
@@ -167,7 +189,14 @@ class LogHistory         ( TreeDock                                        ) :
     IT  . setText                ( 1 , str ( LEN )                           )
     IT  . setTextAlignment       ( 1 , Qt.AlignRight                         )
     ##########################################################################
-    IT  . setText                ( 2 , DT                                    )
+    IT  . setText                ( 2 , JSON [ "Name"                       ] )
+    IT  . setText                ( 3 , JSON [ "Title"                      ] )
+    IT  . setText                ( 4 , JSON [ "Comment"                    ] )
+    IT  . setText                ( 5 , JSON [ "Extra"                      ] )
+    ##########################################################################
+    IT  . setText                ( 6 , DT                                    )
+    ##########################################################################
+    IT  . setData                ( 7 , Qt . UserRole , str ( NID )           )
     ##########################################################################
     return
   ############################################################################
@@ -236,7 +265,7 @@ class LogHistory         ( TreeDock                                        ) :
     ORDER   = self . SortOrder
     ITEMs   =                         [                                      ]
     ##########################################################################
-    QQ      = f"""select `prefer`,length(`note`),`ltime` from {NOXTAB}
+    QQ      = f"""select `id`,`prefer`,length(`note`),`title`,`comment`,`extra`,`ltime` from {NOXTAB}
                   where ( `uuid` = '{UUID}' )
                     and ( `name` = '{KEY}' )
                   order by `prefer` {ORDER} ;"""
@@ -248,12 +277,21 @@ class LogHistory         ( TreeDock                                        ) :
       ########################################################################
       for ITEM in ALL                                                        :
         ######################################################################
-        PREFER = int                  ( ITEM [ 0 ]                           )
-        LENGTH = int                  ( ITEM [ 1 ]                           )
-        NOW . fromDateTime            ( ITEM [ 2 ]                           )
+        NXID   = int                  ( ITEM [ 0 ]                           )
+        PREFER = int                  ( ITEM [ 1 ]                           )
+        LENGTH = int                  ( ITEM [ 2 ]                           )
+        TITLE  = self . assureString  ( ITEM [ 3 ]                           )
+        COMM   = self . assureString  ( ITEM [ 4 ]                           )
+        EXTRA  = self . assureString  ( ITEM [ 5 ]                           )
+        NOW . fromDateTime            ( ITEM [ 6 ]                           )
         ######################################################################
-        J   =                         { "Prefer"  : PREFER                 , \
+        J   =                         { "Id"      : NXID                   , \
+                                        "Prefer"  : PREFER                 , \
                                         "Length"  : LENGTH                 , \
+                                        "Name"    : KEY                    , \
+                                        "Title"   : TITLE                  , \
+                                        "Comment" : COMM                   , \
+                                        "Extra"   : EXTRA                  , \
                                         "Lastest" : NOW . Stardate           }
         ITEMs . append                ( J                                    )
     ##########################################################################
@@ -419,12 +457,120 @@ class LogHistory         ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def nameChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    pid    = self . itemUuid    ( item , 7                                   )
+    item   . setText            ( column , msg                               )
+    self   . removeParked       (                                            )
+    ##########################################################################
+    if                          ( column not in [ 3 , 4 , 5              ] ) :
+      return
+    ##########################################################################
+    name   = ""
+    if                          ( 3 == column                              ) :
+      name = "title"
+    elif                        ( 4 == column                              ) :
+      name = "comment"
+    elif                        ( 5 == column                              ) :
+      name = "extra"
+    ##########################################################################
+    VAL    =                    ( item , pid , name , msg ,                  )
+    self   . Go                 ( self . AssureItemContext , VAL             )
+    ##########################################################################
+    return
+  ############################################################################
+  def spinChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
+    nv     = sb   . value       (                                            )
+    ##########################################################################
+    if                          ( v != nv                                  ) :
+      ########################################################################
+      pid  = self . itemUuid    ( item , 7                                   )
+      item . setText            ( column , str ( nv )                        )
+      ########################################################################
+      self . Go                 ( self . UpdateItemPrefer                  , \
+                                  ( item , pid , nv , )                      )
+    ##########################################################################
+    self . removeParked         (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssureItemContext       ( self , item , pid , column , BLOB          ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    try                                                                      :
+      BLOB = BLOB . encode    ( "utf-8"                                      )
+    except                                                                   :
+      return
+    ##########################################################################
+    NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    DB     . LockWrites       ( [ NOXTAB                                   ] )
+    QQ     = f"""update {NOXTAB}
+                 set `{column}` = %s
+                 where ( `id` = {pid} ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    DB     . QueryValues      ( QQ , ( BLOB , )                              )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateItemPrefer        ( self , item , pid , prefer                 ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    DB     . LockWrites       ( [ NOXTAB                                   ] )
+    QQ     = f"""update {NOXTAB}
+                 set `prefer` = {prefer}
+                 where ( `id` = {pid} ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . setColumnWidth ( 0 , 100                                          )
     self . setColumnWidth ( 1 , 100                                          )
-    self . setColumnWidth ( 2 , 200                                          )
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . setColumnWidth ( 2 , 120                                          )
+    self . setColumnWidth ( 3 , 120                                          )
+    self . setColumnWidth ( 4 , 120                                          )
+    self . setColumnWidth ( 5 , 120                                          )
+    self . setColumnWidth ( 6 , 200                                          )
+    ##########################################################################
+    self . defaultPrepare ( self . ClassTag , 7                              )
     ##########################################################################
     return
   ############################################################################
@@ -439,7 +585,7 @@ class LogHistory         ( TreeDock                                        ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9007 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )

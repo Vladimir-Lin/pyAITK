@@ -833,7 +833,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateByFlags                   ( self , item , pid , flags            ) :
+  def UpdateByFlags                 ( self , item , pid , flags            ) :
     ##########################################################################
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
