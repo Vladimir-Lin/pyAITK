@@ -622,6 +622,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     SGPs   = self . AlbumOPTs         [ UUID ] [ "Subgroups"                 ]
     PEOs   = self . AlbumOPTs         [ UUID ] [ "People"                    ]
     VIDs   = self . AlbumOPTs         [ UUID ] [ "Videos"                    ]
+    URLs   = self . AlbumOPTs         [ UUID ] [ "URLs"                      ]
     ##########################################################################
     UMSG   = ""
     ##########################################################################
@@ -635,6 +636,7 @@ class VideoAlbumsView             ( IconDock                               ) :
                                         PICs                               , \
                                         GALs                               , \
                                         SGPs                               , \
+                                        URLs                               , \
                                         UMSG                                 )
     ##########################################################################
     if                                ( UUID in self . UuidItemNames       ) :
@@ -666,6 +668,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     SGPTAB       = self . Tables       [ "Relation"                          ]
     RELTAB       = self . Tables       [ "Relation"                          ]
     PEOTAB       = self . Tables       [ "Relation"                          ]
+    URLTAB       = self . Tables       [ "Relation"                          ]
     ## PEOTAB       = self . Tables       [ "RelationPeople"                    ]
     ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
     ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
@@ -683,7 +686,8 @@ class VideoAlbumsView             ( IconDock                               ) :
                                          "Galleries" : 0                   , \
                                          "Subgroups" : 0                   , \
                                          "People"    : 0                   , \
-                                         "Videos"    : 0                     }
+                                         "Videos"    : 0                   , \
+                                         "URLs"      : 0                     }
       ########################################################################
       if                               ( U in self . AlbumOPTs             ) :
         ######################################################################
@@ -726,6 +730,14 @@ class VideoAlbumsView             ( IconDock                               ) :
       GALs       = REL . CountSecond   ( DB , GALTAB                         )
       ########################################################################
       self       . AlbumOPTs [ U ] [ "Galleries" ] = GALs
+      ########################################################################
+      REL        . setT2               ( "WebPage"                           )
+      REL        . setRelation         ( "Equivalent"                        )
+      URLs       = REL . CountSecond   ( DB , URLTAB                         )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "URLs" ] = URLs
+      ########################################################################
+      REL        . setRelation         ( "Subordination"                     )
       ########################################################################
       QQ         = f"""select count(*) from {VIDTAB}
                        where ( `t1` = 76 )
