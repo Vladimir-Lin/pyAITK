@@ -78,7 +78,9 @@ class EpisodeMerger         ( TreeDock                                     ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "LimitedMerge"                       , \
                                       ":/images/first.png"                 , \
-                                      self . RunMergeAlbumLIMITED            )
+                                      self . RunMergeAlbumLIMITED          , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################

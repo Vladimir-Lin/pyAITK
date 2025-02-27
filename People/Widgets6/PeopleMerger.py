@@ -85,7 +85,9 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "LimitedMerge"                       , \
                                       ":/images/first.png"                 , \
-                                      self . RunMergePeopleLIMITED           )
+                                      self . RunMergePeopleLIMITED         , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
