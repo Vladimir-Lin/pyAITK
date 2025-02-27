@@ -1140,6 +1140,7 @@ class CliParser  (                                                         ) :
     NAMTAB  = TABLEs        [ "Names"                                        ]
     ## NAMTAB  = TABLEs        [ "NamesEditing"                                 ]
     ALMTAB  = TABLEs        [ "Albums"                                       ]
+    RELTAB  = TABLEs        [ "Relation"                                     ]
     ##########################################################################
     LANGz   =               [                                                ]
     LANGs   = self . CLI    [ KEY ] [ "Languages"                            ]
@@ -1149,19 +1150,46 @@ class CliParser  (                                                         ) :
     ##########################################################################
     LANGx   = " , " . join  ( LANGz                                          )
     ##########################################################################
+    NAME    = self . CLI    [ KEY ] [ "Name"                                 ]
+    UUID    = self . CLI    [ KEY ] [ "First"                                ]
+    T1      = self . CLI    [ KEY ] [ "T1"                                   ]
+    R       = self . CLI    [ KEY ] [ "Relation"                             ]
+    ##########################################################################
     HMSG    = self . Translations   [ f"CMD::{KEY}::FindNoname"              ]
     self    . LOG           ( HMSG                                           )
     ##########################################################################
-    VQ      = f"select `uuid` from {ALMTAB} where ( `used` > 0 )"
+    VQ      = f"""select `second` from {RELTAB}
+                  where ( `t1` = {T1} )
+                    and ( `relation` = {R} )
+                    and ( `first` = {UUID} )"""
     ##########################################################################
     EQ      = f"""select `uuid` from {NAMTAB}
                   where ( `uuid` in ( {VQ} ) )
                     and ( length ( `name` ) > 0 )
                   group by `uuid`"""
     ##########################################################################
-    QQ      = f"""select `uuid` from {ALMTAB}
-                  where ( `uuid` not in ( {EQ} ) )
-                  order by `uuid` asc
+    XQ      = f"""select `first` from {RELTAB}
+                  where ( `t1` = 76 )
+                    and ( `t2` = 9 )
+                    and ( `relation` in ( 1 , 12 ) )
+                    and ( `first` in ( {VQ} ) )
+                  group by `first`"""
+    ##########################################################################
+    WQ      = f"""select `first` from {RELTAB}
+                  where ( `t1` = 76 )
+                    and ( `t2` = 208 )
+                    and ( `relation` in ( 10 ) )
+                    and ( `first` in ( {VQ} ) )
+                  group by `first`"""
+    ##########################################################################
+    QQ      = f"""select `second` from {RELTAB}
+                  where ( `t1` = {T1} )
+                    and ( `relation` = {R} )
+                    and ( `first` = {UUID} )
+                    and ( `second` not in ( {EQ} ) )
+                    and ( `second` not in ( {XQ} ) )
+                    and ( `second` not in ( {WQ} ) )
+                  order by `second` asc
                   limit 0 , {MAXE} ;"""
     ##########################################################################
     QQ      = " " . join    ( QQ . split ( )                                 )
