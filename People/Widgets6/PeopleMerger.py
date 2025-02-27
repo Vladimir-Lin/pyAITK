@@ -718,7 +718,7 @@ class PeopleMerger          ( TreeDock                                     ) :
   def ExecuteAnalysis          ( self , UUID , PUIDs , ICON                ) :
     ##########################################################################
     DB   = self . ConnectDB    ( UsePure = True                              )
-    if                         ( DB in [ False , None ]                    ) :
+    if                         ( DB in self . EmptySet                     ) :
       return
     ##########################################################################
     PIT  = PeopleItem          (                                             )
