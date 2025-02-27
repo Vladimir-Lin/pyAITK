@@ -333,6 +333,27 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
+  def MergePeopleNOTEs         ( self , UUID , PUIDs                       ) :
+    ##########################################################################
+    DB   = self . ConnectDB    ( UsePure = True                              )
+    if                         ( DB in self . EmptySet                     ) :
+      return
+    ##########################################################################
+    PIT  = PeopleItem          (                                             )
+    PIT  . Settings = self . Settings
+    PIT  . Tables   = self . Tables
+    ##########################################################################
+    PIT  . MergeNOTEs          ( DB   , UUID , PUIDs                         )
+    ##########################################################################
+    DB   . Close               (                                             )
+    ##########################################################################
+    if                         ( len ( PIT . SQLs ) > 0                    ) :
+      self . emitLog    . emit ( "\n" . join ( PIT . SQLs                  ) )
+    ##########################################################################
+    self . emitComplete . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
   def MergePeopleURLs          ( self , UUID , PUIDs                       ) :
     ##########################################################################
     DB   = self . ConnectDB    ( UsePure = True                              )
@@ -485,6 +506,36 @@ class PeopleMerger          ( TreeDock                                     ) :
     self   . setEnabled               ( False                                )
     VAL    =                          ( UUID , PUIDs , ICON ,                )
     self   . Go                       ( self . ExecuteMerge , VAL            )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunMergePeopleNOTEs             ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    self   . Go                       ( self . MergePeopleNOTEs , VAL        )
     ##########################################################################
     return
   ############################################################################
@@ -820,25 +871,29 @@ class PeopleMerger          ( TreeDock                                     ) :
       icon = QIcon                    ( ":/images/first.png"                 )
       mm   . addActionWithIcon        ( 7002 , icon , msg                    )
       ########################################################################
+      msg  = self . getMenuItem       ( "NoteMerge"                          )
+      icon = QIcon                    ( ":/images/notes.png"                 )
+      mm   . addActionWithIcon        ( 7003 , icon , msg                    )
+      ########################################################################
       msg  = self . getMenuItem       ( "UrlMerge"                           )
       icon = QIcon                    ( ":/images/geography.png"             )
-      mm   . addActionWithIcon        ( 7003 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7004 , icon , msg                    )
       ########################################################################
       msg  = self . getMenuItem       ( "IconMerge"                          )
       icon = QIcon                    ( ":/images/gallery.png"               )
-      mm   . addActionWithIcon        ( 7004 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7005 , icon , msg                    )
       ########################################################################
       msg  = self . getMenuItem       ( "GalleryMerge"                       )
       icon = QIcon                    ( ":/images/galleries.png"             )
-      mm   . addActionWithIcon        ( 7005 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7006 , icon , msg                    )
       ########################################################################
       msg  = self . getMenuItem       ( "AlbumMerge"                         )
       icon = QIcon                    ( ":/images/video.png"                 )
-      mm   . addActionWithIcon        ( 7006 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7007 , icon , msg                    )
       ########################################################################
       msg  = self . getMenuItem       ( "Analysis"                           )
       icon = QIcon                    ( ":/images/checklist.png"             )
-      mm   . addActionWithIcon        ( 7007 , icon , msg                    )
+      mm   . addActionWithIcon        ( 7008 , icon , msg                    )
       mm   . addSeparator             (                                      )
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
@@ -889,31 +944,37 @@ class PeopleMerger          ( TreeDock                                     ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                ( at == 7003                         ) :
+    if                                ( at == 7004                         ) :
       ########################################################################
-      self . RunMergePeopleURLs       (                                      )
+      self . RunMergePeopleNOTEs      (                                      )
       ########################################################################
       return True
     ##########################################################################
     if                                ( at == 7004                         ) :
       ########################################################################
-      self . RunMergePeopleIcons      (                                      )
+      self . RunMergePeopleURLs       (                                      )
       ########################################################################
       return True
     ##########################################################################
     if                                ( at == 7005                         ) :
       ########################################################################
-      self . RunMergePeopleGalleries  (                                      )
+      self . RunMergePeopleIcons      (                                      )
       ########################################################################
       return True
     ##########################################################################
     if                                ( at == 7006                         ) :
       ########################################################################
-      self . RunMergePeopleALBUMs     (                                      )
+      self . RunMergePeopleGalleries  (                                      )
       ########################################################################
       return True
     ##########################################################################
     if                                ( at == 7007                         ) :
+      ########################################################################
+      self . RunMergePeopleALBUMs     (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 7008                         ) :
       ########################################################################
       self . AnalysisMergePeople      (                                      )
       ########################################################################

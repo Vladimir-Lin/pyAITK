@@ -324,6 +324,27 @@ class EpisodeMerger         ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
+  def MergeAlbumNOTEs          ( self , UUID , PUIDs                       ) :
+    ##########################################################################
+    DB   = self . ConnectDB    ( UsePure = True                              )
+    if                         ( DB in self . EmptySet                     ) :
+      return
+    ##########################################################################
+    FLT  = FilmItem            (                                             )
+    FLT  . Settings = self . Settings
+    FLT  . Tables   = self . Tables
+    ##########################################################################
+    FLT  . MergeNOTEs          ( DB   , UUID , PUIDs                         )
+    ##########################################################################
+    DB   . Close               (                                             )
+    ##########################################################################
+    if                         ( len ( FLT . SQLs ) > 0                    ) :
+      self . emitLog    . emit ( "\n" . join ( FLT . SQLs                  ) )
+    ##########################################################################
+    self . emitComplete . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
   def MergeAlbumURLs           ( self , UUID , PUIDs                       ) :
     ##########################################################################
     DB   = self . ConnectDB    ( UsePure = True                              )
@@ -518,6 +539,36 @@ class EpisodeMerger         ( TreeDock                                     ) :
     self   . setEnabled               ( False                                )
     VAL    =                          ( UUID , PUIDs , ICON ,                )
     self   . Go                       ( self . ExecuteMerge , VAL            )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunMergeAlbumNOTEs              ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    self   . Go                       ( self . MergeAlbumNOTEs , VAL         )
     ##########################################################################
     return
   ############################################################################
@@ -914,33 +965,37 @@ class EpisodeMerger         ( TreeDock                                     ) :
       icon = QIcon                      ( ":/images/first.png"               )
       mm   . addActionWithIcon          ( 7002 , icon , msg                  )
       ########################################################################
+      msg  = self . getMenuItem         ( "NoteMerge"                        )
+      icon = QIcon                      ( ":/images/notes.png"               )
+      mm   . addActionWithIcon          ( 7003 , icon , msg                  )
+      ########################################################################
       msg  = self . getMenuItem         ( "UrlMerge"                         )
       icon = QIcon                      ( ":/images/geography.png"           )
-      mm   . addActionWithIcon          ( 7003 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7004 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "IconMerge"                        )
       icon = QIcon                      ( ":/images/gallery.png"             )
-      mm   . addActionWithIcon          ( 7004 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7005 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "GalleryMerge"                     )
       icon = QIcon                      ( ":/images/galleries.png"           )
-      mm   . addActionWithIcon          ( 7005 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7006 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "VideoMerge"                       )
       icon = QIcon                      ( ":/images/videoclip.png"           )
-      mm   . addActionWithIcon          ( 7006 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7007 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "PeopleMerge"                      )
       icon = QIcon                      ( ":/images/buddy.png"               )
-      mm   . addActionWithIcon          ( 7007 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7008 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "OrganizationMerge"                )
       icon = QIcon                      ( ":/images/company.png"             )
-      mm   . addActionWithIcon          ( 7008 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7009 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "Analysis"                         )
       icon = QIcon                      ( ":/images/checklist.png"           )
-      mm   . addActionWithIcon          ( 7008 , icon , msg                  )
+      mm   . addActionWithIcon          ( 7010 , icon , msg                  )
       mm   . addSeparator               (                                    )
     ##########################################################################
     self   . AppendRefreshAction        ( mm , 1001                          )
@@ -993,41 +1048,47 @@ class EpisodeMerger         ( TreeDock                                     ) :
     ##########################################################################
     if                                  ( at == 7003                       ) :
       ########################################################################
-      self . RunMergeAlbumURLs          (                                    )
+      self . RunMergeAlbumNOTEs         (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7004                       ) :
       ########################################################################
-      self . RunMergeAlbumIcons         (                                    )
+      self . RunMergeAlbumURLs          (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7005                       ) :
       ########################################################################
-      self . RunMergeAlbumGalleries     (                                    )
+      self . RunMergeAlbumIcons         (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7006                       ) :
       ########################################################################
-      self . RunMergeAlbumVideos        (                                    )
+      self . RunMergeAlbumGalleries     (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7007                       ) :
       ########################################################################
-      self . RunMergeAlbumPEOPLEs       (                                    )
+      self . RunMergeAlbumVideos        (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7008                       ) :
       ########################################################################
-      self . RunMergeAlbumORGANIZATIONs (                                    )
+      self . RunMergeAlbumPEOPLEs       (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 7009                       ) :
+      ########################################################################
+      self . RunMergeAlbumORGANIZATIONs (                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 7010                       ) :
       ########################################################################
       self . AnalysisMergeALBUMs        (                                    )
       ########################################################################
