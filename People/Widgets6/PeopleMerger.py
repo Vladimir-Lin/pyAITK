@@ -74,21 +74,18 @@ class PeopleMerger          ( TreeDock                                     ) :
     self . setDragEnabled          ( False                                   )
     self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
+    self . setMinimumSize          ( 80 , 80                                 )
+    ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    """
-    msg  = self . getMenuItem     ( "HairGallery"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemGallery                   )
-    self . WindowActions . append ( A                                        )
-    """
+    self . AppendSideActionWithIcon ( "LimitedMerge"                       , \
+                                      ":/images/first.png"                 , \
+                                      self . RunMergePeopleLIMITED           )
     ##########################################################################
     return
   ############################################################################
@@ -106,34 +103,35 @@ class PeopleMerger          ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut ( self                                                      ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def singleClicked             ( self , item , column                     ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
     self . defaultSingleClicked (        item , column                       )
     ##########################################################################
@@ -910,9 +908,13 @@ class PeopleMerger          ( TreeDock                                     ) :
     self   . LocalityMenu             ( mm                                   )
     self   . DockingMenu              ( mm                                   )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                  ( self    . menuFont ( )               )
     aa     = mm . exec_               ( QCursor . pos      ( )               )
     at     = mm . at                  ( aa                                   )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     if                                ( self . RunDocking   ( mm , aa )    ) :
       return True

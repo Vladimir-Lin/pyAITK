@@ -634,13 +634,22 @@ class LogHistory         ( TreeDock                                        ) :
     ##########################################################################
     self   . ColumnsMenu           ( mm                                      )
     self   . SortingMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
+    ##########################################################################
+    self   . AtMenu = True
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
+    self   . AtMenu = False
+    ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     if                             ( self . RunColumnsMenu     ( at )      ) :
