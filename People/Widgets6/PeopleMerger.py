@@ -466,6 +466,7 @@ class PeopleMerger          ( TreeDock                                     ) :
     msg  = self . getMenuItem ( "FinishMerge"                                )
     self . ShowStatus         ( msg                                          )
     self . Notify             ( 5                                            )
+    self . Talk               ( msg , self . getLocality (                 ) )
     ##########################################################################
     return
   ############################################################################

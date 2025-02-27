@@ -473,7 +473,7 @@ class EpisodeMerger         ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def MergePeopleLIMITED       ( self , UUID , PUIDs                       ) :
+  def MergeAlbumLIMITED        ( self , UUID , PUIDs                       ) :
     ##########################################################################
     DB   = self . ConnectDB    ( UsePure = True                              )
     if                         ( DB in self . EmptySet                     ) :
@@ -501,6 +501,7 @@ class EpisodeMerger         ( TreeDock                                     ) :
     msg  = self . getMenuItem ( "FinishMerge"                                )
     self . ShowStatus         ( msg                                          )
     self . Notify             ( 5                                            )
+    self . Talk               ( msg , self . getLocality (                 ) )
     ##########################################################################
     return
   ############################################################################
