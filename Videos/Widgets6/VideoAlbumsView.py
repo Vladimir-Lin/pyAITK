@@ -60,6 +60,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   emitConnectAlbum       = Signal ( str                                      )
   emitOpenVideoGroup     = Signal ( str , int , str , str , QIcon            )
   ShowWebPages           = Signal ( str , int , str , str , QIcon            )
+  ShowAlbumSources       = Signal ( str , str , str ,       QIcon            )
   OpenVariantTables      = Signal ( str , str , int , str , dict             )
   emitOpenSmartNote      = Signal ( str                                      )
   OpenLogHistory         = Signal ( str , str , str  , str , str             )
@@ -2302,6 +2303,22 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenAlbumSources             ( self , website , item                 ) :
+    ##########################################################################
+    uuid = item . data             ( Qt . UserRole                           )
+    uuid = int                     ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return
+    ##########################################################################
+    text = item . text             (                                         )
+    icon = item . icon             (                                         )
+    xsid = str                     ( uuid                                    )
+    ##########################################################################
+    self . ShowAlbumSources . emit ( website , text , xsid , icon            )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemGallery                 ( self , item                        ) :
     ##########################################################################
     uuid = item . data                ( Qt . UserRole                        )
@@ -2872,16 +2889,72 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return   True
   ############################################################################
+  def AlbumSourcesMenu        ( self , mm , item                           ) :
+    ##########################################################################
+    if                        ( self . NotOkay ( item                    ) ) :
+      return mm
+    ##########################################################################
+    uuid = item  . data       ( Qt . UserRole                                )
+    uuid = int                ( uuid                                         )
+    ##########################################################################
+    if                        ( uuid not in self . AlbumOPTs               ) :
+      return mm
+    ##########################################################################
+    MSG  = self . getMenuItem ( "AlbumSources"                               )
+    COL  = mm   . addMenu     ( MSG                                          )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchADE"                                  )
+    mm   . addActionFromMenu  ( COL , 29436051 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchIAFD"                                 )
+    mm   . addActionFromMenu  ( COL , 29436052 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchPrivate"                              )
+    mm   . addActionFromMenu  ( COL , 29436053 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchBANG"                                 )
+    mm   . addActionFromMenu  ( COL , 29436054 , MSG                         )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunAlbumSourcesMenu     ( self , at , item                           ) :
+    ##########################################################################
+    if                        ( 29436051 == at                             ) :
+      ########################################################################
+      self . OpenAlbumSources ( "ADE"     , item                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                        ( 29436052 == at                             ) :
+      ########################################################################
+      self . OpenAlbumSources ( "IAFD"    , item                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                        ( 29436053 == at                             ) :
+      ########################################################################
+      self . OpenAlbumSources ( "Private" , item                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                        ( 29436054 == at                             ) :
+      ########################################################################
+      self . OpenAlbumSources ( "BANG"    , item                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def WebSearchMenu            ( self , mm , item                          ) :
     ##########################################################################
     if                         ( self . NotOkay ( item                   ) ) :
-      return
+      return mm
     ##########################################################################
     uuid = item  . data        ( Qt . UserRole                               )
     uuid = int                 ( uuid                                        )
     ##########################################################################
     if                         ( uuid not in self . AlbumOPTs              ) :
-      return
+      return mm
     ##########################################################################
     MSG  = self  . getMenuItem ( "WebSearchAlbum"                            )
     COL  = mm    . addMenu     ( MSG                                         )
@@ -2902,7 +2975,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def RunWebSearchMenu           ( self , at , item                        ) :
     ##########################################################################
-    if                           ( at == 29436001                          ) :
+    if                           ( 29436001 == at                          ) :
       ########################################################################
       ubase = "https://www.adultdvdempire.com/allsearch/search?q="
       pname = item  . text       (                                           )
@@ -2913,7 +2986,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436002                          ) :
+    if                           ( 29436002 == at                          ) :
       ########################################################################
       ubase = "https://www.iafd.com/results.asp?searchtype=comprehensive&searchstring="
       pname = item  . text       (                                           )
@@ -2924,7 +2997,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436003                          ) :
+    if                           ( 29436003 == at                          ) :
       ########################################################################
       ubase = "https://www.private.com/search.php?query="
       pname = item  . text       (                                           )
@@ -2935,7 +3008,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436004                          ) :
+    if                           ( 29436004 == at                          ) :
       ########################################################################
       ubase = "https://www.bang.com/videos?term="
       pname = item  . text       (                                           )
@@ -3111,6 +3184,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
     self   . GroupsMenu            ( mm , uuid , atItem                      )
     self   . VideosMenu            ( mm , uuid , atItem                      )
+    self   . AlbumSourcesMenu      ( mm ,        atItem                      )
     self   . WebSearchMenu         ( mm ,        atItem                      )
     self   . UsageMenu             ( mm ,        atItem                      )
     self   . DisplayMenu           ( mm                                      )
@@ -3143,6 +3217,10 @@ class VideoAlbumsView             ( IconDock                               ) :
       return True
     ##########################################################################
     OKAY   = self . RunVideosMenu  ( at , uuid , atItem                      )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunAlbumSourcesMenu ( at , atItem                        )
     if                             ( OKAY                                  ) :
       return True
     ##########################################################################

@@ -40,35 +40,35 @@ class WebPage         (                                                    ) :
   def __del__         ( self                                               ) :
     return
   ############################################################################
-  def setPage               ( self , page                                  ) :
+  def setPage                ( self , page                                 ) :
     ##########################################################################
     self . Page       = page
-    self . Reverse    = page [ ::-1 ]
+    self . Reverse    = page [ ::-1                                          ]
     self . Path       = ""
     self . Protocol   = "http"
     self . Port       = 80
     self . Hostname   = ""
     ##########################################################################
-    if                      ( len ( page ) <= 0                            ) :
+    if                       ( len ( page ) <= 0                           ) :
       return False
     ##########################################################################
-    r    = parse . urlparse ( page                                           )
+    r    = parse . urlparse  ( page                                          )
     ##########################################################################
     p    = r . path
-    i    = page . index     ( p                                              )
+    i    = page . index      ( p                                             )
     z    = page
-    if                      ( i >= 0                                       ) :
+    if                       ( i >= 0                                      ) :
       x  = z
-      z  = x                [ i :                                            ]
-      v  = x                [   : i                                          ]
+      z  = x                 [ i :                                           ]
+      v  = x                 [   : i                                         ]
       self . Page    = v . lower ( ) + z
-      self . Reverse = self . Page [ ::-1 ]
+      self . Reverse = self . Page [ ::-1                                    ]
     ##########################################################################
     self . Protocol   = r . scheme
     self . Port       = r . port
     self . Hostname   = r . hostname
     self . Path       = z
-    self . DecidePort       (                                                )
+    self . DecidePort        (                                               )
     ##########################################################################
     return True
   ############################################################################
@@ -363,6 +363,23 @@ class WebPage         (                                                    ) :
     DB      . QueryValues   ( QQ , W                                         )
     ##########################################################################
     return UUID
+  ############################################################################
+  def UpdatePageContent   ( self , DB , TABLE , UUID                       ) :
+    ##########################################################################
+    NAME    = self . Page
+    REVERSE = self . Reverse
+    PATH    = self . Path
+    ##########################################################################
+    W       =             ( NAME , REVERSE , PATH ,                          )
+    ##########################################################################
+    QQ      = f"""update {TABLE}
+                   set `name` = %s ,
+                    `reverse` = %s ,
+                       `path` = %s
+                   where ( `uuid` = {UUID} ) ;"""
+    DB      . QueryValues ( QQ , W                                           )
+    ##########################################################################
+    return
   ############################################################################
   def Update                         ( self , DB                           ) :
     ##########################################################################

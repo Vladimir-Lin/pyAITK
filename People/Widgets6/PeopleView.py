@@ -38,20 +38,21 @@ class PeopleView                 ( IconDock                                ) :
   HavingMenu            = 1371434312
   ############################################################################
   AssignCurrentPeople   = Signal ( dict                                      )
-  ShowPeopleDetails     = Signal ( str , str ,              QIcon            )
-  ShowPersonalGallery   = Signal ( str , int , str  ,       QIcon            )
-  ShowPersonalIcons     = Signal ( str , int , str  , str , QIcon            )
+  ShowPeopleDetails     = Signal ( str , str ,             QIcon             )
+  ShowPersonalGallery   = Signal ( str , int , str ,       QIcon             )
+  ShowPersonalIcons     = Signal ( str , int , str , str , QIcon             )
   ShowPersonalFaces     = Signal ( str , str                                 )
-  ShowGalleries         = Signal ( str , int , str  ,       QIcon            )
-  ShowGalleriesRelation = Signal ( str , int , str  , str , QIcon            )
-  ShowVideoAlbums       = Signal ( str , int , str  ,       QIcon            )
-  ShowWebPages          = Signal ( str , int , str  , str , QIcon            )
-  OwnedOccupation       = Signal ( str , int , str  , str , QIcon            )
+  ShowGalleries         = Signal ( str , int , str ,       QIcon             )
+  ShowGalleriesRelation = Signal ( str , int , str , str , QIcon             )
+  ShowVideoAlbums       = Signal ( str , int , str ,       QIcon             )
+  ShowWebPages          = Signal ( str , int , str , str , QIcon             )
+  ShowPeopleSources     = Signal ( str , str , str ,       QIcon             )
+  OwnedOccupation       = Signal ( str , int , str , str , QIcon             )
   OpenBodyShape         = Signal ( str , str , dict                          )
-  ShowLodListings       = Signal ( str , str              , QIcon            )
-  OpenVariantTables     = Signal ( str , str , int  , str , dict             )
+  ShowLodListings       = Signal ( str , str             , QIcon             )
+  OpenVariantTables     = Signal ( str , str , int , str , dict              )
   emitOpenSmartNote     = Signal ( str                                       )
-  OpenLogHistory        = Signal ( str , str , str  , str , str              )
+  OpenLogHistory        = Signal ( str , str , str , str , str               )
   emitLog               = Signal ( str                                       )
   ############################################################################
   def __init__                   ( self , parent = None , plan = None      ) :
@@ -1706,6 +1707,22 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenPeopleSources             ( self , website , item                ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    ##########################################################################
+    if                              ( uuid <= 0                            ) :
+      return
+    ##########################################################################
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    ##########################################################################
+    self . ShowPeopleSources . emit ( website , text , xsid , icon           )
+    ##########################################################################
+    return
+  ############################################################################
   def IndexingMenu               ( self , mm , menu , uuid , item          ) :
     ##########################################################################
     MSG = self . getMenuItem     ( "Indexing"                                )
@@ -2277,6 +2294,62 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return   False
   ############################################################################
+  def PeopleSourcesMenu       ( self , mm , item                           ) :
+    ##########################################################################
+    if                        ( self . NotOkay ( item                    ) ) :
+      return mm
+    ##########################################################################
+    uuid = item  . data       ( Qt . UserRole                                )
+    uuid = int                ( uuid                                         )
+    ##########################################################################
+    if                        ( uuid not in self . PeopleOPTs              ) :
+      return mm
+    ##########################################################################
+    MSG  = self . getMenuItem ( "PeopleSources"                              )
+    COL  = mm   . addMenu     ( MSG                                          )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchADE"                                  )
+    mm   . addActionFromMenu  ( COL , 29436051 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchIAFD"                                 )
+    mm   . addActionFromMenu  ( COL , 29436052 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchPrivate"                              )
+    mm   . addActionFromMenu  ( COL , 29436053 , MSG                         )
+    ##########################################################################
+    MSG  = self . getMenuItem ( "SearchBANG"                                 )
+    mm   . addActionFromMenu  ( COL , 29436054 , MSG                         )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunPeopleSourcesMenu     ( self , at , item                          ) :
+    ##########################################################################
+    if                         ( 29436051 == at                            ) :
+      ########################################################################
+      self . OpenPeopleSources ( "ADE"     , item                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( 29436052 == at                            ) :
+      ########################################################################
+      self . OpenPeopleSources ( "IAFD"    , item                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( 29436053 == at                            ) :
+      ########################################################################
+      self . OpenPeopleSources ( "Private" , item                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( 29436054 == at                            ) :
+      ########################################################################
+      self . OpenPeopleSources ( "BANG"    , item                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def WebSearchMenu            ( self , mm , item                          ) :
     ##########################################################################
     if                         ( self . NotOkay ( item                   ) ) :
@@ -2307,7 +2380,7 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def RunWebSearchMenu           ( self , at , item                        ) :
     ##########################################################################
-    if                           ( at == 29436001                          ) :
+    if                           ( 29436001 == at                          ) :
       ########################################################################
       ubase = "https://www.adultdvdempire.com/allsearch/search?q="
       pname = item  . text       (                                           )
@@ -2318,7 +2391,7 @@ class PeopleView                 ( IconDock                                ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436002                          ) :
+    if                           ( 29436002 == at                          ) :
       ########################################################################
       ubase = "https://www.iafd.com/results.asp?searchtype=comprehensive&searchstring="
       pname = item  . text       (                                           )
@@ -2329,7 +2402,7 @@ class PeopleView                 ( IconDock                                ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436003                          ) :
+    if                           ( 29436003 == at                          ) :
       ########################################################################
       ubase = "https://www.private.com/search.php?query="
       pname = item  . text       (                                           )
@@ -2340,7 +2413,7 @@ class PeopleView                 ( IconDock                                ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 29436004                          ) :
+    if                           ( 29436004 == at                          ) :
       ########################################################################
       ubase = "https://www.bang.com/videos?term="
       pname = item  . text       (                                           )
@@ -2526,6 +2599,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     self   . FunctionsMenu             ( mm , uuid , atItem                  )
     self   . GroupsMenu                ( mm , uuid , atItem                  )
+    self   . PeopleSourcesMenu         ( mm ,        atItem                  )
     self   . WebSearchMenu             ( mm ,        atItem                  )
     self   . UsageMenu                 ( mm ,        atItem                  )
     self   . DisplayMenu               ( mm                                  )
@@ -2567,6 +2641,10 @@ class PeopleView                 ( IconDock                                ) :
       return True
     ##########################################################################
     OKAY   = self . RunGroupsMenu      ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunPeopleSourcesMenu ( at , atItem                       )
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
