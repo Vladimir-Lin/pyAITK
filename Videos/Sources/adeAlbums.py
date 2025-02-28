@@ -40,7 +40,7 @@ class adeAlbums          ( AlbumSources                                    ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "adeAlbums"
-    self   . WebPath  = "https://www.adultdvdempire.com/"
+    self   . WebPath  = "https://www.adultdvdempire.com"
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################
