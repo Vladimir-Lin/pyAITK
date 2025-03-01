@@ -50,6 +50,11 @@ class PeopleView                 ( IconDock                                ) :
   OwnedOccupation       = Signal ( str , int , str , str , QIcon             )
   OpenBodyShape         = Signal ( str , str , dict                          )
   OpenPickSexuality     = Signal ( str , str ,             QIcon             )
+  OpenPickEyeColors     = Signal ( str , str ,             QIcon             )
+  OpenPickHairColors    = Signal ( str , str ,             QIcon             )
+  OpenPickBloodTypes    = Signal ( str , str ,             QIcon             )
+  OpenPickRaceTypes     = Signal ( str , str ,             QIcon             )
+  OpenPickNationalites  = Signal ( str , str ,             QIcon             )
   ShowLodListings       = Signal ( str , str             , QIcon             )
   OpenVariantTables     = Signal ( str , str , int , str , dict              )
   emitOpenSmartNote     = Signal ( str                                       )
@@ -156,12 +161,27 @@ class PeopleView                 ( IconDock                                ) :
                                              self . OpenIdentWebPages        )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "LogHistory"                  , \
-                                             ":/images/documents.png"      , \
+                                             ":/images/notes.png"          , \
                                              self . OpenCurrentLogHistory    )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "Sexuality"                   , \
                                              ":/images/thoughts.png"       , \
                                              self . OpenCurrentSexuality     )
+    self . AppendSideActionWithIcon        ( "EyeColors"                   , \
+                                             ":/images/faces.png"          , \
+                                             self . OpenCurrentEyeColors     )
+    self . AppendSideActionWithIcon        ( "HairColors"                  , \
+                                             ":/images/colorlists.png"     , \
+                                             self . OpenCurrentHairColors    )
+    self . AppendSideActionWithIcon        ( "BloodTypes"                  , \
+                                             ":/images/Testbed.png"        , \
+                                             self . OpenCurrentBloodTypes    )
+    self . AppendSideActionWithIcon        ( "RaceTypes"                   , \
+                                             ":/images/remoteuser.png"     , \
+                                             self . OpenCurrentRaceTypes     )
+    self . AppendSideActionWithIcon        ( "Nationalites"                , \
+                                             ":/images/networkconnected.png" , \
+                                             self . OpenCurrentNationalites  )
     ##########################################################################
     return
   ############################################################################
@@ -1587,6 +1607,121 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenEyeColorsItem             ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    ##########################################################################
+    self . OpenPickEyeColors . emit ( text , xsid , icon                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentEyeColors      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenEyeColorsItem  ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenHairColorsItem             ( self , item                         ) :
+    ##########################################################################
+    uuid = item . data               ( Qt . UserRole                         )
+    uuid = int                       ( uuid                                  )
+    text = item . text               (                                       )
+    icon = item . icon               (                                       )
+    xsid = str                       ( uuid                                  )
+    ##########################################################################
+    self . OpenPickHairColors . emit ( text , xsid , icon                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentHairColors     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenHairColorsItem ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenBloodTypesItem             ( self , item                         ) :
+    ##########################################################################
+    uuid = item . data               ( Qt . UserRole                         )
+    uuid = int                       ( uuid                                  )
+    text = item . text               (                                       )
+    icon = item . icon               (                                       )
+    xsid = str                       ( uuid                                  )
+    ##########################################################################
+    self . OpenPickBloodTypes . emit ( text , xsid , icon                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentBloodTypes     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenBloodTypesItem ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenRaceTypesItem             ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    ##########################################################################
+    self . OpenPickRaceTypes . emit ( text , xsid , icon                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentRaceTypes      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenRaceTypesItem  ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenNationalitesItem             ( self , item                       ) :
+    ##########################################################################
+    uuid = item . data                 ( Qt . UserRole                       )
+    uuid = int                         ( uuid                                )
+    text = item . text                 (                                     )
+    icon = item . icon                 (                                     )
+    xsid = str                         ( uuid                                )
+    ##########################################################################
+    self . OpenPickNationalites . emit ( text , xsid , icon                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentNationalites     ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    self   . OpenNationalitesItem ( atItem                                   )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemGalleries         ( self , item                              ) :
     ##########################################################################
     uuid = item . data          ( Qt . UserRole                              )
@@ -1955,10 +2090,18 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return False
   ############################################################################
-  def RelatedGalleriesMenu           ( self , mm , Menu                    ) :
+  def RelatedGalleriesMenu            ( self , mm , uuid , item            ) :
     ##########################################################################
-    MSG  = self . getMenuItem        ( "RelatedGalleries"                    )
-    LOM  = mm   . addMenuFromMenu    ( Menu , MSG                            )
+    if                                ( uuid <= 0                          ) :
+      return mm
+    ##########################################################################
+    TRX  = self . Translations
+    MSG  = self . getMenuItem         ( "RelatedGalleries"                   )
+    LOM  = mm   . addMenu             ( MSG                                  )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "Galleries"                           )
+    icon = QIcon                     ( ":/images/galleries.png"              )
+    mm   . addActionFromMenuWithIcon ( LOM , 24231310 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "PersonalGallery"                     )
     icon = QIcon                     ( ":/images/gallery.png"                )
@@ -2001,102 +2144,17 @@ class PeopleView                 ( IconDock                                ) :
     MSG  = self . getMenuItem        ( "Tattoo"                              )
     mm   . addActionFromMenu         ( LOM , 24231323 , MSG                  )
     ##########################################################################
-    MSG  = self . getMenuItem        ( "Texture"                             )
+    MSG  = self . getMenuItem        ( "Piercings"                           )
     mm   . addActionFromMenu         ( LOM , 24231324 , MSG                  )
     ##########################################################################
-    return mm
-  ############################################################################
-  def GroupsMenu                      ( self , mm , uuid , item            ) :
-    ##########################################################################
-    if                                ( uuid <= 0                          ) :
-      return mm
-    ##########################################################################
-    TRX = self . Translations
-    FMT = self . getMenuItem          ( "Belongs"                            )
-    MSG = FMT  . format               ( item . text ( )                      )
-    LOM = mm   . addMenu              ( MSG                                  )
-    ##########################################################################
-    msg = self . getMenuItem          ( "CopyPeopleUuid"                     )
-    mm  . addActionFromMenu           ( LOM , 24231101 , msg                 )
-    ##########################################################################
-    msg = self . getMenuItem          ( "AssignCurrentPeople"                )
-    mm  . addActionFromMenu           ( LOM , 24231102 , msg                 )
-    ##########################################################################
-    MSG = self . getMenuItem          ( "LogHistory"                         )
-    ICO = QIcon                       ( ":/images/documents.png"             )
-    mm  . addActionFromMenuWithIcon   ( LOM , 24231103 , ICO , MSG           )
-    ##########################################################################
-    MSG = self . getMenuItem          ( "Occupations"                        )
-    mm  . addActionFromMenu           ( LOM , 24231201 , MSG                 )
-    ##########################################################################
-    mm  . addSeparatorFromMenu        ( LOM                                  )
-    ##########################################################################
-    MSG = self . getMenuItem          ( "Galleries"                          )
-    ICO = QIcon                       ( ":/images/galleries.png"             )
-    mm  . addActionFromMenuWithIcon   ( LOM , 24231211 , ICO , MSG           )
-    ##########################################################################
-    mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
-    ##########################################################################
-    mm  . addSeparatorFromMenu        ( LOM                                  )
-    ##########################################################################
-    MSG = self . getMenuItem          ( "BodyShapes"                         )
-    mm  . addActionFromMenu           ( LOM , 24231351 , MSG                 )
-    ##########################################################################
-    mm  . addSeparatorFromMenu        ( LOM                                  )
-    ##########################################################################
-    MSG = self . getMenuItem        ( "Videos"                               )
-    ICO = QIcon                     ( ":/images/video.png"                   )
-    mm  . addActionFromMenuWithIcon ( LOM , 24231411 , ICO , MSG             )
-    ##########################################################################
-    mm  . addSeparatorFromMenu      ( LOM                                    )
-    ##########################################################################
-    MSG = self . getMenuItem        ( "WebPages"                             )
-    mm  . addActionFromMenu         ( LOM , 24231511 , MSG                   )
-    ##########################################################################
-    MSG = self . getMenuItem        ( "IdentWebPage"                         )
-    ICO = QIcon                     ( ":/images/webfind.png"                 )
-    mm  . addActionFromMenuWithIcon ( LOM , 24231512 , ICO , MSG             )
-    ##########################################################################
-    MSG = self . getMenuItem        ( "OpenIdentWebPage"                     )
-    ICO = QIcon                     ( ":/images/bookmarks.png"               )
-    mm  . addActionFromMenuWithIcon ( LOM , 24231513 , ICO , MSG             )
+    MSG  = self . getMenuItem        ( "Texture"                             )
+    mm   . addActionFromMenu         ( LOM , 24231325 , MSG                  )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu                     ( self , at , uuid , item          ) :
+  def RunRelatedGalleriesMenu           ( self , at , uuid , item          ) :
     ##########################################################################
-    if                                  ( at == 24231101                   ) :
-      ########################################################################
-      qApp . clipboard ( ) . setText    ( f"{uuid}"                          )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                  ( at == 24231102                   ) :
-      ########################################################################
-      t    = item . text                (                                    )
-      J    =                            { "Uuid" : uuid , "Name" : t         }
-      self . AssignCurrentPeople . emit ( J                                  )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                  ( at == 24231103                   ) :
-      ########################################################################
-      self . OpenLogHistoryItem         ( item                               )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                  ( at == 24231201                   ) :
-      ########################################################################
-      text = item . text                (                                    )
-      icon = item . icon                (                                    )
-      xsid = str                        ( uuid                               )
-      rela = "Subordination"
-      ########################################################################
-      self . OwnedOccupation     . emit ( text , 7 , xsid , rela , icon      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                  ( at == 24231211                   ) :
+    if                                  ( at == 24231310                   ) :
       ########################################################################
       self . OpenItemGalleries          ( item                               )
       ########################################################################
@@ -2239,18 +2297,99 @@ class PeopleView                 ( IconDock                                ) :
       text = item . text                (                                    )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
+      relz = "Piercings"
+      ########################################################################
+      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231325                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
       relz = "Texture"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( at == 24231351                   ) :
+    return False
+  ############################################################################
+  def GroupsMenu                    ( self , mm , uuid , item              ) :
+    ##########################################################################
+    if                              ( uuid <= 0                            ) :
+      return mm
+    ##########################################################################
+    TRX = self . Translations
+    FMT = self . getMenuItem        ( "Belongs"                              )
+    MSG = FMT  . format             ( item . text ( )                        )
+    LOM = mm   . addMenu            ( MSG                                    )
+    ##########################################################################
+    msg = self . getMenuItem        ( "CopyPeopleUuid"                       )
+    mm  . addActionFromMenu         ( LOM , 24231101 , msg                   )
+    ##########################################################################
+    msg = self . getMenuItem        ( "AssignCurrentPeople"                  )
+    mm  . addActionFromMenu         ( LOM , 24231102 , msg                   )
+    ##########################################################################
+    mm  . addSeparatorFromMenu      ( LOM                                    )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "LogHistory"                           )
+    ICO = QIcon                     ( ":/images/notes.png"                   )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231103 , ICO , MSG             )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "Occupations"                          )
+    mm  . addActionFromMenu         ( LOM , 24231201 , MSG                   )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "Videos"                               )
+    ICO = QIcon                     ( ":/images/video.png"                   )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231411 , ICO , MSG             )
+    ##########################################################################
+    mm  . addSeparatorFromMenu      ( LOM                                    )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "WebPages"                             )
+    mm  . addActionFromMenu         ( LOM , 24231511 , MSG                   )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "IdentWebPage"                         )
+    ICO = QIcon                     ( ":/images/webfind.png"                 )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231512 , ICO , MSG             )
+    ##########################################################################
+    MSG = self . getMenuItem        ( "OpenIdentWebPage"                     )
+    ICO = QIcon                     ( ":/images/bookmarks.png"               )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231513 , ICO , MSG             )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu                     ( self , at , uuid , item          ) :
+    ##########################################################################
+    if                                  ( at == 24231101                   ) :
+      ########################################################################
+      qApp . clipboard ( ) . setText    ( f"{uuid}"                          )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                  ( at == 24231102                   ) :
+      ########################################################################
+      t    = item . text                (                                    )
+      J    =                            { "Uuid" : uuid , "Name" : t         }
+      self . AssignCurrentPeople . emit ( J                                  )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                  ( at == 24231103                   ) :
+      ########################################################################
+      self . OpenLogHistoryItem         ( item                               )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231201                   ) :
       ########################################################################
       text = item . text                (                                    )
+      icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
+      rela = "Subordination"
       ########################################################################
-      self . OpenBodyShape . emit       ( text , xsid , { }                  )
+      self . OwnedOccupation     . emit ( text , 7 , xsid , rela , icon      )
       ########################################################################
       return True
     ##########################################################################
@@ -2298,17 +2437,81 @@ class PeopleView                 ( IconDock                                ) :
     MSG  = self . getMenuItem        ( "BodyFeatures"                        )
     COL  = mm   . addMenu            ( MSG                                   )
     ##########################################################################
+    MSG  = self . getMenuItem        ( "BodyShapes"                          )
+    mm   . addActionFromMenu         ( COL , 29436301 , MSG                  )
+    ##########################################################################
+    mm   . addSeparatorFromMenu      ( COL                                  )
+    ##########################################################################
     MSG  = self . getMenuItem        ( "Sexuality"                           )
     ICO  = QIcon                     ( ":/images/thoughts.png"               )
-    mm   . addActionFromMenuWithIcon ( COL , 29436301 , ICO , MSG            )
+    mm   . addActionFromMenuWithIcon ( COL , 29436311 , ICO , MSG            )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "EyeColors"                           )
+    ICO  = QIcon                     ( ":/images/faces.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 29436312 , ICO , MSG            )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "HairColors"                          )
+    ICO  = QIcon                     ( ":/images/colorlists.png"             )
+    mm   . addActionFromMenuWithIcon ( COL , 29436313 , ICO , MSG            )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "BloodTypes"                          )
+    ICO  = QIcon                     ( ":/images/Testbed.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 29436314 , ICO , MSG            )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "RaceTypes"                           )
+    ICO  = QIcon                     ( ":/images/remoteuser.png"             )
+    mm   . addActionFromMenuWithIcon ( COL , 29436315 , ICO , MSG            )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "Nationalites"                        )
+    ICO  = QIcon                     ( ":/images/networkconnected.png"       )
+    mm   . addActionFromMenuWithIcon ( COL , 29436316 , ICO , MSG            )
     ##########################################################################
     return mm
   ############################################################################
-  def RunFeaturesMenu          ( self , at , item                          ) :
+  def RunFeaturesMenu             ( self , at , item                       ) :
     ##########################################################################
-    if                         ( 29436301 == at                            ) :
+    if                            ( 29436301 == at == 24231351             ) :
       ########################################################################
-      self . OpenSexualityItem (             item                            )
+      text = item . text          (                                          )
+      xsid = str                  ( uuid                                     )
+      ########################################################################
+      self . OpenBodyShape . emit ( text , xsid , {                        } )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436311 == at                         ) :
+      ########################################################################
+      self . OpenSexualityItem    (             item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436312 == at                         ) :
+      ########################################################################
+      self . OpenEyeColorsItem    (             item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436313 == at                         ) :
+      ########################################################################
+      self . OpenHairColorsItem   (             item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436314 == at                         ) :
+      ########################################################################
+      self . OpenBloodTypesItem   (             item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436315 == at                         ) :
+      ########################################################################
+      self . OpenRaceTypesItem    (             item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436316 == at                         ) :
+      ########################################################################
+      self . OpenNationalitesItem (             item                         )
       ########################################################################
       return True
     ##########################################################################
@@ -2659,6 +2862,7 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     self   . FunctionsMenu               ( mm , uuid , atItem                )
     self   . GroupsMenu                  ( mm , uuid , atItem                )
+    self   . RelatedGalleriesMenu        ( mm , uuid , atItem                )
     self   . FeaturesMenu                ( mm ,        atItem                )
     self   . PeopleSourcesMenu           ( mm ,        atItem                )
     self   . WebSearchMenu               ( mm ,        atItem                )
@@ -2702,6 +2906,10 @@ class PeopleView                 ( IconDock                                ) :
       return True
     ##########################################################################
     OKAY   = self . RunGroupsMenu        ( at , uuid , atItem                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunRelatedGalleriesMenu ( at , uuid , atItem             )
     if                                   ( OKAY                            ) :
       return True
     ##########################################################################
