@@ -49,6 +49,7 @@ class PeopleView                 ( IconDock                                ) :
   ShowPeopleSources     = Signal ( str , str , str ,       QIcon             )
   OwnedOccupation       = Signal ( str , int , str , str , QIcon             )
   OpenBodyShape         = Signal ( str , str , dict                          )
+  OpenPickSexuality     = Signal ( str , str ,             QIcon             )
   ShowLodListings       = Signal ( str , str             , QIcon             )
   OpenVariantTables     = Signal ( str , str , int , str , dict              )
   emitOpenSmartNote     = Signal ( str                                       )
@@ -157,6 +158,10 @@ class PeopleView                 ( IconDock                                ) :
     self . AppendSideActionWithIcon        ( "LogHistory"                  , \
                                              ":/images/documents.png"      , \
                                              self . OpenCurrentLogHistory    )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "Sexuality"                   , \
+                                             ":/images/thoughts.png"       , \
+                                             self . OpenCurrentSexuality     )
     ##########################################################################
     return
   ############################################################################
@@ -1559,6 +1564,29 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenSexualityItem             ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    ##########################################################################
+    self . OpenPickSexuality . emit ( text , xsid , icon                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentSexuality      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenSexualityItem  ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemGalleries         ( self , item                              ) :
     ##########################################################################
     uuid = item . data          ( Qt . UserRole                              )
@@ -2256,6 +2284,36 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return False
   ############################################################################
+  def FeaturesMenu                   ( self , mm , item                    ) :
+    ##########################################################################
+    if                               ( self . NotOkay ( item             ) ) :
+      return mm
+    ##########################################################################
+    uuid = item  . data              ( Qt . UserRole                         )
+    uuid = int                       ( uuid                                  )
+    ##########################################################################
+    if                               ( uuid not in self . PeopleOPTs       ) :
+      return mm
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "BodyFeatures"                        )
+    COL  = mm   . addMenu            ( MSG                                   )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "Sexuality"                           )
+    ICO  = QIcon                     ( ":/images/thoughts.png"               )
+    mm   . addActionFromMenuWithIcon ( COL , 29436301 , ICO , MSG            )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFeaturesMenu          ( self , at , item                          ) :
+    ##########################################################################
+    if                         ( 29436301 == at                            ) :
+      ########################################################################
+      self . OpenSexualityItem (             item                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def PeopleFavourite                 ( self , mm , uuid , item            ) :
     ##########################################################################
     favr = item . data                ( Qt   . UserRole + 1001               )
@@ -2553,174 +2611,181 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return True
   ############################################################################
-  def Menu                             ( self , pos                        ) :
+  def Menu                               ( self , pos                      ) :
     ##########################################################################
-    doMenu = self . isFunction         ( self . HavingMenu                   )
-    if                                 ( not doMenu                        ) :
+    doMenu = self . isFunction           ( self . HavingMenu                 )
+    if                                   ( not doMenu                      ) :
       return False
     ##########################################################################
-    self   . Notify                    ( 0                                   )
+    self   . Notify                      ( 0                                 )
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm     = MenuManager               ( self                                )
+    mm     = MenuManager                 ( self                              )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    if                                 ( self . isSearching ( )            ) :
+    if                                   ( self . isSearching (          ) ) :
       ########################################################################
-      msg  = self . getMenuItem        ( "NotSearch"                         )
-      mm   . addAction                 ( 7401 , msg                          )
+      msg  = self . getMenuItem          ( "NotSearch"                       )
+      mm   . addAction                   ( 7401 , msg                        )
     ##########################################################################
-    self   . StopIconMenu              ( mm                                  )
-    self   . AmountIndexMenu           ( mm , True                           )
+    self   . StopIconMenu                ( mm                                )
+    self   . AmountIndexMenu             ( mm , True                         )
     ##########################################################################
-    if                                 ( uuid > 0                          ) :
+    if                                   ( uuid > 0                        ) :
       ########################################################################
-      self . PeopleFavourite           ( mm , uuid , atItem                  )
+      self . PeopleFavourite             ( mm , uuid , atItem                )
       ########################################################################
-      msg  = self . getMenuItem        ( "PeopleDetails"                     )
-      icon = QIcon                     ( ":/images/actor.png"                )
-      mm   . addActionWithIcon         ( 5001 , icon , msg                   )
+      msg  = self . getMenuItem          ( "PeopleDetails"                   )
+      icon = QIcon                       ( ":/images/actor.png"              )
+      mm   . addActionWithIcon           ( 5001 , icon , msg                 )
       ########################################################################
-      mm   . addSeparator              (                                     )
+      mm   . addSeparator                (                                   )
     ##########################################################################
-    self   . AppendRefreshAction       ( mm , 1001                           )
-    self   . AppendInsertAction        ( mm , 1101                           )
-    self   . AppendSearchAction        ( mm , 1102                           )
+    self   . AppendRefreshAction         ( mm , 1001                         )
+    self   . AppendInsertAction          ( mm , 1101                         )
+    self   . AppendSearchAction          ( mm , 1102                         )
     ##########################################################################
-    if                                 ( len ( items ) > 0                 ) :
-      self . AppendDeleteAction        ( mm , 1103                           )
+    if                                   ( len ( items ) > 0               ) :
+      ########################################################################
+      self . AppendDeleteAction          ( mm , 1103                         )
     ##########################################################################
-    if                                 ( uuid > 0                          ) :
-      self . AppendRenameAction        ( mm , 1104                           )
-      self . AssureEditNamesAction     ( mm , 1601 , atItem                  )
+    if                                   ( uuid > 0                        ) :
+      ########################################################################
+      self . AppendRenameAction          ( mm , 1104                         )
+      self . AssureEditNamesAction       ( mm , 1601 , atItem                )
     ##########################################################################
-    mm     . addSeparator              (                                     )
+    mm     . addSeparator                (                                   )
     ##########################################################################
-    self   . FunctionsMenu             ( mm , uuid , atItem                  )
-    self   . GroupsMenu                ( mm , uuid , atItem                  )
-    self   . PeopleSourcesMenu         ( mm ,        atItem                  )
-    self   . WebSearchMenu             ( mm ,        atItem                  )
-    self   . UsageMenu                 ( mm ,        atItem                  )
-    self   . DisplayMenu               ( mm                                  )
-    self   . SortingMenu               ( mm                                  )
-    self   . LocalityMenu              ( mm                                  )
-    self   . ScrollBarMenu             ( mm                                  )
-    self   . DockingMenu               ( mm                                  )
+    self   . FunctionsMenu               ( mm , uuid , atItem                )
+    self   . GroupsMenu                  ( mm , uuid , atItem                )
+    self   . FeaturesMenu                ( mm ,        atItem                )
+    self   . PeopleSourcesMenu           ( mm ,        atItem                )
+    self   . WebSearchMenu               ( mm ,        atItem                )
+    self   . UsageMenu                   ( mm ,        atItem                )
+    self   . DisplayMenu                 ( mm                                )
+    self   . SortingMenu                 ( mm                                )
+    self   . LocalityMenu                ( mm                                )
+    self   . ScrollBarMenu               ( mm                                )
+    self   . DockingMenu                 ( mm                                )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                   ( self    . menuFont ( )              )
-    aa     = mm . exec_                ( QCursor . pos      ( )              )
-    at     = mm . at                   ( aa                                  )
+    mm     . setFont                     ( self    . menuFont (            ) )
+    aa     = mm . exec_                  ( QCursor . pos      (            ) )
+    at     = mm . at                     ( aa                                )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu ( at                                  )
+    OKAY   = self . RunAmountIndexMenu   ( at                                )
     ##########################################################################
-    if                                 ( OKAY                              ) :
+    if                                   ( OKAY                            ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . restart                     (                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( uuid > 0                          ) :
+    if                                   ( uuid > 0                        ) :
       ########################################################################
-      OKAY = self . RunPeopleFavourite ( uuid , atItem                       )
+      OKAY = self . RunPeopleFavourite   ( uuid , atItem                     )
       ########################################################################
-      if                               ( OKAY                              ) :
+      if                                 ( OKAY                            ) :
         ######################################################################
         return True
     ##########################################################################
-    OKAY   = self . RunDocking         ( mm , aa                             )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunDocking           ( mm , aa                           )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunFunctionsMenu     ( at , uuid , atItem                )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunGroupsMenu      ( at , uuid , atItem                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunGroupsMenu        ( at , uuid , atItem                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunFeaturesMenu      ( at ,        atItem                )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
     OKAY   = self . RunPeopleSourcesMenu ( at , atItem                       )
-    if                                 ( OKAY                              ) :
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunWebSearchMenu   ( at , atItem                         )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunWebSearchMenu     ( at , atItem                       )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunUsageMenu       ( at , atItem                         )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunUsageMenu         ( at , atItem                       )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunDisplayMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunDisplayMenu       ( at                                )
+    if                                   ( OKAY                            ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunSortingMenu       ( at                                )
+    if                                   ( OKAY                            ) :
       ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunScrollBarMenu   ( at                                  )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunStopIconMenu    ( at                                  )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    if                                 ( at == 5001                        ) :
-      ########################################################################
-      self . OpenItemPeopleDetails     ( atItem                              )
+      self . restart                     (                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( at == 1001                        ) :
+    OKAY   = self . HandleLocalityMenu   ( at                                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunScrollBarMenu     ( at                                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu      ( at                                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    if                                   ( at == 5001                      ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . OpenItemPeopleDetails       ( atItem                            )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( at == 1101                        ) :
+    if                                   ( at == 1001                      ) :
       ########################################################################
-      self . InsertItem                (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 1102                        ) :
-      self . Search                    (                                     )
-      return True
-    ##########################################################################
-    if                                 ( at == 1103                        ) :
-      ########################################################################
-      self . DeleteItems               (                                     )
+      self . restart                     (                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( at == 1104                        ) :
+    if                                   ( at == 1101                      ) :
       ########################################################################
-      self . RenamePeople              (                                     )
+      self . InsertItem                  (                                   )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
-    if                                 ( OKAY                              ) :
+    if                                   ( at == 1102                      ) :
+      self . Search                      (                                   )
       return True
     ##########################################################################
-    if                                 ( at == 7401                        ) :
+    if                                   ( at == 1103                      ) :
+      ########################################################################
+      self . DeleteItems                 (                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                   ( at == 1104                      ) :
+      ########################################################################
+      self . RenamePeople                (                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor    ( at , 1601 , atItem                )
+    if                                   ( OKAY                            ) :
+      return True
+    ##########################################################################
+    if                                   ( at == 7401                      ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . restart                   (                                     )
+      self . restart                     (                                   )
       ########################################################################
       return True
     ##########################################################################
