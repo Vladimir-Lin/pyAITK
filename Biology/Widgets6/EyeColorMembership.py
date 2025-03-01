@@ -137,7 +137,6 @@ class EyeColorMembership ( TreeDock                                        ) :
   def ObtainsInformation                         ( self , DB               ) :
     ##########################################################################
     self    . ReloadLocality                     (        DB                 )
-    ##########################################################################
     PCOLORs = self . IRIS . FetchPeopleEyeColors ( DB , self . JoinRelate    )
     self    . PeopleEyeColors = PCOLORs
     ##########################################################################

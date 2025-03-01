@@ -67,21 +67,17 @@ FLAGs = [ "AD.png" , "AE.png" , "AF.png" , "AG.png" , "AI.png" , "AL.png" ,  \
           "WF.png" , "WS.png" , "YE.png" , "YT.png" , "ZA.png" , "ZM.png" ,  \
           "ZW.png"                                                           ]
 ##############################################################################
-class CountryMembership        ( TreeDock                                  ) :
+class CountryMembership  ( TreeDock                                        ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow       = Signal (                                             )
-  emitAllNames        = Signal ( dict                                        )
-  emitAssignAmounts   = Signal ( str , int , int                             )
-  PeopleGroup         = Signal ( str , int , str                             )
-  BelongingEarthSpots = Signal ( str , str , QIcon                           )
-  OpenLogHistory      = Signal ( str , str , str , str , str                 )
-  emitLog             = Signal ( str                                         )
+  emitNamesShow = Signal (                                                   )
+  emitAllNames  = Signal ( dict                                              )
+  emitLog       = Signal ( str                                               )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( ) . __init__       (        parent        , plan                 )
+    super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -89,16 +85,13 @@ class CountryMembership        ( TreeDock                                  ) :
     self . FetchTableKey      = "CountryMembership"
     self . GType              = 43
     ##########################################################################
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 35
-    ##########################################################################
     self . SortOrder          = "asc"
-    self . ValidOnly          = False
+    self . ValidOnly          = True
     ##########################################################################
     self . NationTypes        = {                                            }
     self . CountryUsed        = {                                            }
     self . UsedOptions        = [ 1 , 2                                      ]
+    self . PeopleCountries    = [                                            ]
     ##########################################################################
     self . COUNTRY            = Country (                                    )
     ##########################################################################
@@ -109,61 +102,39 @@ class CountryMembership        ( TreeDock                                  ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount               ( 10                                 )
-    for i in range                      ( 1 , 10                           ) :
-      self . setColumnHidden            ( i , True                           )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnWidth          ( 2 , 32                                  )
+    self . setColumnHidden         ( 3 , True                                )
     ##########################################################################
-    self . setRootIsDecorated           ( False                              )
-    self . setAlternatingRowColors      ( True                               )
+    self . setRootIsDecorated      ( False                                   )
+    self . setAlternatingRowColors ( True                                    )
     ##########################################################################
-    self . MountClicked                 ( 1                                  )
-    self . MountClicked                 ( 2                                  )
+    self . MountClicked            ( 1                                       )
+    self . MountClicked            ( 9                                       )
     ##########################################################################
-    self . assignSelectionMode          ( "ExtendedSelection"                )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
-    self . emitNamesShow     . connect  ( self . show                        )
-    self . emitAllNames      . connect  ( self . refresh                     )
-    self . emitAssignAmounts . connect  ( self . AssignAmounts               )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
     ##########################################################################
-    self . setFunction                  ( self . FunctionDocking , True      )
-    self . setFunction                  ( self . HavingMenu      , True      )
+    self . setFunction             ( self . FunctionDocking , True           )
+    self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops               ( True                               )
-    self . setDragEnabled               ( True                               )
-    self . setDragDropMode              ( QAbstractItemView . DragDrop       )
+    self . setAcceptDrops          ( False                                   )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
-    self . setMinimumSize               ( 80 , 80                            )
+    self . setMinimumSize          ( 80 , 80                                 )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def AttachActions   ( self      ,                  Enabled               ) :
     ##########################################################################
-    self . AppendSideActionWithIcon ( "Crowds"                             , \
-                                      ":/images/viewpeople.png"            , \
-                                      self . GotoItemCrowd                   )
-    self . AppendToolNamingAction   (                                        )
-    self . AppendSideActionWithIcon ( "Description"                        , \
-                                      ":/images/documents.png"             , \
-                                      self . GotoItemDescription             )
-    ##########################################################################
-    return
-  ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
-    ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . LinkAction ( "Refresh" , self . startup , Enabled                 )
     ##########################################################################
     return
   ############################################################################
@@ -195,70 +166,18 @@ class CountryMembership        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked              ( self , item , column                     ) :
+  def stateChanged            ( self , item , column                       ) :
     ##########################################################################
-    if                          ( column not in range ( 0 , 8 )            ) :
+    if                        ( column not in [ 0                        ] ) :
       return
     ##########################################################################
-    if ( ( self . EditAllNames != None ) and ( column in [ 0 ] ) )           :
-      ########################################################################
-      uuid = self . itemUuid    ( item , 0                                   )
-      NAM  = self . Tables      [ "Names"                                    ]
-      self . EditAllNames       ( self , "Country" , uuid , NAM              )
-      ########################################################################
-      return
+    CHK   = item . checkState ( 0                                            )
+    state =                   ( CHK == Qt . Checked                          )
+    uuid  = item . data       ( 0 , Qt . UserRole                            )
+    uuid  = int               ( uuid                                         )
+    VAL   =                   ( uuid , state ,                               )
     ##########################################################################
-    if                          ( column in [ 1 , 5 , 6 , 7 ]              ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
-      return
-    ##########################################################################
-    if                          ( column in [ 2 ]                          ) :
-      ########################################################################
-      LL   = self . NationTypes
-      val  = item . data        ( column , Qt . UserRole                     )
-      val  = int                ( val                                        )
-      cb   = self . setComboBox ( item                                       ,
-                                  column                                     ,
-                                  "activated"                                ,
-                                  self . comboChanged                        )
-      cb   . addJson            ( LL , val                                   )
-      cb   . setMaxVisibleItems ( 20                                         )
-      cb   . showPopup          (                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    if                          ( column in [ 3 ]                          ) :
-      ########################################################################
-      LL   = self . CountryUsed
-      val  = item . data        ( column , Qt . UserRole                     )
-      val  = int                ( val                                        )
-      cb   = self . setComboBox ( item                                       ,
-                                  column                                     ,
-                                  "activated"                                ,
-                                  self . comboChanged                        )
-      cb   . addJson            ( LL , val                                   )
-      cb   . setMaxVisibleItems ( 20                                         )
-      cb   . showPopup          (                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    if                          ( column in [ 4 ]                         ) :
-      ########################################################################
-      val  = item . data        ( column , Qt . UserRole                    )
-      val  = int                ( val                                       )
-      sb   = self . setSpinBox  ( item                                      ,
-                                  column                                    ,
-                                  0                                         ,
-                                  1000000000                                ,
-                                  "editingFinished"                         ,
-                                  self . spinChanged                        )
-      sb   . setValue           ( val                                       )
-      sb   . setAlignment       ( Qt . AlignRight                           )
-      sb   . setFocus           ( Qt . TabFocusReason                       )
+    self  . Go                ( self . UpdateCountry , VAL                   )
     ##########################################################################
     return
   ############################################################################
@@ -266,160 +185,37 @@ class CountryMembership        ( TreeDock                                  ) :
     ##########################################################################
     global FLAGs
     ##########################################################################
+    ST   = Qt . Unchecked
+    ##########################################################################
+    if                         ( UUID in self . PeopleCountries            ) :
+      ST = Qt . Checked
+    ##########################################################################
     UUID = int                 ( UUID                                        )
     UXID = str                 ( UUID                                        )
     ##########################################################################
     IT   = QTreeWidgetItem     (                                             )
     IT   . setData             ( 0 , Qt . UserRole , UUID                    )
-    ##########################################################################
     IT   . setText             ( 0 , NAME                                    )
     IT   . setToolTip          ( 0 , UXID                                    )
+    IT   . setCheckState       ( 0 , ST                                      )
     ##########################################################################
     NAME = self . BlobToString ( INFO [ 7 ]                                  )
     IT   . setText             ( 1 , NAME                                    )
     ##########################################################################
-    TYID = int                 ( INFO [ 1 ]                                  )
-    IT   . setText             ( 2 , self . NationTypes [ TYID ]             )
-    IT   . setData             ( 2 , Qt . UserRole , TYID                    )
-    ##########################################################################
-    USID = int                 ( INFO [ 2 ]                                  )
-    IT   . setText             ( 3 , self . CountryUsed [ USID ]             )
-    IT   . setData             ( 3 , Qt . UserRole , USID                    )
-    ##########################################################################
-    CODE = int                 ( INFO [ 3 ]                                  )
-    IT   . setText             ( 4 , str ( CODE )                            )
-    IT   . setTextAlignment    ( 4 , Qt . AlignRight                         )
-    IT   . setData             ( 4 , Qt . UserRole , CODE                    )
+    IT   . setText             ( 2 , ""                                      )
     ##########################################################################
     TWO  = self . BlobToString ( INFO [ 4 ]                                  )
-    IT   . setText             ( 5 , TWO                                     )
-    ##########################################################################
-    THRE = self . BlobToString ( INFO [ 5 ]                                  )
-    IT   . setText             ( 6 , THRE                                    )
-    ##########################################################################
-    FOUR = self . BlobToString ( INFO [ 6 ]                                  )
-    IT   . setText             ( 7 , FOUR                                    )
-    ##########################################################################
-    IT   . setText             ( 8 , ""                                      )
-    IT   . setTextAlignment    ( 8 , Qt . AlignRight                         )
-    ##########################################################################
-    IT   . setText             ( 9 , ""                                      )
-    ##########################################################################
     PNG  = f"{TWO}.png"
+    ##########################################################################
     if                         ( PNG in FLAGs                              ) :
       K  = QIcon               ( f":/nations/{PNG}"                          )
-      IT . setIcon             ( 9 , K                                       )
+      IT . setIcon             ( 2 , K                                       )
     ##########################################################################
-    for COL in                 [ 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9     ] :
+    for COL in                 [ 0 , 1 , 2                                 ] :
       ########################################################################
       IT . setBackground       ( COL , BRUSH                                 )
     ##########################################################################
     return IT
-  ############################################################################
-  def RenameItem        ( self                                             ) :
-    ##########################################################################
-    self . goRenameItem ( 0                                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def nameChanged                ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           (    ( column not in [ 1 , 5 , 6 , 7 ]    ) \
-                                   or ( len ( msg ) <= 0                   ) \
-                                   or ( msg == text                      ) ) :
-      item . setText             ( column , text                             )
-      self . removeParked        (                                           )
-      return
-    ##########################################################################
-    if                           ( column == 1                             ) :
-      na   = "name"
-    elif                         ( column == 5                             ) :
-      na   = "two"
-    elif                         ( column == 6                             ) :
-      na   = "three"
-    elif                         ( column == 7                             ) :
-      na   = "four"
-    ##########################################################################
-    self   . Go                  ( self . UpdateTypeItemBlob               , \
-                                   ( uuid , na , msg , )                     )
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
-    self   . removeParked        (                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def comboChanged               ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    sb     = self . CurrentItem  [ "Widget"                                  ]
-    v      = item . data         ( column , Qt . UserRole                    )
-    v      = int                 ( v                                         )
-    nv     = sb   . itemData     ( sb . currentIndex ( )                     )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    name   = ""
-    na     = ""
-    if                           ( column in [ 2 ]                         ) :
-      name = self . NationTypes  [ nv                                        ]
-      na   = "type"
-    elif                         ( column in [ 3 ]                         ) :
-      name = self . CountryUsed  [ nv                                        ]
-      na   = "used"
-    ##########################################################################
-    if                           ( v == nv                                 ) :
-      item . setText             ( column , name                             )
-      self . removeParked        (                                           )
-      return
-    ##########################################################################
-    self . Go                    ( self . UpdateTypeItemValue              , \
-                                   ( uuid , na , nv , )                      )
-    ##########################################################################
-    item . setText               ( column , name                             )
-    item . setData               ( column , Qt . UserRole , nv               )
-    self . removeParked          (                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def spinChanged                ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    sb     = self . CurrentItem  [ "Widget"                                  ]
-    v      = item . data         ( column , Qt . UserRole                    )
-    v      = int                 ( v                                         )
-    nv     = sb   . value        (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( ( v == nv ) or ( column not in [ 4 ] ) )  :
-      item . setText             ( column , str ( v )                        )
-      self . removeParked        (                                           )
-      return
-    ##########################################################################
-    self . Go                    ( self . UpdateTypeItemValue              , \
-                                   ( uuid , "code" , nv , )                  )
-    ##########################################################################
-    item . setText               ( column , str ( nv )                       )
-    item . setData               ( column , Qt . UserRole , nv               )
-    self . removeParked          (                                           )
-    ##########################################################################
-    return
   ############################################################################
   def RefreshToolTip          ( self , Total                               ) :
     ##########################################################################
@@ -471,38 +267,6 @@ class CountryMembership        ( TreeDock                                  ) :
                                             self . Tables [ "Countries" ]  , \
                                             UUIDs                            )
   ############################################################################
-  def AssignAmounts        ( self , UUID , Amounts , COLUMN                ) :
-    ##########################################################################
-    IT = self . uuidAtItem ( UUID , 0                                        )
-    if                     ( IT is None                                    ) :
-      return
-    ##########################################################################
-    IT . setText           ( COLUMN , str ( Amounts )                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                    ( self , UUIDs                   ) :
-    ##########################################################################
-    time   . sleep                        ( 1.0                              )
-    ##########################################################################
-    RELTAB = self . Tables                [ "RelationPeople"                 ]
-    ##########################################################################
-    DB     = self . ConnectDB             (                                  )
-    self   . OnBusy  . emit               (                                  )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      CNT  = self . COUNTRY . CountCrowds ( DB                             , \
-                                            RELTAB                         , \
-                                            "Subordination"                , \
-                                            UUID                             )
-      self . emitAssignAmounts . emit     ( str ( UUID ) , CNT , 8           )
-    ##########################################################################
-    self   . GoRelax . emit               (                                  )
-    DB     . Close                        (                                  )
-    ##########################################################################
-    return
-  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -537,10 +301,7 @@ class CountryMembership        ( TreeDock                                  ) :
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 8 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -555,11 +316,6 @@ class CountryMembership        ( TreeDock                                  ) :
       OPTs . append ( U                                                      )
     ##########################################################################
     return OPTs
-  ############################################################################
-  def ObtainAllUuids                   ( self , DB                         ) :
-    return self . COUNTRY . FetchUuids ( DB                                , \
-                                         self . Tables  [ "Countries" ]    , \
-                                         self . GetOPTs (                  ) )
   ############################################################################
   def ObtainsInformation     ( self , DB                                   ) :
     ##########################################################################
@@ -584,184 +340,60 @@ class CountryMembership        ( TreeDock                                  ) :
                                "used"                                      , \
                                self . GType                                  )
     ##########################################################################
-    self   . Total = self . COUNTRY . CountOptions                           (
-                               DB                                          , \
-                               TABLE                                       , \
-                               self . GetOPTs (                            ) )
+    COUNTRYz = self . COUNTRY . FetchPeopleCountries ( DB                    )
+    self  . PeopleCountries = COUNTRYz
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery                  ( self                             ) :
+  def ObtainUuidsQuery                     ( self                          ) :
     ##########################################################################
-    return self . COUNTRY . QuerySyntax ( self . Tables [ "Countries"    ] , \
-                                          self . GetOPTs         (       ) , \
-                                          self . getSortingOrder (       ) , \
-                                          self . StartId                   , \
-                                          self . Amount                      )
+    return self . COUNTRY . QuerySyntaxAll ( self . Tables [ "Countries" ] , \
+                                             self . GetOPTs         (    ) , \
+                                             self . getSortingOrder (    )   )
   ############################################################################
-  def dragMime                   ( self                                    ) :
+  def StartupMembership        ( self , title , uuid                       ) :
     ##########################################################################
-    mtype   = "nation/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
+    FMT  = self . getMenuItem  ( "Title"                                     )
+    self . setWindowTitle      ( FMT . format ( title                      ) )
     ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      FMT   = self . getMenuItem    ( "Copying"                              )
-      MSG   = FMT  . format         ( title , CNT                            )
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
-    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople                       ( self , source , pos , JSON        ) :
-    return self . defaultDropInObjects ( source                            , \
-                                         pos                               , \
-                                         JSON                              , \
-                                         0                                 , \
-                                         self . PeopleJoinCountry            )
-  ############################################################################
-  def PeopleJoinCountry                    ( self , UUID , UUIDs           ) :
-    ##########################################################################
-    if                                     ( UUID <= 0                     ) :
-      return
-    ##########################################################################
-    COUNT   = len                          ( UUIDs                           )
-    if                                     ( COUNT <= 0                    ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden        ( 8                               )
-    ##########################################################################
-    DB      = self . ConnectDB             (                                 )
-    if                                     ( DB == None                    ) :
-      return
-    ##########################################################################
-    FMT     = self . getMenuItem           ( "Joining"                       )
-    MSG     = FMT  . format                ( COUNT                           )
-    self    . ShowStatus                   ( MSG                             )
-    self    . TtsTalk                      ( MSG , 1002                      )
-    ##########################################################################
-    RELTAB  = self . Tables                [ "RelationPeople"                ]
-    RELATE  = "Subordination"
-    ##########################################################################
-    DB      . LockWrites                   ( [ RELTAB                      ] )
-    self    . COUNTRY . PeopleJoinCountry  ( DB                            , \
-                                             RELTAB                        , \
-                                             RELATE                        , \
-                                             UUID                          , \
-                                             UUIDs                           )
-    DB      . UnlockTables                 (                                 )
-    ##########################################################################
-    if                                     ( not Hide                      ) :
-      TOTAL = self . COUNTRY . CountCrowds ( DB , RELTAB , RELATE , UUID     )
-    ##########################################################################
-    DB      . Close                        (                                 )
-    ##########################################################################
-    self    . ShowStatus                   ( ""                              )
-    ##########################################################################
-    if                                     ( Hide                          ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem            ( UUID , 0                        )
-    if                                     ( IT is None                    ) :
-      return
-    ##########################################################################
-    IT      . setText                      ( 8 , str ( TOTAL )               )
-    self    . DoUpdate                     (                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def StartupMembership       ( self , title , uuid                        ) :
-    ##########################################################################
-    ## FMT  = self . getMenuItem ( "Title"                                      )
-    ## self . setWindowTitle     ( FMT . format ( title                       ) )
-    ##########################################################################
-    ## self . BLOOD . setPeople  (                uuid                          )
-    self . startup            (                                              )
+    self . COUNTRY . setPeople (                uuid                         )
+    self . startup             (                                             )
     ##########################################################################
     return
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 9                              )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
     return
   ############################################################################
-  def UpdateTypeItemValue          ( self , uuid , item , value            ) :
+  def UpdateCountry             ( self , uuid , state                      ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
-      return
+    if                          ( state                                    ) :
+      ########################################################################
+      if                        ( uuid not in self . PeopleCountries       ) :
+        ######################################################################
+        self . PeopleCountries . append ( uuid                               )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      if                        ( uuid     in self . PeopleCountries       ) :
+        ######################################################################
+        self . PeopleCountries . remove ( uuid                               )
     ##########################################################################
-    CTYTAB = self . Tables         [ "Countries"                             ]
+    DB       = self . ConnectDB (                                            )
+    if                          ( self . NotOkay ( DB )                    ) :
+      return False
     ##########################################################################
-    DB     . LockWrites            ( [ CTYTAB                              ] )
-    self   . COUNTRY . UpdateValue ( DB , CTYTAB , uuid , item , value       )
-    DB     . UnlockTables          (                                         )
-    DB     . Close                 (                                         )
+    self     . COUNTRY . LockRelationTable   ( DB                            )
+    self     . COUNTRY . AssignPeopleCountry ( DB , uuid , state             )
     ##########################################################################
-    return
-  ############################################################################
-  def UpdateTypeItemBlob          ( self , uuid , item , blob              ) :
+    DB       . UnlockTables     (                                            )
+    DB       . Close            (                                            )
     ##########################################################################
-    DB      = self . ConnectDB    (                                          )
-    if                            ( DB == None                             ) :
-      return
-    ##########################################################################
-    CTYTAB = self . Tables        [ "Countries"                              ]
-    ##########################################################################
-    DB     . LockWrites           ( [ CTYTAB                               ] )
-    self   . COUNTRY . UpdateBlob ( DB , CTYTAB , uuid , item , blob         )
-    DB     . UnlockTables         (                                          )
-    DB     . Close                (                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def CopyToClipboard        ( self                                        ) :
-    ##########################################################################
-    self . DoCopyToClipboard (                                               )
+    self     . Notify           ( 5                                          )
     ##########################################################################
     return
   ############################################################################
@@ -797,166 +429,71 @@ class CountryMembership        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenItemCrowd           ( self , item                                ) :
-    ##########################################################################
-    uuid = item . data        ( 0 , Qt . UserRole                            )
-    uuid = int                ( uuid                                         )
-    xsid = str                ( uuid                                         )
-    text = item . text        ( 0                                            )
-    ##########################################################################
-    self . PeopleGroup . emit ( text , self . GType , str ( uuid )           )
-    ##########################################################################
-    return
-  ############################################################################
-  def GotoItemCrowd             ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self   . OpenItemCrowd      ( atItem                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenItemNamesEditor             ( self , item                        ) :
-    ##########################################################################
-    self . defaultOpenItemNamesEditor ( item                               , \
-                                        0                                  , \
-                                        "Nation"                           , \
-                                        "NamesCountry"                       )
-    ##########################################################################
-    return
-  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9009 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      if                           ( ( at == 9008 ) and ( hid )            ) :
-        ######################################################################
-        self . restart             (                                         )
-        ######################################################################
       return True
     ##########################################################################
     return False
   ############################################################################
-  def Menu                             ( self , pos                        ) :
+  def Menu                       ( self , pos                              ) :
     ##########################################################################
-    if                                 ( not self . isPrepared (         ) ) :
+    if                           ( not self . isPrepared (               ) ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction         ( self . HavingMenu                   )
-    if                                 ( not doMenu                        ) :
+    doMenu = self . isFunction   ( self . HavingMenu                         )
+    if                           ( not doMenu                              ) :
       return False
     ##########################################################################
-    self   . Notify                    ( 0                                   )
+    self   . Notify              ( 0                                         )
     ##########################################################################
-    items , atItem , uuid = self . GetMenuDetails ( 0                        )
+    items  , atItem , uuid = self . GetMenuDetails ( 0                       )
     ##########################################################################
-    mm     = MenuManager               ( self                                )
+    mm     = MenuManager         ( self                                      )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu    ( mm , True                           )
-    ##########################################################################
-    self   . AppendRefreshAction       ( mm , 1001                           )
-    ##########################################################################
-    msg    = self . getMenuItem        ( "ValidOnly"                         )
-    mm     . addAction                 ( 3223                              , \
-                                         msg                               , \
-                                         True                              , \
-                                         self . ValidOnly                    )
-    ##########################################################################
-    if                                 ( atItem not in self . EmptySet     ) :
-      ########################################################################
-      FMT  = TRX                       [ "UI::AttachCrowds"                  ]
-      MSG  = FMT . format              ( atItem . text ( 0 )                 )
-      mm   . addSeparator              (                                     )
-      mm   . addAction                 ( 1201 ,  MSG                         )
-      msg  = self . getMenuItem        ( "Positions"                         )
-      mm   . addAction                 ( 7401 , msg                          )
-      ########################################################################
-      if                               ( self . EditAllNames != None       ) :
-        ######################################################################
-        mm . addAction                 ( 1601 ,  TRX [ "UI::EditNames" ]     )
-    ##########################################################################
-    mm     . addSeparator              (                                     )
-    ##########################################################################
-    self   . ColumnsMenu               ( mm                                  )
-    self   . LocalityMenu              ( mm                                  )
-    self   . SortingMenu               ( mm                                  )
-    self   . DockingMenu               ( mm                                  )
+    self   . AppendRefreshAction ( mm , 1001                                 )
+    mm     . addSeparator        (                                           )
+    self   . ColumnsMenu         ( mm                                        )
+    self   . LocalityMenu        ( mm                                        )
+    self   . SortingMenu         ( mm                                        )
+    self   . DockingMenu         ( mm                                        )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                   ( self    . menuFont ( )              )
-    aa     = mm . exec_                ( QCursor . pos      ( )              )
-    at     = mm . at                   ( aa                                  )
+    mm     . setFont             ( self    . menuFont (                    ) )
+    aa     = mm . exec_          ( QCursor . pos      (                    ) )
+    at     = mm . at             ( aa                                        )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu ( at                                  )
+    if                           ( self . RunDocking   ( mm , aa )         ) :
+      return True
     ##########################################################################
-    if                                 ( OKAY                              ) :
+    if                           ( self . HandleLocalityMenu ( at )        ) :
+      return True
+    ##########################################################################
+    if                           ( self . RunColumnsMenu     ( at )        ) :
+      return True
+    ##########################################################################
+    if                           ( self . RunSortingMenu     ( at )        ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . restart             (                                           )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( self . RunDocking   ( mm , aa )   ) :
-      return True
-    ##########################################################################
-    if                                 ( self . HandleLocalityMenu ( at )  ) :
-      return True
-    ##########################################################################
-    if                                 ( self . RunColumnsMenu     ( at )  ) :
-      return True
-    ##########################################################################
-    if                                 ( self . RunSortingMenu     ( at )  ) :
+    if                           ( 1001 == at                              ) :
       ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 1001                        ) :
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 1201                        ) :
-      ########################################################################
-      self . OpenItemCrowd             ( item                                )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 3223                        ) :
-      ########################################################################
-      if                               ( self . ValidOnly                  ) :
-        self . ValidOnly = False
-      else                                                                   :
-        self . ValidOnly = True
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    if                                 ( at == 7401                        ) :
-      ########################################################################
-      head = atItem . text             ( 0                                   )
-      uuid = self   . itemUuid         ( atItem , 0                          )
-      icon = self   . windowIcon       (                                     )
-      self . BelongingEarthSpots . emit ( str ( uuid ) , head , icon         )
+      self . restart             (                                           )
       ########################################################################
       return True
     ##########################################################################
