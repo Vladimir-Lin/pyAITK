@@ -21,21 +21,17 @@ from   AITK    . Essentials . Relation              import Relation
 from   AITK    . Calendars  . StarDate              import StarDate
 from   AITK    . Biology    . Sexuality . Sexuality import Sexuality
 ##############################################################################
-class SexualityMembership      ( TreeDock                                  ) :
+class SexualityMembership ( TreeDock                                       ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow       = Signal (                                             )
-  emitAllNames        = Signal ( dict                                        )
-  emitAssignAmounts   = Signal ( str , int , int                             )
-  PeopleGroup         = Signal ( str , int , str                             )
-  ShowPersonalGallery = Signal ( str , int , str , QIcon                     )
-  OpenLogHistory      = Signal ( str , str , str , str , str                 )
-  emitLog             = Signal ( str                                         )
+  emitNamesShow = Signal  (                                                  )
+  emitAllNames  = Signal  ( dict                                             )
+  emitLog       = Signal  ( str                                              )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
-    super ( ) . __init__       (        parent        , plan                 )
+    super ( ) . __init__  (        parent        , plan                      )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -86,9 +82,9 @@ class SexualityMembership      ( TreeDock                                  ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 440 )                       )
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self      ,                  Enabled               ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Refresh" , self . startup , Enabled                 )
     ##########################################################################
     return
   ############################################################################
