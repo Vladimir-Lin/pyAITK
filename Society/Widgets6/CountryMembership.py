@@ -105,7 +105,6 @@ class CountryMembership  ( TreeDock                                        ) :
     self . setColumnCount          ( 4                                       )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnWidth          ( 2 , 32                                  )
-    self . setColumnHidden         ( 3 , True                                )
     ##########################################################################
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -130,7 +129,7 @@ class CountryMembership  ( TreeDock                                        ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 400 , 640 )                       )
   ############################################################################
   def AttachActions   ( self      ,                  Enabled               ) :
     ##########################################################################
