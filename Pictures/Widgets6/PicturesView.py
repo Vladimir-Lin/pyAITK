@@ -138,7 +138,7 @@ class PicturesView              ( IconDock                                 ) :
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     self . AppendSideActionWithIcon ( "AssignTables"                       , \
-                                      ":/images/tables.png"                , \
+                                      ":/images/vtables.png"               , \
                                       self . EditVariantTables             , \
                                       True                                 , \
                                       False                                  )
@@ -1309,7 +1309,7 @@ class PicturesView              ( IconDock                                 ) :
     if                           ( self . isSubordination ( )              ) :
       ########################################################################
       msg = self . getMenuItem   ( "AssignTables"                            )
-      ICN = QIcon                ( ":/images/tables.png"                     )
+      ICN = QIcon                ( ":/images/vtables.png"                    )
       mm  . addActionFromMenuWithIcon ( COL , 34471101 , ICN , msg           )
     ##########################################################################
     msg   = self . getMenuItem   ( "DoReposition"                            )
