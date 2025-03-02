@@ -94,7 +94,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     msg    = self . getMenuItem             ( "Subgroup"                     )
     A      = QAction                        (                                )
-    IC     = QIcon                          ( ":/images/catalog.png"         )
+    IC     = QIcon                          ( ":/images/filmfolder.png"      )
     A      . setIcon                        ( IC                             )
     A      . setToolTip                     ( msg                            )
     A      . triggered . connect            ( self . OpenCurrentSubgroup     )
