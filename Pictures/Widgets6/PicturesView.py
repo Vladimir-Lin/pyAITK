@@ -94,26 +94,22 @@ class PicturesView              ( IconDock                                 ) :
   ############################################################################
   def PrepareRelateType ( self , RelateId                                  ) :
     ##########################################################################
-    if                  ( "Mouth"     == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Mouth"
-    elif                ( "Eye"       == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Eye"
-    elif                ( "Iris"      == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Iris"
-    elif                ( "Nose"      == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Nose"
-    elif                ( "Tit"       == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Tit"
-    elif                ( "Umbilicus" == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Umbilicus"
-    elif                ( "Pussy"     == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Pussy"
-    elif                ( "Asshole"   == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Asshole"
-    elif                ( "Tattoo"    == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Tattoo"
-    elif                ( "Texture"   == RelateId                          ) :
-      self . FetchTableKey = "PicturesView-Texture"
+    PVCT  = self . ClassTag
+    MEETs =             [ "Mouth"                                          , \
+                          "Eye"                                            , \
+                          "Iris"                                           , \
+                          "Nose"                                           , \
+                          "Tit"                                            , \
+                          "Umbilicus"                                      , \
+                          "Pussy"                                          , \
+                          "Asshole"                                        , \
+                          "Tattoo"                                         , \
+                          "Piercings"                                      , \
+                          "Texture"                                          ]
+    ##########################################################################
+    if                  ( RelateId in MEETs                                ) :
+      ########################################################################
+      self . FetchTableKey = f"{PVCT}-{RelateId}"
     ##########################################################################
     return
   ############################################################################
