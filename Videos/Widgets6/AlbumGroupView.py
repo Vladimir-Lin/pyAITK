@@ -822,7 +822,8 @@ class AlbumGroupView         ( IconDock                                    ) :
     if                              ( uuid > 0                             ) :
       ########################################################################
       mg   = self . getMenuItem     ( "Subgroup"                             )
-      mm   . addAction              ( 2001 , mg                              )
+      ic   = QIcon                  ( ":/images/filmfolder.png"              )
+      mm   . addActionWithIcon      ( 2001 , ic , mg                         )
       ########################################################################
       if                            ( self . Grouping == "Subgroup"        ) :
         ic = QIcon                  ( ":/images/episode.png"                 )
