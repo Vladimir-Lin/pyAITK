@@ -97,17 +97,17 @@ class VariantTables      ( TreeDock                                        ) :
     self . TITLE = self . windowTitle (                                      )
     ##########################################################################
     self . AppendSideActionWithIcon   ( "CopyTableToClipboard"             , \
-                                        ":/images/copy.png"                , \
+                                        ":/images/vtcopy.png"              , \
                                         self . CopyTableToClipboard        , \
                                         True                               , \
                                         False                                )
     self . AppendSideActionWithIcon   ( "PasteFromClipboard"               , \
-                                        ":/images/paste.png"               , \
+                                        ":/images/vtpaste.png"             , \
                                         self . PasteFromClipboard          , \
                                         True                               , \
                                         False                                )
     self . AppendSideActionWithIcon   ( "Save"                             , \
-                                        ":/images/save.png"                , \
+                                        ":/images/vtsave.png"              , \
                                         self . SaveToDatabase              , \
                                         True                               , \
                                         False                                )
@@ -410,7 +410,7 @@ class VariantTables      ( TreeDock                                        ) :
     ##########################################################################
     if                             ( self . Mode in [ 0 ]                  ) :
       msg  = self . getMenuItem    ( "Save"                                  )
-      icon = QIcon                 ( ":/images/save.png"                     )
+      icon = QIcon                 ( ":/images/vtsave.png"                   )
       mm   . addActionWithIcon     ( 1102 , icon , msg                       )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
@@ -420,11 +420,11 @@ class VariantTables      ( TreeDock                                        ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     msg    = self . getMenuItem    ( "CopyTableToClipboard"                  )
-    icon   = QIcon                 ( ":/images/copy.png"                     )
+    icon   = QIcon                 ( ":/images/vtcopy.png"                   )
     mm     . addActionWithIcon     ( 4001 , icon , msg                       )
     ##########################################################################
     msg    = self . getMenuItem    ( "PasteFromClipboard"                    )
-    icon   = QIcon                 ( ":/images/paste.png"                    )
+    icon   = QIcon                 ( ":/images/vtpaste.png"                  )
     mm     . addActionWithIcon     ( 4002 , icon , msg                       )
     ##########################################################################
     mm     . addSeparator          (                                         )

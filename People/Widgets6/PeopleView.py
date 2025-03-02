@@ -174,7 +174,7 @@ class PeopleView                 ( IconDock                                ) :
                                              ":/images/hairs.png"          , \
                                              self . OpenCurrentHairColors    )
     self . AppendSideActionWithIcon        ( "BloodTypes"                  , \
-                                             ":/images/Testbed.png"        , \
+                                             ":/images/ebloods.png"        , \
                                              self . OpenCurrentBloodTypes    )
     self . AppendSideActionWithIcon        ( "RaceTypes"                   , \
                                              ":/images/remoteuser.png"     , \
@@ -2455,7 +2455,7 @@ class PeopleView                 ( IconDock                                ) :
     mm   . addActionFromMenuWithIcon ( COL , 29436313 , ICO , MSG            )
     ##########################################################################
     MSG  = self . getMenuItem        ( "BloodTypes"                          )
-    ICO  = QIcon                     ( ":/images/Testbed.png"                )
+    ICO  = QIcon                     ( ":/images/ebloods.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 29436314 , ICO , MSG            )
     ##########################################################################
     MSG  = self . getMenuItem        ( "RaceTypes"                           )
