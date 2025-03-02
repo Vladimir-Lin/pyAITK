@@ -108,7 +108,7 @@ class AlbumGroupView         ( IconDock                                    ) :
       ########################################################################
       msg  = self . getMenuItem             ( "Albums"                       )
       A    = QAction                        (                                )
-      ICON = QIcon                          ( ":/images/videos.png"          )
+      ICON = QIcon                          ( ":/images/episode.png"         )
       A    . setIcon                        ( ICON                           )
       A    . setToolTip                     ( msg                            )
       A    . triggered . connect            ( self . OpenCurrentAlbum        )
@@ -825,7 +825,7 @@ class AlbumGroupView         ( IconDock                                    ) :
       mm   . addAction              ( 2001 , mg                              )
       ########################################################################
       if                            ( self . Grouping == "Subgroup"        ) :
-        ic = QIcon                  ( ":/images/videos.png"                  )
+        ic = QIcon                  ( ":/images/episode.png"                 )
         mg = self . getMenuItem     ( "Albums"                               )
         mm . addActionWithIcon      ( 2002 , ic , mg                         )
       mm   . addSeparator           (                                        )
