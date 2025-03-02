@@ -165,13 +165,13 @@ class PeopleView                 ( IconDock                                ) :
                                              self . OpenCurrentLogHistory    )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "Sexuality"                   , \
-                                             ":/images/thoughts.png"       , \
+                                             ":/images/sexuality.png"      , \
                                              self . OpenCurrentSexuality     )
     self . AppendSideActionWithIcon        ( "EyeColors"                   , \
-                                             ":/images/faces.png"          , \
+                                             ":/images/eye.png"            , \
                                              self . OpenCurrentEyeColors     )
     self . AppendSideActionWithIcon        ( "HairColors"                  , \
-                                             ":/images/colorlists.png"     , \
+                                             ":/images/hairs.png"          , \
                                              self . OpenCurrentHairColors    )
     self . AppendSideActionWithIcon        ( "BloodTypes"                  , \
                                              ":/images/Testbed.png"        , \
@@ -2440,18 +2440,18 @@ class PeopleView                 ( IconDock                                ) :
     MSG  = self . getMenuItem        ( "BodyShapes"                          )
     mm   . addActionFromMenu         ( COL , 29436301 , MSG                  )
     ##########################################################################
-    mm   . addSeparatorFromMenu      ( COL                                  )
+    mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Sexuality"                           )
-    ICO  = QIcon                     ( ":/images/thoughts.png"               )
+    ICO  = QIcon                     ( ":/images/sexuality.png"              )
     mm   . addActionFromMenuWithIcon ( COL , 29436311 , ICO , MSG            )
     ##########################################################################
     MSG  = self . getMenuItem        ( "EyeColors"                           )
-    ICO  = QIcon                     ( ":/images/faces.png"                  )
+    ICO  = QIcon                     ( ":/images/eye.png"                    )
     mm   . addActionFromMenuWithIcon ( COL , 29436312 , ICO , MSG            )
     ##########################################################################
     MSG  = self . getMenuItem        ( "HairColors"                          )
-    ICO  = QIcon                     ( ":/images/colorlists.png"             )
+    ICO  = QIcon                     ( ":/images/hairs.png"                  )
     mm   . addActionFromMenuWithIcon ( COL , 29436313 , ICO , MSG            )
     ##########################################################################
     MSG  = self . getMenuItem        ( "BloodTypes"                          )
