@@ -1752,10 +1752,8 @@ class PeopleView                 ( IconDock                                ) :
     text = item . text                (                                      )
     icon = item . icon                (                                      )
     xsid = str                        ( uuid                                 )
-    FMT  = self . getMenuItem         ( "IconsFormat"                        )
-    tt   = FMT  . format              ( text                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( tt , self . GType , xsid , icon      )
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
     ##########################################################################
     return
   ############################################################################
@@ -1778,8 +1776,10 @@ class PeopleView                 ( IconDock                                ) :
     icon = item . icon              (                                        )
     xsid = str                      ( uuid                                   )
     relz = "Using"
+    FMT  = self . getMenuItem       ( "IconsFormat"                          )
+    tt   = FMT  . format            ( text                                   )
     ##########################################################################
-    self . ShowPersonalIcons . emit ( text                                 , \
+    self . ShowPersonalIcons . emit ( tt                                   , \
                                       self . GType                         , \
                                       relz                                 , \
                                       xsid                                 , \
@@ -2180,10 +2180,10 @@ class PeopleView                 ( IconDock                                ) :
     if                                  ( at == 24231312                   ) :
       ########################################################################
       icon = item . icon                (                                    )
-      head = item . text                (                                    )
+      text = item . text                (                                    )
       xsid = str                        ( uuid                               )
       ########################################################################
-      self . ShowLodListings . emit     ( head , str ( uuid ) , icon         )
+      self . ShowLodListings . emit     ( text , str ( uuid ) , icon         )
       ########################################################################
       return True
     ##########################################################################
