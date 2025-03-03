@@ -126,13 +126,13 @@ class PicturesView              ( IconDock                                 ) :
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     self . AppendSideActionWithIcon ( "EditPicture"                        , \
-                                      ":/images/interfaces.png"            , \
+                                      ":/images/epicture.png"              , \
                                       self . EditCurrentPicture              )
     self . AppendSideActionWithIcon ( "ViewPicture"                        , \
                                       ":/images/searchimages.png"          , \
                                       self . OpenPictureViewer               )
     self . AppendSideActionWithIcon ( "AssignIcon"                         , \
-                                      ":/images/games.png"                 , \
+                                      ":/images/avataricon.png"            , \
                                       self . DoAssignAsIcon                  )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
@@ -146,7 +146,7 @@ class PicturesView              ( IconDock                                 ) :
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     self . AppendSideActionWithIcon ( "ImportPictures"                     , \
-                                      ":/images/imagecollection.png"       , \
+                                      ":/images/importpictures.png"        , \
                                       self . ImportPictures                , \
                                       True                                 , \
                                       False                                  )
@@ -154,10 +154,10 @@ class PicturesView              ( IconDock                                 ) :
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     self . AppendSideActionWithIcon ( "SavePicture"                        , \
-                                      ":/images/save.png"                  , \
+                                      ":/images/savepicture.png"           , \
                                       self . SaveCurrentPicture              )
     self . AppendSideActionWithIcon ( "SaveAllPictures"                    , \
-                                      ":/images/saveall.png"               , \
+                                      ":/images/savepictures.png"          , \
                                       self . SaveAllPictures               , \
                                       True                                 , \
                                       False                                  )
@@ -1337,7 +1337,7 @@ class PicturesView              ( IconDock                                 ) :
     mm    . addActionFromMenu    ( COL , 34471105 , msg                      )
     ##########################################################################
     msg   = self . getMenuItem   ( "SaveAllPictures"                         )
-    ICON  = QIcon                ( ":/images/saveall.png"                    )
+    ICON  = QIcon                ( ":/images/savepictures.png"               )
     mm    . addActionFromMenuWithIcon ( COL , 34471201 , ICON , msg          )
     ##########################################################################
     mm    . addSeparatorFromMenu ( COL                                       )
@@ -1465,7 +1465,7 @@ class PicturesView              ( IconDock                                 ) :
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "SavePicture"                               )
-    ICN = QIcon                ( ":/images/save.png"                         )
+    ICN = QIcon                ( ":/images/savepicture.png"                  )
     mm  . addActionFromMenuWithIcon ( LOM , 24231101 , ICN , msg             )
     ##########################################################################
     msg = self . getMenuItem   ( "SaveSelections"                            )
@@ -1573,7 +1573,7 @@ class PicturesView              ( IconDock                                 ) :
       mm   . addSeparator               (                                    )
       ########################################################################
       msg  = self . getMenuItem         ( "EditPicture"                      )
-      icon = QIcon                      ( ":/images/interfaces.png"          )
+      icon = QIcon                      ( ":/images/epicture.png"            )
       mm   . addActionWithIcon          ( 1101 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "ViewPicture"                      )
@@ -1581,11 +1581,11 @@ class PicturesView              ( IconDock                                 ) :
       mm   . addActionWithIcon          ( 1102 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "AssignIcon"                       )
-      icon = QIcon                      ( ":/images/games.png"               )
+      icon = QIcon                      ( ":/images/avataricon.png"          )
       mm   . addActionWithIcon          ( 1103 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "ImportPictures"                   )
-    icon   = QIcon                      ( ":/images/imagecollection.png"     )
+    icon   = QIcon                      ( ":/images/importpictures.png"      )
     mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
     mm     . addSeparator               (                                    )
