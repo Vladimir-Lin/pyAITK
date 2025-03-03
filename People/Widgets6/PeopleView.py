@@ -1752,8 +1752,10 @@ class PeopleView                 ( IconDock                                ) :
     text = item . text                (                                      )
     icon = item . icon                (                                      )
     xsid = str                        ( uuid                                 )
+    FMT  = self . getMenuItem         ( "IconsFormat"                        )
+    tt   = FMT  . format              ( text                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    self . ShowPersonalGallery . emit ( tt , self . GType , xsid , icon      )
     ##########################################################################
     return
   ############################################################################
@@ -2154,6 +2156,8 @@ class PeopleView                 ( IconDock                                ) :
     MSG  = self . getMenuItem        ( "Piercings"                           )
     mm   . addActionFromMenu         ( LOM , 24231324 , MSG                  )
     ##########################################################################
+    mm   . addSeparatorFromMenu      ( LOM                                   )
+    ##########################################################################
     MSG  = self . getMenuItem        ( "Texture"                             )
     mm   . addActionFromMenu         ( LOM , 24231325 , MSG                  )
     ##########################################################################
@@ -2206,8 +2210,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Mouth"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2217,8 +2222,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Eye"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2228,8 +2234,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Iris"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2239,8 +2246,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Nose"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2250,8 +2258,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Tit"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2261,8 +2270,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Umbilicus"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2272,8 +2282,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Pussy"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2283,8 +2294,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Asshole"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2294,8 +2306,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Tattoo"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2305,8 +2318,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Piercings"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2316,8 +2330,9 @@ class PeopleView                 ( IconDock                                ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Texture"
+      tt   = f"{relz} : {text}"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalIcons . emit   ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
@@ -2339,7 +2354,9 @@ class PeopleView                 ( IconDock                                ) :
       ########################################################################
       for relz in rels                                                       :
         ######################################################################
-        self . ShowPersonalIcons . emit ( text , 7 , relz , xsid , icon      )
+        tt   = f"{relz} : {text}"
+        ######################################################################
+        self . ShowPersonalIcons . emit ( tt , 7 , relz , xsid , icon        )
       ########################################################################
       return True
     ##########################################################################
