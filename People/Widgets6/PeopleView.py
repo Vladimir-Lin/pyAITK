@@ -143,7 +143,7 @@ class PeopleView                 ( IconDock                                ) :
                                              ":/images/gallery.png"        , \
                                              self . OpenPersonalGallery      )
     self . AppendSideActionWithIcon        ( "Icons"                       , \
-                                             ":/images/animal.png"         , \
+                                             ":/images/foldericon.png"     , \
                                              self . OpenPersonalIcons        )
     self . AppendSideActionWithIcon        ( "Videos"                      , \
                                              ":/images/video.png"          , \
@@ -2111,11 +2111,18 @@ class PeopleView                 ( IconDock                                ) :
     mm   . addActionFromMenu         ( LOM , 24231312 , msg                  )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Icons"                               )
-    icon = QIcon                     ( ":/images/animal.png"                )
+    icon = QIcon                     ( ":/images/foldericon.png"             )
     mm   . addActionFromMenuWithIcon ( LOM , 24231313 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Faces"                               )
     mm   . addActionFromMenu         ( LOM , 24231314 , MSG                  )
+    ##########################################################################
+    mm   . addSeparatorFromMenu      ( LOM                                   )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "BodyPictures"                        )
+    mm   . addActionFromMenu         ( LOM , 24231399 , MSG                  )
+    ##########################################################################
+    mm   . addSeparatorFromMenu      ( LOM                                   )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Mouth"                               )
     mm   . addActionFromMenu         ( LOM , 24231315 , MSG                  )
@@ -2311,6 +2318,28 @@ class PeopleView                 ( IconDock                                ) :
       relz = "Texture"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231399                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      rels =                            [ "Mouth"                          , \
+                                          "Eye"                            , \
+                                          "Iris"                           , \
+                                          "Nose"                           , \
+                                          "Tit"                            , \
+                                          "Umbilicus"                      , \
+                                          "Pussy"                          , \
+                                          "Asshole"                        , \
+                                          "Tattoo"                         , \
+                                          "Piercings"                        ]
+      ########################################################################
+      for relz in rels                                                       :
+        ######################################################################
+        self . ShowPersonalIcons . emit ( text , 7 , relz , xsid , icon      )
       ########################################################################
       return True
     ##########################################################################
