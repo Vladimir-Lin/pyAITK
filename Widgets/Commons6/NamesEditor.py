@@ -67,7 +67,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
                                       True                                 , \
                                       False                                  )
     self . AppendSideActionWithIcon ( "QuickAdd"                           , \
-                                      ":/images/add.png"                   , \
+                                      ":/images/quick-add.png"             , \
                                       self . QuickAppending                , \
                                       True                                 , \
                                       False                                  )
