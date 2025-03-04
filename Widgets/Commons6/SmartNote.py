@@ -12,7 +12,6 @@ import gettext
 import json
 ##############################################################################
 from   opencc                             import OpenCC
-from   googletrans                        import Translator
 ##############################################################################
 from   PySide6                            import QtCore
 from   PySide6                            import QtGui
@@ -22,16 +21,11 @@ from   PySide6 . QtGui                    import *
 from   PySide6 . QtWidgets                import *
 from   AITK    . Qt6                      import *
 ##############################################################################
-from   AITK    . Qt6        . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6        . LineEdit    import LineEdit    as LineEdit
-from   AITK    . Qt6        . ComboBox    import ComboBox    as ComboBox
-from   AITK    . Qt6        . SpinBox     import SpinBox     as SpinBox
-from   AITK    . Qt6        . TextEdit    import TextEdit    as TextEdit
-##############################################################################
-from   AITK    . Essentials . Relation    import Relation
-from   AITK    . Calendars  . StarDate    import StarDate
-from   AITK    . Calendars  . Periode     import Periode
-from   AITK    . Documents  . Notes       import Notes
+from   AITK    . Linguistics . Translator import Translate
+from   AITK    . Essentials  . Relation   import Relation
+from   AITK    . Calendars   . StarDate   import StarDate
+from   AITK    . Calendars   . Periode    import Periode
+from   AITK    . Documents   . Notes      import Notes
 ##############################################################################
 class SmartNote           ( TextEdit                                       ) :
   ############################################################################
@@ -62,6 +56,7 @@ class SmartNote           ( TextEdit                                       ) :
     self . Uuid         = 0
     self . NOXTAB       = ""
     self . Key          = ""
+    self . Extra        = ""
     self . Prefer       = -1
     self . Filename     = ""
     self . Relation     = Relation  (                                        )
@@ -222,7 +217,7 @@ class SmartNote           ( TextEdit                                       ) :
   def LoadFromNotes                  ( self                                ) :
     ##########################################################################
     DB       = self . ConnectDB      (                                       )
-    if                               ( DB == None                          ) :
+    if                               ( self . NotOkay ( DB )               ) :
       return
     ##########################################################################
     NOXTAB   = self . Tables         [ "Notes"                               ]
@@ -231,8 +226,9 @@ class SmartNote           ( TextEdit                                       ) :
       NOXTAB = self . NOXTAB
     ##########################################################################
     NOX      = Notes                 (                                       )
-    NOX      . Uuid = self . Uuid
-    NOX      . Name = self . Key
+    NOX      . Uuid  = self . Uuid
+    NOX      . Name  = self . Key
+    NOX      . Extra = self . Extra
     NOX      . Obtains               ( DB , NOXTAB , self . Prefer           )
     BODY     = NOX . Note
     ##########################################################################
@@ -258,6 +254,7 @@ class SmartNote           ( TextEdit                                       ) :
     NOX    . Uuid   = self . Uuid
     NOX    . Name   = self . Key
     NOX    . Prefer = self . Prefer
+    NOX    . Extra  = self . Extra
     NOX    . Note   = self . toPlainText (                                   )
     ##########################################################################
     DB     . LockWrites                  ( [ NOXTAB                        ] )
@@ -469,14 +466,9 @@ class SmartNote           ( TextEdit                                       ) :
     if                                 ( len ( DEST ) <= 0                 ) :
       return True
     ##########################################################################
-    gt     = Translator     ( service_urls = [ "translate.googleapis.com" ]  )
-    ##########################################################################
-    try                                                                      :
-      target = gt . translate ( stext , src = SRC , dest = DEST ) . text
-    except                                                                   :
-      return True
-    ##########################################################################
+    target = Translate                 ( stext , SRC , DEST                  )
     self   . ReplaceSelection          ( target                              )
+    self   . Notify                    ( 5                                   )
     ##########################################################################
     return False
   ############################################################################

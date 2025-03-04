@@ -51,11 +51,11 @@ class LogHistory         ( TreeDock                                        ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 8                                       )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
-    self . setColumnHidden         ( 4 , True                                )
-    self . setColumnHidden         ( 5 , True                                )
-    self . setColumnHidden         ( 7 , True                                )
+    ## self . setColumnHidden         ( 2 , True                                )
+    ## self . setColumnHidden         ( 3 , True                                )
+    ## self . setColumnHidden         ( 4 , True                                )
+    ## self . setColumnHidden         ( 5 , True                                )
+    ## self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -79,7 +79,7 @@ class LogHistory         ( TreeDock                                        ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 480 , 320 )                       )
+    return self . SizeSuggestion ( QSize ( 960 , 240 )                       )
   ############################################################################
   def PrepareForActions ( self                                             ) :
     ##########################################################################
@@ -689,7 +689,7 @@ class LogHistory         ( TreeDock                                        ) :
                                      UXID                                    ,
                                      KEY                                     ,
                                      int ( uuid )                            ,
-                                     self . Extra                            )
+                                     atItem . text ( 5 )                     )
       ########################################################################
       return True
     ##########################################################################

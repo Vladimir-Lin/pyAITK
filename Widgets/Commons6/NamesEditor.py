@@ -22,12 +22,6 @@ from   PySide6 . QtWidgets                 import *
 from   AITK    . Qt6                       import *
 ##############################################################################
 from   AITK    . Linguistics . Translator  import Translate
-##############################################################################
-from   AITK    . Qt6         . VirtualGui  import VirtualGui  as VirtualGui
-from   AITK    . Qt6         . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6         . TreeWidget  import TreeWidget  as TreeWidget
-from   AITK    . Qt6         . TreeDock    import TreeDock    as TreeDock
-##############################################################################
 from   AITK    . Documents   . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor          ( TreeDock , NameItem                           ) :
