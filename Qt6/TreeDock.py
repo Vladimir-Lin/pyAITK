@@ -921,7 +921,7 @@ class TreeDock                    ( TreeWidget , AttachDock                ) :
     ##########################################################################
     msg  = self . Translations    [ "UI::EditNames"                          ]
     A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setIcon                ( QIcon ( ":/images/names-editor.png" )    )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . GotoItemNamesEditor               )
     A    . setEnabled             ( False                                    )

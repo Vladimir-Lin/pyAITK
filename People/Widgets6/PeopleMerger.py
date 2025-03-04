@@ -84,7 +84,7 @@ class PeopleMerger          ( TreeDock                                     ) :
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "LimitedMerge"                       , \
-                                      ":/images/first.png"                 , \
+                                      ":/images/merge-people.png"          , \
                                       self . RunMergePeopleLIMITED         , \
                                       True                                 , \
                                       False                                  )

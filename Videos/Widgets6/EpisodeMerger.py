@@ -77,7 +77,7 @@ class EpisodeMerger         ( TreeDock                                     ) :
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "LimitedMerge"                       , \
-                                      ":/images/first.png"                 , \
+                                      ":/images/merge-episode.png"         , \
                                       self . RunMergeAlbumLIMITED          , \
                                       True                                 , \
                                       False                                  )
