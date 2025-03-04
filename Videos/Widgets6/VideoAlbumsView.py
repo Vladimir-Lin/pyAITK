@@ -162,7 +162,7 @@ class VideoAlbumsView             ( IconDock                               ) :
                                              self . OpenIdentWebPages        )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "LogHistory"                  , \
-                                             ":/images/documents.png"      , \
+                                             ":/images/notes.png"          , \
                                              self . OpenCurrentLogHistory    )
     ##########################################################################
     return
