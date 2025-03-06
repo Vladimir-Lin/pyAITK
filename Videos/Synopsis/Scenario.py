@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## Fragment
-## 影片段落
+## Scenario
+## 影片場景
 ##############################################################################
 import os
 import sys
@@ -32,7 +32,7 @@ from   AITK  . Essentials . Relation       import Relation       as Relation
 ## HairsLongType  = 1100000000000000020
 ## HairsTypeName  = "Hairs"
 ##############################################################################
-class Fragment           ( Columns                                         ) :
+class Scenario           ( Columns                                         ) :
   ############################################################################
   def __init__           ( self                                            ) :
     ##########################################################################
@@ -53,7 +53,9 @@ class Fragment           ( Columns                                         ) :
     self . Uuid        =   0
     self . Used        =   1
     self . States      =   0
-    self . Description = {                                                   }
+    self . SType       =   0
+    self . Name        = ""
+    self . Description = { }
     self . ltime       =   0
     ##########################################################################
     self . PeopleUuid =   0
@@ -67,6 +69,8 @@ class Fragment           ( Columns                                         ) :
     self . Uuid        = item . Uuid
     self . Used        = item . Used
     self . States      = item . States
+    self . SType       = item . SType
+    self . Name        = item . Name
     self . Description = item . Description
     self . ltime       = item . ltime
     ##########################################################################
@@ -87,6 +91,12 @@ class Fragment           ( Columns                                         ) :
     ##########################################################################
     elif             ( "states"      == a                                  ) :
       self . States      = value
+    ##########################################################################
+    elif             ( "type"        == a                                  ) :
+      self . SType       = value
+    ##########################################################################
+    elif             ( "name"        == a                                  ) :
+      self . Name        = self . assureString ( value                       )
     ##########################################################################
     elif             ( "description" == a                                  ) :
       ########################################################################
@@ -134,6 +144,12 @@ class Fragment           ( Columns                                         ) :
     if               ( "states"      == a                                  ) :
       return self . States
     ##########################################################################
+    if               ( "type"        == a                                  ) :
+      return self . SType
+    ##########################################################################
+    if               ( "name"        == a                                  ) :
+      return self . Name
+    ##########################################################################
     if               ( "description" == a                                  ) :
       return self . Description
     ##########################################################################
@@ -147,6 +163,8 @@ class Fragment           ( Columns                                         ) :
              "uuid"                                                          ,
              "used"                                                          ,
              "states"                                                        ,
+             "type"                                                          ,
+             "name"                                                          ,
              "description"                                                   ,
              "ltime"                                                         ]
   ############################################################################
@@ -157,6 +175,8 @@ class Fragment           ( Columns                                         ) :
   def valueItems        ( self                                             ) :
     return [ "used"                                                          ,
              "states"                                                        ,
+             "type"                                                          ,
+             "name"                                                          ,
              "description"                                                   ]
   ############################################################################
   def toJson ( self                                                        ) :
@@ -164,6 +184,8 @@ class Fragment           ( Columns                                         ) :
                "Uuid"        : self . Uuid                                 , \
                "Used"        : self . Used                                 , \
                "States"      : self . States                               , \
+               "Type"        : self . SType                                , \
+               "Name"        : self . Name                                 , \
                "Description" : self . Description                            }
   ############################################################################
   def assureString     ( self , pb                                         ) :
