@@ -59,6 +59,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   OwnedEpisodesSubgroup  = Signal ( str , int , str                          )
   emitConnectAlbum       = Signal ( str                                      )
   emitOpenVideoGroup     = Signal ( str , int , str , str , QIcon            )
+  emitFragmentEditor     = Signal ( str , int , str , str , QIcon            )
   ShowWebPages           = Signal ( str , int , str , str , QIcon            )
   ShowAlbumSources       = Signal ( str , str , str ,       QIcon            )
   OpenVariantTables      = Signal ( str , str , int , str , dict             )
@@ -153,6 +154,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . AppendSideActionWithIcon        ( "AlbumSubgroups"              , \
                                              ":/images/modifyproject.png"  , \
                                              self . OpenEpisodesSubgroup     )
+    self . AppendSideActionWithIcon        ( "VideoFragments"              , \
+                                             ":/images/vfragments.png"     , \
+                                             self . OpenVFragments           )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
                                              ":/images/webfind.png"        , \
@@ -2439,6 +2443,36 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenFragmentItem               ( self , item                         ) :
+    ##########################################################################
+    uuid = item . data               ( Qt . UserRole                         )
+    uuid = int                       ( uuid                                  )
+    ##########################################################################
+    if                               ( uuid <= 0                           ) :
+      return False
+    ##########################################################################
+    text = item . text               (                                       )
+    icon = item . icon               (                                       )
+    xsid = str                       ( uuid                                  )
+    relz = "Subordination"
+    ##########################################################################
+    self . emitFragmentEditor . emit ( text                                , \
+                                       self . GType                        , \
+                                       xsid                                , \
+                                       relz                                , \
+                                       icon                                  )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenVFragments               ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    return self . OpenFragmentItem ( atItem                                  )
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesEditing"     )
@@ -2706,9 +2740,13 @@ class VideoAlbumsView             ( IconDock                               ) :
     ICON  = QIcon                     ( ":/images/galleries.png"             )
     mm    . addActionFromMenuWithIcon ( LOM , 34231203 , ICON , MSG          )
     ##########################################################################
+    MSG   = self . getMenuItem        ( "VideoFragments"                     )
+    ICON  = QIcon                     ( ":/images/vfragments.png"            )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231204 , ICON , MSG          )
+    ##########################################################################
     MSG   = self . getMenuItem        ( "AlbumSubgroups"                     )
     ICON  = QIcon                     ( ":/images/modifyproject.png"         )
-    mm    . addActionFromMenuWithIcon ( LOM , 34231204 , ICON , MSG          )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231205 , ICON , MSG          )
     ##########################################################################
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
@@ -2818,6 +2856,12 @@ class VideoAlbumsView             ( IconDock                               ) :
       return True
     ##########################################################################
     if                             ( at == 34231204                        ) :
+      ########################################################################
+      self . OpenFragmentItem      ( item                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34231205                        ) :
       ########################################################################
       self . OpenSubgroupItem      ( item                                    )
       ########################################################################

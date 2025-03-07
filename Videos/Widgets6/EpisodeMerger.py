@@ -86,7 +86,7 @@ class EpisodeMerger         ( TreeDock                                     ) :
   ############################################################################
   def AttachActions   ( self         ,                             Enabled ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup            , Enabled   )
+    self . LinkAction ( "Refresh"    , self . restart            , Enabled   )
     self . LinkAction ( "Delete"     , self . DeleteItems        , Enabled   )
     self . LinkAction ( "Start"      , self . ExecuteMergeEpisode , Enabled  )
     self . LinkAction ( "Copy"       , self . CopyToClipboard    , Enabled   )
