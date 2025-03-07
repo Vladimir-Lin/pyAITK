@@ -119,7 +119,7 @@ class ListDock         ( ListWidget , AttachDock                           ) :
       if                              (     S or M                         ) :
         ######################################################################
         msg  = self . getLocalMessage ( self . AttachToDock                  )
-        ico  = QIcon                  ( ":/images/hidespeech.png"            )
+        ico  = QIcon                  ( ":/images/sidebar.png"               )
         menu . addActionWithIcon      ( self . AttachToDock , ico , msg      )
     ##########################################################################
     ## if                                ( self . HavingSTACK                 ) :
