@@ -23,14 +23,11 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-## HAIRSREL       = "`affiliations`.`relations_people_0009`"
-## HPICREL        = "`affiliations`.`relations_pictures_0009`"
-## HAIRSNAM       = "`appellations`.`names_commons_0014`"
-## HAIRSNOTE      = "`notez`.`notes_commons_0027`"
-## HAIRSPARAM     = "`cios`.`parameters`"
-## HairsShortType = 20
-## HairsLongType  = 1100000000000000020
-## HairsTypeName  = "Hairs"
+FRAGREL           = "`cios`.`relations_videos`"
+FRAGNAM           = "`appellations`.`names_others_0016`"
+FragmentShortType = 213
+FragmentLongType  = 1100000000000000213
+FragmentTypeName  = "vFragment"
 ##############################################################################
 class Fragment           ( Columns                                         ) :
   ############################################################################

@@ -95,7 +95,7 @@ class FragmentEditor     ( TreeDock                                        ) :
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
-    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
@@ -104,7 +104,6 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
-  ############################################################################
   ############################################################################
   def FocusIn                     ( self                                   ) :
     return self . defaultFocusIn  (                                          )
@@ -147,9 +146,9 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery               ( self                                ) :
-    return self . IRIS . QuerySyntax ( self . Tables [ "Eyes" ]            , \
-                                       self . SortOrder                      )
+  ## def ObtainUuidsQuery               ( self                                ) :
+  ##   return self . IRIS . QuerySyntax ( self . Tables [ "Eyes" ]            , \
+  ##                                      self . SortOrder                      )
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
@@ -218,20 +217,20 @@ class FragmentEditor     ( TreeDock                                        ) :
     self   . ShowStatus              ( ""                                    )
     DB     . Close                   (                                       )
     ##########################################################################
-    if                               ( len ( L ) <= 0                      ) :
-      ########################################################################
-      self . emitNamesShow . emit    (                                       )
-      ########################################################################
-      return
+    ## if                               ( len ( L ) <= 0                      ) :
+    ##   ########################################################################
+    ##   self . emitNamesShow . emit    (                                       )
+    ##   ########################################################################
+    ##   return
     ##########################################################################
-    self   . emitAllNames  . emit    ( L                                     )
+    ## self   . emitAllNames  . emit    ( L                                     )
     self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "video/uuids"
+    mtype   = "vfragment/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -242,9 +241,11 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "video/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs =                 [ "vfragment/uuids"                             , \
+                             "scenario/uuids"                              , \
+                             "video/uuids"                                   ]
+    return self . MimeType ( mime , ";" . join ( FMTs  )                     )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -271,8 +272,8 @@ class FragmentEditor     ( TreeDock                                        ) :
     title  = source . windowTitle    (                                       )
     CNT    = len                     ( UUIDs                                 )
     ##########################################################################
-    if                               ( mtype in [ "video/uuids"          ] ) :
-      self . ShowMenuItemTitleStatus ( "VideosFrom" , title , CNT            )
+    ## if                               ( mtype in [ "video/uuids"          ] ) :
+    ##   self . ShowMenuItemTitleStatus ( "VideosFrom" , title , CNT            )
     ##########################################################################
     return RDN
   ############################################################################
@@ -286,59 +287,8 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptVideoDrop ( self                                               ) :
-    return True
-  ############################################################################
-  def dropVideos  ( self , source , pos , JSOX                             ) :
+  def InsertItem ( self                                                    ) :
     ##########################################################################
-    if            ( "UUIDs" not in JSOX                                    ) :
-      return True
-    ##########################################################################
-    UUIDs = JSOX  [ "UUIDs"                                                  ]
-    if            ( len ( UUIDs ) <= 0                                     ) :
-      return True
-    ##########################################################################
-    self . Go     ( self . AppendingVideos , ( UUIDs , )                     )
-    ##########################################################################
-    return True
-  ############################################################################
-  def AppendingVideos           ( self , UUIDs                             ) :
-    ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    if                          ( COUNT <= 0                               ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    FMT    = self . getMenuItem ( "JoinVideos"                               )
-    MSG    = FMT  . format      ( COUNT                                      )
-    self   . ShowStatus         ( MSG                                        )
-    self   . TtsTalk            ( MSG , 1002                                 )
-    ##########################################################################
-    RELTAB = self . Tables      [ "RelationVideos"                           ]
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    ##########################################################################
-    if                          ( self . isSubordination ( )               ) :
-      ########################################################################
-      self . Relation . Joins   ( DB , RELTAB , UUIDs                        )
-      ########################################################################
-    elif                        ( self . isReverse       ( )               ) :
-      ########################################################################
-      for UUID in UUIDs                                                      :
-        ######################################################################
-        self . Relation . set   ( "first" , UUID                             )
-        self . Relation . Join  ( DB      , RELTAB                           )
-    ##########################################################################
-    DB     . UnlockTables       (                                            )
-    ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -347,7 +297,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
+    ## self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
@@ -450,10 +400,9 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    self . DoCopyToClipboard (                                               )
+    ## self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -495,28 +444,6 @@ class FragmentEditor     ( TreeDock                                        ) :
     msg  = self . getMenuItem   ( "CopyVideoUuid"                            )
     mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
     ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "Description"                              )
-    mm   . addActionFromMenu    ( COL , 38522001 , msg                       )
-    ##########################################################################
-    if                          ( "Embedded" != self . Method              ) :
-      return mm
-    ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "AddToPlayList"                            )
-    mm   . addActionFromMenu    ( COL , 38523001 , msg                       )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "CreateAnalysis"                           )
-    mm   . addActionFromMenu    ( COL , 38523003 , msg                       )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "PlayAnalysis"                             )
-    mm   . addActionFromMenu    ( COL , 38523003 , msg                       )
-    ##########################################################################
-    msg  = self . getMenuItem   ( "JoinCurrentEditor"                        )
-    mm   . addActionFromMenu    ( COL , 38523004 , msg                       )
-    ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                 ( self , at , item                     ) :
@@ -526,63 +453,6 @@ class FragmentEditor     ( TreeDock                                        ) :
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
       qApp . clipboard ( ). setText ( f"{uuid}"                              )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522001                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      head = item . text            ( 0                                      )
-      nx   = ""
-      ########################################################################
-      if                            ( "Notes" in self . Tables             ) :
-        nx = self . Tables          [ "Notes"                                ]
-      ########################################################################
-      self . OpenLogHistory . emit  ( head                                   ,
-                                      str ( uuid )                           ,
-                                      "Description"                          ,
-                                      nx                                     ,
-                                      ""                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( "Embedded" != self . Method          ) :
-      return False
-    ##########################################################################
-    if                              ( at == 38523001                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      ########################################################################
-      self . AddToPlayList . emit   ( str ( uuid                           ) )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38523002                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      ########################################################################
-      self . CreateAnalysis . emit  ( str ( uuid                           ) )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38523003                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      ########################################################################
-      self . PlayAnalysis . emit    ( str ( uuid                           ) )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38523004                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      ########################################################################
-      self . JoinCurrentEditor . emit ( str ( uuid                         ) )
       ########################################################################
       return True
     ##########################################################################
@@ -605,8 +475,9 @@ class FragmentEditor     ( TreeDock                                        ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendRenameAction    ( mm , 1102                               )
-    self   . AppendDeleteAction    ( mm , 1103                               )
+    self   . AppendInsertAction    ( mm , 1102                               )
+    self   . AppendRenameAction    ( mm , 1103                               )
+    self   . AppendDeleteAction    ( mm , 1104                               )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
     ##########################################################################
     mm     . addSeparator          (                                         )
@@ -658,10 +529,14 @@ class FragmentEditor     ( TreeDock                                        ) :
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
-      self . RenameItem            (                                         )
+      self . InsertItem            (                                         )
       return True
     ##########################################################################
     if                             ( at == 1103                            ) :
+      self . RenameItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1104                            ) :
       self . DeleteItems           (                                         )
       return True
     ##########################################################################
