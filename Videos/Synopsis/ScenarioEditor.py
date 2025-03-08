@@ -648,7 +648,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     jsoz = item . data             ( self . JsonAt , Qt . UserRole           )
     uuid = int                     ( uuid                                    )
     uxid = str                     ( uuid                                    )
-    head = item . text             ( 0                                       )
+    head = item . text             ( 1                                       )
     icon = self . windowIcon       (                                         )
     JJ   =                         { "Uuid"        : uuid                  , \
                                      "Album"       : self . AlbumUuid      , \
@@ -732,7 +732,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9013 )         :
+    if                             ( at >= 9002 ) and ( at <= 9009 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
