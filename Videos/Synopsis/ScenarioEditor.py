@@ -46,7 +46,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . GType              = 212
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 40
+    self . Amount             = 28
     self . JsonAt             = 9
     self . SortOrder          = "asc"
     self . UsedOptions        = [ 1 , 2 , 3                                  ]
@@ -68,10 +68,16 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 10                                      )
+    self . setColumnWidth          (  0 ,  48                                )
+    self . setColumnWidth          (  1 , 400                                )
     self . setColumnHidden         (  2 , True                               )
+    self . setColumnWidth          (  2 , 120                                )
     self . setColumnHidden         (  3 , True                               )
+    self . setColumnWidth          (  3 , 120                                )
     self . setColumnHidden         (  4 , True                               )
+    self . setColumnWidth          (  4 , 120                                )
     self . setColumnHidden         (  5 , True                               )
+    self . setColumnWidth          (  5 , 120                                )
     self . setColumnHidden         (  7 , True                               )
     self . setColumnHidden         (  8 , True                               )
     self . setColumnHidden         (  9 , True                               )
@@ -162,45 +168,53 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked              ( self , item , column                     ) :
+  def twiceClicked                  ( self , item , column                 ) :
     ##########################################################################
-    if                          ( column in [ 0 ]                          ) :
+    if                              ( column in [ 0 ]                      ) :
       ########################################################################
       ## 位序
       pass
     ##########################################################################
-    if                          ( column in [ 1 ]                          ) :
+    if                              ( column in [ 1 ]                      ) :
       ########################################################################
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+      line = self . setLineEdit     ( item                                 , \
+                                      column                               , \
+                                      "editingFinished"                    , \
+                                      self . nameChanged                     )
+      line . setFocus               ( Qt . TabFocusReason                    )
     ##########################################################################
-    if                          ( column in [ 2 ]                          ) :
+    if                              ( column in [ 2 ]                      ) :
       ########################################################################
       ## 用途
       pass
     ##########################################################################
-    if                          ( column in [ 3 ]                          ) :
+    if                              ( column in [ 3 ]                      ) :
       ########################################################################
       ## 種類
       pass
     ##########################################################################
-    if                          ( column in [ 4 ]                          ) :
+    if                              ( column in [ 4 ]                      ) :
       ########################################################################
       ## 範圍
       pass
     ##########################################################################
-    if                          ( column in [ 5 ]                          ) :
+    if                              ( column in [ 5 ]                      ) :
       ########################################################################
       ## 狀態
       pass
     ##########################################################################
-    if                          ( column in [ 6 ]                          ) :
+    if                              ( column in [ 6 ]                      ) :
       ########################################################################
-      ## 場景時長
-      pass
+      slen = item . data            ( column , Qt . UserRole                 )
+      xlen = self . SCENE . toFTime ( int ( slen                           ) )
+      line = self . setLineEdit     ( item                                 , \
+                                      column                               , \
+                                      "editingFinished"                    , \
+                                      self . nameChanged                     )
+      line . blockSignals           ( True                                   )
+      line . setText                ( xlen                                   )
+      line . blockSignals           ( False                                  )
+      line . setFocus               ( Qt . TabFocusReason                    )
     ##########################################################################
     return
   ############################################################################
@@ -235,6 +249,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     IT      . setData                ( 1 , Qt . UserRole , str ( UUID )      )
     IT      . setText                ( 2 , UNAME                             )
     IT      . setData                ( 2 , Qt . UserRole , USED              )
+    IT      . setTextAlignment       ( 2 , Qt . AlignCenter                  )
     IT      . setText                ( 3 , str ( STYPE )                     )
     IT      . setTextAlignment       ( 3 , Qt . AlignRight                   )
     IT      . setData                ( 3 , Qt . UserRole , STYPE             )
@@ -243,8 +258,13 @@ class ScenarioEditor        ( TreeDock                                     ) :
     IT      . setTextAlignment       ( 5 , Qt . AlignRight                   )
     IT      . setData                ( 5 , Qt . UserRole , STATEs            )
     IT      . setText                ( 6 , DTIME                             )
+    IT      . setTextAlignment       ( 6 , Qt . AlignRight                   )
+    IT      . setData                ( 6 , Qt . UserRole , str ( SLEN )      )
     IT      . setText                ( 7 , STIME                             )
+    IT      . setTextAlignment       ( 7 , Qt . AlignRight                   )
+    IT      . setData                ( 7 , Qt . UserRole , str ( BT   )      )
     IT      . setText                ( 8 , ETIME                             )
+    IT      . setTextAlignment       ( 8 , Qt . AlignRight                   )
     ##########################################################################
     IT      . setData                ( self . JsonAt , Qt . UserRole , JSON  )
     ##########################################################################
@@ -527,11 +547,18 @@ class ScenarioEditor        ( TreeDock                                     ) :
       self . removeTopLevelItem ( item                                       )
       return
     ##########################################################################
-    item   . setText            ( column , msg                               )
-    ##########################################################################
     self   . removeParked       (                                            )
-    VAL    =                    ( item , uuid , msg ,                        )
-    self   . Go                 ( self . AssureUuidItem , VAL                )
+    ##########################################################################
+    if                          ( 1 == column                              ) :
+      ########################################################################
+      item . setText            ( column , msg                               )
+      VAL  =                    ( item , uuid , msg ,                        )
+      self . Go                 ( self . AssureUuidItem , VAL                )
+      ########################################################################
+    elif                        ( 6 == column                              ) :
+      ########################################################################
+      VAL  =                    ( item , uuid , msg ,                        )
+      self . Go                 ( self . UpdateItemDuration , VAL            )
     ##########################################################################
     return
   ############################################################################
@@ -580,8 +607,11 @@ class ScenarioEditor        ( TreeDock                                     ) :
   def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
+    ##########################################################################
+    if                        ( self . NotOkay ( DB )                      ) :
+      ########################################################################
       self . Notify           ( 1                                            )
+      ########################################################################
       return
     ##########################################################################
     SCNTAB = self . Tables    [ "Scenarios"                                  ]
@@ -628,6 +658,46 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
+  def UpdateItemDuration                   ( self , item , uuid , name     ) :
+    ##########################################################################
+    uuid        = int                      ( uuid                            )
+    ##########################################################################
+    if                                     ( uuid <= 0                     ) :
+      ########################################################################
+      self      . Notify                   ( 1                               )
+      ########################################################################
+      return
+    ##########################################################################
+    OKAY , SLEN = self . SCENE . FromFTime ( name                            )
+    ##########################################################################
+    if                                     ( not OKAY                      ) :
+      ########################################################################
+      self      . Notify                   ( 1                               )
+      ########################################################################
+      return
+    ##########################################################################
+    DB          = self . ConnectDB         (                                 )
+    ##########################################################################
+    if                                     ( self . NotOkay ( DB )         ) :
+      ########################################################################
+      self      . Notify                   ( 1                               )
+      ########################################################################
+      return
+    ##########################################################################
+    SCNTAB      = self . Tables            [ "Scenarios"                     ]
+    ##########################################################################
+    DB          . LockWrites               ( [ SCNTAB                      ] )
+    ##########################################################################
+    QQ          = f"""update {SCNTAB}
+                      set `duration` = {SLEN}
+                      where ( `uuid` = {uuid} ) ;"""
+    DB          . Query                    ( " " . join ( QQ . split (   ) ) )
+    ##########################################################################
+    DB          . Close                    (                                 )
+    self        . loading                  (                                 )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard (                                               )
@@ -645,6 +715,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   def OpenItemDescriptive          ( self , item                           ) :
     ##########################################################################
     uuid = item . data             ( 0             , Qt . UserRole           )
+    slen = item . data             ( 7             , Qt . UserRole           )
     jsoz = item . data             ( self . JsonAt , Qt . UserRole           )
     uuid = int                     ( uuid                                    )
     uxid = str                     ( uuid                                    )
@@ -654,6 +725,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
                                      "Album"       : self . AlbumUuid      , \
                                      "Fragment"    : self . FragmentUuid   , \
                                      "Name"        : head                  , \
+                                     "BaseTime"    : int ( slen )          , \
                                      "Description" : jsoz                    }
     ##########################################################################
     self . emitDescriptives . emit ( self                                  , \
@@ -727,16 +799,43 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
-  ############################################################################
-  def RunColumnsMenu               ( self , at                             ) :
+  def ColumnsMenu                   ( self , mm                           ) :
     ##########################################################################
-    if                             ( at >= 9002 ) and ( at <= 9009 )         :
+    TRX     = self . Translations
+    head    = self . headerItem     (                                        )
+    COL     = mm   . addMenu        ( TRX [ "UI::Columns" ]                  )
+    ##########################################################################
+    msg     = self . getMenuItem    ( "ShowAllColumns"                       )
+    mm      . addActionFromMenu     ( COL , 9501 , msg                       )
+    ##########################################################################
+    mm      . addSeparatorFromMenu  ( COL                                    )
+    ##########################################################################
+    for i in range                  ( 2 , self . columnCount ( )           ) :
       ########################################################################
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
+      msg   = head . text           ( i                                      )
+      if                            ( len ( msg ) <= 0                     ) :
+        msg = TRX                   [ "UI::Whitespace"                       ]
+      ########################################################################
+      hid   = self . isColumnHidden ( i                                      )
+      mm    . addActionFromMenu     ( COL , 9000 + i , msg , True , not hid  )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunColumnsMenu                 ( self , at                           ) :
+    ##########################################################################
+    if                               ( 9501 == at                          ) :
+      ########################################################################
+      for i in range                 ( 2 , self . columnCount (          ) ) :
+        ######################################################################
+        self . setColumnHidden       ( i , False                             )
+      ########################################################################
+      return
+    ##########################################################################
+    if                               ( at >= 9002 ) and ( at <= 9009 )       :
+      ########################################################################
+      col    = at - 9000
+      hid    = self . isColumnHidden ( col                                   )
+      self   . setColumnHidden       ( col , not hid                         )
       ########################################################################
       return True
     ##########################################################################
