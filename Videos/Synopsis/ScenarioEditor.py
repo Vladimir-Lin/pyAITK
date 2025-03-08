@@ -67,7 +67,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . Relation . setT2        ( "Scenario"                              )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 10                                      )
+    self . setColumnCount          ( 11                                      )
     self . setColumnWidth          (  0 ,  48                                )
     self . setColumnWidth          (  1 , 400                                )
     self . setColumnHidden         (  2 , True                               )
@@ -80,7 +80,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . setColumnWidth          (  5 , 120                                )
     self . setColumnHidden         (  7 , True                               )
     self . setColumnHidden         (  8 , True                               )
-    self . setColumnHidden         (  9 , True                               )
+    self . setColumnHidden         ( 10 , True                               )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -228,6 +228,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     USED    = int                    ( JSON [ "Used"                       ] )
     STATEs  = int                    ( JSON [ "States"                     ] )
     SLEN    = int                    ( JSON [ "Duration"                   ] )
+    CPEO    = int                    ( JSON [ "People"                     ] )
     ELEN    = int                    ( SLEN + BT                             )
     ##########################################################################
     DTIME   = self . SCENE . toLTime ( SLEN                                  )
@@ -265,10 +266,15 @@ class ScenarioEditor        ( TreeDock                                     ) :
     IT      . setData                ( 7 , Qt . UserRole , str ( BT   )      )
     IT      . setText                ( 8 , ETIME                             )
     IT      . setTextAlignment       ( 8 , Qt . AlignRight                   )
+    IT      . setText                ( 9 , str ( CPEO )                      )
+    IT      . setData                ( 9 , Qt . UserRole , CPEO              )
+    IT      . setTextAlignment       ( 9 , Qt . AlignRight                   )
     ##########################################################################
     IT      . setData                ( self . JsonAt , Qt . UserRole , JSON  )
     ##########################################################################
-    COLs    =                        [ 0 , 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 ]
+    COLs    =                        [  0 ,  1 ,  2 ,  3 ,  4 ,              \
+                                        5 ,  6 ,  7 ,  8 ,  9 ,              \
+                                       10                                    ]
     ##########################################################################
     for COL in COLs                                                          :
       ########################################################################
@@ -310,63 +316,67 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadScenarios                         ( self , DB                    ) :
+  def LoadScenarios                          ( self , DB                   ) :
     ##########################################################################
-    SCENARIOs   =                           [                                ]
-    LISTs       =                           [                                ]
-    UUIDs       =                           [                                ]
+    SCENARIOs   =                            [                               ]
+    LISTs       =                            [                               ]
+    UUIDs       =                            [                               ]
     ##########################################################################
-    RELTAB      = self . Tables             [ "Relation"                     ]
-    SCNTAB      = self . Tables             [ "Scenarios"                    ]
+    RELTAB      = self . Tables              [ "Relation"                    ]
+    PEOREL      = self . Tables              [ "RelationPeople"              ]
+    SCNTAB      = self . Tables              [ "Scenarios"                   ]
     ##########################################################################
-    if                                      ( self . isSubordination (   ) ) :
+    if                                       ( self . isSubordination (  ) ) :
       ########################################################################
       LISTs     = self . SCENE . FetchListsByFirst                         ( \
-                                              DB                           , \
-                                              SCNTAB                       , \
-                                              RELTAB                       , \
-                                              self . Relation              , \
-                                              self . UsedOptions           , \
-                                              self . StartId               , \
-                                              self . Amount                , \
-                                              self . SortOrder               )
+                                               DB                          , \
+                                               SCNTAB                      , \
+                                               RELTAB                      , \
+                                               self . Relation             , \
+                                               self . UsedOptions          , \
+                                               self . StartId              , \
+                                               self . Amount               , \
+                                               self . SortOrder              )
       ########################################################################
-    elif                                    ( self . isReverse       (   ) ) :
+    elif                                     ( self . isReverse       (  ) ) :
       ########################################################################
       LISTs     = self . SCENE . FetchListsBySecond                        ( \
-                                              DB                           , \
-                                              SCNTAB                       , \
-                                              RELTAB                       , \
-                                              self . Relation              , \
-                                              self . UsedOptions           , \
-                                              self . StartId               , \
-                                              self . Amount                , \
-                                              self . SortOrder               )
+                                               DB                          , \
+                                               SCNTAB                      , \
+                                               RELTAB                      , \
+                                               self . Relation             , \
+                                               self . UsedOptions          , \
+                                               self . StartId              , \
+                                               self . Amount               , \
+                                               self . SortOrder              )
       ########################################################################
     else                                                                     :
       ########################################################################
-      LISTs     = self . SCENE . FetchLists ( DB                           , \
-                                              SCNTAB                       , \
-                                              self . UsedOptions           , \
-                                              self . StartId               , \
-                                              self . Amount                , \
-                                              self . SortOrder               )
+      LISTs     = self . SCENE . FetchLists  ( DB                          , \
+                                               SCNTAB                      , \
+                                               self . UsedOptions          , \
+                                               self . StartId              , \
+                                               self . Amount               , \
+                                               self . SortOrder              )
     ##########################################################################
     for L in LISTs                                                           :
       ########################################################################
-      UUIDs     . append                    ( L [ "Uuid"                   ] )
+      UUIDs     . append                     ( L [ "Uuid"                  ] )
     ##########################################################################
-    NAMEs       = self . ObtainsUuidNames   ( DB , UUIDs                     )
+    NAMEs       = self . ObtainsUuidNames    ( DB , UUIDs                    )
     ##########################################################################
     for L in LISTs                                                           :
       ########################################################################
-      UUID      = L                         [ "Uuid"                         ]
+      UUID      = L                          [ "Uuid"                        ]
       ########################################################################
-      if                                    ( UUID in NAMEs                ) :
+      if                                     ( UUID in NAMEs               ) :
         ######################################################################
-        L [ "Name" ] = NAMEs                [ UUID                           ]
+        L [ "Name" ] = NAMEs                 [ UUID                          ]
       ########################################################################
-      SCENARIOs . append                    ( L                              )
+      PCNT      = self . SCENE . CountPeople ( DB , PEOREL , UUID            )
+      L [ "People" ] = PCNT
+      ########################################################################
+      SCENARIOs . append                     ( L                             )
     ##########################################################################
     return SCENARIOs
   ############################################################################
@@ -706,7 +716,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 9                              )
+    self . defaultPrepare ( self . ClassTag , 10                             )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -831,7 +841,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
       ########################################################################
       return
     ##########################################################################
-    if                               ( at >= 9002 ) and ( at <= 9009 )       :
+    if                               ( at >= 9002 ) and ( at <= 9010 )       :
       ########################################################################
       col    = at - 9000
       hid    = self . isColumnHidden ( col                                   )
