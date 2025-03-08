@@ -49,20 +49,20 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   HavingMenu             = 1371434312
   ############################################################################
-  OwnedPeopleGroup       = Signal ( str , int , str                          )
-  OwnedPeopleGroupRelate = Signal ( str , int , str , str                    )
-  ShowPersonalGallery    = Signal ( str , int , str ,       QIcon            )
-  ShowPersonalIcons      = Signal ( str , int , str , str , QIcon            )
-  GalleryGroup           = Signal ( str , int , str                          )
-  ShowGalleriesRelation  = Signal ( str , int , str , str , QIcon            )
-  OwnedOrganizationGroup = Signal ( str , int , str , str , QIcon            )
-  OwnedEpisodesSubgroup  = Signal ( str , int , str                          )
+  OwnedPeopleGroup       = Signal ( str ,       int , str                    )
+  OwnedPeopleGroupRelate = Signal ( str ,       int , str , str              )
+  ShowPersonalGallery    = Signal ( str ,       int , str ,       QIcon      )
+  ShowPersonalIcons      = Signal ( str ,       int , str , str , QIcon      )
+  GalleryGroup           = Signal ( str ,       int , str                    )
+  ShowGalleriesRelation  = Signal ( str ,       int , str , str , QIcon      )
+  OwnedOrganizationGroup = Signal ( str ,       int , str , str , QIcon      )
+  OwnedEpisodesSubgroup  = Signal ( str ,       int , str                    )
   emitConnectAlbum       = Signal ( str                                      )
-  emitOpenVideoGroup     = Signal ( str , int , str , str , QIcon            )
-  emitFragmentEditor     = Signal ( str , int , str , str , QIcon            )
-  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
-  ShowAlbumSources       = Signal ( str , str , str ,       QIcon            )
-  OpenVariantTables      = Signal ( str , str , int , str , dict             )
+  emitOpenVideoGroup     = Signal ( str ,       int , str , str , QIcon      )
+  emitFragmentEditor     = Signal ( str , str , int , str , str , QIcon      )
+  ShowWebPages           = Signal ( str ,       int , str , str , QIcon      )
+  ShowAlbumSources       = Signal ( str ,       str , str ,       QIcon      )
+  OpenVariantTables      = Signal ( str ,       str , int , str , dict       )
   emitOpenSmartNote      = Signal ( str                                      )
   OpenLogHistory         = Signal ( str , str , str  , str , str             )
   emitLog                = Signal ( str                                      )
@@ -2457,6 +2457,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     relz = "Subordination"
     ##########################################################################
     self . emitFragmentEditor . emit ( text                                , \
+                                       xsid                                , \
                                        self . GType                        , \
                                        xsid                                , \
                                        relz                                , \

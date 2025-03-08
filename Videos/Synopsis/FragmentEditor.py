@@ -30,7 +30,14 @@ class FragmentEditor     ( TreeDock                                        ) :
   ############################################################################
   emitNamesShow = Signal (                                                   )
   emitAllNames  = Signal ( list                                              )
-  emitScenarios = Signal ( str , int , str , str , QIcon                     )
+  emitScenarios = Signal ( QWidget                                         , \
+                           str                                             , \
+                           str                                             , \
+                           str                                             , \
+                           int                                             , \
+                           str                                             , \
+                           str                                             , \
+                           QIcon                                             )
   emitLog       = Signal ( str                                               )
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
@@ -41,6 +48,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     self . ClassTag           = "FragmentEditor"
     self . FetchTableKey      = self . ClassTag
+    self . AlbumUuid          = 0
     self . GType              = 213
     self . Total              = 0
     self . StartId            = 0
@@ -94,12 +102,18 @@ class FragmentEditor     ( TreeDock                                        ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 600 , 200 )                       )
   ############################################################################
+  def setAlbumUuid         ( self , UUID                                   ) :
+    ##########################################################################
+    self . AlbumUuid = int ( UUID                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . AppendToolNamingAction   (                                        )
     self . AppendSideActionWithIcon ( "OpenScenarios"                      , \
                                       ":/images/addcolumn.png"             , \
-                                      self . OpenItemScenario                )
+                                      self . GotoItemScenario                )
     ##########################################################################
     return
   ############################################################################
@@ -149,7 +163,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     if                          ( column in [ 0 ]                          ) :
       ########################################################################
       line = self . setLineEdit ( item                                     , \
-                                  0                                        , \
+                                  column                                   , \
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
@@ -167,7 +181,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     if                               ( str ( USED ) in USAGE               ) :
       ########################################################################
-      UNAME = USAGE                  [ str ( USED ) ]
+      UNAME = USAGE                  [ str ( USED )                          ]
     ##########################################################################
     IT      = self . PrepareUuidItem ( 0 , UUID , NAME                       )
     ##########################################################################
@@ -185,42 +199,37 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return IT
   ############################################################################
-  def ObtainsInformation     ( self , DB                                   ) :
+  def ObtainsInformation      ( self , DB                                  ) :
     ##########################################################################
-    self . ReloadLocality    (        DB                                     )
+    self     . ReloadLocality (        DB                                    )
     ##########################################################################
-    if                       ( self . isSubordination (                  ) ) :
-      ########################################################################
-      RELTAB = self . Tables [ "Relation"                                    ]
-      FRGTAB = self . Tables [ "Fragments"                                   ]
+    RELTAB   = self . Tables  [ "Relation"                                   ]
+    FRGTAB   = self . Tables  [ "Fragments"                                  ]
+    ##########################################################################
+    if                        ( self . isSubordination (                 ) ) :
       ########################################################################
       self   . Total = self . FRAG . CountSecondTotal                      ( \
-                               DB                                          , \
-                               self . Relation                             , \
-                               FRGTAB                                      , \
-                               RELTAB                                      , \
-                               self . UsedOptions                            )
+                                DB                                         , \
+                                self . Relation                            , \
+                                FRGTAB                                     , \
+                                RELTAB                                     , \
+                                self . UsedOptions                           )
       ########################################################################
-    elif                     ( self . isReverse       (                  ) ) :
-      ########################################################################
-      RELTAB = self . Tables [ "Relation"                                    ]
-      FRGTAB = self . Tables [ "Fragments"                                   ]
+    elif                      ( self . isReverse       (                 ) ) :
       ########################################################################
       self   . Total = self . FRAG . CountFirstTotal                       ( \
-                               DB                                          , \
-                               self . Relation                             , \
-                               FRGTAB                                      , \
-                               RELTAB                                      , \
-                               self . UsedOptions                            )
+                                DB                                         , \
+                                self . Relation                            , \
+                                FRGTAB                                     , \
+                                RELTAB                                     , \
+                                self . UsedOptions                           )
       ########################################################################
     else                                                                     :
       ########################################################################
-      FRGTAB = self . Tables [ "Fragments"                                   ]
-      ########################################################################
       self   . Total = self . FRAG . CountTotal                            ( \
-                               DB                                          , \
-                               FRGTAB                                      , \
-                               self . UsedOptions                            )
+                                DB                                         , \
+                                FRGTAB                                     , \
+                                self . UsedOptions                           )
     ##########################################################################
     return
   ############################################################################
@@ -548,7 +557,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
-    item   . setData          ( 0             , Qt . UserRole , uuid         )
+    item   . setData          ( 0             , Qt . UserRole , str ( uuid ) )
     item   . setData          ( self . JsonAt , Qt . UserRole , JJ           )
     ##########################################################################
     self   . Notify           ( 5                                            )
@@ -563,7 +572,7 @@ class FragmentEditor     ( TreeDock                                        ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 4                              )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -574,11 +583,19 @@ class FragmentEditor     ( TreeDock                                        ) :
     uuid = item . data          ( 0 , Qt . UserRole                          )
     uuid = int                  ( uuid                                       )
     uxid = str                  ( uuid                                       )
+    azid = str                  ( self . AlbumUuid                           )
     head = item . text          ( 0                                          )
     icon = self . windowIcon    (                                            )
     relz = "Subordination"
     ##########################################################################
-    self . emitScenarios . emit ( head , self . GType , uxid , relz , icon   )
+    self . emitScenarios . emit ( self                                     , \
+                                  head                                     , \
+                                  azid                                     , \
+                                  uxid                                     , \
+                                  self . GType                             , \
+                                  uxid                                     , \
+                                  relz                                     , \
+                                  icon                                       )
     ##########################################################################
     return
   ############################################################################
