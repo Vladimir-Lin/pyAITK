@@ -44,18 +44,20 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     super ( ) . __init__        (        parent        , plan                )
     ##########################################################################
-    self . ClassTag     = "OrganizationGroupView"
-    self . GTYPE        = 38
-    self . SortOrder    = "asc"
-    self . PrivateIcon  = True
-    self . PrivateGroup = True
-    self . ExtraINFOs   = True
+    self . ClassTag      = "OrganizationGroupView"
+    self . FetchTableKey = self . ClassTag
+    self . GTYPE         = 38
+    self . SortOrder     = "asc"
+    self . PrivateIcon   = True
+    self . PrivateGroup  = True
+    self . ExtraINFOs    = True
     ##########################################################################
-    self . GroupBtn     = None
-    self . CompanyBtn   = None
-    self . NameBtn      = None
-    ##########################################################################
-    self . dockingPlace = Qt . RightDockWidgetArea
+    self . dockingOrientation = 0
+    self . dockingPlace  = Qt . RightDockWidgetArea
+    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
+                           Qt . BottomDockWidgetArea                       | \
+                           Qt . LeftDockWidgetArea                         | \
+                           Qt . RightDockWidgetArea
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
@@ -65,15 +67,10 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
     ##########################################################################
-    self . FetchTableKey = "OrganizationGroupView"
-    ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . set         ( "first" , 0                              )
-    self . Relation . set         ( "t1"    , 75                             )
-    self . Relation . set         ( "t2"    , 158                            )
-    self . Relation . setRelation ( "Subordination"                          )
-    ##########################################################################
-    self . Relation = Relation    (                                          )
+    self . Relation . setT1       ( "Tag"                                    )
+    self . Relation . setT2       ( "Subgroup"                               )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     self . MountClicked           ( 1                                        )
@@ -98,39 +95,19 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions                     ( self                         ) :
+  def PrepareForActions               ( self                               ) :
     ##########################################################################
-    self   . PrepareFetchTableKey           (                                )
+    ISLIST = ( self . isSubgroup ( ) or self . isReverse ( )                 )
     ##########################################################################
-    msg    = self . getMenuItem             ( "Subgroup"                     )
-    A      = QAction                        (                                )
-    ICON   = QIcon                          ( ":/images/catalog.png"         )
-    A      . setIcon                        ( ICON                           )
-    A      . setToolTip                     ( msg                            )
-    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
-    A      . setEnabled                     ( False                          )
-    ##########################################################################
-    self   . GroupBtn   = A
-    ##########################################################################
-    self   . WindowActions . append         ( A                              )
-    ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
-      ########################################################################
-      msg  = self . getMenuItem             ( "SIG"                          )
-      A    = QAction                        (                                )
-      ICON = QIcon                          ( ":/images/lists.png"           )
-      A    . setIcon                        ( ICON                           )
-      A    . setToolTip                     ( msg                            )
-      A    . triggered . connect            ( self . OpenOrganizationGroup   )
-      A    . setEnabled                     ( False                          )
-      ########################################################################
-      self . CompanyBtn = A
-      ########################################################################
-      self . WindowActions . append         ( A                              )
-    ##########################################################################
-    self   . AppendToolNamingAction         (                                )
-    self   . NameBtn = self . WindowActions [ -1                             ]
-    self   . NameBtn . setEnabled           ( False                          )
+    self   . PrepareFetchTableKey     (                                      )
+    self   . AppendToolNamingAction   (                                      )
+    self   . AppendSideActionWithIcon ( "Subgroup"                         , \
+                                        ":/images/catalog.png"             , \
+                                        self . OpenCurrentSubgroup           )
+    if                                ( ISLIST                             ) :
+      self . AppendSideActionWithIcon ( "SIG"                              , \
+                                        ":/images/lists.png"               , \
+                                        self . OpenOrganizationGroup         )
     ##########################################################################
     return
   ############################################################################
@@ -175,79 +152,43 @@ class OrganizationGroupView     ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
-    self . statusMessage     ( self . windowTitle (                        ) )
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                 ( self                                      ) :
+  def singleClicked             ( self , item                              ) :
     ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      ## self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
+    return True
   ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    ## self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
-    ##########################################################################
-    return
+  def doubleClicked                ( self , item                           ) :
+    return self . OpenItemSubgroup (        item                             )
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
     ##########################################################################
     TABLE = "RelationPictures"
     ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . GroupBtn   not in self . EmptySet           ) :
-      ########################################################################
-      self . GroupBtn   . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . CompanyBtn not in self . EmptySet           ) :
-      ########################################################################
-      self . CompanyBtn . setEnabled ( Enabled                               )
-    ##########################################################################
-    if                ( self . NameBtn    not in self . EmptySet           ) :
-      ########################################################################
-      self . NameBtn    . setEnabled ( Enabled                               )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item                                   ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
-    ##########################################################################
-    return True
-  ############################################################################
-  def selectionsChanged            ( self                                  ) :
-    ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def doubleClicked                ( self , item                           ) :
-    return self . OpenItemSubgroup (        item                             )
   ############################################################################
   def ObtainUuidsQuery                    ( self                           ) :
     return self . catalogObtainUuidsQuery (                                  )

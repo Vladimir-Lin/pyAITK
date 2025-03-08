@@ -127,7 +127,7 @@ class SexPositionListings      ( TreeDock                                  ) :
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
     ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )

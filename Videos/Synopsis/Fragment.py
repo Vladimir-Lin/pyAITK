@@ -163,11 +163,190 @@ class Fragment           ( Columns                                         ) :
                "States"      : self . States                               , \
                "Description" : self . Description                            }
   ############################################################################
+  def CountFirstTotal   ( self , DB , REL , TABLE , RELTAB , UsedOptions   ) :
+    ##########################################################################
+    UQ   = " , " . join ( str(x) for x in UsedOptions                        )
+    UUID = REL . get    ( "second"                                           )
+    T1   = REL . get    ( "t1"                                               )
+    T2   = REL . get    ( "t2"                                               )
+    RR   = REL . get    ( "relation"                                         )
+    ##########################################################################
+    MQ   = f"""select `uuid` from {TABLE} where ( `used` in ( {UQ} ) )"""
+    QQ   = f"""select count(`first`) from {RELTAB}
+               where ( `second` = {UUID} )
+                 and ( `t1` = {T1} )
+                 and ( `t2` = {T2} )
+                 and ( `relation` = {RR} )
+                 and ( `first` in ( {MQ} ) ) ;"""
+    ##########################################################################
+    return DB . GetOne  ( " " . join ( QQ . split ( ) ) , 0                  )
   ############################################################################
+  def CountSecondTotal  ( self , DB , REL , TABLE , RELTAB , UsedOptions   ) :
+    ##########################################################################
+    UQ   = " , " . join ( str(x) for x in UsedOptions                        )
+    UUID = REL . get    ( "first"                                            )
+    T1   = REL . get    ( "t1"                                               )
+    T2   = REL . get    ( "t2"                                               )
+    RR   = REL . get    ( "relation"                                         )
+    ##########################################################################
+    MQ   = f"""select `uuid` from {TABLE} where ( `used` in ( {UQ} ) )"""
+    QQ   = f"""select count(`second`) from {RELTAB}
+               where ( `first` = {UUID} )
+                 and ( `t1` = {T1} )
+                 and ( `t2` = {T2} )
+                 and ( `relation` = {RR} )
+                 and ( `second` in ( {MQ} ) ) ;"""
+    ##########################################################################
+    return DB . GetOne  ( " " . join ( QQ . split ( ) ) , 0                  )
   ############################################################################
+  def CountTotal       ( self , DB , TABLE , UsedOptions                   ) :
+    ##########################################################################
+    UQ = " , " . join  ( str(x) for x in UsedOptions                         )
+    QQ = f"""select count(*) from {TABLE} where ( `used` in ( {UQ} ) ) ;"""
+    ##########################################################################
+    return DB . GetOne ( " " . join ( QQ . split ( ) ) , 0                   )
   ############################################################################
+  def SqlDataToJson               ( self , RR                              ) :
+    ##########################################################################
+    if                            ( 5 != len ( RR )                        ) :
+      return                      ( False , { } ,                            )
+    ##########################################################################
+    S   = self . assureItemString ( RR [ 4                                 ] )
+    D   =                         {                                          }
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      D = json . loads            ( S                                        )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    J   =                         { "Id"          : int ( RR [ 0       ] ) , \
+                                    "Uuid"        : int ( RR [ 1       ] ) , \
+                                    "Name"        : ""                     , \
+                                    "Used"        : int ( RR [ 2       ] ) , \
+                                    "States"      : int ( RR [ 3       ] ) , \
+                                    "Description" : D                        }
+    ##########################################################################
+    return                        ( True  , J ,                              )
   ############################################################################
+  def SqlDataToJsonListings          ( self , RR                           ) :
+    ##########################################################################
+    if                               ( RR in [ False , None              ] ) :
+      return                         [                                       ]
+    ##########################################################################
+    if                               ( len ( RR ) <= 0                     ) :
+      return                         [                                       ]
+    ##########################################################################
+    LISTs     =                      [                                       ]
+    ##########################################################################
+    for R in RR                                                              :
+      ########################################################################
+      A , J   = self . SqlDataToJson ( R                                     )
+      ########################################################################
+      if                             ( A                                   ) :
+        LISTs . append               ( J                                     )
+    ##########################################################################
+    return LISTs
   ############################################################################
+  def FetchListsByFirst                 ( self                             , \
+                                          DB                               , \
+                                          FRGTAB                           , \
+                                          RELTAB                           , \
+                                          REL                              , \
+                                          UsedOptions                      , \
+                                          StartId                          , \
+                                          Amount                           , \
+                                          SortOrder                        ) :
+    ##########################################################################
+    COL   = "`id`,`uuid`,`used`,`states`,`description`"
+    UQ    = " , " . join                ( str(x) for x in UsedOptions        )
+    UUID  = REL . get                   ( "first"                            )
+    T1    = REL . get                   ( "t1"                               )
+    T2    = REL . get                   ( "t2"                               )
+    RR    = REL . get                   ( "relation"                         )
+    ##########################################################################
+    MQ    = f"""select `uuid` from {FRGTAB} where ( `used` in ( {UQ} ) )"""
+    QQ    = f"""select `second` from {RELTAB}
+               where ( `first` = {UUID} )
+                 and ( `t1` = {T1} )
+                 and ( `t2` = {T2} )
+                 and ( `relation` = {RR} )
+                 and ( `second` in ( {MQ} ) )
+                 order by `position` {SortOrder}
+                 limit {StartId} , {Amount} ;"""
+    ##########################################################################
+    UUIDs = DB . ObtainUuids            ( " " . join ( QQ . split (      ) ) )
+    ##########################################################################
+    RR    =                             [                                    ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      QQ  = f"""select {COL} from {FRGTAB} where ( `uuid` = {U} ) ;"""
+      DB  . Query                       ( " " . join ( QQ . split (      ) ) )
+      R   = DB . FetchOne               (                                    )
+      RR  . append                      ( R                                  )
+    ##########################################################################
+    return self . SqlDataToJsonListings ( RR                                 )
+  ############################################################################
+  def FetchListsBySecond                ( self                             , \
+                                          DB                               , \
+                                          FRGTAB                           , \
+                                          RELTAB                           , \
+                                          REL                              , \
+                                          UsedOptions                      , \
+                                          StartId                          , \
+                                          Amount                           , \
+                                          SortOrder                        ) :
+    ##########################################################################
+    COL   = "`id`,`uuid`,`used`,`states`,`description`"
+    UQ    = " , " . join                ( str(x) for x in UsedOptions        )
+    UUID  = REL . get                   ( "second"                           )
+    T1    = REL . get                   ( "t1"                               )
+    T2    = REL . get                   ( "t2"                               )
+    RR    = REL . get                   ( "relation"                         )
+    ##########################################################################
+    MQ    = f"""select `uuid` from {FRGTAB} where ( `used` in ( {UQ} ) )"""
+    QQ    = f"""select `first` from {RELTAB}
+               where ( `second` = {UUID} )
+                 and ( `t1` = {T1} )
+                 and ( `t2` = {T2} )
+                 and ( `relation` = {RR} )
+                 and ( `first` in ( {MQ} ) )
+                 order by `reverse` {SortOrder}
+                 limit {StartId} , {Amount} ;"""
+    ##########################################################################
+    UUIDs = DB . ObtainUuids            ( " " . join ( QQ . split (      ) ) )
+    ##########################################################################
+    RR    =                             [                                    ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      QQ  = f"""select {COL} from {FRGTAB} where ( `uuid` = {U} ) ;"""
+      DB  . Query                       ( " " . join ( QQ . split (      ) ) )
+      R   = DB . FetchOne               (                                    )
+      RR  . append                      ( R                                  )
+    ##########################################################################
+    return self . SqlDataToJsonListings ( RR                                 )
+  ############################################################################
+  def FetchLists                        ( self                             , \
+                                          DB                               , \
+                                          FRGTAB                           , \
+                                          OPTs                             , \
+                                          StartId                          , \
+                                          Amount                           , \
+                                          SortOrder                        ) :
+    ##########################################################################
+    UQ  = " , " . join                  ( str(x) for x in OPTs               )
+    COL = "`id`,`uuid`,`used`,`states`,`description`"
+    QQ  = f"""select {COL} from {FRGTAB}
+               where ( `used` in ( {UQ} ) )
+               order by `id` {SortOrder}
+               limit {StartId} , {Amount} ;"""
+    DB  . Query                         ( " " . join ( QQ . split (      ) ) )
+    RR  = DB . FetchAll                 (                                    )
+    ##########################################################################
+    return self . SqlDataToJsonListings ( RR                                 )
   ############################################################################
   ############################################################################
   ############################################################################

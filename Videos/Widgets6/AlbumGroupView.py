@@ -22,6 +22,7 @@ from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . Pictures   . Picture  import Picture     as PictureItem
 from   AITK    . Videos     . Album    import Album       as AlbumItem
+from   AITK    . Videos     . Film     import Film        as FilmItem
 ##############################################################################
 class AlbumGroupView         ( IconDock                                    ) :
   ############################################################################
@@ -44,26 +45,24 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
     ##########################################################################
-    self . GroupBtn      = None
-    self . AlbumBtn      = None
-    self . NameBtn       = None
-    ##########################################################################
-    self . defaultSelectionMode = "ExtendedSelection"
-    ##########################################################################
     self . Grouping      = "Tag"
     self . OldGrouping   = "Tag"
     ## self . Grouping     = "Catalog"
     ## self . Grouping     = "Subgroup"
     ## self . Grouping     = "Reverse"
     ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
+    ##########################################################################
     self . dockingOrientation = 0
-    self . dockingPlace  = Qt . BottomDockWidgetArea
+    self . dockingPlace  = Qt . RightDockWidgetArea
     self . dockingPlaces = Qt . TopDockWidgetArea                          | \
                            Qt . BottomDockWidgetArea                       | \
                            Qt . LeftDockWidgetArea                         | \
                            Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation    (                                          )
+    self . Relation . setT1       ( "Tag"                                    )
+    self . Relation . setT2       ( "Subgroup"                               )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     self . MountClicked           ( 1                                        )
@@ -88,39 +87,17 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions                     ( self                         ) :
+  def PrepareForActions               ( self                               ) :
     ##########################################################################
-    self   . PrepareFetchTableKey           (                                )
-    ##########################################################################
-    msg    = self . getMenuItem             ( "Subgroup"                     )
-    A      = QAction                        (                                )
-    IC     = QIcon                          ( ":/images/filmfolder.png"      )
-    A      . setIcon                        ( IC                             )
-    A      . setToolTip                     ( msg                            )
-    A      . triggered . connect            ( self . OpenCurrentSubgroup     )
-    A      . setEnabled                     ( False                          )
-    ##########################################################################
-    self   . GroupBtn = A
-    ##########################################################################
-    self   . WindowActions . append         ( A                              )
-    ##########################################################################
-    if                                      ( self . isCatalogue (       ) ) :
-      ########################################################################
-      msg  = self . getMenuItem             ( "Albums"                       )
-      A    = QAction                        (                                )
-      ICON = QIcon                          ( ":/images/episode.png"         )
-      A    . setIcon                        ( ICON                           )
-      A    . setToolTip                     ( msg                            )
-      A    . triggered . connect            ( self . OpenCurrentAlbum        )
-      A    . setEnabled                     ( False                          )
-      ########################################################################
-      self . AlbumBtn = A
-      ########################################################################
-      self . WindowActions . append         ( A                              )
-    ##########################################################################
-    self   . AppendToolNamingAction         (                                )
-    self   . NameBtn = self . WindowActions [ -1                             ]
-    self   . NameBtn . setEnabled           ( False                          )
+    self   . PrepareFetchTableKey     (                                      )
+    self   . AppendToolNamingAction   (                                      )
+    self   . AppendSideActionWithIcon ( "Subgroup"                         , \
+                                        ":/images/filmfolder.png"          , \
+                                        self . OpenCurrentSubgroup           )
+    if                                ( self . isCatalogue (             ) ) :
+      self . AppendSideActionWithIcon ( "Albums"                           , \
+                                        ":/images/episode.png"             , \
+                                        self . OpenCurrentAlbum              )
     ##########################################################################
     return
   ############################################################################
@@ -148,57 +125,54 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self         ,                         Enabled     ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
-    self . LinkAction ( "Copy"       , self . DoCopyItemText  , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    self . LinkAction ( "Font"       , self . ChangeItemFont  , Enabled       )
+    self . LinkAction ( "Refresh"    , self . restart        , Enabled       )
+    self . LinkAction ( "Insert"     , self . InsertItem     , Enabled       )
+    self . LinkAction ( "Delete"     , self . DeleteItems    , Enabled       )
+    self . LinkAction ( "Rename"     , self . RenameItem     , Enabled       )
+    self . LinkAction ( "Paste"      , self . PasteItems     , Enabled       )
+    self . LinkAction ( "Copy"       , self . DoCopyItemText , Enabled       )
+    self . LinkAction ( "Select"     , self . SelectOne      , Enabled       )
+    self . LinkAction ( "SelectAll"  , self . SelectAll      , Enabled       )
+    self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
+    self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
     ##########################################################################
-    self . TellStory  (                                         Enabled      )
+    self . TellStory  (                                        Enabled       )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
-    self . statusMessage     ( self . windowTitle (                        ) )
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                 ( self                                      ) :
+  def singleClicked             ( self , item                              ) :
     ##########################################################################
-    if                         ( not self . isPrepared ( )                 ) :
-      return True
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
-    if                         ( not self . AtMenu                         ) :
-      ########################################################################
-      self . AttachActions     ( False                                       )
-      self . detachActionsTool (                                             )
-      ## self . LinkVoice         ( None                                        )
-    ##########################################################################
-    return False
+    return True
   ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    ## self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent ( event                                         )
-    ##########################################################################
-    return
+  def doubleClicked                ( self , item                           ) :
+    return self . OpenItemSubgroup (        item                             )
   ############################################################################
   def setGrouping ( self , group                                           ) :
     ##########################################################################
@@ -213,39 +187,6 @@ class AlbumGroupView         ( IconDock                                    ) :
     TABLE = "RelationPictures"
     ##########################################################################
     return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
-  ############################################################################
-  def SwitchSideTools ( self , Enabled                                     ) :
-    ##########################################################################
-    if                ( self . GroupBtn not in self . EmptySet             ) :
-      ########################################################################
-      self . GroupBtn . setEnabled ( Enabled                                 )
-    ##########################################################################
-    if                ( self . AlbumBtn not in self . EmptySet             ) :
-      ########################################################################
-      self . AlbumBtn . setEnabled ( Enabled                                 )
-    ##########################################################################
-    if                ( self . NameBtn     not in self . EmptySet          ) :
-      ########################################################################
-      self . NameBtn  . setEnabled ( Enabled                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def singleClicked        ( self , item                                   ) :
-    ##########################################################################
-    self . Notify          ( 0                                               )
-    self . SwitchSideTools ( True                                            )
-    ##########################################################################
-    return True
-  ############################################################################
-  def selectionsChanged            ( self                                  ) :
-    ##########################################################################
-    OKAY = self . isEmptySelection (                                         )
-    self . SwitchSideTools         ( OKAY                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def doubleClicked                ( self , item                           ) :
-    return self . OpenItemSubgroup (        item                             )
   ############################################################################
   def ObtainUuidsQuery                    ( self                           ) :
     return self . catalogObtainUuidsQuery (                                  )

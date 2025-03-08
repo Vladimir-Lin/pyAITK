@@ -46,12 +46,17 @@ class GalleryGroupView       ( IconDock                                    ) :
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
     ##########################################################################
+    self . dockingOrientation = 0
     self . dockingPlace  = Qt . RightDockWidgetArea
+    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
+                           Qt . BottomDockWidgetArea                       | \
+                           Qt . LeftDockWidgetArea                         | \
+                           Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation      = Relation    (                                     )
     self . Relation      . set         ( "first" , 0                         )
-    self . Relation      . set         ( "t1"    , 75                        )
-    self . Relation      . set         ( "t2"    , 158                       )
+    self . Relation      . setT1       ( "Tag"                               )
+    self . Relation      . setT2       ( "Subgroup"                          )
     self . Relation      . setRelation ( "Subordination"                     )
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
@@ -87,14 +92,11 @@ class GalleryGroupView       ( IconDock                                    ) :
   def PrepareForActions               ( self                               ) :
     ##########################################################################
     self   . PrepareFetchTableKey     (                                      )
-    ##########################################################################
     self   . AppendToolNamingAction   (                                      )
     self   . AppendSideActionWithIcon ( "Subgroup"                         , \
                                         ":/images/catalog.png"             , \
                                         self . OpenCurrentSubgroup           )
-    ##########################################################################
     if                                ( self . isCatalogue (             ) ) :
-      ########################################################################
       self . AppendSideActionWithIcon ( "Galleries"                        , \
                                         ":/images/galleries.png"           , \
                                         self . OpenCurrentGalleries          )

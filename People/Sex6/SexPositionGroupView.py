@@ -35,12 +35,22 @@ class SexPositionGroupView     ( IconDock                                  ) :
     ##########################################################################
     super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
-    self . GTYPE        = 210
-    self . SortOrder    = "asc"
-    self . PrivateIcon  = True
-    self . PrivateGroup = True
-    self . ExtraINFOs   = True
-    self . dockingPlace = Qt . RightDockWidgetArea
+    self . ClassTag      = "SexPositionGroupView"
+    self . FetchTableKey = self . ClassTag
+    self . GTYPE         = 210
+    self . SortOrder     = "asc"
+    self . PrivateIcon   = True
+    self . PrivateGroup  = True
+    self . ExtraINFOs    = True
+    ##########################################################################
+    self . dockingOrientation = 0
+    self . dockingPlace  = Qt . RightDockWidgetArea
+    self . dockingPlaces = Qt . TopDockWidgetArea                          | \
+                           Qt . BottomDockWidgetArea                       | \
+                           Qt . LeftDockWidgetArea                         | \
+                           Qt . RightDockWidgetArea
+    ##########################################################################
+    self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
     self . Grouping     = "Tag"
     self . OldGrouping  = "Tag"
@@ -48,15 +58,10 @@ class SexPositionGroupView     ( IconDock                                  ) :
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
     ##########################################################################
-    self . FetchTableKey = "SexPositionGroupView"
-    ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . set         ( "first" , 0                              )
-    self . Relation . set         ( "t1"    , 75                             )
-    self . Relation . set         ( "t2"    , 158                            )
-    self . Relation . setRelation ( "Subordination"                          )
-    ##########################################################################
-    self . Relation = Relation    (                                          )
+    self . Relation . setT1       ( "Tag"                                    )
+    self . Relation . setT2       ( "Subgroup"                               )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     self . MountClicked           ( 1                                        )
@@ -68,6 +73,8 @@ class SexPositionGroupView     ( IconDock                                  ) :
     self . setAcceptDrops         ( True                                     )
     self . setDragDropMode        ( QAbstractItemView . DropOnly             )
     ##########################################################################
+    self . setMinimumSize         ( 180 , 200                                )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
@@ -75,14 +82,16 @@ class SexPositionGroupView     ( IconDock                                  ) :
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
-      ########################################################################
-      msg  = self . getMenuItem     ( "SIG"                                  )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenSexPositionGroup            )
-      self . WindowActions . append ( A                                      )
+    ISLIST = ( self . isSubgroup ( ) or self . isReverse ( )                 )
+    ##########################################################################
+    ## self   . AppendToolNamingAction   (                                      )
+    ## self   . AppendSideActionWithIcon ( "Subgroup"                         , \
+    ##                                     ":/images/catalog.png"             , \
+    ##                                     self . OpenCurrentSubgroup           )
+    if                                ( ISLIST                             ) :
+      self . AppendSideActionWithIcon ( "SIG"                              , \
+                                        ":/images/lists.png"               , \
+                                        self . OpenSexPositionGroup         )
     ##########################################################################
     return
   ############################################################################
@@ -103,38 +112,41 @@ class SexPositionGroupView     ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                ( self                                        ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    self . setActionLabel    ( "Label" , ""                                  )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent             ( self , event                                ) :
+  def singleClicked             ( self , item                              ) :
     ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
-    self . defaultCloseEvent (        event                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def GetUuidIcon                    ( self , DB , Uuid                    ) :
-    TABLE = "RelationPictures"
-    return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
-  ############################################################################
-  def singleClicked ( self , item                                          ) :
-    ##########################################################################
-    self . Notify   ( 0                                                      )
+    self . defaultSingleClicked (        item                                )
     ##########################################################################
     return True
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     return self . OpenItemSubgroup (        item                             )
+  ############################################################################
+  def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    TABLE = "RelationPictures"
+    return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
   def ObtainUuidsQuery                    ( self                           ) :
     return self . catalogObtainUuidsQuery (                                  )

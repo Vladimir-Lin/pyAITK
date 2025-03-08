@@ -22,6 +22,7 @@ from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from           . Fragment              import Fragment as FragmentItem
+from           . Scenario              import Scenario as ScenarioItem
 ##############################################################################
 class FragmentEditor     ( TreeDock                                        ) :
   ############################################################################
@@ -29,6 +30,8 @@ class FragmentEditor     ( TreeDock                                        ) :
   ############################################################################
   emitNamesShow = Signal (                                                   )
   emitAllNames  = Signal ( list                                              )
+  emitScenarios = Signal ( str , int , str , str , QIcon                     )
+  emitLog       = Signal ( str                                               )
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
@@ -37,12 +40,14 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . EditAllNames       = None
     ##########################################################################
     self . ClassTag           = "FragmentEditor"
+    self . FetchTableKey      = self . ClassTag
     self . GType              = 213
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
+    self . JsonAt             = 3
     self . SortOrder          = "asc"
-    self . Method             = ""
+    self . UsedOptions        = [ 1 , 2 , 3                                  ]
     ##########################################################################
     self . Grouping           = "Subordination"
     ##########################################################################
@@ -82,13 +87,19 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . setDragEnabled          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
+    self . setMinimumSize          ( 80 , 80                                 )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 600 , 200 )                       )
   ############################################################################
-  def PrepareForActions ( self                                             ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
+    self . AppendToolNamingAction   (                                        )
+    self . AppendSideActionWithIcon ( "OpenScenarios"                      , \
+                                      ":/images/addcolumn.png"             , \
+                                      self . OpenItemScenario                )
     ##########################################################################
     return
   ############################################################################
@@ -133,40 +144,151 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked            ( self , item , column                       ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
-      return
-    ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
-    ##########################################################################
-    return
-  ############################################################################
-  ## def ObtainUuidsQuery               ( self                                ) :
-  ##   return self . IRIS . QuerySyntax ( self . Tables [ "Eyes" ]            , \
-  ##                                      self . SortOrder                      )
-  ############################################################################
-  def ObtainsInformation  ( self , DB                                      ) :
-    ##########################################################################
-    self . ReloadLocality (        DB                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareItem                 ( self , JSON , BRUSH                    ) :
-    ##########################################################################
-    ##########################################################################
-    for COL in                    [ 0 , 1 , 2 , 3                          ] :
+    if                          ( column in [ 0 ]                          ) :
       ########################################################################
-      IT . setBackground          ( COL , BRUSH                              )
+      line = self . setLineEdit ( item                                     , \
+                                  0                                        , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem                    ( self , JSON , BRUSH                 ) :
+    ##########################################################################
+    USAGE   = self . Translations    [ self . ClassTag ] [ "Usage"           ]
+    UUID    = JSON                   [ "Uuid"                                ]
+    NAME    = JSON                   [ "Name"                                ]
+    USED    = int                    ( JSON [ "Used"                       ] )
+    STATEs  = int                    ( JSON [ "States"                     ] )
+    UNAME   = ""
+    ##########################################################################
+    if                               ( str ( USED ) in USAGE               ) :
+      ########################################################################
+      UNAME = USAGE                  [ str ( USED ) ]
+    ##########################################################################
+    IT      = self . PrepareUuidItem ( 0 , UUID , NAME                       )
+    ##########################################################################
+    IT      . setText                ( 1 , UNAME                             )
+    IT      . setData                ( 1 , Qt . UserRole , USED              )
+    IT      . setText                ( 2 , str ( STATEs )                    )
+    IT      . setTextAlignment       ( 2 , Qt . AlignRight                   )
+    IT      . setData                ( 2 , Qt . UserRole , STATEs            )
+    ##########################################################################
+    IT      . setData                ( self . JsonAt , Qt . UserRole , JSON  )
+    ##########################################################################
+    for COL in                       [ 0 , 1 , 2 , 3                       ] :
+      ########################################################################
+      IT    . setBackground          ( COL , BRUSH                           )
     ##########################################################################
     return IT
   ############################################################################
-  def RefreshToolTip              ( self , Total                           ) :
+  def ObtainsInformation     ( self , DB                                   ) :
     ##########################################################################
+    self . ReloadLocality    (        DB                                     )
+    ##########################################################################
+    if                       ( self . isSubordination (                  ) ) :
+      ########################################################################
+      RELTAB = self . Tables [ "Relation"                                    ]
+      FRGTAB = self . Tables [ "Fragments"                                   ]
+      ########################################################################
+      self   . Total = self . FRAG . CountSecondTotal                      ( \
+                               DB                                          , \
+                               self . Relation                             , \
+                               FRGTAB                                      , \
+                               RELTAB                                      , \
+                               self . UsedOptions                            )
+      ########################################################################
+    elif                     ( self . isReverse       (                  ) ) :
+      ########################################################################
+      RELTAB = self . Tables [ "Relation"                                    ]
+      FRGTAB = self . Tables [ "Fragments"                                   ]
+      ########################################################################
+      self   . Total = self . FRAG . CountFirstTotal                       ( \
+                               DB                                          , \
+                               self . Relation                             , \
+                               FRGTAB                                      , \
+                               RELTAB                                      , \
+                               self . UsedOptions                            )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      FRGTAB = self . Tables [ "Fragments"                                   ]
+      ########################################################################
+      self   . Total = self . FRAG . CountTotal                            ( \
+                               DB                                          , \
+                               FRGTAB                                      , \
+                               self . UsedOptions                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadFragments                        ( self , DB                     ) :
+    ##########################################################################
+    FRAGMENTs   =                          [                                 ]
+    LISTs       =                          [                                 ]
+    UUIDs       =                          [                                 ]
+    ##########################################################################
+    RELTAB      = self . Tables            [ "Relation"                      ]
+    FRGTAB      = self . Tables            [ "Fragments"                     ]
+    ##########################################################################
+    if                                     ( self . isSubordination (    ) ) :
+      ########################################################################
+      LISTs     = self . FRAG . FetchListsByFirst                          ( \
+                                             DB                            , \
+                                             FRGTAB                        , \
+                                             RELTAB                        , \
+                                             self . Relation               , \
+                                             self . UsedOptions            , \
+                                             self . StartId                , \
+                                             self . Amount                 , \
+                                             self . SortOrder                )
+      ########################################################################
+    elif                                   ( self . isReverse       (    ) ) :
+      ########################################################################
+      LISTs     = self . FRAG . FetchListsBySecond                         ( \
+                                             DB                            , \
+                                             FRGTAB                        , \
+                                             RELTAB                        , \
+                                             self . Relation               , \
+                                             self . UsedOptions            , \
+                                             self . StartId                , \
+                                             self . Amount                 , \
+                                             self . SortOrder                )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      LISTs     = self . FRAG . FetchLists ( DB                            , \
+                                             FRGTAB                        , \
+                                             self . UsedOptions            , \
+                                             self . StartId                , \
+                                             self . Amount                 , \
+                                             self . SortOrder                )
+    ##########################################################################
+    for L in LISTs                                                           :
+      ########################################################################
+      UUIDs     . append                   ( L [ "Uuid"                    ] )
+    ##########################################################################
+    NAMEs       = self . ObtainsUuidNames  ( DB , UUIDs                      )
+    ##########################################################################
+    for L in LISTs                                                           :
+      ########################################################################
+      UUID      = L                        [ "Uuid"                          ]
+      ########################################################################
+      if                                   ( UUID in NAMEs                 ) :
+        ######################################################################
+        L [ "Name" ] = NAMEs               [ UUID                            ]
+      ########################################################################
+      FRAGMENTs . append                   ( L                               )
+    ##########################################################################
+    return FRAGMENTs
+  ############################################################################
+  def RefreshToolTip          ( self , Total                               ) :
+    ##########################################################################
+    FMT  = self . getMenuItem ( "DisplayTotal"                               )
+    MSG  = FMT  . format      ( Total , self . Total                         )
+    self . setToolTip         ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
@@ -191,40 +313,40 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def loading                        ( self                                ) :
+  def loading                     ( self                                   ) :
     ##########################################################################
-    DB     = self . ConnectDB        (                                       )
+    DB     = self . ConnectDB     (                                          )
     ##########################################################################
-    if                               ( self . NotOkay ( DB )               ) :
+    if                            ( self . NotOkay ( DB                  ) ) :
       ########################################################################
-      self . emitNamesShow . emit    (                                       )
+      self . emitNamesShow . emit (                                          )
       ########################################################################
       return
     ##########################################################################
-    self   . Notify                  ( 3                                     )
-    self   . OnBusy  . emit          (                                       )
-    self   . setBustle               (                                       )
+    self   . Notify               ( 3                                        )
+    self   . OnBusy  . emit       (                                          )
+    self   . setBustle            (                                          )
     ##########################################################################
-    FMT    = self . Translations     [ "UI::StartLoading"                    ]
-    MSG    = FMT . format            ( self . windowTitle ( )                )
-    self   . ShowStatus              ( MSG                                   )
+    FMT    = self . Translations  [ "UI::StartLoading"                       ]
+    MSG    = FMT . format         ( self . windowTitle (                   ) )
+    self   . ShowStatus           ( MSG                                      )
     ##########################################################################
-    self   . ObtainsInformation      ( DB                                    )
-    ## U , L  = self . LoadEyesListings ( DB                                    )
+    self   . ObtainsInformation   ( DB                                       )
+    L      = self . LoadFragments ( DB                                       )
     ##########################################################################
-    self   . setVacancy              (                                       )
-    self   . GoRelax . emit          (                                       )
-    self   . ShowStatus              ( ""                                    )
-    DB     . Close                   (                                       )
+    self   . setVacancy           (                                          )
+    self   . GoRelax . emit       (                                          )
+    self   . ShowStatus           ( ""                                       )
+    DB     . Close                (                                          )
     ##########################################################################
-    ## if                               ( len ( L ) <= 0                      ) :
-    ##   ########################################################################
-    self . emitNamesShow . emit    (                                       )
-    ##   ########################################################################
-    ##   return
+    if                            ( len ( L ) <= 0                         ) :
+      ########################################################################
+      self . emitNamesShow . emit (                                          )
+      ########################################################################
+      return
     ##########################################################################
-    ## self   . emitAllNames  . emit    ( L                                     )
-    self   . Notify                  ( 5                                     )
+    self   . emitAllNames  . emit ( L                                        )
+    self   . Notify               ( 5                                        )
     ##########################################################################
     return
   ############################################################################
@@ -287,8 +409,16 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return True
   ############################################################################
-  def InsertItem ( self                                                    ) :
+  def InsertItem              ( self                                       ) :
     ##########################################################################
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . addTopLevelItem    ( item                                         )
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
     ##########################################################################
     return
   ############################################################################
@@ -297,7 +427,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    ## self . defaultDeleteItems ( 0 , self . RemoveItems                       )
+    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
@@ -331,36 +461,45 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def RemoveItems                     ( self , UUIDs                       ) :
+  def RemoveItems                       ( self , UUIDs                     ) :
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                  ( len ( UUIDs ) <= 0               ) :
+      self . Notify                     ( 1                                  )
       return
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationEditing"                    ]
-    SQLs   =                          [                                      ]
+    if                                  ( not self . isGrouping (        ) ) :
+      self . Notify                     ( 1                                  )
+      return
+    ##########################################################################
+    RELTAB = self . Tables              [ "Relation"                         ]
+    SQLs   =                            [                                    ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      self . Relation . set           ( "second" , UUID                      )
-      QQ   = self . Relation . Delete ( RELTAB                               )
-      SQLs . append                   ( QQ                                   )
+      if                                ( self . isSubordination (       ) ) :
+        self . Relation . set           ( "second" , UUID                    )
+      elif                              ( self . isReverse       (       ) ) :
+        self . Relation . set           ( "second" , UUID                    )
+      ########################################################################
+      QQ     = self . Relation . Delete ( RELTAB                             )
+      SQLs   . append                   ( QQ                                 )
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
+    DB       = self . ConnectDB         (                                    )
+    if                                  ( DB == None                       ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit           (                                      )
-    self   . setBustle                (                                      )
-    DB     . LockWrites               ( [ RELTAB                           ] )
+    self     . OnBusy  . emit           (                                    )
+    self     . setBustle                (                                    )
+    DB       . LockWrites               ( [ RELTAB                         ] )
     ##########################################################################
-    TITLE  = "RemoveOrganizationItems"
-    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
+    TITLE    = "RemoveFragmentItems"
+    self     . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100            )
     ##########################################################################
-    DB     . UnlockTables             (                                      )
-    self   . setVacancy               (                                      )
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
-    self   . loading                  (                                      )
+    DB       . UnlockTables             (                                    )
+    self     . setVacancy               (                                    )
+    self     . GoRelax . emit           (                                    )
+    DB       . Close                    (                                    )
+    self     . loading                  (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -368,19 +507,32 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
     if                        ( DB == None                                 ) :
+      self . Notify           ( 1                                            )
       return
     ##########################################################################
-    VIDTAB = self . Tables    [ "Videos"                                     ]
-    RELTAB = self . Tables    [ "RelationEditing"                            ]
+    FRGTAB = self . Tables    [ "Fragments"                                  ]
+    RELTAB = self . Tables    [ "RelationVideos"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ VIDTAB , RELTAB , NAMTAB                 ] )
+    DB     . LockWrites       ( [ FRGTAB , RELTAB , NAMTAB                 ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
+    ##########################################################################
     if                        ( uuid <= 0                                  ) :
       ########################################################################
-      uuid = DB . LastUuid    ( VIDTAB , "uuid" , 4500000000000000000        )
-      DB   . AppendUuid       ( VIDTAB , uuid                                )
+      uuid = DB . LastUuid    ( FRGTAB , "uuid" , 2800009000000000000        )
+      DB   . AppendUuid       ( FRGTAB , uuid                                )
+      ########################################################################
+      JJ   =                  { "Id"          : -1                         , \
+                                "Uuid"        : uuid                       , \
+                                "Name"        : name                       , \
+                                "Used"        :  1                         , \
+                                "States"      :  0                         , \
+                                "Description" : {                          } }
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      JJ   = item . data      ( self . JsonAt , Qt . UserRole                )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
@@ -396,13 +548,16 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
-    item   . setData          ( 0 , Qt . UserRole , uuid                     )
+    item   . setData          ( 0             , Qt . UserRole , uuid         )
+    item   . setData          ( self . JsonAt , Qt . UserRole , JJ           )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    ## self . DoCopyToClipboard (                                               )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -411,6 +566,38 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemScenario          ( self , item                              ) :
+    ##########################################################################
+    uuid = item . data          ( 0 , Qt . UserRole                          )
+    uuid = int                  ( uuid                                       )
+    uxid = str                  ( uuid                                       )
+    head = item . text          ( 0                                          )
+    icon = self . windowIcon    (                                            )
+    relz = "Subordination"
+    ##########################################################################
+    self . emitScenarios . emit ( head , self . GType , uxid , relz , icon   )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemScenario          ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemScenario   ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item                               , \
+                                        0                                  , \
+                                        "vFragment"                        , \
+                                        "NamesEditing"                       )
     ##########################################################################
     return
   ############################################################################
@@ -473,16 +660,20 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu                ( self , mm , item                         ) :
+  def GroupsMenu                     ( self , mm , item                    ) :
     ##########################################################################
-    if                          ( self . NotOkay ( item )                  ) :
+    if                               ( self . NotOkay ( item )             ) :
       return mm
     ##########################################################################
-    msg  = self . getMenuItem   ( "GroupFunctions"                           )
-    COL  = mm . addMenu         ( msg                                        )
+    msg  = self . getMenuItem        ( "GroupFunctions"                      )
+    COL  = mm . addMenu              ( msg                                   )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CopyVideoUuid"                            )
-    mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
+    msg  = self . getMenuItem        ( "CopyFragmentUuid"                    )
+    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "OpenScenarios"                       )
+    icon = QIcon                     ( ":/images/addcolumn.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , msg           )
     ##########################################################################
     return mm
   ############################################################################
@@ -496,96 +687,102 @@ class FragmentEditor     ( TreeDock                                        ) :
       ########################################################################
       return True
     ##########################################################################
+    if                              ( at == 38522001                       ) :
+      ########################################################################
+      self . OpenItemScenario       ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
     return   False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                                 ( not self . isPrepared (         ) ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
-    items , atItem , uuid = self . GetMenuDetails ( 0                        )
-    mm     = MenuManager           ( self                                    )
+    self   . Notify                    ( 0                                   )
+    items  , atItem , uuid = self . GetMenuDetails ( 0                       )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addSeparator          (                                         )
+    mm     = self . AmountIndexMenu    ( mm , True                           )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendInsertAction    ( mm , 1102                               )
-    self   . AppendRenameAction    ( mm , 1103                               )
-    self   . AppendDeleteAction    ( mm , 1104                               )
-    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1102                           )
+    self   . AppendRenameAction        ( mm , 1103                           )
+    self   . AppendDeleteAction        ( mm , 1104                           )
+    self   . TryAppendEditNamesAction  ( atItem , mm , 1601                  )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . GroupsMenu            ( mm ,        atItem                      )
-    self   . ColumnsMenu           ( mm                                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    self   . GroupsMenu                ( mm ,        atItem                  )
+    self   . ColumnsMenu               ( mm                                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    self   . AtMenu = True
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu (                                     )
-    if                             ( OKAY                                  ) :
+    mm     . setFont                   ( self    . menuFont (              ) )
+    aa     = mm . exec_                ( QCursor . pos      (              ) )
+    at     = mm . at                   ( aa                                  )
+    ##########################################################################
+    self   . AtMenu = False
+    ##########################################################################
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return
     ##########################################################################
-    OKAY   = self . RunDocking     ( mm , aa                                 )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunColumnsMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
-    if                             ( OKAY                                  ) :
-      return True
-    ##########################################################################
-    if                             ( at == 1001                            ) :
-      ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . InsertItem            (                                         )
+    OKAY   = self . RunGroupsMenu      ( at , atItem                         )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . RenameItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1104                            ) :
-      self . DeleteItems           (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1601                            ) :
+    if                                 ( at == 1001                        ) :
       ########################################################################
-      uuid = self . itemUuid       ( atItem , 0                              )
-      NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "Video" , uuid , NAM             )
+      self . restart                   (                                     )
       ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1102                        ) :
+      self . InsertItem                (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 1103                        ) :
+      self . RenameItem                (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 1104                        ) :
+      self . DeleteItems               (                                     )
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     return True
