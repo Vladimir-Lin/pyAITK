@@ -30,7 +30,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   ############################################################################
   emitNamesShow    = Signal (                                                )
   emitAllNames     = Signal ( list                                           )
-  emitDescriptives = Signal ( str , str , str , str , dict , QIcon           )
+  emitDescriptives = Signal ( QWidget , str , str , dict , QIcon             )
   emitLog          = Signal ( str                                            )
   ############################################################################
   def __init__              ( self , parent = None , plan = None           ) :
@@ -117,7 +117,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . AppendToolNamingAction   (                                        )
     self . AppendSideActionWithIcon ( "OpenDescriptives"                   , \
                                       ":/images/addcolumn.png"             , \
-                                      self . OpenItemDescriptive             )
+                                      self . GotoItemDescriptive             )
     ##########################################################################
     return
   ############################################################################
@@ -648,15 +648,19 @@ class ScenarioEditor        ( TreeDock                                     ) :
     jsoz = item . data             ( self . JsonAt , Qt . UserRole           )
     uuid = int                     ( uuid                                    )
     uxid = str                     ( uuid                                    )
-    azid = str                     ( self . AlbumUuid                        )
-    frid = str                     ( self . FragmentUuid                     )
     head = item . text             ( 0                                       )
     icon = self . windowIcon       (                                         )
+    JJ   =                         { "Uuid"        : uuid                  , \
+                                     "Album"       : self . AlbumUuid      , \
+                                     "Fragment"    : self . FragmentUuid   , \
+                                     "Name"        : head                  , \
+                                     "Description" : jsoz                    }
     ##########################################################################
-    ## self . emitDescriptives . emit ( head                                  , \
-    ##                                  uxid                                  , \
-    ##                                  relz                                  , \
-    ##                                  icon                                    )
+    self . emitDescriptives . emit ( self                                  , \
+                                     head                                  , \
+                                     uxid                                  , \
+                                     JJ                                    , \
+                                     icon                                    )
     ##########################################################################
     return
   ############################################################################
