@@ -62,6 +62,8 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . setColumnCount          ( 5                                       )
     self . setColumnWidth          ( 0 , 120                                 )
     self . setColumnWidth          ( 1 , 600                                 )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -169,7 +171,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     RTIME = str                    ( JSON [ "Timestamp"                    ] )
     NAME  =                          JSON [ "Name"                           ]
     ##########################################################################
-    FTIME = self . SCENE . toFTime ( STIME                                   )
+    FTIME = self . SCENE . toLTime ( STIME                                   )
     ##########################################################################
     IT    = QTreeWidgetItem        (                                         )
     IT    . setData                ( 0 , Qt . UserRole , str ( RTIME )       )
@@ -199,33 +201,35 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def reload                              ( self                           ) :
+  def reload                               ( self                          ) :
     ##########################################################################
-    self     . clear                      (                                  )
-    self     . setEnabled                 ( False                            )
+    self      . clear                      (                                 )
+    self      . setEnabled                 ( False                           )
     ##########################################################################
-    CNT      = 0
-    MOD      = len                        ( self . TreeBrushes               )
-    TOTAL    = len                        ( self . DESCRIBE . TIMESTAMPs     )
+    CNT       = 0
+    MOD       = len                        ( self . TreeBrushes              )
+    TOTAL     = len                        ( self . DESCRIBE . TIMESTAMPs    )
     ##########################################################################
     for T in self . DESCRIBE . TIMESTAMPs                                    :
       ########################################################################
-      JJ     = self . DESCRIBE . itemJson ( T                                )
+      OK , JJ = self . DESCRIBE . itemJson ( T                               )
       ########################################################################
-      IT     = self . PrepareItem         ( JJ                             , \
-                                            self . TreeBrushes [ CNT ]       )
+      if                                   ( not OK                        ) :
+        continue
       ########################################################################
-      if                                  ( self . SortOrder in [ "asc" ]  ) :
-        self . addTopLevelItem            (     IT                           )
+      IT      = self . PrepareItem         ( JJ , self . TreeBrushes [ CNT ] )
+      ########################################################################
+      if                                   ( self . SortOrder in [ "asc" ] ) :
+        self  . addTopLevelItem            (     IT                          )
       else                                                                   :
-        self . insertTopLevelItem         ( 0 , IT                           )
+        self  . insertTopLevelItem         ( 0 , IT                          )
       ########################################################################
-      CNT    = int                        ( int ( CNT + 1 ) % MOD            )
+      CNT     = int                        ( int ( CNT + 1 ) % MOD           )
     ##########################################################################
-    self     . RefreshToolTip             ( TOTAL                            )
-    self     . setEnabled                 ( True                             )
-    self     . emitNamesShow . emit       (                                  )
-    self     . Notify                     ( 5                                )
+    self      . RefreshToolTip             ( TOTAL                           )
+    self      . setEnabled                 ( True                            )
+    self      . emitNamesShow . emit       (                                 )
+    self      . Notify                     ( 5                               )
     ##########################################################################
     return
   ############################################################################
@@ -234,7 +238,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     if                                      ( not self . isPrepared (    ) ) :
       self . Prepare                        (                                )
     ##########################################################################
-    self   . ScenarioUuid = Uuid
+    self   . ScenarioUuid = int             ( Uuid                           )
     ##########################################################################
     if                                      ( "Description" in JSON        ) :
       ########################################################################
@@ -244,11 +248,11 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     if                                      ( "Album"       in JSON        ) :
       ########################################################################
-      self . AlbumUuid    = JSON            [ "Album"                        ]
+      self . AlbumUuid    = int             ( JSON [ "Album"               ] )
     ##########################################################################
     if                                      ( "Fragment"    in JSON        ) :
       ########################################################################
-      self . FragmentUuid = JSON            [ "Fragment"                     ]
+      self . FragmentUuid = int             ( JSON [ "Fragment"            ] )
     ##########################################################################
     if                                      ( "Name"        in JSON        ) :
       ########################################################################
@@ -270,7 +274,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     else                                                                     :
       ########################################################################
       IDX  = self . indexOfTopLevelItem ( CIT                                )
-      slen = CIT  . data                ( column , Qt . UserRole             )
+      slen = CIT  . data                ( 0 , Qt . UserRole                  )
       vlen = int                        ( int ( slen ) + self . TimeGap      )
     ##########################################################################
     self   . DESCRIBE . addItem         ( vlen , ""                          )
@@ -302,38 +306,40 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def nameChanged                       ( self                             ) :
+  def nameChanged                          ( self                          ) :
     ##########################################################################
-    if                                  ( not self . isItemPicked (      ) ) :
+    if                                     ( not self . isItemPicked (   ) ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem         [ "Item"                             ]
-    column = self . CurrentItem         [ "Column"                           ]
-    line   = self . CurrentItem         [ "Widget"                           ]
-    text   = self . CurrentItem         [ "Text"                             ]
-    msg    = line . text                (                                    )
-    uuid   = self . itemUuid            ( item , 0                           )
+    item     = self . CurrentItem          [ "Item"                          ]
+    column   = self . CurrentItem          [ "Column"                        ]
+    line     = self . CurrentItem          [ "Widget"                        ]
+    text     = self . CurrentItem          [ "Text"                          ]
+    msg      = line . text                 (                                 )
+    uuid     = self . itemUuid             ( item , 0                        )
     ##########################################################################
-    if                                  ( len ( msg ) <= 0                 ) :
-      self . removeTopLevelItem         ( item                               )
-      return
+    self     . removeParked                (                                 )
     ##########################################################################
-    self   . removeParked               (                                    )
-    ##########################################################################
-    if                                  ( 0 == column                      ) :
+    if                                     ( 0 == column                   ) :
       ########################################################################
-      slen = item . data                ( 0 , Qt . UserRole                  )
-      dlen = self . SCENE . FromFTime   ( msg                                )
-      rlen = self . DESCRIBE . realTime ( dlen                               )
-      self . DESCRIBE . Replace         ( slen , rlen                        )
-      item . setText                    ( column , msg                       )
-      self . emitReload . emit          (                                    )
+      OK , dlen = self . SCENE . FromFTime ( msg                             )
       ########################################################################
-    elif                                ( 1 == column                      ) :
+      if                                   ( OK                            ) :
+        ######################################################################
+        slen = item . data                 ( 0 , Qt . UserRole               )
+        vlen = int                         ( slen                            )
+        rlen = self . DESCRIBE . realTime  ( dlen                            )
+        self . DESCRIBE . Replace          ( vlen , rlen                     )
+        item . setText                     ( column , msg                    )
+        self . emitReload . emit           (                                 )
       ########################################################################
-      ts   = item . data                ( 0 , Qt . UserRole                  )
-      item . setText                    ( column , msg                       )
-      self . DESCRIBE . setContext      ( ts , msg                           )
+    elif                                   ( 1 == column                   ) :
+      ########################################################################
+      slen   = item . data                 ( 0 , Qt . UserRole               )
+      vlen   = int                         ( slen                            )
+      item   . setText                     ( column , msg                    )
+      self   . DESCRIBE . setContext       ( vlen , msg                      )
+      self   . Notify                      ( 5                               )
     ##########################################################################
     return
   ############################################################################
@@ -375,7 +381,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def SaveToDatabase                   ( self                              ) :
+  def BackgroundSaveToDatabase         ( self                              ) :
     ##########################################################################
     if                                 ( self . ScenarioUuid <= 0          ) :
       ########################################################################
@@ -408,6 +414,12 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     DB     . UnlockTables              (                                     )
     DB     . Close                     (                                     )
     self   . Notify                    ( 5                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveToDatabase ( self                                                ) :
+    ##########################################################################
+    self . Go        ( self . BackgroundSaveToDatabase                       )
     ##########################################################################
     return
   ############################################################################
@@ -452,13 +464,14 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     mm     = MenuManager               ( self                                )
     ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
-    self   . AppendInsertAction        ( mm , 1102                           )
-    self   . AppendRenameAction        ( mm , 1103                           )
-    self   . AppendDeleteAction        ( mm , 1104                           )
     ##########################################################################
     msg    = self . getMenuItem        ( "Save"                              )
     icon   = QIcon                     ( ":/images/vtsave.png"               )
     mm     . addActionWithIcon         ( 1501 , icon , msg                   )
+    ##########################################################################
+    self   . AppendInsertAction        ( mm , 1102                           )
+    self   . AppendRenameAction        ( mm , 1103                           )
+    self   . AppendDeleteAction        ( mm , 1104                           )
     ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################

@@ -41,43 +41,43 @@ class Anchor     (                                                         ) :
   def setJson                 ( self , JSON                                ) :
     ##########################################################################
     if                        ( "Timestamp" in JSON                        ) :
-      self . Timestamp = JSON [ "Timestamp"                                  ]
+      self . Timestamp = int  ( JSON [ "Timestamp"                         ] )
     ##########################################################################
     if                        ( "Action"    in JSON                        ) :
-      self . Action    = JSON [ "Action"                                     ]
+      self . Action    = int  ( JSON [ "Action"                            ] )
     ##########################################################################
     if                        ( "States"    in JSON                        ) :
-      self . States    = JSON [ "States"                                     ]
+      self . States    = int  ( JSON [ "States"                            ] )
     ##########################################################################
     if                        ( "Names"     in JSON                        ) :
       self . NAMEs     = JSON [ "Names"                                      ]
     ##########################################################################
     return
   ############################################################################
-  def setTimestamp ( self , ts                                             ) :
+  def setTimestamp         ( self , ts                                     ) :
     ##########################################################################
-    self . Timestamp = ts
+    self . Timestamp = int (        ts                                       )
     ##########################################################################
     return
   ############################################################################
   def getTimestamp ( self , baseTime = 0                                   ) :
-    return int     ( baseTime + self . Timestamp                             )
+    return int     ( int ( baseTime ) + self . Timestamp                     )
   ############################################################################
-  def setAction ( self , action                                            ) :
+  def setAction         ( self , action                                    ) :
     ##########################################################################
-    self . Action = action
+    self . Action = int (        action                                      )
     ##########################################################################
     return
   ############################################################################
-  def setStates ( self , states                                            ) :
+  def setStates         ( self , states                                    ) :
     ##########################################################################
-    self . States = states
+    self . States = int (        states                                      )
     ##########################################################################
     return
   ############################################################################
   def setContext ( self , Locality , Context ) :
     ##########################################################################
-    self . NAMEs [ f"{Locality}" ] = Context
+    self . NAMEs [ f"{Locality}" ] = f"{Context}"
     ##########################################################################
     return
   ############################################################################
@@ -90,10 +90,10 @@ class Anchor     (                                                         ) :
     ##########################################################################
     return ""
   ############################################################################
-  def Replace ( self , fromTime , asTime                                   ) :
+  def Replace                ( self , fromTime , asTime                    ) :
     ##########################################################################
-    if        ( fromTime == self . Timestamp                               ) :
-      self . Timestamp = asTime
+    if                       ( int ( fromTime ) == self . Timestamp        ) :
+      self . Timestamp = int ( asTime                                        )
     ##########################################################################
     return
   ############################################################################
@@ -133,55 +133,55 @@ class Segment  (                                                           ) :
   def setJson              ( self , JSON                                   ) :
     ##########################################################################
     if                     ( "Start"  in JSON                              ) :
-      self . Start  = JSON [ "Start"                                         ]
+      self . Start  = int  ( JSON [ "Start"                                ] )
     ##########################################################################
     if                     ( "Finish" in JSON                              ) :
-      self . Finish = JSON [ "Finish"                                        ]
+      self . Finish = int  ( JSON [ "Finish"                               ] )
     ##########################################################################
     if                     ( "Action" in JSON                              ) :
-      self . Action = JSON [ "Action"                                        ]
+      self . Action = int  ( JSON [ "Action"                               ] )
     ##########################################################################
     if                     ( "States" in JSON                              ) :
-      self . States = JSON [ "States"                                        ]
+      self . States = int  ( JSON [ "States"                               ] )
     ##########################################################################
     if                     ( "Names"  in JSON                              ) :
       self . NAMEs  = JSON [ "Names"                                         ]
     ##########################################################################
     return
   ############################################################################
-  def setStart ( self , ts                                                 ) :
+  def setStart         ( self , ts                                         ) :
     ##########################################################################
-    self . Start = ts
+    self . Start = int (        ts                                           )
     ##########################################################################
     return
   ############################################################################
-  def setFinish ( self , ts                                                ) :
+  def setFinish         ( self , ts                                        ) :
     ##########################################################################
-    self . Finish = ts
+    self . Finish = int (        ts                                          )
     ##########################################################################
     return
   ############################################################################
   def getStart ( self , baseTime = 0                                       ) :
-    return int ( baseTime + self . Start                                     )
+    return int ( int ( baseTime ) + self . Start                             )
   ############################################################################
   def getFinish ( self , baseTime = 0                                      ) :
-    return int  ( baseTime + self . Finish                                   )
+    return int  ( int ( baseTime ) + self . Finish                           )
   ############################################################################
-  def setAction ( self , action                                            ) :
+  def setAction         ( self , action                                    ) :
     ##########################################################################
-    self . Action = action
+    self . Action = int (        action                                      )
     ##########################################################################
     return
   ############################################################################
-  def setStates ( self , states                                            ) :
+  def setStates         ( self , states                                    ) :
     ##########################################################################
-    self . States = states
+    self . States = int (        states                                      )
     ##########################################################################
     return
   ############################################################################
   def setContext ( self , Locality , Context ) :
     ##########################################################################
-    self . NAMEs [ f"{Locality}" ] = Context
+    self . NAMEs [ f"{Locality}" ] = f"{Context}"
     ##########################################################################
     return
   ############################################################################
@@ -194,13 +194,13 @@ class Segment  (                                                           ) :
     ##########################################################################
     return ""
   ############################################################################
-  def Replace ( self , fromTime , asTime                                   ) :
+  def Replace             ( self , fromTime , asTime                       ) :
     ##########################################################################
-    if        ( fromTime == self . Start                                   ) :
-      self . Start  = asTime
+    if                    ( int ( fromTime ) == self . Start               ) :
+      self . Start  = int ( asTime                                           )
     ##########################################################################
-    if        ( fromTime == self . Finish                                  ) :
-      self . Finish = asTime
+    if                    ( int ( fromTime ) == self . Finish              ) :
+      self . Finish = int ( asTime                                           )
     ##########################################################################
     return
   ############################################################################
@@ -247,10 +247,10 @@ class Descriptive (                                                        ) :
     return
   ############################################################################
   def shiftTime ( self , T                                                 ) :
-    return int  ( T + self . BaseTime                                        )
+    return int  ( int ( T ) + self . BaseTime                                )
   ############################################################################
   def realTime ( self , T                                                  ) :
-    return int ( T - self . BaseTime                                         )
+    return int ( int ( T ) - self . BaseTime                                 )
   ############################################################################
   def setLocality ( self , locality                                        ) :
     ##########################################################################
@@ -293,7 +293,7 @@ class Descriptive (                                                        ) :
     ##########################################################################
     if                            ( "Segments" in JSON                     ) :
       ########################################################################
-      for S in JSON               [ "Segments"                               ]
+      for S in JSON               [ "Segments"                             ] :
         ######################################################################
         SG              = Segment (                                          )
         SG              . setJson ( S                                        )
@@ -311,10 +311,10 @@ class Descriptive (                                                        ) :
     self   . Clear           (                                               )
     ##########################################################################
     if                       ( "BaseTime"    in JSON                       ) :
-      self . BaseTime = JSON [ "BaseTime"                                    ]
+      self . BaseTime = int  ( JSON [ "BaseTime"                           ] )
     ##########################################################################
     if                       ( "Duration"    in JSON                       ) :
-      self . Duration = JSON [ "Duration"                                    ]
+      self . Duration = int  ( JSON [ "Duration"                           ] )
     ##########################################################################
     if                       ( "Description" in JSON                       ) :
       self . setJson         ( JSON [ "Description"                        ] )
