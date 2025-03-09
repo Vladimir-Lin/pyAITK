@@ -47,7 +47,6 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . DefaultTitle       = ""
     self . TimeGap            = 5000
     self . SortOrder          = "asc"
-    self . DJSON              = {                                            }
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -367,17 +366,19 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def GotoSegments             ( self                                      ) :
+  def GotoSegments                      ( self                             ) :
     ##########################################################################
-    uxid = str                 ( self . ScenarioUuid                         )
-    head = self . windowTitle  (                                             )
-    icon = self . windowIcon   (                                             )
+    uxid = str                          ( self . ScenarioUuid                )
+    head = self . windowTitle           (                                    )
+    icon = self . windowIcon            (                                    )
     ##########################################################################
-    self . emitSegments . emit ( self                                      , \
-                                 head                                      , \
-                                 uxid                                      , \
-                                 self . DJSON                              , \
-                                 icon                                        )
+    JJ   = self . DESCRIBE . toScenario (                                    )
+    ##########################################################################
+    JJ [ "Album"    ] = self . AlbumUuid
+    JJ [ "Fragment" ] = self . FragmentUuid
+    JJ [ "Name"     ] = head
+    ##########################################################################
+    self . emitSegments . emit          ( self , head , uxid , JJ , icon     )
     ##########################################################################
     return
   ############################################################################
