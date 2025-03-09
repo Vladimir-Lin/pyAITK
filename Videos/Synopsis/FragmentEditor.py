@@ -555,6 +555,7 @@ class FragmentEditor     ( TreeDock                                        ) :
       self . Relation . set   ( "first"  , uuid                              )
       self . Relation . Join  ( DB       , RELTAB                            )
     ##########################################################################
+    DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0             , Qt . UserRole , str ( uuid ) )

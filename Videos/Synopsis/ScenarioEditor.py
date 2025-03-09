@@ -663,6 +663,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
       self . Relation . set   ( "first"  , uuid                              )
       self . Relation . Join  ( DB       , RELTAB                            )
     ##########################################################################
+    DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
     self   . loading          (                                              )
     ##########################################################################
@@ -725,6 +726,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   def OpenItemDescriptive          ( self , item                           ) :
     ##########################################################################
     uuid = item . data             ( 0             , Qt . UserRole           )
+    dlen = item . data             ( 6             , Qt . UserRole           )
     slen = item . data             ( 7             , Qt . UserRole           )
     jsoz = item . data             ( self . JsonAt , Qt . UserRole           )
     uuid = int                     ( uuid                                    )
@@ -736,6 +738,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
                                      "Fragment"    : self . FragmentUuid   , \
                                      "Name"        : head                  , \
                                      "BaseTime"    : int ( slen )          , \
+                                     "Duration"    : int ( dlen )          , \
                                      "Description" : jsoz                    }
     ##########################################################################
     self . emitDescriptives . emit ( self                                  , \

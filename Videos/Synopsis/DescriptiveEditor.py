@@ -24,15 +24,13 @@ from   AITK    . Calendars  . Periode  import Periode
 from           . Fragment              import Fragment    as FragmentItem
 from           . Scenario              import Scenario    as ScenarioItem
 from           . Descriptive           import Descriptive as DescriptiveItem
-from           . Descriptive           import Segment     as SegmentItem
-from           . Descriptive           import Anchor      as AnchorItem
 ##############################################################################
 class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
   emitNamesShow = Signal (                                                   )
-  emitAllNames  = Signal ( list                                              )
+  emitReload    = Signal (                                                   )
   emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
   emitLog       = Signal ( str                                               )
   ############################################################################
@@ -43,9 +41,15 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . ClassTag           = "DescriptiveEditor"
     self . FetchTableKey      = self . ClassTag
     self . GType              = 212
+    self . AlbumUuid          = 0
+    self . FragmentUuid       = 0
     self . ScenarioUuid       = 0
+    self . DefaultTitle       = ""
+    self . TimeGap            = 5000
+    self . SortOrder          = "asc"
     self . DJSON              = {                                            }
     ##########################################################################
+    self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
     ##########################################################################
     self . dockingOrientation = 0
@@ -55,7 +59,9 @@ class DescriptiveEditor  ( TreeDock                                        ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
+    self . setColumnCount          ( 5                                       )
+    self . setColumnWidth          ( 0 , 120                                 )
+    self . setColumnWidth          ( 1 , 600                                 )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -65,7 +71,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
-    self . emitAllNames  . connect ( self . refresh                          )
+    self . emitReload    . connect ( self . reload                           )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -91,10 +97,11 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
+    self . LinkAction ( "Refresh"    , self . reload          , Enabled      )
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Save"       , self . SaveToDatabase  , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
@@ -132,49 +139,55 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def twiceClicked ( self , item , column                                  ) :
     ##########################################################################
+    if                              ( column in [ 0 ]                      ) :
+      ########################################################################
+      slen = item . data            ( column , Qt . UserRole                 )
+      vlen = self . DESCRIBE . shiftTime ( int ( slen                      ) )
+      xlen = self . SCENE . toFTime ( vlen                                   )
+      line = self . setLineEdit     ( item                                 , \
+                                      column                               , \
+                                      "editingFinished"                    , \
+                                      self . nameChanged                     )
+      line . blockSignals           ( True                                   )
+      line . setText                ( xlen                                   )
+      line . blockSignals           ( False                                  )
+      line . setFocus               ( Qt . TabFocusReason                    )
+    ##########################################################################
+    if                              ( column in [ 1 ]                      ) :
+      ########################################################################
+      line = self . setLineEdit     ( item                                 , \
+                                      column                               , \
+                                      "editingFinished"                    , \
+                                      self . nameChanged                     )
+      line . setFocus               ( Qt . TabFocusReason                    )
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem ( self , POS , BT , JSON , BRUSH                         ) :
+  def PrepareItem                  ( self , JSON , BRUSH                   ) :
     ##########################################################################
+    STIME = int                    ( JSON [ "Shift"                        ] )
+    RTIME = str                    ( JSON [ "Timestamp"                    ] )
+    NAME  =                          JSON [ "Name"                           ]
+    ##########################################################################
+    FTIME = self . SCENE . toFTime ( STIME                                   )
+    ##########################################################################
+    IT    = QTreeWidgetItem        (                                         )
+    IT    . setData                ( 0 , Qt . UserRole , str ( RTIME )       )
+    IT    . setText                ( 0 , FTIME                               )
+    IT    . setTextAlignment       ( 0 , Qt . AlignRight                     )
+    IT    . setText                ( 1 , NAME                                )
+    ##########################################################################
+    for COL in                     [  0 ,  1 ,  2 ,  3 ,  4                ] :
+      ########################################################################
+      IT  . setBackground          ( COL , BRUSH                             )
     ##########################################################################
     return IT
   ############################################################################
   def RefreshToolTip          ( self , Total                               ) :
     ##########################################################################
-    ## FMT  = self . getMenuItem ( "DisplayTotal"                               )
-    ## MSG  = FMT  . format      ( Total , self . Total                         )
-    ## self . setToolTip         ( MSG                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def refresh                     ( self , LISTs                           ) :
-    ##########################################################################
-    self   . clear                (                                          )
-    self   . setEnabled           ( False                                    )
-    ##########################################################################
-    CNT    = 0
-    POS    = 0
-    BT     = 0
-    MOD    = len                  ( self . TreeBrushes                       )
-    ##########################################################################
-    for JSON in LISTs                                                        :
-      ########################################################################
-      POS  = int                  ( POS + 1                                  )
-      ########################################################################
-      IT   = self . PrepareItem   ( POS                                    , \
-                                    BT                                     , \
-                                    JSON                                   , \
-                                    self . TreeBrushes [ CNT ]               )
-      self . addTopLevelItem      ( IT                                       )
-      ########################################################################
-      ## DURT = int                  ( JSON [ "Duration"                      ] )
-      ## BT   = int                  ( BT + DURT                                )
-      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
-    ##########################################################################
-    self   . RefreshToolTip       ( len ( LISTs )                            )
-    self   . setEnabled           ( True                                     )
-    self   . emitNamesShow . emit (                                          )
+    FMT  = self . getMenuItem ( "DisplayTotal"                               )
+    MSG  = FMT  . format      ( Total                                        )
+    self . setToolTip         ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
@@ -182,34 +195,95 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     ##########################################################################
     ## self . emitAllNames  . emit ( L                                          )
-    self . Notify               ( 5                                          )
+    ## self . Notify               ( 5                                          )
     ##########################################################################
     return
   ############################################################################
-  def startScenario  ( self , Uuid , JSON                                  ) :
+  def reload                              ( self                           ) :
     ##########################################################################
-    if               ( not self . isPrepared ( )                           ) :
-      self . Prepare (                                                       )
+    self     . clear                      (                                  )
+    self     . setEnabled                 ( False                            )
+    ##########################################################################
+    CNT      = 0
+    MOD      = len                        ( self . TreeBrushes               )
+    TOTAL    = len                        ( self . DESCRIBE . TIMESTAMPs     )
+    ##########################################################################
+    for T in self . DESCRIBE . TIMESTAMPs                                    :
+      ########################################################################
+      JJ     = self . DESCRIBE . itemJson ( T                                )
+      ########################################################################
+      IT     = self . PrepareItem         ( JJ                             , \
+                                            self . TreeBrushes [ CNT ]       )
+      ########################################################################
+      if                                  ( self . SortOrder in [ "asc" ]  ) :
+        self . addTopLevelItem            (     IT                           )
+      else                                                                   :
+        self . insertTopLevelItem         ( 0 , IT                           )
+      ########################################################################
+      CNT    = int                        ( int ( CNT + 1 ) % MOD            )
+    ##########################################################################
+    self     . RefreshToolTip             ( TOTAL                            )
+    self     . setEnabled                 ( True                             )
+    self     . emitNamesShow . emit       (                                  )
+    self     . Notify                     ( 5                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def startScenario                         ( self , Uuid , JSON           ) :
+    ##########################################################################
+    if                                      ( not self . isPrepared (    ) ) :
+      self . Prepare                        (                                )
     ##########################################################################
     self   . ScenarioUuid = Uuid
-    self   . DJSON        = JSON
     ##########################################################################
-    ## self   . Go      ( self . loading                                        )
-    self   . show    (                                                       )
+    if                                      ( "Description" in JSON        ) :
+      ########################################################################
+      self . DESCRIBE     = DescriptiveItem (                                )
+      self . DESCRIBE     . setLocality     ( self . getLocality (         ) )
+      self . DESCRIBE     . setScenario     ( JSON                           )
+    ##########################################################################
+    if                                      ( "Album"       in JSON        ) :
+      ########################################################################
+      self . AlbumUuid    = JSON            [ "Album"                        ]
+    ##########################################################################
+    if                                      ( "Fragment"    in JSON        ) :
+      ########################################################################
+      self . FragmentUuid = JSON            [ "Fragment"                     ]
+    ##########################################################################
+    if                                      ( "Name"        in JSON        ) :
+      ########################################################################
+      self . DefaultTitle = JSON            [ "Name"                         ]
+    ##########################################################################
+    self   . reload                         (                                )
     ##########################################################################
     return
   ############################################################################
-  def InsertItem              ( self                                       ) :
+  def InsertItem                        ( self                             ) :
     ##########################################################################
-    ## item = QTreeWidgetItem    (                                              )
-    ## item . setData            ( 0 , Qt . UserRole , 0                        )
-    ## item . setData            ( 1 , Qt . UserRole , 0                        )
-    ## self . addTopLevelItem    ( item                                         )
-    ## line = self . setLineEdit ( item                                       , \
-    ##                             1                                          , \
-    ##                             "editingFinished"                          , \
-    ##                             self . nameChanged                           )
-    ## line . setFocus           ( Qt . TabFocusReason                          )
+    IDX    = -1
+    CIT    = self . currentItem         (                                    )
+    ##########################################################################
+    if                                  ( CIT in self . EmptySet           ) :
+      ########################################################################
+      vlen = self . DESCRIBE . LastestTimestamp ( self . TimeGap             )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      IDX  = self . indexOfTopLevelItem ( CIT                                )
+      slen = CIT  . data                ( column , Qt . UserRole             )
+      vlen = int                        ( int ( slen ) + self . TimeGap      )
+    ##########################################################################
+    self   . DESCRIBE . addItem         ( vlen , ""                          )
+    self   . reload                     (                                    )
+    ##########################################################################
+    if                                  ( IDX < 0                          ) :
+      ########################################################################
+      IDX  = self . topLevelItemCount   (                                    )
+      IDX  = int                        ( IDX - 1                            )
+    ##########################################################################
+    CIT    = self . topLevelItem        ( IDX                                )
+    self   . setCurrentItem             ( CIT                                )
+    self   . twiceClicked               ( CIT , 1                            )
     ##########################################################################
     return
   ############################################################################
@@ -218,37 +292,48 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    ## self . defaultDeleteItems ( 0 , self . RemoveItems                       )
+    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
   def RenameItem        ( self                                             ) :
     ##########################################################################
-    self . goRenameItem ( 0                                                  )
+    self . goRenameItem ( 1                                                  )
     ##########################################################################
     return
   ############################################################################
-  def nameChanged               ( self                                     ) :
+  def nameChanged                       ( self                             ) :
     ##########################################################################
-    if                          ( not self . isItemPicked ( )              ) :
+    if                                  ( not self . isItemPicked (      ) ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem [ "Item"                                     ]
-    column = self . CurrentItem [ "Column"                                   ]
-    line   = self . CurrentItem [ "Widget"                                   ]
-    text   = self . CurrentItem [ "Text"                                     ]
-    msg    = line . text        (                                            )
-    uuid   = self . itemUuid    ( item , 0                                   )
+    item   = self . CurrentItem         [ "Item"                             ]
+    column = self . CurrentItem         [ "Column"                           ]
+    line   = self . CurrentItem         [ "Widget"                           ]
+    text   = self . CurrentItem         [ "Text"                             ]
+    msg    = line . text                (                                    )
+    uuid   = self . itemUuid            ( item , 0                           )
     ##########################################################################
-    if                          ( len ( msg ) <= 0                         ) :
-      self . removeTopLevelItem ( item                                       )
+    if                                  ( len ( msg ) <= 0                 ) :
+      self . removeTopLevelItem         ( item                               )
       return
     ##########################################################################
-    item   . setText            ( column , msg                               )
+    self   . removeParked               (                                    )
     ##########################################################################
-    self   . removeParked       (                                            )
-    VAL    =                    ( item , uuid , msg ,                        )
-    ## self   . Go                 ( self . AssureUuidItem , VAL                )
+    if                                  ( 0 == column                      ) :
+      ########################################################################
+      slen = item . data                ( 0 , Qt . UserRole                  )
+      dlen = self . SCENE . FromFTime   ( msg                                )
+      rlen = self . DESCRIBE . realTime ( dlen                               )
+      self . DESCRIBE . Replace         ( slen , rlen                        )
+      item . setText                    ( column , msg                       )
+      self . emitReload . emit          (                                    )
+      ########################################################################
+    elif                                ( 1 == column                      ) :
+      ########################################################################
+      ts   = item . data                ( 0 , Qt . UserRole                  )
+      item . setText                    ( column , msg                       )
+      self . DESCRIBE . setContext      ( ts , msg                           )
     ##########################################################################
     return
   ############################################################################
@@ -260,9 +345,19 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 9                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveItems                  ( self , TUIDs                          ) :
+    ##########################################################################
+    for T in TUIDs                                                           :
+      ########################################################################
+      self . DESCRIBE . deleteItem ( T                                       )
+    ##########################################################################
+    self . emitReload . emit       (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -277,6 +372,42 @@ class DescriptiveEditor  ( TreeDock                                        ) :
                                  uxid                                      , \
                                  self . DJSON                              , \
                                  icon                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveToDatabase                   ( self                              ) :
+    ##########################################################################
+    if                                 ( self . ScenarioUuid <= 0          ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    DB     = self . ConnectDB          (                                     )
+    ##########################################################################
+    if                                 ( self . NotOkay ( DB )             ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    SCNTAB = self  . Tables            [ "Scenarios"                         ]
+    DJSON  = self  . DESCRIBE . toJson (                                     )
+    SJSON  = json  . dumps             ( DJSON                               )
+    RJSON  = SJSON . encode            ( "utf-8"                             )
+    UUID   = self . ScenarioUuid
+    ##########################################################################
+    DB     . LockWrites                ( [ SCNTAB                          ] )
+    ##########################################################################
+    QQ     = f"""update {SCNTAB}
+                 set `description` = %s
+                 where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join                ( QQ . split (                      ) )
+    DB     . QueryValues               ( QQ , ( RJSON ,                    ) )
+    ##########################################################################
+    DB     . UnlockTables              (                                     )
+    DB     . Close                     (                                     )
+    self   . Notify                    ( 5                                   )
     ##########################################################################
     return
   ############################################################################
@@ -325,6 +456,10 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self   . AppendRenameAction        ( mm , 1103                           )
     self   . AppendDeleteAction        ( mm , 1104                           )
     ##########################################################################
+    msg    = self . getMenuItem        ( "Save"                              )
+    icon   = QIcon                     ( ":/images/vtsave.png"               )
+    mm     . addActionWithIcon         ( 1501 , icon , msg                   )
+    ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
     msg    = self . getMenuItem        ( "OpenSegments"                      )
@@ -351,7 +486,12 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
+    ##########################################################################
     if                                 ( OKAY                              ) :
+      ########################################################################
+      self . DESCRIBE . setLocality    ( self . getLocality (              ) )
+      self . reload                    (                                     )
+      ########################################################################
       return True
     ##########################################################################
     OKAY   = self . RunColumnsMenu     ( at                                  )
@@ -361,13 +501,13 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     OKAY   = self . RunSortingMenu     ( at                                  )
     if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . reload                    (                                     )
       ########################################################################
       return True
     ##########################################################################
     if                                 ( 1001 == at                        ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . reload                    (                                     )
       ########################################################################
       return True
     ##########################################################################
@@ -381,6 +521,10 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     if                                 ( 1104 == at                        ) :
       self . DeleteItems               (                                     )
+      return True
+    ##########################################################################
+    if                                 ( 1501 == at                        ) :
+      self . SaveToDatabase            (                                     )
       return True
     ##########################################################################
     if                                 ( 2001 == at                        ) :
