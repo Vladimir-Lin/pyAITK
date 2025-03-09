@@ -31,6 +31,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   emitNamesShow = Signal (                                                   )
   emitReload    = Signal (                                                   )
+  emitFocusIn   = Signal ( int                                               )
   emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
   emitLog       = Signal ( str                                               )
   ############################################################################
@@ -73,6 +74,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitReload    . connect ( self . reload                           )
+    self . emitFocusIn   . connect ( self . clickIn                          )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -261,6 +263,26 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def clickIn                        ( self , IDX                          ) :
+    ##########################################################################
+    if                               ( IDX < 0                             ) :
+      ########################################################################
+      IDX = self . topLevelItemCount (                                       )
+      IDX = int                      ( IDX - 1                               )
+    ##########################################################################
+    CIT   = self . topLevelItem      ( IDX                                   )
+    self  . setCurrentItem           ( CIT                                   )
+    self  . twiceClicked             ( CIT , 1                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def WaitFocusIn             ( self , IDX                                 ) :
+    ##########################################################################
+    time . sleep              ( 500                                          )
+    self . emitFocusIn . emit (        IDX                                   )
+    ##########################################################################
+    return
+  ############################################################################
   def InsertItem                        ( self                             ) :
     ##########################################################################
     IDX    = -1
@@ -275,18 +297,11 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       IDX  = self . indexOfTopLevelItem ( CIT                                )
       slen = CIT  . data                ( 0 , Qt . UserRole                  )
       vlen = int                        ( int ( slen ) + self . TimeGap      )
+      IDX  = int                        ( IDX + 1                            )
     ##########################################################################
     self   . DESCRIBE . addItem         ( vlen , ""                          )
     self   . reload                     (                                    )
-    ##########################################################################
-    if                                  ( IDX < 0                          ) :
-      ########################################################################
-      IDX  = self . topLevelItemCount   (                                    )
-      IDX  = int                        ( IDX - 1                            )
-    ##########################################################################
-    CIT    = self . topLevelItem        ( IDX                                )
-    self   . setCurrentItem             ( CIT                                )
-    self   . twiceClicked               ( CIT , 1                            )
+    self   . Go                         ( self . WaitFocusIn                 )
     ##########################################################################
     return
   ############################################################################
