@@ -39,6 +39,7 @@ class FragmentEditor          ( TreeDock                                   ) :
                                 str                                        , \
                                 QIcon                                        )
   emitOpenVideoGroup = Signal ( str ,       int , str , str , QIcon          )
+  emitPlayer         = Signal ( QWidget                                      )
   emitLog            = Signal ( str                                          )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -49,6 +50,7 @@ class FragmentEditor          ( TreeDock                                   ) :
     ##########################################################################
     self . ClassTag           = "FragmentEditor"
     self . FetchTableKey      = self . ClassTag
+    self . PlayerWidget       = None
     self . AlbumUuid          = 0
     self . GType              = 213
     self . Total              = 0
@@ -157,6 +159,14 @@ class FragmentEditor          ( TreeDock                                   ) :
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
+  ############################################################################
+  def AssignPlayer           ( self , widget                               ) :
+    ##########################################################################
+    self . PlayerWidget = widget
+    ##########################################################################
+    self . emitPlayer . emit (        widget                                 )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################

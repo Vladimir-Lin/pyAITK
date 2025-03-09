@@ -33,6 +33,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   emitReload    = Signal (                                                   )
   emitFocusIn   = Signal ( int                                               )
   emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
+  emitPlayer    = Signal ( QWidget                                           )
   emitLog       = Signal ( str                                               )
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
@@ -42,6 +43,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . ClassTag           = "DescriptiveEditor"
     self . FetchTableKey      = self . ClassTag
     self . GType              = 212
+    self . PlayerWidget       = None
     self . AlbumUuid          = 0
     self . FragmentUuid       = 0
     self . ScenarioUuid       = 0
@@ -94,7 +96,9 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "OpenSegments"                       , \
                                       ":/images/addcolumn.png"             , \
-                                      self . GotoSegments                    )
+                                      self . GotoSegments                  , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -133,6 +137,14 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
+  ############################################################################
+  def AssignPlayer           ( self , widget                               ) :
+    ##########################################################################
+    self . PlayerWidget = widget
+    ##########################################################################
+    self . emitPlayer . emit (        widget                                 )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################

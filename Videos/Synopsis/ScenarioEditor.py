@@ -31,6 +31,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
   emitNamesShow    = Signal (                                                )
   emitAllNames     = Signal ( list                                           )
   emitDescriptives = Signal ( QWidget , str , str , dict , QIcon             )
+  emitPlayer       = Signal ( QWidget                                        )
   emitLog          = Signal ( str                                            )
   ############################################################################
   def __init__              ( self , parent = None , plan = None           ) :
@@ -41,6 +42,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     self . ClassTag           = "ScenarioEditor"
     self . FetchTableKey      = self . ClassTag
+    self . PlayerWidget       = None
     self . AlbumUuid          = 0
     self . FragmentUuid       = 0
     self . GType              = 212
@@ -161,6 +163,14 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
+  ############################################################################
+  def AssignPlayer           ( self , widget                               ) :
+    ##########################################################################
+    self . PlayerWidget = widget
+    ##########################################################################
+    self . emitPlayer . emit (        widget                                 )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
