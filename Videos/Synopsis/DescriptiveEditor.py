@@ -402,7 +402,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     DJSON  = self  . DESCRIBE . toJson (                                     )
     SJSON  = json  . dumps             ( DJSON                               )
     RJSON  = SJSON . encode            ( "utf-8"                             )
-    UUID   = self . ScenarioUuid
+    UUID   = self  . ScenarioUuid
     ##########################################################################
     DB     . LockWrites                ( [ SCNTAB                          ] )
     ##########################################################################

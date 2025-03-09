@@ -47,7 +47,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 28
-    self . JsonAt             = 9
+    self . JsonAt             = 10
     self . SortOrder          = "asc"
     self . UsedOptions        = [ 1 , 2 , 3                                  ]
     ##########################################################################
@@ -737,9 +737,9 @@ class ScenarioEditor        ( TreeDock                                     ) :
                                      "Album"       : self . AlbumUuid      , \
                                      "Fragment"    : self . FragmentUuid   , \
                                      "Name"        : head                  , \
-                                     "BaseTime"    : int ( slen )          , \
-                                     "Duration"    : int ( dlen )          , \
-                                     "Description" : jsoz                    }
+                                     "BaseTime"    : int  ( slen         ) , \
+                                     "Duration"    : int  ( dlen         ) , \
+                                     "Description" : jsoz [ "Description"  ] }
     ##########################################################################
     self . emitDescriptives . emit ( self                                  , \
                                      head                                  , \
