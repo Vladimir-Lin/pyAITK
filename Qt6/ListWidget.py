@@ -26,6 +26,7 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
   ############################################################################
   pickSelectionMode     = Signal ( str                                       )
   SubmitStatusMessage   = Signal ( str , int                                 )
+  SubmitTtsTalk         = Signal ( str , int                                 )
   Leave                 = Signal ( QWidget                                   )
   emitSelectOne         = Signal (                                           )
   emitSelectAll         = Signal (                                           )
@@ -55,6 +56,7 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
     self . itemSelectionChanged  . connect  ( self . selectionsChanged       )
     self . pickSelectionMode     . connect  ( self . assignSelectionMode     )
     self . SubmitStatusMessage   . connect  ( self . AssignStatusMessage     )
+    self . SubmitTtsTalk         . connect  ( self . DoTtsTalk               )
     self . emitSelectOne         . connect  ( self . SelectOne               )
     self . emitSelectAll         . connect  ( self . SelectAll               )
     self . emitReverseSelections . connect  ( self . ReversalSelect          )
@@ -345,6 +347,18 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
   ############################################################################
   def ShowStatus                      ( self , message , timeout = 0       ) :
     self . SubmitStatusMessage . emit (        message , timeout             )
+    return
+  ############################################################################
+  def DoTtsTalk                 ( self , message , locality                ) :
+    ##########################################################################
+    self . Talk                 (        message , locality                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def TtsTalk                   ( self , message , locality                ) :
+    ##########################################################################
+    self . SubmitTtsTalk . emit (        message , locality                  )
+    ##########################################################################
     return
   ############################################################################
   def assignSelectionMode     ( self , mode                                ) :

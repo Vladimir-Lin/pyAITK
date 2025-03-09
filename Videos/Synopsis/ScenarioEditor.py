@@ -122,7 +122,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     ##########################################################################
     self . AppendToolNamingAction   (                                        )
     self . AppendSideActionWithIcon ( "OpenDescriptives"                   , \
-                                      ":/images/addcolumn.png"             , \
+                                      ":/images/descriptions.png"          , \
                                       self . GotoItemDescriptive             )
     ##########################################################################
     return
@@ -866,7 +866,7 @@ class ScenarioEditor        ( TreeDock                                     ) :
     mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     msg  = self . getMenuItem        ( "OpenDescriptives"                    )
-    icon = QIcon                     ( ":/images/addcolumn.png"              )
+    icon = QIcon                     ( ":/images/descriptions.png"           )
     mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , msg           )
     ##########################################################################
     return mm

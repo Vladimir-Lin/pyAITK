@@ -24,25 +24,26 @@ from   AITK    . Calendars  . Periode  import Periode
 from           . Fragment              import Fragment as FragmentItem
 from           . Scenario              import Scenario as ScenarioItem
 ##############################################################################
-class FragmentEditor     ( TreeDock                                        ) :
+class FragmentEditor          ( TreeDock                                   ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu         = 1371434312
   ############################################################################
-  emitNamesShow = Signal (                                                   )
-  emitAllNames  = Signal ( list                                              )
-  emitScenarios = Signal ( QWidget                                         , \
-                           str                                             , \
-                           str                                             , \
-                           str                                             , \
-                           int                                             , \
-                           str                                             , \
-                           str                                             , \
-                           QIcon                                             )
-  emitLog       = Signal ( str                                               )
+  emitNamesShow      = Signal (                                              )
+  emitAllNames       = Signal ( list                                         )
+  emitScenarios      = Signal ( QWidget                                    , \
+                                str                                        , \
+                                str                                        , \
+                                str                                        , \
+                                int                                        , \
+                                str                                        , \
+                                str                                        , \
+                                QIcon                                        )
+  emitOpenVideoGroup = Signal ( str ,       int , str , str , QIcon          )
+  emitLog            = Signal ( str                                          )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
-    super ( ) . __init__ (        parent        , plan                       )
+    super ( ) . __init__      (        parent        , plan                  )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -53,7 +54,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
-    self . JsonAt             = 3
+    self . JsonAt             = 4
     self . SortOrder          = "asc"
     self . UsedOptions        = [ 1 , 2 , 3                                  ]
     ##########################################################################
@@ -73,10 +74,12 @@ class FragmentEditor     ( TreeDock                                        ) :
     self . Relation . setT2        ( "vFragment"                             )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 5                                       )
+    self . setColumnWidth          ( 0 , 400                                 )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
     self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 4 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -112,8 +115,11 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     self . AppendToolNamingAction   (                                        )
     self . AppendSideActionWithIcon ( "OpenScenarios"                      , \
-                                      ":/images/addcolumn.png"             , \
+                                      ":/images/scenarios.png"             , \
                                       self . GotoItemScenario                )
+    self . AppendSideActionWithIcon ( "BelongVideos"                       , \
+                                      ":/images/videoclip.png"             , \
+                                      self . GotoItemVideos                  )
     ##########################################################################
     return
   ############################################################################
@@ -158,15 +164,28 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked              ( self , item , column                     ) :
+  def twiceClicked               ( self , item , column                    ) :
     ##########################################################################
-    if                          ( column in [ 0 ]                          ) :
+    if                           ( column in [ 0 , 2 ]                     ) :
       ########################################################################
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
+    ##########################################################################
+    if                           ( column in [ 1 ]                         ) :
+      ########################################################################
+      LL   = self . Translations [ self . ClassTag ] [ "Usage"               ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                    , \
+                                   column                                  , \
+                                   "activated"                             , \
+                                   self . usageChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 10                                        )
+      cb   . showPopup           (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -177,6 +196,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     NAME    = JSON                   [ "Name"                                ]
     USED    = int                    ( JSON [ "Used"                       ] )
     STATEs  = int                    ( JSON [ "States"                     ] )
+    VIDEOs  = int                    ( JSON [ "Videos"                     ] )
     UNAME   = ""
     ##########################################################################
     if                               ( str ( USED ) in USAGE               ) :
@@ -186,14 +206,18 @@ class FragmentEditor     ( TreeDock                                        ) :
     IT      = self . PrepareUuidItem ( 0 , UUID , NAME                       )
     ##########################################################################
     IT      . setText                ( 1 , UNAME                             )
+    IT      . setTextAlignment       ( 1 , Qt . AlignCenter                  )
     IT      . setData                ( 1 , Qt . UserRole , USED              )
     IT      . setText                ( 2 , str ( STATEs )                    )
     IT      . setTextAlignment       ( 2 , Qt . AlignRight                   )
     IT      . setData                ( 2 , Qt . UserRole , STATEs            )
+    IT      . setText                ( 3 , str ( VIDEOs )                    )
+    IT      . setTextAlignment       ( 3 , Qt . AlignRight                   )
+    IT      . setData                ( 3 , Qt . UserRole , VIDEOs            )
     ##########################################################################
     IT      . setData                ( self . JsonAt , Qt . UserRole , JSON  )
     ##########################################################################
-    for COL in                       [ 0 , 1 , 2 , 3                       ] :
+    for COL in                       [ 0 , 1 , 2 , 3 , 4                   ] :
       ########################################################################
       IT    . setBackground          ( COL , BRUSH                           )
     ##########################################################################
@@ -241,6 +265,7 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     RELTAB      = self . Tables            [ "Relation"                      ]
     FRGTAB      = self . Tables            [ "Fragments"                     ]
+    VIDREL      = self . Tables            [ "RelationVideos"                ]
     ##########################################################################
     if                                     ( self . isSubordination (    ) ) :
       ########################################################################
@@ -281,6 +306,11 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     NAMEs       = self . ObtainsUuidNames  ( DB , UUIDs                      )
     ##########################################################################
+    REX         = Relation                 (                                 )
+    REX         . setT1                    ( "vFragment"                     )
+    REX         . setT2                    ( "Video"                         )
+    REX         . setRelation              ( "Contains"                      )
+    ##########################################################################
     for L in LISTs                                                           :
       ########################################################################
       UUID      = L                        [ "Uuid"                          ]
@@ -288,6 +318,10 @@ class FragmentEditor     ( TreeDock                                        ) :
       if                                   ( UUID in NAMEs                 ) :
         ######################################################################
         L [ "Name" ] = NAMEs               [ UUID                            ]
+      ########################################################################
+      REX       . set                      ( "first" , UUID                  )
+      ########################################################################
+      L   [ "Videos" ] = REX . CountSecond ( DB , VIDREL                     )
       ########################################################################
       FRAGMENTs . append                   ( L                               )
     ##########################################################################
@@ -385,38 +419,327 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                        ( self                                , \
-                                       source                              , \
-                                       mimeData                            , \
-                                       mousePos                            ) :
+  def dropNew                        ( self , source , mimeData , mousePos ) :
     ##########################################################################
     if                               ( self == source                      ) :
       return False
     ##########################################################################
-    RDN    = self . RegularDropNew   ( mimeData                              )
+    RDN      = self . RegularDropNew ( mimeData                              )
+    ##########################################################################
     if                               ( not RDN                             ) :
       return False
     ##########################################################################
-    mtype  = self   . DropInJSON     [ "Mime"                                ]
-    UUIDs  = self   . DropInJSON     [ "UUIDs"                               ]
-    atItem = self   . itemAt         ( mousePos                              )
-    title  = source . windowTitle    (                                       )
-    CNT    = len                     ( UUIDs                                 )
+    mtype    = self   . DropInJSON   [ "Mime"                                ]
+    UUIDs    = self   . DropInJSON   [ "UUIDs"                               ]
+    atItem   = self   . itemAt       ( mousePos                              )
+    title    = source . windowTitle  (                                       )
+    CNT      = len                   ( UUIDs                                 )
     ##########################################################################
-    ## if                               ( mtype in [ "video/uuids"          ] ) :
-    ##   self . ShowMenuItemTitleStatus ( "VideosFrom" , title , CNT            )
+    if                               ( mtype in [ "video/uuids"          ] ) :
+      ########################################################################
+      if                             ( atItem not in self . EmptySet       ) :
+        ######################################################################
+        TXT  = atItem . text         ( 0                                     )
+        UID  = atItem . data         ( 0 , Qt . UserRole                     )
+        FMT  = self   . getMenuItem  ( "VideosFrom"                          )
+        MSG  = FMT    . format       ( title , CNT , TXT , UID               )
+        self . ShowStatus            ( MSG                                   )
+    ##########################################################################
+    if                               ( mtype in [ "scenario/uuids"       ] ) :
+      ########################################################################
+      if                             ( atItem not in self . EmptySet       ) :
+        ######################################################################
+        TXT  = atItem . text         ( 0                                     )
+        UID  = atItem . data         ( 0 , Qt . UserRole                     )
+        FMT  = self   . getMenuItem  ( "ScenariosFrom"                       )
+        MSG  = FMT    . format       ( title , CNT , TXT , UID               )
+        self . ShowStatus            ( MSG                                   )
+    ##########################################################################
+    if                               ( mtype not in [ "vfragment/uuids" ]  ) :
+      return False
+    ##########################################################################
+    if                               ( not self . isGrouping (           ) ) :
+      return False
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving ( self , source , mimeData , mousePos                     ) :
+  def dropMoving                  ( self , source , mimeData , mousePos    ) :
     ##########################################################################
-    if           ( self . droppingAction                                   ) :
+    if                            ( self . droppingAction                  ) :
       return False
     ##########################################################################
-    if           ( source == self                                          ) :
+    mtype  = self   . DropInJSON  [ "Mime"                                   ]
+    UUIDs  = self   . DropInJSON  [ "UUIDs"                                  ]
+    atItem = self   . itemAt      ( mousePos                                 )
+    title  = source . windowTitle (                                          )
+    CNT    = len                  ( UUIDs                                    )
+    ##########################################################################
+    if                            ( mtype in [ "video/uuids"             ] ) :
+      ########################################################################
+      if                          ( atItem in self . EmptySet              ) :
+        return False
+      ########################################################################
+      TXT  = atItem . text        ( 0                                        )
+      UID  = atItem . data        ( 0 , Qt . UserRole                        )
+      FMT  = self   . getMenuItem ( "VideosFrom"                             )
+      MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
+      self . ShowStatus           ( MSG                                      )
+    ##########################################################################
+    if                            ( mtype in [ "scenario/uuids"          ] ) :
+      ########################################################################
+      if                          ( atItem not in self . EmptySet          ) :
+        return False
+      ########################################################################
+      TXT  = atItem . text        ( 0                                        )
+      UID  = atItem . data        ( 0 , Qt . UserRole                        )
+      FMT  = self   . getMenuItem ( "ScenariosFrom"                          )
+      MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
+      self . ShowStatus           ( MSG                                      )
+    ##########################################################################
+    if                            ( mtype not in [ "vfragment/uuids" ]     ) :
       return False
+    ##########################################################################
+    if                            ( source == self                         ) :
+      ########################################################################
+      FMT  = self   . getMenuItem ( "MoveFragments"                          )
+      MSG  = FMT    . format      ( title , CNT                              )
+      self . ShowStatus           ( MSG                                      )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      FMT  = self   . getMenuItem ( "CopyFragments"                          )
+      MSG  = FMT    . format      ( title , CNT                              )
+      self . ShowStatus           ( MSG                                      )
     ##########################################################################
     return True
+  ############################################################################
+  def acceptVideoDrop ( self                                               ) :
+    return True
+  ############################################################################
+  def dropVideos           ( self , source , pos , JSOX                    ) :
+    ##########################################################################
+    if                     ( "UUIDs" not in JSOX                           ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSOX          [ "UUIDs"                                         ]
+    if                     ( len ( UUIDs ) <= 0                            ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    if                     ( atItem in self . EmptySet                     ) :
+      return True
+    ##########################################################################
+    UUID   = atItem . data ( 0 , Qt . UserRole                               )
+    UUID   = int           ( UUID                                            )
+    ##########################################################################
+    if                     ( UUID <= 0                                     ) :
+      return True
+    ##########################################################################
+    VAL    =               ( UUID , UUIDs ,                                  )
+    self   . Go            ( self . AppendingVideos , VAL                    )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AppendingVideos           ( self , UUID , UUIDs                      ) :
+    ##########################################################################
+    COUNT  = len                ( UUIDs                                      )
+    ##########################################################################
+    if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    FMT    = self . getMenuItem ( "JoinVideos"                               )
+    MSG    = FMT  . format      ( COUNT                                      )
+    self   . ShowStatus         ( MSG                                        )
+    self   . TtsTalk            ( MSG , 1002                                 )
+    ##########################################################################
+    RELTAB = self . Tables      [ "RelationVideos"                           ]
+    REL    = Relation           (                                            )
+    REL    . set                ( "first" , UUID                             )
+    REL    . setT1              ( "vFragment"                                )
+    REL    . setT2              ( "Video"                                    )
+    REL    . setRelation        ( "Contains"                                 )
+    ##########################################################################
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    ##########################################################################
+    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    ##########################################################################
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    self   . loading            (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def acceptScenariosDrop ( self                                           ) :
+    return True
+  ############################################################################
+  def dropScenarios        ( self , source , pos , JSOX                    ) :
+    ##########################################################################
+    if                     ( "UUIDs" not in JSOX                           ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSOX          [ "UUIDs"                                         ]
+    if                     ( len ( UUIDs ) <= 0                            ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    if                     ( atItem in self . EmptySet                     ) :
+      return True
+    ##########################################################################
+    UUID   = atItem . data ( 0 , Qt . UserRole                               )
+    UUID   = int           ( UUID                                            )
+    ##########################################################################
+    if                     ( UUID <= 0                                     ) :
+      return True
+    ##########################################################################
+    VAL    =               ( UUID , UUIDs ,                                  )
+    self   . Go            ( self . AppendingScenarios , VAL                 )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AppendingScenarios        ( self , UUID , UUIDs                      ) :
+    ##########################################################################
+    COUNT  = len                ( UUIDs                                      )
+    ##########################################################################
+    if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    FMT    = self . getMenuItem ( "JoinScenarios"                            )
+    MSG    = FMT  . format      ( COUNT                                      )
+    self   . ShowStatus         ( MSG                                        )
+    self   . TtsTalk            ( MSG , 1002                                 )
+    ##########################################################################
+    RELTAB = self . Tables      [ "RelationVideos"                           ]
+    REL    = Relation           (                                            )
+    REL    . set                ( "first" , UUID                             )
+    REL    . setT1              ( "vFragment"                                )
+    REL    . setT2              ( "Scenario"                                 )
+    REL    . setRelation        ( "Subordination"                            )
+    ##########################################################################
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    ##########################################################################
+    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    ##########################################################################
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    self   . Notify             ( 5                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def acceptVFragmentsDrop ( self                                          ) :
+    return True
+  ############################################################################
+  def dropVFragments       ( self , source , pos , JSOX                    ) :
+    ##########################################################################
+    if                     ( "UUIDs" not in JSOX                           ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSOX          [ "UUIDs"                                         ]
+    if                     ( len ( UUIDs ) <= 0                            ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    if                     ( atItem in self . EmptySet                     ) :
+      return True
+    ##########################################################################
+    UUID   = atItem . data ( 0 , Qt . UserRole                               )
+    UUID   = int           ( UUID                                            )
+    ##########################################################################
+    if                     ( UUID <= 0                                     ) :
+      return True
+    ##########################################################################
+    VAL    =               ( UUID , UUIDs ,                                  )
+    ##########################################################################
+    if                     ( source == self                                ) :
+      ########################################################################
+      self . Go            ( self . MovingVFragments    , VAL                )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . Go            ( self . AppendingVFragments , VAL                )
+    ##########################################################################
+    return True
+  ############################################################################
+  def MovingVFragments          ( self , UUID , UUIDs                      ) :
+    ##########################################################################
+    COUNT  = len                ( UUIDs                                      )
+    ##########################################################################
+    if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    ##########################################################################
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    self   . Notify             ( 5                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendingVFragments       ( self , UUID , UUIDs                      ) :
+    ##########################################################################
+    COUNT  = len                ( UUIDs                                      )
+    ##########################################################################
+    if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    FMT    = self . getMenuItem ( "JoinFragments"                            )
+    MSG    = FMT  . format      ( COUNT                                      )
+    self   . ShowStatus         ( MSG                                        )
+    self   . TtsTalk            ( MSG , 1002                                 )
+    ##########################################################################
+    RELTAB = self . Tables      [ "RelationVideos"                           ]
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    ##########################################################################
+    if                          ( self . isSubordination (               ) ) :
+      ########################################################################
+      self . Relation . Joins   ( DB , RELTAB , UUIDs                        )
+      ########################################################################
+    elif                        ( self . isReverse       (               ) ) :
+      ########################################################################
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        self . Relation . set   ( "first" , UUID                             )
+        self . Relation . Join  ( DB      , RELTAB                           )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    ##########################################################################
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    self   . Notify             ( 5                                          )
+    ##########################################################################
+    return
   ############################################################################
   def InsertItem              ( self                                       ) :
     ##########################################################################
@@ -462,11 +785,53 @@ class FragmentEditor     ( TreeDock                                        ) :
       self . removeTopLevelItem ( item                                       )
       return
     ##########################################################################
-    item   . setText            ( column , msg                               )
-    ##########################################################################
     self   . removeParked       (                                            )
-    VAL    =                    ( item , uuid , msg ,                        )
-    self   . Go                 ( self . AssureUuidItem , VAL                )
+    ##########################################################################
+    if                          ( 0 == column                              ) :
+      ########################################################################
+      item . setText            ( column , msg                               )
+      VAL  =                    ( item , uuid , msg ,                        )
+      self . Go                 ( self . AssureUuidItem , VAL                )
+    ##########################################################################
+    elif                        ( 2 == column                              ) :
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        ss = int                ( msg                                        )
+        item . setText          ( column , msg                               )
+        VAL  =                  ( item , uuid , ss ,                         )
+        self . Go               ( self . UpdateStates , VAL                  )
+        ######################################################################
+      except                                                                 :
+        pass
+    ##########################################################################
+    return
+  ############################################################################
+  def usageChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      LL   = self . Translations [ self . ClassTag ] [ "Usage"               ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateUsage                      , \
+                                   ( item , uuid , value , )                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -565,6 +930,54 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def UpdateUsage             ( self , item , uuid , usage                 ) :
+    ##########################################################################
+    if                        ( uuid <= 0                                  ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    FRGTAB = self . Tables    [ "Fragments"                                  ]
+    ##########################################################################
+    DB     . LockWrites       ( [ FRGTAB                                   ] )
+    ##########################################################################
+    QQ     = f"""update {FRGTAB}
+                 set `used` = {usage}
+                 where ( `uuid` = {uuid} ) ;"""
+    DB     . Query            ( " " . join ( QQ . split (                ) ) )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateStates            ( self , item , uuid , states                ) :
+    ##########################################################################
+    if                        ( uuid <= 0                                  ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    FRGTAB = self . Tables    [ "Fragments"                                  ]
+    ##########################################################################
+    DB     . LockWrites       ( [ FRGTAB                                   ] )
+    ##########################################################################
+    QQ     = f"""update {FRGTAB}
+                 set `states` = {states}
+                 where ( `uuid` = {uuid} ) ;"""
+    DB     . Query            ( " " . join ( QQ . split (                ) ) )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard (                                               )
@@ -573,7 +986,7 @@ class FragmentEditor     ( TreeDock                                        ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 3                              )
+    self . defaultPrepare ( self . ClassTag , 4                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -607,6 +1020,33 @@ class FragmentEditor     ( TreeDock                                        ) :
       return
     ##########################################################################
     self   . OpenItemScenario   ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemVideos                 ( self , item                         ) :
+    ##########################################################################
+    uuid = item . data               ( 0 , Qt . UserRole                     )
+    uuid = int                       ( uuid                                  )
+    uxid = str                       ( uuid                                  )
+    head = item . text               ( 0                                     )
+    icon = self . windowIcon         (                                       )
+    relz = "Contains"
+    ##########################################################################
+    self . emitOpenVideoGroup . emit ( head                                , \
+                                       self . GType                        , \
+                                       uxid                                , \
+                                       relz                                , \
+                                       icon                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemVideos            ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemVideos     ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -663,16 +1103,43 @@ class FragmentEditor     ( TreeDock                                        ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
-  ############################################################################
-  def RunColumnsMenu               ( self , at                             ) :
+  def ColumnsMenu                   ( self , mm                           ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9013 )         :
+    TRX     = self . Translations
+    head    = self . headerItem     (                                        )
+    COL     = mm   . addMenu        ( TRX [ "UI::Columns" ]                  )
+    ##########################################################################
+    msg     = self . getMenuItem    ( "ShowAllColumns"                       )
+    mm      . addActionFromMenu     ( COL , 9501 , msg                       )
+    ##########################################################################
+    mm      . addSeparatorFromMenu  ( COL                                    )
+    ##########################################################################
+    for i in range                  ( 1 , self . columnCount ( )           ) :
       ########################################################################
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
+      msg   = head . text           ( i                                      )
+      if                            ( len ( msg ) <= 0                     ) :
+        msg = TRX                   [ "UI::Whitespace"                       ]
+      ########################################################################
+      hid   = self . isColumnHidden ( i                                      )
+      mm    . addActionFromMenu     ( COL , 9000 + i , msg , True , not hid  )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunColumnsMenu                 ( self , at                           ) :
+    ##########################################################################
+    if                               ( 9501 == at                          ) :
+      ########################################################################
+      for i in range                 ( 1 , self . columnCount (          ) ) :
+        ######################################################################
+        self . setColumnHidden       ( i , False                             )
+      ########################################################################
+      return
+    ##########################################################################
+    if                               ( at >= 9001 ) and ( at <= 9004 )       :
+      ########################################################################
+      col    = at - 9000
+      hid    = self . isColumnHidden ( col                                   )
+      self   . setColumnHidden       ( col , not hid                         )
       ########################################################################
       return True
     ##########################################################################
@@ -690,8 +1157,12 @@ class FragmentEditor     ( TreeDock                                        ) :
     mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     msg  = self . getMenuItem        ( "OpenScenarios"                       )
-    icon = QIcon                     ( ":/images/addcolumn.png"              )
+    icon = QIcon                     ( ":/images/scenarios.png"              )
     mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "BelongVideos"                        )
+    icon = QIcon                     ( ":/images/videoclip.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , msg           )
     ##########################################################################
     return mm
   ############################################################################
@@ -708,6 +1179,12 @@ class FragmentEditor     ( TreeDock                                        ) :
     if                              ( at == 38522001                       ) :
       ########################################################################
       self . OpenItemScenario       ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38522002                       ) :
+      ########################################################################
+      self . OpenItemVideos         ( item                                   )
       ########################################################################
       return True
     ##########################################################################
