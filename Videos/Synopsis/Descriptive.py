@@ -306,6 +306,7 @@ class Descriptive (                                                        ) :
   def toScenario ( self                                                    ) :
     return       { "BaseTime"    : self . BaseTime                         , \
                    "Duration"    : self . Duration                         , \
+                   "Locality"    : self . Locality                         , \
                    "Description" : self . toJson (                         ) }
   ############################################################################
   def setScenario            ( self , JSON                                 ) :
@@ -317,6 +318,9 @@ class Descriptive (                                                        ) :
     ##########################################################################
     if                       ( "Duration"    in JSON                       ) :
       self . Duration = int  ( JSON [ "Duration"                           ] )
+    ##########################################################################
+    if                       ( "Locality"    in JSON                       ) :
+      self . Locality = int  ( JSON [ "Locality"                           ] )
     ##########################################################################
     if                       ( "Description" in JSON                       ) :
       self . setJson         ( JSON [ "Description"                        ] )

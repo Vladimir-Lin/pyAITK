@@ -256,8 +256,8 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     if                                      ( "Description" in JSON        ) :
       ########################################################################
       self . DESCRIBE     = DescriptiveItem (                                )
-      self . DESCRIBE     . setLocality     ( self . getLocality (         ) )
       self . DESCRIBE     . setScenario     ( JSON                           )
+      self . setLocality                    ( self . DESCRIBE . Locality     )
     ##########################################################################
     if                                      ( "Album"       in JSON        ) :
       ########################################################################

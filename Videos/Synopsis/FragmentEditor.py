@@ -454,6 +454,8 @@ class FragmentEditor          ( TreeDock                                   ) :
         FMT  = self   . getMenuItem  ( "VideosFrom"                          )
         MSG  = FMT    . format       ( title , CNT , TXT , UID               )
         self . ShowStatus            ( MSG                                   )
+      ########################################################################
+      return True
     ##########################################################################
     if                               ( mtype in [ "scenario/uuids"       ] ) :
       ########################################################################
@@ -464,6 +466,8 @@ class FragmentEditor          ( TreeDock                                   ) :
         FMT  = self   . getMenuItem  ( "ScenariosFrom"                       )
         MSG  = FMT    . format       ( title , CNT , TXT , UID               )
         self . ShowStatus            ( MSG                                   )
+      ########################################################################
+      return True
     ##########################################################################
     if                               ( mtype not in [ "vfragment/uuids" ]  ) :
       return False
@@ -494,6 +498,8 @@ class FragmentEditor          ( TreeDock                                   ) :
       FMT  = self   . getMenuItem ( "VideosFrom"                             )
       MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
       self . ShowStatus           ( MSG                                      )
+      ########################################################################
+      return True
     ##########################################################################
     if                            ( mtype in [ "scenario/uuids"          ] ) :
       ########################################################################
@@ -505,6 +511,8 @@ class FragmentEditor          ( TreeDock                                   ) :
       FMT  = self   . getMenuItem ( "ScenariosFrom"                          )
       MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
       self . ShowStatus           ( MSG                                      )
+      ########################################################################
+      return True
     ##########################################################################
     if                            ( mtype not in [ "vfragment/uuids" ]     ) :
       return False
