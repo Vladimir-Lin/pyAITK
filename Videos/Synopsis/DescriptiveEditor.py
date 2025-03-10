@@ -31,6 +31,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   emitNamesShow = Signal (                                                   )
   emitReload    = Signal (                                                   )
+  emitUpdated   = Signal (                                                   )
   emitFocusIn   = Signal ( int                                               )
   emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
   emitPlayer    = Signal ( QWidget                                           )
@@ -313,7 +314,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     self   . DESCRIBE . addItem         ( vlen , ""                          )
     self   . reload                     (                                    )
-    self   . Go                         ( self . WaitFocusIn                 )
+    self   . Go                         ( self . WaitFocusIn , ( IDX , )     )
     ##########################################################################
     return
   ############################################################################
@@ -442,6 +443,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     DB     . UnlockTables              (                                     )
     DB     . Close                     (                                     )
     self   . Notify                    ( 5                                   )
+    self   . emitUpdated . emit        (                                     )
     ##########################################################################
     return
   ############################################################################
