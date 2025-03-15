@@ -33,37 +33,39 @@ from   AITK    . UUIDs      . UuidListings6  import appendUuids
 from   AITK    . UUIDs      . UuidListings6  import assignUuids
 from   AITK    . UUIDs      . UuidListings6  import getUuids
 ##############################################################################
-class PeopleView                 ( IconDock                                ) :
+class PeopleView                  ( IconDock                               ) :
   ############################################################################
-  HavingMenu            = 1371434312
+  HavingMenu             = 1371434312
   ############################################################################
-  AssignCurrentPeople   = Signal ( dict                                      )
-  ShowPeopleDetails     = Signal ( str , str ,             QIcon             )
-  ShowPersonalGallery   = Signal ( str , int , str ,       QIcon             )
-  ShowPersonalIcons     = Signal ( str , int , str , str , QIcon             )
-  ShowPersonalFaces     = Signal ( str , str                                 )
-  ShowGalleries         = Signal ( str , int , str ,       QIcon             )
-  ShowGalleriesRelation = Signal ( str , int , str , str , QIcon             )
-  ShowVideoAlbums       = Signal ( str , int , str ,       QIcon             )
-  ShowWebPages          = Signal ( str , int , str , str , QIcon             )
-  ShowPeopleSources     = Signal ( str , str , str ,       QIcon             )
-  OwnedOccupation       = Signal ( str , int , str , str , QIcon             )
-  OpenBodyShape         = Signal ( str , str , dict                          )
-  OpenPickSexuality     = Signal ( str , str ,             QIcon             )
-  OpenPickEyeColors     = Signal ( str , str ,             QIcon             )
-  OpenPickHairColors    = Signal ( str , str ,             QIcon             )
-  OpenPickBloodTypes    = Signal ( str , str ,             QIcon             )
-  OpenPickRaceTypes     = Signal ( str , str ,             QIcon             )
-  OpenPickNationalites  = Signal ( str , str ,             QIcon             )
-  ShowLodListings       = Signal ( str , str             , QIcon             )
-  OpenVariantTables     = Signal ( str , str , int , str , dict              )
-  emitOpenSmartNote     = Signal ( str                                       )
-  OpenLogHistory        = Signal ( str , str , str , str , str               )
-  emitLog               = Signal ( str                                       )
+  AssignCurrentPeople    = Signal ( dict                                     )
+  ShowPeopleDetails      = Signal ( str , str ,             QIcon            )
+  ShowPeopleDateEvents   = Signal ( str , str ,             QIcon            )
+  ShowPeopleMeasurements = Signal ( str , str ,             QIcon            )
+  ShowPersonalGallery    = Signal ( str , int , str ,       QIcon            )
+  ShowPersonalIcons      = Signal ( str , int , str , str , QIcon            )
+  ShowPersonalFaces      = Signal ( str , str                                )
+  ShowGalleries          = Signal ( str , int , str ,       QIcon            )
+  ShowGalleriesRelation  = Signal ( str , int , str , str , QIcon            )
+  ShowVideoAlbums        = Signal ( str , int , str ,       QIcon            )
+  ShowWebPages           = Signal ( str , int , str , str , QIcon            )
+  ShowPeopleSources      = Signal ( str , str , str ,       QIcon            )
+  OwnedOccupation        = Signal ( str , int , str , str , QIcon            )
+  OpenBodyShape          = Signal ( str , str , dict                         )
+  OpenPickSexuality      = Signal ( str , str ,             QIcon            )
+  OpenPickEyeColors      = Signal ( str , str ,             QIcon            )
+  OpenPickHairColors     = Signal ( str , str ,             QIcon            )
+  OpenPickBloodTypes     = Signal ( str , str ,             QIcon            )
+  OpenPickRaceTypes      = Signal ( str , str ,             QIcon            )
+  OpenPickNationalites   = Signal ( str , str ,             QIcon            )
+  ShowLodListings        = Signal ( str , str             , QIcon            )
+  OpenVariantTables      = Signal ( str , str , int , str , dict             )
+  emitOpenSmartNote      = Signal ( str                                      )
+  OpenLogHistory         = Signal ( str , str , str , str , str              )
+  emitLog                = Signal ( str                                      )
   ############################################################################
-  def __init__                   ( self , parent = None , plan = None      ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__         (        parent        , plan               )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . ClassTag           = "PeopleView"
     self . FetchTableKey      = self . ClassTag
@@ -149,10 +151,6 @@ class PeopleView                 ( IconDock                                ) :
                                              ":/images/video.png"          , \
                                              self . OpenPeopleVideos         )
     self . AppendWindowToolSeparatorAction (                                 )
-    self . AppendSideActionWithIcon        ( "BodyShapes"                  , \
-                                             ":/images/android.png"        , \
-                                             self . DoOpenBodyShape          )
-    self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
                                              ":/images/webfind.png"        , \
                                              self . OpenIdentifierWebPages   )
@@ -182,6 +180,16 @@ class PeopleView                 ( IconDock                                ) :
     self . AppendSideActionWithIcon        ( "Nationalites"                , \
                                              ":/images/networkconnected.png" , \
                                              self . OpenCurrentNationalites  )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "DateEvents"                  , \
+                                             ":/images/calendars.png"      , \
+                                             self . OpenPeopleDateEvents     )
+    self . AppendSideActionWithIcon        ( "BodyShapes"                  , \
+                                             ":/images/android.png"        , \
+                                             self . DoOpenBodyShape          )
+    self . AppendSideActionWithIcon        ( "HumanMeasurements"           , \
+                                             ":/images/actors.png"         , \
+                                             self . OpenPeopleMeasures       )
     ##########################################################################
     return
   ############################################################################
@@ -1798,6 +1806,52 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenDateEventsItem               ( self , item                       ) :
+    ##########################################################################
+    uuid = item . data                 ( Qt . UserRole                       )
+    uuid = int                         ( uuid                                )
+    text = item . text                 (                                     )
+    icon = item . icon                 (                                     )
+    xsid = str                         ( uuid                                )
+    ##########################################################################
+    self . ShowPeopleDateEvents . emit ( text , xsid , icon                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPeopleDateEvents      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenDateEventsItem ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenMeasureItem                    ( self , item                     ) :
+    ##########################################################################
+    uuid = item . data                   ( Qt . UserRole                     )
+    uuid = int                           ( uuid                              )
+    text = item . text                   (                                   )
+    icon = item . icon                   (                                   )
+    xsid = str                           ( uuid                              )
+    ##########################################################################
+    self . ShowPeopleMeasurements . emit ( text , xsid , icon                )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPeopleMeasures        ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenMeasureItem    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemPeopleDetails         ( self , item                          ) :
     ##########################################################################
     uuid = item . data              ( Qt . UserRole                          )
@@ -2380,9 +2434,13 @@ class PeopleView                 ( IconDock                                ) :
     ##########################################################################
     mm  . addSeparatorFromMenu      ( LOM                                    )
     ##########################################################################
+    MSG = self . getMenuItem        ( "DateEvents"                           )
+    ICO = QIcon                     ( ":/images/calendars.png"               )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231103 , ICO , MSG             )
+    ##########################################################################
     MSG = self . getMenuItem        ( "LogHistory"                           )
     ICO = QIcon                     ( ":/images/notes.png"                   )
-    mm  . addActionFromMenuWithIcon ( LOM , 24231103 , ICO , MSG             )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231104 , ICO , MSG             )
     ##########################################################################
     MSG = self . getMenuItem        ( "Occupations"                          )
     mm  . addActionFromMenu         ( LOM , 24231201 , MSG                   )
@@ -2423,6 +2481,12 @@ class PeopleView                 ( IconDock                                ) :
       return
     ##########################################################################
     if                                  ( at == 24231103                   ) :
+      ########################################################################
+      self . OpenDateEventsItem         ( item                               )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231104                   ) :
       ########################################################################
       self . OpenLogHistoryItem         ( item                               )
       ########################################################################
@@ -2486,6 +2550,10 @@ class PeopleView                 ( IconDock                                ) :
     MSG  = self . getMenuItem        ( "BodyShapes"                          )
     mm   . addActionFromMenu         ( COL , 29436301 , MSG                  )
     ##########################################################################
+    MSG  = self . getMenuItem        ( "HumanMeasurements"                   )
+    ICO  = QIcon                     ( ":/images/actors.png"                 )
+    mm   . addActionFromMenuWithIcon ( COL , 29436302 , ICO , MSG            )
+    ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Sexuality"                           )
@@ -2516,12 +2584,18 @@ class PeopleView                 ( IconDock                                ) :
   ############################################################################
   def RunFeaturesMenu             ( self , at , item                       ) :
     ##########################################################################
-    if                            ( 29436301 == at == 24231351             ) :
+    if                            ( 29436301 == at                         ) :
       ########################################################################
       text = item . text          (                                          )
       xsid = str                  ( uuid                                     )
       ########################################################################
       self . OpenBodyShape . emit ( text , xsid , {                        } )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( 29436302 == at                         ) :
+      ########################################################################
+      self . OpenMeasureItem      ( item                                     )
       ########################################################################
       return True
     ##########################################################################
