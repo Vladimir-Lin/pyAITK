@@ -60,6 +60,7 @@ class VideoAlbumsView             ( IconDock                               ) :
   emitConnectAlbum       = Signal ( str                                      )
   emitOpenVideoGroup     = Signal ( str ,       int , str , str , QIcon      )
   emitFragmentEditor     = Signal ( str , str , int , str , str , QIcon      )
+  ShowAlbumDateEvents    = Signal ( str , str ,                   QIcon      )
   ShowWebPages           = Signal ( str ,       int , str , str , QIcon      )
   ShowAlbumSources       = Signal ( str ,       str , str ,       QIcon      )
   OpenVariantTables      = Signal ( str ,       str , int , str , dict       )
@@ -157,6 +158,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . AppendSideActionWithIcon        ( "VideoFragments"              , \
                                              ":/images/vfragments.png"     , \
                                              self . OpenVFragments           )
+    self . AppendSideActionWithIcon        ( "DateEvents"                  , \
+                                             ":/images/calendars.png"      , \
+                                             self . OpenAlbumDateEvents      )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon        ( "IdentWebPage"                , \
                                              ":/images/webfind.png"        , \
@@ -2474,6 +2478,30 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return self . OpenFragmentItem ( atItem                                  )
   ############################################################################
+  ############################################################################
+  def OpenDateEventsItem              ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( Qt . UserRole                        )
+    uuid = int                        ( uuid                                 )
+    text = item . text                (                                      )
+    icon = item . icon                (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowAlbumDateEvents . emit ( text , xsid , icon                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenAlbumDateEvents       ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenDateEventsItem ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesEditing"     )
@@ -2751,6 +2779,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
+    MSG   = self . getMenuItem        ( "DateEvents"                         )
+    ICO   = QIcon                     ( ":/images/calendars.png"             )
+    mm    . addActionFromMenuWithIcon ( LOM , 24231501 , ICO , MSG           )
+    ##########################################################################
     MSG   = self . getMenuItem        ( "LogHistory"                         )
     ICO   = QIcon                     ( ":/images/documents.png"             )
     mm    . addActionFromMenuWithIcon ( LOM , 34231401 , ICO , MSG           )
@@ -2889,6 +2921,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                             ( at == 34231401                        ) :
       ########################################################################
       self . OpenLogHistoryItem    ( item                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34231501                        ) :
+      ########################################################################
+      self . OpenDateEventsItem    ( item                                    )
       ########################################################################
       return True
     ##########################################################################

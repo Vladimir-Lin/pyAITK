@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PeopleDateEditor
-## 人物事件日期
+## AlbumDateEditor
+## 影集事件日期
 ##############################################################################
 import os
 import sys
@@ -23,7 +23,7 @@ from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from   AITK    . People     . People   import People as PeopleItem
 ##############################################################################
-class PeopleDateEditor   ( TreeDock                                        ) :
+class AlbumDateEditor    ( TreeDock                                        ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
@@ -35,10 +35,10 @@ class PeopleDateEditor   ( TreeDock                                        ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
-    self . ClassTag           = "PeopleDateEditor"
+    self . ClassTag           = "AlbumDateEditor"
     self . FetchTableKey      = self . ClassTag
-    self . PeopleUuid         = 0
-    self . GType              = 7
+    self . AlbumUuid          = 0
+    self . GType              = 76
     self . TZ                 = "Asia/Taipei"
     self . TzDiff             = 0
     ##########################################################################
@@ -274,7 +274,7 @@ class PeopleDateEditor   ( TreeDock                                        ) :
     EVENTs   = self . Translations [ self . ClassTag ] [ "Events"            ]
     PRDTAB   = self . Tables       [ "Periods"                               ]
     COLs     = "`uuid`,`type`,`start`,`end`,`states`"
-    PUID     = self . PeopleUuid
+    PUID     = self . AlbumUuid
     GTYPE    = self . GType
     ##########################################################################
     for E in EVENTs                                                          :
@@ -370,11 +370,11 @@ class PeopleDateEditor   ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def StartupPeople ( self , uuid                                          ) :
+  def StartupAlbum ( self , uuid                                           ) :
     ##########################################################################
-    self . PeopleUuid = uuid
+    self . AlbumUuid = uuid
     ##########################################################################
-    self . startup  (                                                        )
+    self . startup (                                                         )
     ##########################################################################
     return
   ############################################################################
