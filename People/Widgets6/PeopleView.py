@@ -788,62 +788,153 @@ class PeopleView                  ( IconDock                               ) :
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    if                                   ( not self . isGrouping (       ) ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
+      return False
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
+    atItem  = self . itemAt              ( mousePos                          )
+    title   = sourceWidget . windowTitle (                                   )
+    ##########################################################################
+    if                                   ( mtype in [ "people/uuids" ]     ) :
       ########################################################################
-      if                            ( self . OldGrouping in ["Searching"]  ) :
+      if ( self . OldGrouping in [ "Searching" ]                           ) :
         return False
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
-        FMT = self . getMenuItem    ( "Moving"                               )
-        MSG = FMT  . format         ( CNT                                    )
+      CNT   = len                        ( UUIDs                             )
+      if                                 ( self == sourceWidget            ) :
+        FMT = self . getMenuItem         ( "Moving"                          )
+        MSG = FMT  . format              ( CNT                               )
       else                                                                   :
-        FMT = self . getMenuItem    ( "Copying"                              )
-        MSG = FMT  . format         ( title , CNT                            )
+        FMT = self . getMenuItem         ( "Copying"                         )
+        MSG = FMT  . format              ( title , CNT                       )
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
-    elif                            ( mtype in [ "picture/uuids" ]         ) :
+    elif                                 ( mtype in [ "picture/uuids" ]    ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
+      CNT   = len                        ( UUIDs                             )
+      if                                 ( self == sourceWidget            ) :
         return False
       ########################################################################
-      FMT   = self . getMenuItem    ( "GetPictures"                          )
-      MSG   = FMT  . format         ( title , CNT                            )
+      FMT   = self . getMenuItem         ( "GetPictures"                     )
+      MSG   = FMT  . format              ( title , CNT                       )
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
-    elif                            ( mtype in [ "face/uuids" ]            ) :
+    elif                                 ( mtype in [ "face/uuids" ]       ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
+      CNT   = len                        ( UUIDs                             )
+      if                                 ( self == sourceWidget            ) :
         return False
       ########################################################################
-      FMT   = self . getMenuItem    ( "GetFaces"                             )
-      MSG   = FMT  . format         ( title , CNT                            )
+      FMT   = self . getMenuItem         ( "GetFaces"                        )
+      MSG   = FMT  . format              ( title , CNT                       )
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
-    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  def dropMoving                         ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
+    ##########################################################################
+    if                                   ( self . droppingAction           ) :
+      return False
+    ##########################################################################
+    if                                   ( not self . isGrouping (       ) ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
+    atItem  = self . itemAt              ( mousePos                          )
+    title   = sourceWidget . windowTitle (                                   )
+    ##########################################################################
+    if                                   ( mtype in [ "people/uuids" ]     ) :
+      ########################################################################
+      if ( self . OldGrouping in [ "Searching" ]                           ) :
+        return False
+      ########################################################################
+      CNT       = len                    ( UUIDs                             )
+      ########################################################################
+      if                                 ( self == sourceWidget            ) :
+        ######################################################################
+        if                               ( atItem in self . EmptySet       ) :
+          ####################################################################
+          FMT   = self . getMenuItem     ( "MovingEnd"                       )
+          MSG   = FMT  . format          ( CNT                               )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          if                             ( atItem . isSelected (         ) ) :
+            return False
+          ####################################################################
+          iname = atItem . text          (                                   )
+          FMT   = self   . getMenuItem   ( "MoveBefore"                      )
+          MSG   = FMT    . format        ( CNT , iname                       )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        if                               ( atItem in self . EmptySet       ) :
+          ####################################################################
+          FMT   = self . getMenuItem     ( "Appending"                       )
+          MSG   = FMT  . format          ( title , CNT                       )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          iname = atItem . text          (                                   )
+          FMT   = self . getMenuItem     ( "AppendBefore"                    )
+          MSG   = FMT  . format          ( title , CNT , iname               )
+      ########################################################################
+      self      . ShowStatus             ( MSG                               )
+      ########################################################################
+      return True
+    ##########################################################################
+    elif                                 ( mtype in [ "picture/uuids" ]    ) :
+      ########################################################################
+      CNT       = len                    ( UUIDs                             )
+      ########################################################################
+      if                                 ( self == sourceWidget            ) :
+        return False
+      ########################################################################
+      if                                 ( atItem in self . EmptySet       ) :
+        return False
+      ########################################################################
+      FMT       = self . getMenuItem     ( "GetPictures"                     )
+      MSG       = FMT  . format          ( title , CNT                       )
+      ########################################################################
+      self      . ShowStatus             ( MSG                               )
+      ########################################################################
+      return True
+    ##########################################################################
+    elif                                 ( mtype in [ "face/uuids" ]       ) :
+      ########################################################################
+      CNT       = len                    ( UUIDs                             )
+      ########################################################################
+      if                                 ( self == sourceWidget            ) :
+        return False
+      ########################################################################
+      if                                 ( atItem in self . EmptySet       ) :
+        return False
+      ########################################################################
+      FMT       = self . getMenuItem     ( "GetFaces"                        )
+      MSG       = FMT  . format          ( title , CNT                       )
+      ########################################################################
+      self      . ShowStatus             ( MSG                               )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True
