@@ -77,12 +77,12 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . setAcceptDrops         ( True                                     )
     self . setDragDropMode        ( QAbstractItemView . DragDrop             )
     ##########################################################################
-    self . setMinimumSize         ( 180 , 200                                )
+    self . setMinimumSize         ( 144 , 200                                )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
+    return self . SizeSuggestion ( QSize ( 660 , 800 )                       )
   ############################################################################
   def PrepareFetchTableKey      ( self                                     ) :
     ##########################################################################
@@ -90,20 +90,21 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions               ( self                               ) :
+  def PrepareForActions                      ( self                        ) :
     ##########################################################################
-    self   . PrepareFetchTableKey     (                                      )
-    self   . AppendToolNamingAction   (                                      )
-    self   . AppendSideActionWithIcon ( "Subgroup"                         , \
-                                        ":/images/filmfolder.png"          , \
-                                        self . OpenCurrentSubgroup           )
-    if                                ( self . isCatalogue (             ) ) :
-      self . AppendSideActionWithIcon ( "Albums"                           , \
-                                        ":/images/episode.png"             , \
-                                        self . OpenCurrentAlbum              )
-    self   . AppendSideActionWithIcon ( "Icons"                            , \
-                                        ":/images/foldericon.png"          , \
-                                        self . OpenCurrentAlbumIcon          )
+    self   . PrepareFetchTableKey            (                               )
+    self   . AppendToolNamingAction          (                               )
+    self   . AppendSideActionWithIcon        ( "Icons"                     , \
+                                               ":/images/foldericon.png"   , \
+                                               self . OpenCurrentAlbumIcon   )
+    self   . AppendWindowToolSeparatorAction (                               )
+    self   . AppendSideActionWithIcon        ( "Subgroup"                  , \
+                                               ":/images/filmfolder.png"   , \
+                                               self . OpenCurrentSubgroup    )
+    if                                       ( self . isCatalogue (      ) ) :
+      self . AppendSideActionWithIcon        ( "Albums"                    , \
+                                               ":/images/episode.png"      , \
+                                               self . OpenCurrentAlbum       )
     ##########################################################################
     return
   ############################################################################
