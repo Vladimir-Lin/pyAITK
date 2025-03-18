@@ -30,6 +30,7 @@ class AlbumGroupView         ( IconDock                                    ) :
   ############################################################################
   AlbumSubgroup     = Signal ( str , int , str                               )
   AlbumGroup        = Signal ( str , int , str                               )
+  ShowPersonalIcons = Signal ( str , int , str , str , QIcon                 )
   OpenVariantTables = Signal ( str , str , int , str , dict                  )
   emitLog           = Signal ( str                                           )
   ############################################################################
@@ -59,6 +60,8 @@ class AlbumGroupView         ( IconDock                                    ) :
                            Qt . BottomDockWidgetArea                       | \
                            Qt . LeftDockWidgetArea                         | \
                            Qt . RightDockWidgetArea
+    ##########################################################################
+    self . ALBUM    = AlbumItem   (                                          )
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setT1       ( "Tag"                                    )
@@ -98,6 +101,10 @@ class AlbumGroupView         ( IconDock                                    ) :
       self . AppendSideActionWithIcon ( "Albums"                           , \
                                         ":/images/episode.png"             , \
                                         self . OpenCurrentAlbum              )
+    ##########################################################################
+    self   . AppendSideActionWithIcon ( "Icons"                            , \
+                                        ":/images/foldericon.png"          , \
+                                        self . OpenCurrentAlbumIcon          )
     ##########################################################################
     return
   ############################################################################
@@ -231,64 +238,142 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
+  def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
-    if                        ( self . isTagging ( )                       ) :
-      ########################################################################
-      formats = "picture/uuids;albumgroup/uuids"
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      formats = "picture/uuids;album/uuids;albumgroup/uuids"
+    FMTs    =              [ "picture/uuids" , "albumgroup/uuids"            ]
     ##########################################################################
-    if                        ( len ( formats ) <= 0                       ) :
+    if                     ( not self . isTagging ( )                      ) :
+      ########################################################################
+      FMTs  . append       ( "album/uuids"                                   )
+    ##########################################################################
+    if                     ( len ( FMTs ) <= 0                             ) :
       return False
     ##########################################################################
-    return self . MimeType    ( mime , formats                               )
+    formats = ";" . join   ( FMTs                                            )
+    ##########################################################################
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    atItem  = self . itemAt         ( mousePos                               )
-    CNT     = len                   ( UUIDs                                  )
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
+    atItem  = self . itemAt              ( mousePos                          )
+    CNT     = len                        ( UUIDs                             )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "picture/uuids"         ] ) :
+    if                                   ( mtype in [ "picture/uuids"    ] ) :
       ########################################################################
-      self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
+      self  . ShowMenuItemMessage        ( "AssignTagIcon"                   )
     ##########################################################################
-    elif                            ( mtype in [ "album/uuids" ]           ) :
+    elif                                 ( mtype in [ "album/uuids"      ] ) :
       ########################################################################
-      if                            ( self . isTagging ( )                 ) :
+      if                                 ( self . isTagging (            ) ) :
         return False
       ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
+      if                                 ( atItem in self . EmptySet       ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinAlbums"  , title , CNT          )
+      self  . ShowMenuItemTitleStatus    ( "JoinAlbums"  , title , CNT       )
     ##########################################################################
-    elif                            ( mtype in [ "albumgroup/uuids" ]      ) :
+    elif                                 ( mtype in [ "albumgroup/uuids" ] ) :
       ########################################################################
-      if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
+      if                                 ( self == sourceWidget            ) :
+        self . ShowMenuItemCountStatus   ( "MoveCatalogues" ,         CNT    )
       else                                                                   :
-        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , title , CNT      )
+        self . ShowMenuItemTitleStatus   ( "JoinCatalogues" , title , CNT    )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
-    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  def dropMoving                        ( self                             , \
+                                          sourceWidget                     , \
+                                          mimeData                         , \
+                                          mousePos                         ) :
+    ##########################################################################
+    if                                  ( self . droppingAction            ) :
+      return False
+    ##########################################################################
+    mtype  = self . DropInJSON          [ "Mime"                             ]
+    UUIDs  = self . DropInJSON          [ "UUIDs"                            ]
+    CNT    = len                        ( UUIDs                              )
+    atItem = self . itemAt              ( mousePos                           )
+    title  = sourceWidget . windowTitle (                                    )
+    ##########################################################################
+    if                                  ( mtype in [ "picture/uuids"     ] ) :
+      ########################################################################
+      if                                ( self == sourceWidget             ) :
+        return False
+      ########################################################################
+      if                                ( atItem in self . EmptySet        ) :
+        return False
+      ########################################################################
+      tname     = atItem . text         (                                    )
+      FMT       = self . getMenuItem    ( "AssignTagIconTo"                  )
+      MSG       = FMT  . format         ( tname                              )
+      self      . ShowStatus            ( MSG                                )
+      ########################################################################
+      return True
+    ##########################################################################
+    elif                                ( mtype in [ "album/uuids"       ] ) :
+      ########################################################################
+      if                                ( self . isTagging (             ) ) :
+        return False
+      ########################################################################
+      if                                ( atItem in self . EmptySet        ) :
+        return False
+      ########################################################################
+      tname     = atItem . text         (                                    )
+      FMT       = self . getMenuItem    ( "JoinAlbumsTo"                     )
+      MSG       = FMT  . format         ( title , CNT , tname                )
+      self      . ShowStatus            ( MSG                                )
+      ########################################################################
+      return True
+    ##########################################################################
+    elif                                ( mtype in [ "albumgroup/uuids"  ] ) :
+      ########################################################################
+      if                                ( self == sourceWidget             ) :
+        ######################################################################
+        if                              ( atItem in self . EmptySet        ) :
+          ####################################################################
+          FMT   = self . getMenuItem    ( "MovingEnd"                        )
+          MSG   = FMT  . format         ( CNT                                )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          if                            ( atItem . isSelected (          ) ) :
+            return False
+          ####################################################################
+          tname = atItem . text         (                                    )
+          FMT   = self   . getMenuItem  ( "MoveBefore"                       )
+          MSG   = FMT    . format       ( CNT , tname                        )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        if                              ( atItem in self . EmptySet        ) :
+          ####################################################################
+          FMT   = self . getMenuItem    ( "Appending"                        )
+          MSG   = FMT  . format         ( title , CNT                        )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          tname = atItem . text         (                                    )
+          FMT   = self . getMenuItem    ( "AppendBefore"                     )
+          MSG   = FMT  . format         ( title , CNT , tname                )
+      ########################################################################
+      self      . ShowStatus            ( MSG                                )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def acceptAlbumGroupsDrop ( self                                         ) :
     return True
@@ -670,6 +755,36 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return self . OpenItemAlbum ( atItem                                     )
   ############################################################################
+  def OpenAlbumIcon                 ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( Qt . UserRole                          )
+    uuid = int                      ( uuid                                   )
+    text = item . text              (                                        )
+    icon = item . icon              (                                        )
+    xsid = str                      ( uuid                                   )
+    relz = "Using"
+    FMT  = self . getMenuItem       ( "IconsFormat"                          )
+    tt   = FMT  . format            ( text                                   )
+    ##########################################################################
+    self . ShowPersonalIcons . emit ( tt                                   , \
+                                      158                                  , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenCurrentAlbumIcon      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenAlbumIcon      ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     ## self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesEditing"     )
@@ -678,27 +793,6 @@ class AlbumGroupView         ( IconDock                                    ) :
     return
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
-    ##########################################################################
-    TRX = self . Translations
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
-      if            ( self . OpenCurrentSubgroup ( )                       ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
-      if            ( self . OpenCurrentAlbum ( )                          ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
@@ -745,115 +839,127 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    self   . Notify                    ( 0                                   )
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . StopIconMenu           ( mm                                     )
+    self   . StopIconMenu              ( mm                                  )
     ##########################################################################
-    if                              ( uuid > 0                             ) :
+    if                                 ( uuid > 0                          ) :
       ########################################################################
-      mg   = self . getMenuItem     ( "Subgroup"                             )
-      ic   = QIcon                  ( ":/images/filmfolder.png"              )
-      mm   . addActionWithIcon      ( 2001 , ic , mg                         )
+      mg   = self . getMenuItem        ( "Subgroup"                          )
+      ic   = QIcon                     ( ":/images/filmfolder.png"           )
+      mm   . addActionWithIcon         ( 2001 , ic , mg                      )
       ########################################################################
-      if                            ( self . Grouping == "Subgroup"        ) :
-        ic = QIcon                  ( ":/images/episode.png"                 )
-        mg = self . getMenuItem     ( "Albums"                               )
-        mm . addActionWithIcon      ( 2002 , ic , mg                         )
-      mm   . addSeparator           (                                        )
+      if                               ( self . Grouping == "Subgroup"     ) :
+        ######################################################################
+        ic = QIcon                     ( ":/images/episode.png"              )
+        mg = self . getMenuItem        ( "Albums"                            )
+        mm . addActionWithIcon         ( 2002 , ic , mg                      )
+      ########################################################################
+      mg   = self . getMenuItem        ( "Icons"                             )
+      ic   = QIcon                     ( ":/images/foldericon.png"           )
+      mm   . addActionWithIcon         ( 2003 , ic , mg                      )
+      ########################################################################
+      mm   . addSeparator              (                                     )
     ##########################################################################
-    self   . AppendRefreshAction    ( mm , 1001                              )
-    self   . AppendInsertAction     ( mm , 1101                              )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1101                           )
     ##########################################################################
-    if                              ( uuid > 0                             ) :
-      self . AppendRenameAction     ( mm , 1102                              )
-      self . AssureEditNamesAction  ( mm , 1601 , atItem                     )
+    if                                 ( uuid > 0                          ) :
+      self . AppendRenameAction        ( mm , 1102                           )
+      self . AssureEditNamesAction     ( mm , 1601 , atItem                  )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . FunctionsMenu          ( mm , uuid , atItem                     )
-    self   . SortingMenu            ( mm                                     )
-    self   . LocalityMenu           ( mm                                     )
-    self   . ScrollBarMenu          ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    self   . FunctionsMenu             ( mm , uuid , atItem                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . ScrollBarMenu             ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . setFont                   ( self    . menuFont (              ) )
+    aa     = mm . exec_                ( QCursor . pos      (              ) )
+    at     = mm . at                   ( aa                                  )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunDocking      ( mm , aa                                )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu ( at , uuid , atItem                    )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                              ( OKAY                                 ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunSortingMenu   ( at                                    )
-    if                               ( OKAY                                ) :
-      ########################################################################
-      self . restart                 (                                       )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunScrollBarMenu ( at                                    )
-    if                               ( OKAY                                ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunStopIconMenu  ( at                                    )
-    if                               ( OKAY                                ) :
-      return True
-    ##########################################################################
-    if                              ( at == 1001                           ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart                (                                        )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1101                           ) :
+    OKAY   = self . RunScrollBarMenu   ( at                                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu    ( at                                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 1001                        ) :
       ########################################################################
-      self . InsertItem             (                                        )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1102                           ) :
+    if                                 ( at == 1101                        ) :
       ########################################################################
-      self . RenameItem             (                                        )
+      self . InsertItem                (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
-    if                              ( OKAY                                 ) :
-      return True
-    ##########################################################################
-    if                              ( at == 2001                           ) :
-      self . OpenItemSubgroup       ( atItem                                 )
-      return True
-    ##########################################################################
-    if                              ( at == 2002                           ) :
+    if                                 ( at == 1102                        ) :
       ########################################################################
-      self . OpenItemAlbum          ( atItem                                 )
+      self . RenameItem                (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 2001                        ) :
+      self . OpenItemSubgroup          ( atItem                              )
+      return True
+    ##########################################################################
+    if                                 ( at == 2002                        ) :
+      ########################################################################
+      self . OpenItemAlbum             ( atItem                              )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 2003                        ) :
+      ########################################################################
+      self . OpenAlbumIcon             ( atItem                              )
       ########################################################################
       return True
     ##########################################################################
