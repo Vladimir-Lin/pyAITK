@@ -122,12 +122,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . setAcceptDrops          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
-    self . setMinimumSize          ( 180 , 200                               )
+    self . setMinimumSize          ( 144 , 200                               )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
+    return self . SizeSuggestion ( QSize ( 660 , 800 )                       )
   ############################################################################
   def PrepareFetchTableKey       ( self                                    ) :
     ##########################################################################
