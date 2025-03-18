@@ -1166,6 +1166,8 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
       ########################################################################
       TOTAL = len                     ( self . KEYs                          )
       self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
+      self  . setColumnWidth          ( 2 , 160                              )
+      self  . setColumnWidth          ( 3 , 120                              )
     ##########################################################################
     return
   ############################################################################
