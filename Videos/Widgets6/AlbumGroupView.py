@@ -101,7 +101,6 @@ class AlbumGroupView         ( IconDock                                    ) :
       self . AppendSideActionWithIcon ( "Albums"                           , \
                                         ":/images/episode.png"             , \
                                         self . OpenCurrentAlbum              )
-    ##########################################################################
     self   . AppendSideActionWithIcon ( "Icons"                            , \
                                         ":/images/foldericon.png"          , \
                                         self . OpenCurrentAlbumIcon          )
