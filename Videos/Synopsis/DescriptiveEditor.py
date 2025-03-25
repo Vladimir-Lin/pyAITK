@@ -10,20 +10,24 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   opencc                             import OpenCC
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from           . Fragment              import Fragment    as FragmentItem
-from           . Scenario              import Scenario    as ScenarioItem
-from           . Descriptive           import Descriptive as DescriptiveItem
+from   PySide6                            import QtCore
+from   PySide6                            import QtGui
+from   PySide6                            import QtWidgets
+from   PySide6 . QtCore                   import *
+from   PySide6 . QtGui                    import *
+from   PySide6 . QtWidgets                import *
+from   AITK    . Qt6                      import *
+##############################################################################
+from   AITK    . Essentials  . Relation   import Relation
+from   AITK    . Calendars   . StarDate   import StarDate
+from   AITK    . Calendars   . Periode    import Periode
+from   AITK    . Linguistics . Translator import Translate
+##############################################################################
+from           . Fragment                 import Fragment    as FragmentItem
+from           . Scenario                 import Scenario    as ScenarioItem
+from           . Descriptive              import Descriptive as DescriptiveItem
 ##############################################################################
 class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
@@ -50,6 +54,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . ScenarioUuid       = 0
     self . DefaultTitle       = ""
     self . TimeGap            = 5000
+    self . sourceLocality     = 1001
     self . SortOrder          = "asc"
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
@@ -62,11 +67,13 @@ class DescriptiveEditor  ( TreeDock                                        ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 5                                       )
+    self . setColumnCount          ( 6                                       )
     self . setColumnWidth          ( 0 , 120                                 )
     self . setColumnWidth          ( 1 , 600                                 )
     self . setColumnHidden         ( 2 , True                                )
     self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 4 , True                                )
+    self . setColumnHidden         ( 5 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -193,7 +200,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     IT    . setTextAlignment       ( 0 , Qt . AlignRight                     )
     IT    . setText                ( 1 , NAME                                )
     ##########################################################################
-    for COL in                     [  0 ,  1 ,  2 ,  3 ,  4                ] :
+    for COL in range               ( 0 , self . columnCount (            ) ) :
       ########################################################################
       IT  . setBackground          ( COL , BRUSH                             )
     ##########################################################################
@@ -259,6 +266,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       self . DESCRIBE     = DescriptiveItem (                                )
       self . DESCRIBE     . setScenario     ( JSON                           )
       self . setLocality                    ( self . DESCRIBE . Locality     )
+      self . sourceLocality = self . DESCRIBE . Locality
     ##########################################################################
     if                                      ( "Album"       in JSON        ) :
       ########################################################################
@@ -378,7 +386,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 4                              )
+    self . defaultPrepare ( self . ClassTag , 5                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -407,6 +415,15 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     JJ [ "Name"     ] = head
     ##########################################################################
     self . emitSegments . emit          ( self , head , uxid , JJ , icon     )
+    ##########################################################################
+    return
+  ############################################################################
+  def CloneFromSource         ( self                                       ) :
+    ##########################################################################
+    SL   = int                ( self . sourceLocality                        )
+    TL   = self . getLocality (                                              )
+    self . DESCRIBE . Clone   ( SL , TL                                      )
+    self . reload             (                                              )
     ##########################################################################
     return
   ############################################################################
@@ -470,7 +487,10 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9013 )         :
+    DCOLs  = self . columnCount    (                                         )
+    MCOLs  = int                   ( 9000 + DCOLs                            )
+    ##########################################################################
+    if                             ( ( at >= 9002 ) and ( at <= MCOLs )    ) :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -479,6 +499,83 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def LocalityMenu               ( self , mm                               ) :
+    ##########################################################################
+    BASE  = int                  ( 10000000                                  )
+    DFL   = self  . getLocality  (                                           )
+    LANGZ = self  . getLanguages (                                           )
+    MENUZ = self  . getMenus     (                                           )
+    ##########################################################################
+    LOM   = mm    . addMenu      ( MENUZ [ "Language" ]                      )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "CloneFromSource"                         )
+    mm    . addActionFromMenu    ( LOM , BASE , MSG                          )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    KEYs  = LANGZ . keys         (                                           )
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      MSG = LANGZ                [ K                                         ]
+      V   = int                  ( K                                         )
+      hid =                      ( V == DFL                                  )
+      mm  . addActionFromMenu    ( LOM , BASE + V , MSG , True , hid         )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def HandleLocalityMenu     ( self , atId                                 ) :
+    ##########################################################################
+    if                       ( 10000000 == atId                            ) :
+      ########################################################################
+      self . CloneFromSource (                                               )
+      ########################################################################
+      return False
+    ##########################################################################
+    if                       ( atId < 10000000                             ) :
+      return False
+    ##########################################################################
+    if                       ( atId > 11000000                             ) :
+      return False
+    ##########################################################################
+    self . setLocality       ( atId - 10000000                               )
+    self . Go                ( self . UpdateLocalityUsage                    )
+    ##########################################################################
+    return True
+  ############################################################################
+  def SourceLocalityMenu         ( self , mm                               ) :
+    ##########################################################################
+    BASE  = int                  ( 11000000                                  )
+    DFL   = int                  ( self  . sourceLocality                    )
+    LANGZ = self  . Translations [ self . ClassTag ] [ "SourceLanguages"     ]
+    MENUZ = self  . getMenus     (                                           )
+    ##########################################################################
+    MSG   = self  . getMenuItem  ( "SourceLanguage"                          )
+    LOM   = mm    . addMenu      ( MSG                                       )
+    ##########################################################################
+    KEYs  = LANGZ . keys         (                                           )
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      MSG = LANGZ                [ K                                         ]
+      V   = int                  ( K                                         )
+      hid =                      ( V == DFL                                  )
+      mm  . addActionFromMenu    ( LOM , BASE + V , MSG , True , hid         )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def HandleSourceLocalityMenu  ( self , atId                              ) :
+    ##########################################################################
+    if                          ( atId < 11000000                          ) :
+      return False
+    ##########################################################################
+    if                          ( atId > 12000000                          ) :
+      return False
+    ##########################################################################
+    self . sourceLocality = int ( atId - 11000000                            )
+    ##########################################################################
+    return True
   ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
@@ -514,6 +611,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self   . ColumnsMenu               ( mm                                  )
     self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
+    self   . SourceLocalityMenu        ( mm                                  )
     self   . DockingMenu               ( mm                                  )
     ##########################################################################
     self   . AtMenu = True
@@ -546,6 +644,10 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       ########################################################################
       self . reload                    (                                     )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . HandleSourceLocalityMenu ( at                            )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     if                                 ( 1001 == at                        ) :

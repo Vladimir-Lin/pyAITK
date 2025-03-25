@@ -743,21 +743,22 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return sb
   ############################################################################
-  def LocalityMenu                 ( self , mm                             ) :
+  def LocalityMenu               ( self , mm                               ) :
     ##########################################################################
-    DFL    = self  . getLocality   (                                         )
-    LANGZ  = self  . getLanguages  (                                         )
-    MENUZ  = self  . getMenus      (                                         )
+    DFL   = self  . getLocality  (                                           )
+    LANGZ = self  . getLanguages (                                           )
+    MENUZ = self  . getMenus     (                                           )
     ##########################################################################
-    LOM    = mm    . addMenu       ( MENUZ [ "Language" ]                    )
+    LOM   = mm    . addMenu      ( MENUZ [ "Language" ]                      )
     ##########################################################################
-    KEYs   = LANGZ . keys          (                                         )
+    KEYs  = LANGZ . keys         (                                           )
     ##########################################################################
     for K in KEYs                                                            :
-       msg = LANGZ                 [ K                                       ]
-       V   = int                   ( K                                       )
-       hid =                       ( V == DFL                                )
-       mm  . addActionFromMenu     ( LOM , 10000000 + V , msg , True , hid   )
+      ########################################################################
+      msg = LANGZ                [ K                                         ]
+      V   = int                  ( K                                         )
+      hid =                      ( V == DFL                                  )
+      mm  . addActionFromMenu    ( LOM , 10000000 + V , msg , True , hid     )
     ##########################################################################
     return mm
   ############################################################################
