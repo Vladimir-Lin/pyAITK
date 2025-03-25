@@ -444,7 +444,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     TRX    = self . Translations
     LOC    = self . Translations   [ "NamesEditor" ] [ "Languages"           ]
     ##########################################################################
-    msg    = TRX  [ "NamesEditor" ] [ "Menus" ] [ "Language" ]
+    msg    = TRX  [ "NamesEditor" ] [ "Menus" ] [ "Language"                 ]
     LOM    = mm . addMenu          ( msg                                     )
     ##########################################################################
     KEYs   = LOC . keys            (                                         )
