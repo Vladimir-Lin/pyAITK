@@ -552,49 +552,36 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return mm
   ############################################################################
-  def HandleTranslations     ( self , item , ID                            ) :
+  def HandleTranslations           ( self , item , ID                      ) :
     ##########################################################################
-    if                       ( ( ID < 7001 ) or ( ID > 7008 )              ) :
+    if                             ( ( ID < 7001 ) or ( ID > 7008 )        ) :
       return False
     ##########################################################################
-    CODE   = ""
-    if                       ( ID == 7001                                  ) :
-      CODE = "t2s"
-    elif                     ( ID == 7002                                  ) :
-      CODE = "s2t"
-    elif                     ( ID == 7003                                  ) :
-      CODE = "tw2s"
-    elif                     ( ID == 7004                                  ) :
-      CODE = "s2tw"
-    elif                     ( ID == 7005                                  ) :
-      CODE = "tw2sp"
-    elif                     ( ID == 7006                                  ) :
-      CODE = "s2twp"
-    elif                     ( ID == 7007                                  ) :
-      CODE = "hk2s"
-    elif                     ( ID == 7008                                  ) :
-      CODE = "s2hk"
+    CODE   = self . ConvertCCCcode ( int ( ID - 7000  )                      )
     ##########################################################################
-    pid    = item . text     ( 0                                             )
-    text   = item . text     ( 1                                             )
-    pid    = int             ( pid                                           )
-    cc     = OpenCC          ( CODE                                          )
-    target = cc . convert    ( text                                          )
-    UTF8   = len             ( target                                        )
+    if                             ( len ( CODE ) <= 0                     ) :
+      return False
+    ##########################################################################
+    pid    = item . text           ( 0                                       )
+    text   = item . text           ( 1                                       )
+    pid    = int                   ( pid                                     )
+    cc     = OpenCC                ( CODE                                    )
+    target = cc . convert          ( text                                    )
+    UTF8   = len                   ( target                                  )
     LENZ   = 0
     ##########################################################################
     try                                                                      :
-      S    = target . encode ( "utf-8"                                       )
-      LENZ = len             ( S                                             )
+      S    = target . encode       ( "utf-8"                                 )
+      LENZ = len                   ( S                                       )
     except                                                                   :
       return True
     ##########################################################################
-    item   . setText         ( 1 , target                                    )
-    item   . setText         ( 6 , str ( UTF8 )                              )
-    item   . setText         ( 7 , str ( LENZ )                              )
+    item   . setText               ( 1 , target                              )
+    item   . setText               ( 6 , str ( UTF8 )                        )
+    item   . setText               ( 7 , str ( LENZ )                        )
     ##########################################################################
-    self   . Go              ( self . UpdateUuidName                       , \
-                               ( item , pid , target , )                     )
+    VAL    =                       ( item , pid , target ,                   )
+    self   . Go                    ( self . UpdateUuidName , VAL             )
     ##########################################################################
     return True
   ############################################################################

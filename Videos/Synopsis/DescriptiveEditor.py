@@ -56,6 +56,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . TimeGap            = 5000
     self . sourceLocality     = 1001
     self . SortOrder          = "asc"
+    self . BaseTimeEditor     = None
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -193,12 +194,15 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     NAME  =                          JSON [ "Name"                           ]
     ##########################################################################
     FTIME = self . SCENE . toLTime ( STIME                                   )
+    COPTs = self . DESCRIBE . OptionString ( int ( RTIME )                   )
     ##########################################################################
     IT    = QTreeWidgetItem        (                                         )
     IT    . setData                ( 0 , Qt . UserRole , str ( RTIME )       )
     IT    . setText                ( 0 , FTIME                               )
     IT    . setTextAlignment       ( 0 , Qt . AlignRight                     )
     IT    . setText                ( 1 , NAME                                )
+    IT    . setText                ( 2 , COPTs                               )
+    IT    . setTextAlignment       ( 2 , Qt . AlignCenter                    )
     ##########################################################################
     for COL in range               ( 0 , self . columnCount (            ) ) :
       ########################################################################
@@ -482,10 +486,37 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+  def ColumnsMenu                   ( self , mm                            ) :
+    ##########################################################################
+    TRX     = self . Translations
+    head    = self . headerItem     (                                        )
+    COL     = mm   . addMenu        ( TRX [ "UI::Columns" ]                  )
+    ##########################################################################
+    msg     = self . getMenuItem    ( "ShowAllColumns"                       )
+    mm      . addActionFromMenu     ( COL , 9501 , msg                       )
+    ##########################################################################
+    mm      . addSeparatorFromMenu  ( COL                                    )
+    ##########################################################################
+    for i in range                  ( 2 , self . columnCount ( )           ) :
+      ########################################################################
+      msg   = head . text           ( i                                      )
+      if                            ( len ( msg ) <= 0                     ) :
+        msg = TRX                   [ "UI::Whitespace"                       ]
+      ########################################################################
+      hid   = self . isColumnHidden ( i                                      )
+      mm    . addActionFromMenu     ( COL , 9000 + i , msg , True , not hid  )
+    ##########################################################################
+    return mm
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
+    ##########################################################################
+    if                             ( 9501 == at                            ) :
+      ########################################################################
+      for i in range               ( 2 , self . columnCount (            ) ) :
+        ######################################################################
+        self . setColumnHidden     ( i , False                               )
+      ########################################################################
+      return
     ##########################################################################
     DCOLs  = self . columnCount    (                                         )
     MCOLs  = int                   ( 9000 + DCOLs                            )
@@ -577,114 +608,103 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return True
   ############################################################################
-  def TranslationsMenu             ( self , mm , item                      ) :
+  def TranslationsMenu           ( self , mm , item                        ) :
     ##########################################################################
-    TRX    = self . Translations   [ "Translations"                          ]
-    msg    = self . Translations   [ "UI::Translations"                      ]
-    KEYs   = TRX  . keys           (                                         )
+    if                           ( item in self . EmptySet                 ) :
+      return mm
     ##########################################################################
-    LOT    = mm . addMenu          ( msg                                     )
+    TRX    = self . Translations [ "Translations"                            ]
+    msg    = self . Translations [ "UI::Translations"                        ]
+    KEYs   = TRX  . keys         (                                           )
+    ##########################################################################
+    LOT    = mm . addMenu        ( msg                                       )
     ##########################################################################
     for K in KEYs                                                            :
-       msg = TRX                   [ K                                       ]
-       V   = int                   ( K                                       )
-       mm  . addActionFromMenu     ( LOT , V , msg                           )
+       msg = TRX                 [ K                                         ]
+       V   = int                 ( K                                         )
+       mm  . addActionFromMenu   ( LOT , V , msg                             )
     ##########################################################################
     return mm
   ############################################################################
-  def HandleTranslations     ( self , item , ID                            ) :
+  def HandleTranslations           ( self , item , ID                      ) :
     ##########################################################################
-    if                       ( ( ID < 7001 ) or ( ID > 7008 )              ) :
+    if                             ( ( ID < 7001 ) or ( ID > 7008 )        ) :
       return False
     ##########################################################################
-    CODE   = ""
-    if                       ( ID == 7001                                  ) :
-      CODE = "t2s"
-    elif                     ( ID == 7002                                  ) :
-      CODE = "s2t"
-    elif                     ( ID == 7003                                  ) :
-      CODE = "tw2s"
-    elif                     ( ID == 7004                                  ) :
-      CODE = "s2tw"
-    elif                     ( ID == 7005                                  ) :
-      CODE = "tw2sp"
-    elif                     ( ID == 7006                                  ) :
-      CODE = "s2twp"
-    elif                     ( ID == 7007                                  ) :
-      CODE = "hk2s"
-    elif                     ( ID == 7008                                  ) :
-      CODE = "s2hk"
+    CODE   = self . ConvertCCCcode ( int ( ID - 7000  )                      )
     ##########################################################################
-    ## pid    = item . text     ( 0                                             )
-    text   = item . text     ( 1                                             )
-    ## pid    = int             ( pid                                           )
-    cc     = OpenCC          ( CODE                                          )
-    target = cc . convert    ( text                                          )
-    UTF8   = len             ( target                                        )
+    if                             ( len ( CODE ) <= 0                     ) :
+      return False
+    ##########################################################################
+    pid    = item . data           ( 0 , Qt . UserRole                       )
+    text   = item . text           ( 1                                       )
+    pid    = int                   ( pid                                     )
+    cc     = OpenCC                ( CODE                                    )
+    target = cc . convert          ( text                                    )
+    UTF8   = len                   ( target                                  )
     LENZ   = 0
     ##########################################################################
     try                                                                      :
-      S    = target . encode ( "utf-8"                                       )
-      LENZ = len             ( S                                             )
+      ########################################################################
+      S    = target . encode       ( "utf-8"                                 )
+      LENZ = len                   ( S                                       )
+      ########################################################################
     except                                                                   :
+      ########################################################################
+      self . Notify                ( 1                                       )
+      ########################################################################
       return True
     ##########################################################################
-    ## item   . setText         ( 1 , target                                    )
-    ## item   . setText         ( 6 , str ( UTF8 )                              )
-    ## item   . setText         ( 7 , str ( LENZ )                              )
-    ##########################################################################
-    ## self   . Go              ( self . UpdateUuidName                       , \
-    ##                            ( item , pid , target , )                     )
+    item   . setText               ( 1 , target                              )
+    self   . DESCRIBE . setContext ( pid , target                            )
+    self   . Notify                ( 5                                       )
     ##########################################################################
     return True
   ############################################################################
-  def TranslateMenu                ( self , mm , item                      ) :
+  def TranslateMenu            ( self , mm , item                          ) :
     ##########################################################################
+    if                         ( item in self . EmptySet                   ) :
+      return mm
+    ##########################################################################
+    BASE   = 15000000
     TRX    = self . Translations
-    LOC    = TRX                   [ "NamesEditor" ] [ "Languages"           ]
+    LOC    = TRX               [ self . ClassTag ] [ "Languages"             ]
     ##########################################################################
-    msg    = TRX                   [ "UI::Translate"                         ]
-    LOM    = mm . addMenu          ( msg                                     )
+    msg    = TRX               [ "UI::Translate"                             ]
+    LOM    = mm . addMenu      ( msg                                         )
     ##########################################################################
-    KEYs   = LOC . keys            (                                         )
+    KEYs   = LOC . keys        (                                             )
     ##########################################################################
     for K in KEYs                                                            :
       ########################################################################
-      V    = int                   ( K                                       )
+      V    = int               ( K                                           )
       ########################################################################
-      if                           ( V < 1000                              ) :
+      if                       ( V < 1000                                  ) :
         continue
       ########################################################################
-      if                           ( V in [ 1004 , 1005 ]                  ) :
+      if                       ( V in [ 1004 , 1005 ]                      ) :
         continue
       ########################################################################
-      msg  = LOC                   [ K                                       ]
-      mm   . addActionFromMenu     ( LOM , 11000000 + V , msg                )
+      msg  = LOC               [ K                                           ]
+      mm   . addActionFromMenu ( LOM , BASE + V , msg                        )
     ##########################################################################
     return mm
   ############################################################################
-  def RunTranslate                     ( self , menu , action , item       ) :
+  def RunTranslate                     ( self , at , item                  ) :
     ##########################################################################
-    return
+    if                                 ( item in self . EmptySet           ) :
+      return
     ##########################################################################
-    items  = self . selectedItems      (                                     )
+    BASE   = 15000000
     ##########################################################################
-    if                                 ( len ( items ) != 1                ) :
+    if                                 ( at < BASE                         ) :
       return False
     ##########################################################################
-    at     = menu . at                 (               action                )
-    ##########################################################################
-    if                                 ( at < 11000000                     ) :
+    if                                 ( at > ( BASE + 100000 )            ) :
       return False
     ##########################################################################
-    if                                 ( at > 11100000                     ) :
-      return False
-    ##########################################################################
-    IT     = items                     [ 0                                   ]
-    LID    = at   - 11000000
-    DID    = self . defaultLocality
-    SRC    = self . LocalityToGoogleLC ( DID                                 )
-    DEST   = self . LocalityToGoogleLC ( LID                                 )
+    SRC    = self . LocalityToGoogleLC ( self . sourceLocality               )
+    DEST   = self . LocalityToGoogleLC ( int ( at - BASE )                   )
     ##########################################################################
     if                                 ( len ( SRC ) <= 0                  ) :
       return True
@@ -692,17 +712,23 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     if                                 ( len ( DEST ) <= 0                 ) :
       return True
     ##########################################################################
-    pid    = IT . text                 ( 0                                   )
-    txt    = IT . text                 ( 1                                   )
+    pid    = item . data               ( 0 , Qt . UserRole                   )
+    txt    = item . text               ( 1                                   )
     pid    = int                       ( pid                                 )
     ##########################################################################
     if                                 ( len ( txt ) <= 0                  ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
       return True
     ##########################################################################
     target = Translate                 ( txt , SRC , DEST                    )
     UTF8   = len                       ( target                              )
     ##########################################################################
     if                                 ( UTF8 <= 0                         ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
       return True
     ##########################################################################
     LENZ   = 0
@@ -711,16 +737,120 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       S    = target . encode           ( "utf-8"                             )
       LENZ = len                       ( S                                   )
     except                                                                   :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
       return True
     ##########################################################################
-    IT     . setText                   ( 1 , target                          )
-    IT     . setText                   ( 6 , str ( UTF8 )                    )
-    IT     . setText                   ( 7 , str ( LENZ )                    )
-    ##########################################################################
-    self   . Go                        ( self . UpdateUuidName             , \
-                                         ( IT , pid , target , )             )
+    item   . setText                   ( 1   , target                        )
+    self   . DESCRIBE . setContext     ( pid , target                        )
+    self   . Notify                    ( 5                                   )
     ##########################################################################
     return False
+  ############################################################################
+  def MarkerMenu                   ( self , mm , item                      ) :
+    ##########################################################################
+    if                             ( item in self . EmptySet               ) :
+      return mm
+    ##########################################################################
+    pid       = item . data                 ( 0 , Qt . UserRole              )
+    pid       = int                         ( pid                            )
+    CHAPTER   = self . DESCRIBE . getOption ( pid , "Chapter"                )
+    PARAGRAPH = self . DESCRIBE . getOption ( pid , "Paragraph"              )
+    SUBTITLE  = self . DESCRIBE . getOption ( pid , "Subtitle"               )
+    ##########################################################################
+    msg       = self . getMenuItem ( "Markers"                               )
+    LOM       = mm   . addMenu     ( msg                                     )
+    ##########################################################################
+    msg       = self . getMenuItem ( "Chapter"                               )
+    mm        . addActionFromMenu  ( LOM , 77410001 , msg , True , CHAPTER   )
+    ##########################################################################
+    msg       = self . getMenuItem ( "Paragraph"                             )
+    mm        . addActionFromMenu  ( LOM , 77410002 , msg , True , PARAGRAPH )
+    ##########################################################################
+    msg       = self . getMenuItem ( "Subtitle"                              )
+    mm        . addActionFromMenu  ( LOM , 77410003 , msg , True , SUBTITLE  )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunMarkerMenu                        ( self , at , item              ) :
+    ##########################################################################
+    if                                     ( item in self . EmptySet       ) :
+      return
+    ##########################################################################
+    items    = self . selectedItems        (                                 )
+    ##########################################################################
+    if                                     ( 77410001 == at                ) :
+      ########################################################################
+      for it in items                                                        :
+        ######################################################################
+        pid  = it . data                   ( 0 , Qt . UserRole               )
+        pid  = int                         ( pid                             )
+        ######################################################################
+        OPT  = self . DESCRIBE . getOption ( pid , "Chapter"                 )
+        ######################################################################
+        self        . DESCRIBE . setOption ( pid , "Chapter"   , not OPT     )
+        self        . DESCRIBE . setOption ( pid , "Paragraph" ,     OPT     )
+        ######################################################################
+        OPS  = self . DESCRIBE . OptionString ( pid                          )
+        it   . setText                     ( 2 , OPS                         )
+    ##########################################################################
+    if                                     ( 77410002 == at                ) :
+      ########################################################################
+      for it in items                                                        :
+        ######################################################################
+        pid  = it . data                   ( 0 , Qt . UserRole               )
+        pid  = int                         ( pid                             )
+        ######################################################################
+        OPT  = self . DESCRIBE . getOption ( pid , "Paragraph"               )
+        self        . DESCRIBE . setOption ( pid , "Chapter"   ,     OPT     )
+        self        . DESCRIBE . setOption ( pid , "Paragraph" , not OPT     )
+        ######################################################################
+        OPS  = self . DESCRIBE . OptionString ( pid                          )
+        it   . setText                     ( 2 , OPS                         )
+    ##########################################################################
+    if                                     ( 77410003 == at                ) :
+      ########################################################################
+      for it in items                                                        :
+        ######################################################################
+        pid  = it . data                   ( 0 , Qt . UserRole               )
+        pid  = int                         ( pid                             )
+        ######################################################################
+        OPT  = self . DESCRIBE . getOption ( pid , "Subtitle"                )
+        self        . DESCRIBE . setOption ( pid , "Subtitle" , not OPT      )
+        ######################################################################
+        OPS  = self . DESCRIBE . OptionString ( pid                          )
+        it   . setText                     ( 2 , OPS                         )
+    ##########################################################################
+    return False
+  ############################################################################
+  def BaseTimeMenu ( self , mm                                             ) :
+    ##########################################################################
+    FTIME = self . SCENE . toFTime     ( self . DESCRIBE . BaseTime          )
+    self  . BaseTimeEditor = QLineEdit (                                     )
+    self  . BaseTimeEditor . setText   ( FTIME                               )
+    mm    . addWidget                  ( 9929991 , self . BaseTimeEditor     )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunBaseTime ( self                                                   ) :
+    ##########################################################################
+    if            ( None == self . BaseTimeEditor                          ) :
+      return False
+    ##########################################################################
+    FTIME      = self . BaseTimeEditor . text (                              )
+    OK , RTIME = self . SCENE . FromFTime     ( FTIME                        )
+    self       . BaseTimeEditor = None
+    ##########################################################################
+    if            ( not OK                                                 ) :
+      return False
+    ##########################################################################
+    if            ( RTIME == self . DESCRIBE . BaseTime                    ) :
+      return False
+    ##########################################################################
+    self . DESCRIBE . BaseTime = RTIME
+    ##########################################################################
+    return True
   ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
@@ -735,6 +865,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     items  , atItem , uuid = self . GetMenuDetails ( 0                       )
     mm     = MenuManager               ( self                                )
     ##########################################################################
+    self   . BaseTimeMenu              ( mm                                  )
     self   . AppendRefreshAction       ( mm , 1001                           )
     ##########################################################################
     msg    = self . getMenuItem        ( "Save"                              )
@@ -753,6 +884,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
+    self   . MarkerMenu                ( mm , atItem                         )
     self   . TranslateMenu             ( mm , atItem                         )
     self   . TranslationsMenu          ( mm , atItem                         )
     self   . LocalityMenu              ( mm                                  )
@@ -768,6 +900,13 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     at     = mm . at                   ( aa                                  )
     ##########################################################################
     self   . AtMenu = False
+    ##########################################################################
+    OKAY   = self . RunBaseTime        (                                     )
+    if                                 ( OKAY                              ) :
+      ########################################################################
+      self . reload                    (                                     )
+      ########################################################################
+      return True
     ##########################################################################
     OKAY   = self . RunDocking         ( mm , aa                             )
     if                                 ( OKAY                              ) :
@@ -793,7 +932,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunTranslate       ( mm , aa , atItem                    )
+    OKAY   = self . RunTranslate       ( at , atItem                         )
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
@@ -802,6 +941,10 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       return True
     ##########################################################################
     OKAY   = self . HandleTranslations ( atItem , at                         )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunMarkerMenu      ( at , atItem                         )
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
