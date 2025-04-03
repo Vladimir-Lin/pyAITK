@@ -533,21 +533,21 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     MSG    = self . getMenuItem     ( "ClearAll"                             )
     ICN    = QIcon                  ( ":/images/undecided.png"               )
-    mm     . addMenuWithIcon        ( 4003 , ICN , MSG                       )
+    mm     . addActionWithIcon      ( 4003 , ICN , MSG                       )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
     MSG    = self . getMenuItem     ( "NamesFromClipboard"                   )
     ICN    = QIcon                  ( ":/images/copy.png"                    )
-    mm     . addMenuWithIcon        ( 4101 , ICN , MSG                       )
+    mm     . addActionWithIcon      ( 4101 , ICN , MSG                       )
     ##########################################################################
     MSG    = self . getMenuItem     ( "FindAll"                              )
     ICN    = QIcon                  ( ":/images/zoom.png"                    )
-    mm     . addMenuWithIcon        ( 4102 , ICN , MSG                       )
+    mm     . addActionWithIcon      ( 4102 , ICN , MSG                       )
     ##########################################################################
     MSG    = self . getMenuItem     ( "FindAllByNames"                       )
     ICN    = QIcon                  ( ":/images/documentsearch.png"          )
-    mm     . addMenuWithIcon        ( 4103 , ICN , MSG                       )
+    mm     . addActionWithIcon      ( 4103 , ICN , MSG                       )
     ##########################################################################
     MSG    = self . getMenuItem     ( "AssignTextFile"                       )
     mm     . addAction              ( 4104 , MSG                             )
