@@ -60,6 +60,7 @@ class CommandInterface    ( TextEdit                                       ) :
     self . defaultFont     = self . font (                                   )
     self . Filename        = ""
     self . defaultLocality = 1002
+    self . AtMenu          = False
     ##########################################################################
     self . emitInsertText . connect ( self . insertPlainText                 )
     ##########################################################################
@@ -70,49 +71,85 @@ class CommandInterface    ( TextEdit                                       ) :
   def sizeHint   ( self                                                    ) :
     return QSize ( 800 , 320                                                 )
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    self . AppendSideActionWithIcon ( "ClearAll"                           , \
+                                      ":/images/undecided.png"             , \
+                                      self . clear                         , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "NamesFromClipboard"                 , \
+                                      ":/images/copy.png"                  , \
+                                      self . TakeNamesFromClipboard        , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "FindAll"                            , \
+                                      ":/images/zoom.png"                  , \
+                                      self . FindAllByName                 , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "FindAllByNames"                     , \
+                                      ":/images/documentsearch.png"        , \
+                                      self . FindAllByNames                , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                   Enabled           ) :
+    ##########################################################################
+    self . LinkAction ( "Load"      , self . Load      , Enabled             )
+    self . LinkAction ( "Save"      , self . Save      , Enabled             )
+    self . LinkAction ( "SaveAs"    , self . SaveAs    , Enabled             )
+    self . LinkAction ( "Undo"      , self . undo      , Enabled             )
+    self . LinkAction ( "Redo"      , self . redo      , Enabled             )
+    self . LinkAction ( "Cut"       , self . cut       , Enabled             )
+    self . LinkAction ( "Copy"      , self . copy      , Enabled             )
+    self . LinkAction ( "Paste"     , self . paste     , Enabled             )
+    self . LinkAction ( "SelectAll" , self . selectAll , Enabled             )
+    self . LinkAction ( "ZoomIn"    , self . ZoomIn    , Enabled             )
+    self . LinkAction ( "ZoomOut"   , self . ZoomOut   , Enabled             )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"     , self . windowTitle ( )             )
-    ##########################################################################
-    self . LinkAction     ( "Load"      , self . Load                        )
-    self . LinkAction     ( "Save"      , self . Save                        )
-    self . LinkAction     ( "SaveAs"    , self . SaveAs                      )
-    self . LinkAction     ( "Undo"      , self . undo                        )
-    self . LinkAction     ( "Redo"      , self . redo                        )
-    self . LinkAction     ( "Cut"       , self . cut                         )
-    self . LinkAction     ( "Copy"      , self . copy                        )
-    self . LinkAction     ( "Paste"     , self . paste                       )
-    self . LinkAction     ( "SelectAll" , self . selectAll                   )
-    self . LinkAction     ( "ZoomIn"    , self . ZoomIn                      )
-    self . LinkAction     ( "ZoomOut"   , self . ZoomOut                     )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut ( self                                                      ) :
+  def FocusOut                 ( self                                      ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return False
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
     ##########################################################################
     return False
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def Shutdown               ( self                                        ) :
     ##########################################################################
-    self . LinkAction      ( "Load"      , self . Load      , False          )
-    self . LinkAction      ( "Save"      , self . Save      , False          )
-    self . LinkAction      ( "SaveAs"    , self . SaveAs    , False          )
-    self . LinkAction      ( "Undo"      , self . undo      , False          )
-    self . LinkAction      ( "Redo"      , self . redo      , False          )
-    self . LinkAction      ( "Cut"       , self . cut       , False          )
-    self . LinkAction      ( "Copy"      , self . copy      , False          )
-    self . LinkAction      ( "Paste"     , self . paste     , False          )
-    self . LinkAction      ( "SelectAll" , self . selectAll , False          )
-    self . LinkAction      ( "ZoomIn"    , self . ZoomIn    , False          )
-    self . LinkAction      ( "ZoomOut"   , self . ZoomOut   , False          )
+    self . StayAlive   = False
     ##########################################################################
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . detachActionsTool (                                               )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent     ( self , event                                        ) :
+    ##########################################################################
+    if               ( self . Shutdown (                                 ) ) :
+      event . accept (                                                       )
+    else                                                                     :
+      event . ignore (                                                       )
     ##########################################################################
     return
   ############################################################################
@@ -336,6 +373,24 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return
   ############################################################################
+  def TakeNamesFromClipboard ( self                                        ) :
+    ##########################################################################
+    self . insertPlainText   ( "take names from clipboard"                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def FindAllByName        ( self                                          ) :
+    ##########################################################################
+    self . insertPlainText ( "find all"                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FindAllByNames       ( self                                          ) :
+    ##########################################################################
+    self . insertPlainText ( "find all by names"                             )
+    ##########################################################################
+    return
+  ############################################################################
   def LocalityMenu            ( self , mm                                  ) :
     ##########################################################################
     TRX   = self . Translations
@@ -457,81 +512,115 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return   False
   ############################################################################
-  def Menu                        ( self , pos                             ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    doMenu = self . isFunction    ( self . HavingMenu                        )
-    if                            ( not doMenu                             ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    mm     = MenuManager          ( self                                     )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
-    TEXT   = qApp . clipboard     ( ) . text (                               )
+    TEXT   = qApp . clipboard       ( ) . text (                             )
     ##########################################################################
-    if                            ( len ( TEXT ) > 0                       ) :
+    if                              ( len ( TEXT ) > 0                     ) :
       ########################################################################
-      mm   . addAction            ( 4001 , TRX [ "CMD::SelectionToCommand" ] )
+      MSG  = TRX                    [ "CMD::SelectionToCommand"              ]
+      mm   . addAction              ( 4001 , MSG                             )
     ##########################################################################
-    mm     . addAction            ( 4002 , TRX [ "UI::DefaultFont"         ] )
-    mm     . addAction            ( 4003 , TRX [ "UI::ClearAll"            ] )
-    mm     . addSeparator         (                                          )
+    MSG    = self . getMenuItem     ( "DefaultFont"                          )
+    mm     . addAction              ( 4002 , MSG                             )
     ##########################################################################
-    MSG    = self . getMenuItem   ( "NamesFromClipboard"                     )
-    mm     . addAction            ( 4101 , MSG                               )
+    MSG    = self . getMenuItem     ( "ClearAll"                             )
+    ICN    = QIcon                  ( ":/images/undecided.png"               )
+    mm     . addMenuWithIcon        ( 4003 , ICN , MSG                       )
     ##########################################################################
-    MSG    = self . getMenuItem   ( "AssignTextFile"                         )
-    mm     . addAction            ( 4102 , MSG                               )
+    mm     . addSeparator           (                                        )
     ##########################################################################
-    mm     . addSeparator         (                                          )
+    MSG    = self . getMenuItem     ( "NamesFromClipboard"                   )
+    ICN    = QIcon                  ( ":/images/copy.png"                    )
+    mm     . addMenuWithIcon        ( 4101 , ICN , MSG                       )
     ##########################################################################
-    mm     = self . TextingMenu   ( mm                                       )
-    mm     = self . DisplayMenu   ( mm                                       )
-    mm     . addSeparator         (                                          )
+    MSG    = self . getMenuItem     ( "FindAll"                              )
+    ICN    = QIcon                  ( ":/images/zoom.png"                    )
+    mm     . addMenuWithIcon        ( 4102 , ICN , MSG                       )
     ##########################################################################
-    mm     = self . LocalityMenu  ( mm                                       )
-    self   . DockingMenu          ( mm                                       )
+    MSG    = self . getMenuItem     ( "FindAllByNames"                       )
+    ICN    = QIcon                  ( ":/images/documentsearch.png"          )
+    mm     . addMenuWithIcon        ( 4103 , ICN , MSG                       )
     ##########################################################################
-    self   . Notify               ( 0                                        )
-    mm     . setFont              ( self    . menuFont ( )                   )
-    aa     = mm . exec_           ( QCursor . pos      ( )                   )
-    at     = mm . at              ( aa                                       )
+    MSG    = self . getMenuItem     ( "AssignTextFile"                       )
+    mm     . addAction              ( 4104 , MSG                             )
     ##########################################################################
-    if                            ( self . RunDocking      ( mm , aa )     ) :
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    mm     = self . TextingMenu     ( mm                                     )
+    mm     = self . DisplayMenu     ( mm                                     )
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    mm     = self . LocalityMenu    ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
+    ##########################################################################
+    self   . Notify                 ( 0                                      )
+    ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . AtMenu = False
+    ##########################################################################
+    if                              ( self . RunDocking      ( mm , aa )   ) :
       return True
     ##########################################################################
-    if                            ( self . RunLocalityMenu ( at      )     ) :
+    if                              ( self . RunLocalityMenu ( at      )   ) :
       return True
     ##########################################################################
-    if                            ( self . RunTextingMenu  ( at      )     ) :
+    if                              ( self . RunTextingMenu  ( at      )   ) :
       return True
     ##########################################################################
-    if                            ( self . RunDisplayMenu  ( at      )     ) :
+    if                              ( self . RunDisplayMenu  ( at      )   ) :
       return True
     ##########################################################################
-    if                            ( 4001 == at                             ) :
+    if                              ( 4001 == at                           ) :
       ########################################################################
-      self . emitSelection . emit ( TEXT                                     )
+      self . emitSelection . emit   ( TEXT                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                            ( 4002 == at                             ) :
+    if                              ( 4002 == at                           ) :
       ########################################################################
-      self . setFont              ( self . defaultFont                       )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( 4003 == at                             ) :
-      self . clear                (                                          )
-      return True
-    ##########################################################################
-    if                            ( 4101 == at                             ) :
-      ########################################################################
-      self . insertPlainText      ( "take names from clipboard"              )
+      self . setFont                ( self . defaultFont                     )
       ########################################################################
       return True
     ##########################################################################
-    if                            ( 4102 == at                             ) :
-      self . AssignFileName       (                                          )
+    if                              ( 4003 == at                           ) :
+      ########################################################################
+      self . clear                  (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( 4101 == at                           ) :
+      ########################################################################
+      self . TakeNamesFromClipboard (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( 4102 == at                           ) :
+      ########################################################################
+      self . FindAllByName          (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( 4103 == at                           ) :
+      ########################################################################
+      self . FindAllByNames         (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( 4104 == at                           ) :
+      self . AssignFileName         (                                        )
       return True
     ##########################################################################
     return True
