@@ -88,6 +88,11 @@ class CommandInterface    ( TextEdit                                       ) :
                                       self . FindAllByName                 , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "FindEmpty"                          , \
+                                      ":/images/list.png"                  , \
+                                      self . FindAllEmpty                  , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "FindAllByNames"                     , \
                                       ":/images/documentsearch.png"        , \
                                       self . FindAllByNames                , \
@@ -385,6 +390,12 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return
   ############################################################################
+  def FindAllEmpty         ( self                                          ) :
+    ##########################################################################
+    self . insertPlainText ( "find empty"                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def FindAllByNames       ( self                                          ) :
     ##########################################################################
     self . insertPlainText ( "find all by names"                             )
@@ -545,12 +556,16 @@ class CommandInterface    ( TextEdit                                       ) :
     ICN    = QIcon                  ( ":/images/zoom.png"                    )
     mm     . addActionWithIcon      ( 4102 , ICN , MSG                       )
     ##########################################################################
-    MSG    = self . getMenuItem     ( "FindAllByNames"                       )
-    ICN    = QIcon                  ( ":/images/documentsearch.png"          )
+    MSG    = self . getMenuItem     ( "FindEmpty"                            )
+    ICN    = QIcon                  ( ":/images/list.png"                    )
     mm     . addActionWithIcon      ( 4103 , ICN , MSG                       )
     ##########################################################################
+    MSG    = self . getMenuItem     ( "FindAllByNames"                       )
+    ICN    = QIcon                  ( ":/images/documentsearch.png"          )
+    mm     . addActionWithIcon      ( 4104 , ICN , MSG                       )
+    ##########################################################################
     MSG    = self . getMenuItem     ( "AssignTextFile"                       )
-    mm     . addAction              ( 4104 , MSG                             )
+    mm     . addAction              ( 4105 , MSG                             )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
@@ -615,11 +630,17 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     if                              ( 4103 == at                           ) :
       ########################################################################
-      self . FindAllByNames         (                                        )
+      self . FindAllEmpty           (                                        )
       ########################################################################
       return True
     ##########################################################################
     if                              ( 4104 == at                           ) :
+      ########################################################################
+      self . FindAllByNames         (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( 4105 == at                           ) :
       self . AssignFileName         (                                        )
       return True
     ##########################################################################
