@@ -786,8 +786,15 @@ class DescriptiveEditor  ( TreeDock                                        ) :
         ######################################################################
         OPT  = self . DESCRIBE . getOption ( pid , "Chapter"                 )
         ######################################################################
-        self        . DESCRIBE . setOption ( pid , "Chapter"   , not OPT     )
-        self        . DESCRIBE . setOption ( pid , "Paragraph" ,     OPT     )
+        if                                 ( OPT                           ) :
+          ####################################################################
+          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
+          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          self      . DESCRIBE . setOption ( pid , "Chapter"   , True        )
+          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
         ######################################################################
         OPS  = self . DESCRIBE . OptionString ( pid                          )
         it   . setText                     ( 2 , OPS                         )
@@ -800,8 +807,16 @@ class DescriptiveEditor  ( TreeDock                                        ) :
         pid  = int                         ( pid                             )
         ######################################################################
         OPT  = self . DESCRIBE . getOption ( pid , "Paragraph"               )
-        self        . DESCRIBE . setOption ( pid , "Chapter"   ,     OPT     )
-        self        . DESCRIBE . setOption ( pid , "Paragraph" , not OPT     )
+        ######################################################################
+        if                                 ( OPT                           ) :
+          ####################################################################
+          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
+          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
+          self      . DESCRIBE . setOption ( pid , "Paragraph" , True        )
         ######################################################################
         OPS  = self . DESCRIBE . OptionString ( pid                          )
         it   . setText                     ( 2 , OPS                         )
