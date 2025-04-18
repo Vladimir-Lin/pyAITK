@@ -68,13 +68,15 @@ class DescriptiveEditor  ( TreeDock                                        ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
+    self . setColumnCount          ( 7                                       )
     self . setColumnWidth          ( 0 , 120                                 )
-    self . setColumnWidth          ( 1 , 600                                 )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnWidth          ( 1 , 120                                 )
+    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnWidth          ( 2 , 600                                 )
     self . setColumnHidden         ( 3 , True                                )
     self . setColumnHidden         ( 4 , True                                )
     self . setColumnHidden         ( 5 , True                                )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -179,6 +181,19 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     if                              ( column in [ 1 ]                      ) :
       ########################################################################
+      slen = item . data            ( column , Qt . UserRole                 )
+      xlen = self . SCENE . toFTime ( int ( slen )                           )
+      line = self . setLineEdit     ( item                                 , \
+                                      column                               , \
+                                      "editingFinished"                    , \
+                                      self . nameChanged                     )
+      line . blockSignals           ( True                                   )
+      line . setText                ( xlen                                   )
+      line . blockSignals           ( False                                  )
+      line . setFocus               ( Qt . TabFocusReason                    )
+    ##########################################################################
+    if                              ( column in [ 2 ]                      ) :
+      ########################################################################
       line = self . setLineEdit     ( item                                 , \
                                       column                               , \
                                       "editingFinished"                    , \
@@ -196,13 +211,16 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     FTIME = self . SCENE . toLTime ( STIME                                   )
     COPTs = self . DESCRIBE . OptionString ( int ( RTIME )                   )
     ##########################################################################
+    LTIME = 0
+    ##########################################################################
     IT    = QTreeWidgetItem        (                                         )
     IT    . setData                ( 0 , Qt . UserRole , str ( RTIME )       )
     IT    . setText                ( 0 , FTIME                               )
     IT    . setTextAlignment       ( 0 , Qt . AlignRight                     )
-    IT    . setText                ( 1 , NAME                                )
-    IT    . setText                ( 2 , COPTs                               )
-    IT    . setTextAlignment       ( 2 , Qt . AlignCenter                    )
+    IT    . setData                ( 1 , Qt . UserRole , str ( LTIME )       )
+    IT    . setText                ( 2 , NAME                                )
+    IT    . setText                ( 3 , COPTs                               )
+    IT    . setTextAlignment       ( 3 , Qt . AlignCenter                    )
     ##########################################################################
     for COL in range               ( 0 , self . columnCount (            ) ) :
       ########################################################################
@@ -338,7 +356,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def RenameItem        ( self                                             ) :
     ##########################################################################
-    self . goRenameItem ( 1                                                  )
+    self . goRenameItem ( 2                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -371,6 +389,19 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       ########################################################################
     elif                                   ( 1 == column                   ) :
       ########################################################################
+      OK , dlen = self . SCENE . FromFTime ( msg                             )
+      ########################################################################
+      if                                   ( OK                            ) :
+        ######################################################################
+        slen = item . data                 ( 0 , Qt . UserRole               )
+        vlen = int                         ( slen                            )
+        rlen = self . DESCRIBE . realTime  ( dlen                            )
+        ## self . DESCRIBE . Replace          ( vlen , rlen                     )
+        ## item . setText                     ( column , msg                    )
+        ## self . emitReload . emit           (                                 )
+      ########################################################################
+    elif                                   ( 2 == column                   ) :
+      ########################################################################
       slen   = item . data                 ( 0 , Qt . UserRole               )
       vlen   = int                         ( slen                            )
       item   . setText                     ( column , msg                    )
@@ -387,7 +418,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 5                              )
+    self . defaultPrepare ( self . ClassTag , 6                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
@@ -494,7 +525,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     mm      . addSeparatorFromMenu  ( COL                                    )
     ##########################################################################
-    for i in range                  ( 2 , self . columnCount ( )           ) :
+    for i in range                  ( 1 , self . columnCount ( )           ) :
       ########################################################################
       msg   = head . text           ( i                                      )
       if                            ( len ( msg ) <= 0                     ) :
@@ -509,7 +540,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     if                             ( 9501 == at                            ) :
       ########################################################################
-      for i in range               ( 2 , self . columnCount (            ) ) :
+      for i in range               ( 1 , self . columnCount (            ) ) :
         ######################################################################
         self . setColumnHidden     ( i , False                               )
       ########################################################################
@@ -518,7 +549,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     DCOLs  = self . columnCount    (                                         )
     MCOLs  = int                   ( 9000 + DCOLs                            )
     ##########################################################################
-    if                             ( ( at >= 9002 ) and ( at <= MCOLs )    ) :
+    if                             ( ( at >= 9001 ) and ( at <= MCOLs )    ) :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
