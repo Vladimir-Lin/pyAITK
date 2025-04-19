@@ -45,6 +45,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . PrivateIcon   = True
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
+    self . FetchingINFO  = False
     ##########################################################################
     self . Grouping      = "Tag"
     self . OldGrouping   = "Tag"
@@ -159,6 +160,9 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     self . StayAlive   = False
     self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . FetchingINFO                         ) :
+      return False
     ##########################################################################
     if                       ( self . isThreadRunning (                  ) ) :
       return False
@@ -645,6 +649,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     self       . OnBusy  . emit        (                                     )
     ##########################################################################
+    self       . FetchingINFO = True
     RELTAB     = self . Tables         [ "Relation"                          ]
     REL        = Relation              (                                     )
     REL        . setRelation           ( "Subordination"                     )
@@ -688,6 +693,8 @@ class AlbumGroupView         ( IconDock                                    ) :
         self   . assignToolTip         ( item    , tooltip                   )
     ##########################################################################
     self       . GoRelax . emit        (                                     )
+    self       . FetchingINFO = False
+    ##########################################################################
     DBG        . Close                 (                                     )
     DBA        . Close                 (                                     )
     ##########################################################################
