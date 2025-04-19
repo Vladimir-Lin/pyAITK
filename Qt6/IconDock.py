@@ -748,12 +748,12 @@ class IconDock                    ( ListDock                               ) :
       if               ( self . isWrapping (                             ) ) :
         ######################################################################
         self . setWrapping                 ( False                           )
-        self . setFlow                     ( Qt . LeftToRight                )
+        self . setFlow                     ( QListView . LeftToRight         )
         ######################################################################
       else                                                                   :
         ######################################################################
         self . setWrapping                 ( True                            )
-        self . setFlow                     ( Qt . TopToBottom                )
+        self . setFlow                     ( QListView . TopToBottom         )
       ########################################################################
       return True
     ##########################################################################
