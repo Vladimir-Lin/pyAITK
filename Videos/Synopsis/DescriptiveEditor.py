@@ -828,7 +828,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
           self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
         ######################################################################
         OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 2 , OPS                         )
+        it   . setText                     ( 3 , OPS                         )
     ##########################################################################
     if                                     ( 77410002 == at                ) :
       ########################################################################
@@ -850,7 +850,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
           self      . DESCRIBE . setOption ( pid , "Paragraph" , True        )
         ######################################################################
         OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 2 , OPS                         )
+        it   . setText                     ( 3 , OPS                         )
     ##########################################################################
     if                                     ( 77410003 == at                ) :
       ########################################################################
@@ -863,7 +863,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
         self        . DESCRIBE . setOption ( pid , "Subtitle" , not OPT      )
         ######################################################################
         OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 2 , OPS                         )
+        it   . setText                     ( 3 , OPS                         )
     ##########################################################################
     return False
   ############################################################################
