@@ -315,7 +315,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     CIT   = self . topLevelItem      ( IDX                                   )
     self  . setCurrentItem           ( CIT                                   )
-    self  . twiceClicked             ( CIT , 1                               )
+    self  . twiceClicked             ( CIT , 2                               )
     ##########################################################################
     return
   ############################################################################
