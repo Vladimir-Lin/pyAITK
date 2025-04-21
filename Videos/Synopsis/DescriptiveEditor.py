@@ -506,9 +506,9 @@ class DescriptiveEditor  ( TreeDock                                        ) :
         ######################################################################
         slen = item . data                 ( 0 , Qt . UserRole               )
         vlen = int                         ( slen                            )
-        rlen = self . DESCRIBE . realTime  ( dlen                            )
-        DTS  = str                         ( rlen                            )
-        self . DESCRIBE . setOption        ( vlen , "Duration" , rlen        )
+        DTS  = str                         ( dlen                            )
+        msg  = self . SCENE . toLTime      ( dlen                            )
+        self . DESCRIBE . setOption        ( vlen , "Duration" , dlen        )
         item . setText                     ( column , msg                    )
         item . setData                     ( column , Qt . UserRole , DTS    )
         self . Notify                      ( 5                               )
