@@ -202,29 +202,42 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                  ( self , JSON , BRUSH                   ) :
+  def PrepareItem                    ( self , JSON , BRUSH                 ) :
     ##########################################################################
-    STIME = int                    ( JSON [ "Shift"                        ] )
-    RTIME = str                    ( JSON [ "Timestamp"                    ] )
-    NAME  =                          JSON [ "Name"                           ]
+    STIME   = int                    ( JSON [ "Shift"                      ] )
+    RTIME   = str                    ( JSON [ "Timestamp"                  ] )
+    KTIME   = int                    ( RTIME                                 )
+    NAME    =                          JSON [ "Name"                         ]
     ##########################################################################
-    FTIME = self . SCENE . toLTime ( STIME                                   )
-    COPTs = self . DESCRIBE . OptionString ( int ( RTIME )                   )
+    FTIME   = self . SCENE . toLTime         ( STIME                         )
+    COPTs   = self . DESCRIBE . OptionString ( KTIME                         )
+    PTOTs   = self . DESCRIBE . TotalPeople  ( KTIME                         )
+    STOTs   = str                            ( PTOTs                         )
+    LTIME   = self . DESCRIBE . getOption    ( KTIME , "Duration"            )
     ##########################################################################
-    LTIME = 0
-    ##########################################################################
-    IT    = QTreeWidgetItem        (                                         )
-    IT    . setData                ( 0 , Qt . UserRole , str ( RTIME )       )
-    IT    . setText                ( 0 , FTIME                               )
-    IT    . setTextAlignment       ( 0 , Qt . AlignRight                     )
-    IT    . setData                ( 1 , Qt . UserRole , str ( LTIME )       )
-    IT    . setText                ( 2 , NAME                                )
-    IT    . setText                ( 3 , COPTs                               )
-    IT    . setTextAlignment       ( 3 , Qt . AlignCenter                    )
-    ##########################################################################
-    for COL in range               ( 0 , self . columnCount (            ) ) :
+    if                               ( LTIME in [ False , None ]           ) :
       ########################################################################
-      IT  . setBackground          ( COL , BRUSH                             )
+      LTIME = 0
+    ##########################################################################
+    VTIME   = self . SCENE . toLTime ( LTIME                                 )
+    ##########################################################################
+    IT      = QTreeWidgetItem        (                                       )
+    IT      . setData                ( 0 , Qt . UserRole , str ( RTIME )     )
+    IT      . setText                ( 0 , FTIME                             )
+    IT      . setTextAlignment       ( 0 , Qt . AlignRight                   )
+    IT      . setData                ( 1 , Qt . UserRole , str ( LTIME )     )
+    IT      . setText                ( 1 , VTIME                             )
+    IT      . setTextAlignment       ( 1 , Qt . AlignRight                   )
+    IT      . setText                ( 2 , NAME                              )
+    IT      . setText                ( 3 , COPTs                             )
+    IT      . setTextAlignment       ( 3 , Qt . AlignCenter                  )
+    IT      . setText                ( 5 , STOTs                             )
+    IT      . setData                ( 5 , Qt . UserRole , STOTs             )
+    IT      . setTextAlignment       ( 5 , Qt . AlignRight                   )
+    ##########################################################################
+    for COL in range                 ( 0 , self . columnCount (          ) ) :
+      ########################################################################
+      IT    . setBackground          ( COL , BRUSH                           )
     ##########################################################################
     return IT
   ############################################################################
@@ -275,6 +288,104 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self      . Notify                     ( 5                               )
     ##########################################################################
     return
+  ############################################################################
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs =                 [ "people/uuids"                                  ]
+    return self . MimeType ( mime , ";" . join ( FMTs  )                     )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    ##########################################################################
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                        ( self                                , \
+                                       source                              , \
+                                       mimeData                            , \
+                                       mousePos                            ) :
+    ##########################################################################
+    if                               ( self == source                      ) :
+      return False
+    ##########################################################################
+    RDN    = self . RegularDropNew   ( mimeData                              )
+    if                               ( not RDN                             ) :
+      return False
+    ##########################################################################
+    mtype  = self   . DropInJSON     [ "Mime"                                ]
+    UUIDs  = self   . DropInJSON     [ "UUIDs"                               ]
+    atItem = self   . itemAt         ( mousePos                              )
+    title  = source . windowTitle    (                                       )
+    CNT    = len                     ( UUIDs                                 )
+    ##########################################################################
+    if                               ( mtype in [ "people/uuids"         ] ) :
+      ########################################################################
+      if                             ( atItem not in self . EmptySet       ) :
+        ######################################################################
+        TXT  = atItem . text         ( 0                                     )
+        UID  = atItem . data         ( 0 , Qt . UserRole                     )
+        FMT  = self   . getMenuItem  ( "PeopleFrom"                          )
+        MSG  = FMT    . format       ( title , CNT , TXT , UID               )
+        self . ShowStatus            ( MSG                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving                  ( self , source , mimeData , mousePos    ) :
+    ##########################################################################
+    if                            ( self . droppingAction                  ) :
+      return False
+    ##########################################################################
+    mtype  = self   . DropInJSON  [ "Mime"                                   ]
+    UUIDs  = self   . DropInJSON  [ "UUIDs"                                  ]
+    atItem = self   . itemAt      ( mousePos                                 )
+    title  = source . windowTitle (                                          )
+    CNT    = len                  ( UUIDs                                    )
+    ##########################################################################
+    if                            ( mtype in [ "people/uuids"            ] ) :
+      ########################################################################
+      if                          ( atItem in self . EmptySet              ) :
+        return False
+      ########################################################################
+      TXT  = atItem . text        ( 0                                        )
+      UID  = atItem . data        ( 0 , Qt . UserRole                        )
+      FMT  = self   . getMenuItem ( "PeopleFrom"                             )
+      MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
+      self . ShowStatus           ( MSG                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    return True
+  ############################################################################
+  def acceptPeopleDrop ( self                                              ) :
+    return True
+  ############################################################################
+  def dropPeople                           ( self , source , pos , JSOX    ) :
+    ##########################################################################
+    if                                     ( "UUIDs" not in JSOX           ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSOX                          [ "UUIDs"                         ]
+    if                                     ( len ( UUIDs ) <= 0            ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt                 ( pos                             )
+    if                                     ( atItem in self . EmptySet     ) :
+      return True
+    ##########################################################################
+    slen   = atItem . data                 ( 0 , Qt . UserRole               )
+    vlen   = int                           ( slen                            )
+    ##########################################################################
+    self   . DESCRIBE . addCrowds          ( vlen , UUIDs                    )
+    TOTAL  = self . DESCRIBE . TotalPeople ( vlen                            )
+    sTOTAL = str                           ( TOTAL                           )
+    ##########################################################################
+    atItem . setText                       ( 5 ,                 sTOTAL      )
+    atItem . setData                       ( 5 , Qt . UserRole , sTOTAL      )
+    self   . Notify                        ( 5                               )
+    ##########################################################################
+    return True
   ############################################################################
   def startScenario                         ( self , Uuid , JSON           ) :
     ##########################################################################
@@ -396,9 +507,11 @@ class DescriptiveEditor  ( TreeDock                                        ) :
         slen = item . data                 ( 0 , Qt . UserRole               )
         vlen = int                         ( slen                            )
         rlen = self . DESCRIBE . realTime  ( dlen                            )
-        ## self . DESCRIBE . Replace          ( vlen , rlen                     )
-        ## item . setText                     ( column , msg                    )
-        ## self . emitReload . emit           (                                 )
+        DTS  = str                         ( rlen                            )
+        self . DESCRIBE . setOption        ( vlen , "Duration" , rlen        )
+        item . setText                     ( column , msg                    )
+        item . setData                     ( column , Qt . UserRole , DTS    )
+        self . Notify                      ( 5                               )
       ########################################################################
     elif                                   ( 2 == column                   ) :
       ########################################################################
