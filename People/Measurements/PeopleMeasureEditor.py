@@ -40,6 +40,7 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     self . PeopleUuid         = 0
     ##########################################################################
     self . PEOPLE             = PeopleItem (                                 )
+    self . MEASURE            = {                                            }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . LeftDockWidgetArea
@@ -215,6 +216,7 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     ##########################################################################
     self     . ObtainsInformation      ( DB                                  )
     ##########################################################################
+    ITEMs    = self . Translations     [ self . ClassTag ] [ "MeasureItems"  ]
     LISTs    =                         [                                     ]
     ##########################################################################
     self     . setVacancy              (                                     )
