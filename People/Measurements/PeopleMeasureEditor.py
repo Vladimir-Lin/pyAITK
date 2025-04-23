@@ -10,18 +10,19 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                          import QtCore
+from   PySide6                          import QtGui
+from   PySide6                          import QtWidgets
+from   PySide6 . QtCore                 import *
+from   PySide6 . QtGui                  import *
+from   PySide6 . QtWidgets              import *
+from   AITK    . Qt6                    import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from   AITK    . People     . People   import People as PeopleItem
+from   AITK    . Essentials . Relation  import Relation
+from   AITK    . Calendars  . StarDate  import StarDate
+from   AITK    . Calendars  . Periode   import Periode
+from   AITK    . People     . People    import People    as PeopleItem
+from   AITK    . Documents  . Variables import Variables as VariableItem
 ##############################################################################
 class PeopleMeasureEditor ( TreeDock                                       ) :
   ############################################################################
@@ -85,6 +86,7 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
+    self . LinkAction ( "Save"       , self . SaveMeasures    , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
@@ -122,15 +124,15 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   ############################################################################
   def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
-    ## if                          ( column in [ 0 , 1 ]                      ) :
-    ##   ########################################################################
-    ##   line = self . setLineEdit ( item                                     , \
-    ##                               column                                   , \
-    ##                               "editingFinished"                        , \
-    ##                               self . nameChanged                         )
-    ##   line . setFocus           ( Qt . TabFocusReason                        )
+    if                          ( column in [ 1 ]                          ) :
+      ########################################################################
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
-    ## self . defaultSingleClicked (        item , column                       )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -141,17 +143,24 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   ############################################################################
   def PrepareItem           ( self , JSON , BRUSH                          ) :
     ##########################################################################
-    ## UXID = str              ( UUID                                           )
-    ## IT   = QTreeWidgetItem  (                                                )
-    ## IT   . setText          ( 0 , NAME                                       )
-    ## IT   . setToolTip       ( 0 , UXID                                       )
-    ## IT   . setData          ( 0 , Qt . UserRole , UUID                       )
+    NAME = JSON             [ "Name"                                         ]
+    KEY  = JSON             [ "Key"                                          ]
+    VAL  = JSON             [ "Value"                                        ]
+    MER  = JSON             [ "Metric"                                       ]
+    IMP  = JSON             [ "Imperial"                                     ]
     ##########################################################################
-    ## IT   . setText          ( 1 , ID                                         )
-    ## IT   . setTextAlignment ( 2 , Qt . AlignRight                            )
-    ## IT   . setTextAlignment ( 3 , Qt . AlignRight                            )
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setData          ( 0 , Qt . UserRole , KEY                        )
     ##########################################################################
-    for COL in              [ 0 , 1 , 2 , 3 , 4                            ] :
+    IT   . setText          ( 1 , VAL                                        )
+    IT   . setData          ( 1 , Qt . UserRole , str ( MER )                )
+    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
+    ##########################################################################
+    IT   . setText          ( 2 , IMP                                        )
+    IT   . setTextAlignment ( 2 , Qt . AlignRight                            )
+    ##########################################################################
+    for COL in              [ 0 , 1 , 2 , 3                                ] :
       ########################################################################
       IT . setBackground    ( COL , BRUSH                                    )
     ##########################################################################
@@ -165,9 +174,9 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   ############################################################################
   def RefreshToolTip          ( self , Total                               ) :
     ##########################################################################
-    ## FMT  = self . getMenuItem ( "DisplayTotal"                               )
-    ## MSG  = FMT  . format      ( Total                                        )
-    ## self . setToolTip         ( MSG                                          )
+    FMT  = self . getMenuItem ( "DisplayTotal"                               )
+    MSG  = FMT  . format      ( Total                                        )
+    self . setToolTip         ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
@@ -176,55 +185,125 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
-    ## CNT    = 0
-    ## MOD    = len                  ( self . TreeBrushes                       )
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
     ##########################################################################
-    ## UUIDs  = JSON                 [ "UUIDs"                                  ]
-    ## IDFs   = JSON                 [ "Identifiers"                            ]
-    ## NAMEs  = JSON                 [ "NAMEs"                                  ]
+    for J in LISTs                                                           :
+      ########################################################################
+      IT   = self . PrepareItem   ( J , self . TreeBrushes [ CNT ]           )
+      self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
-    ## for U in UUIDs                                                           :
-    ##   ########################################################################
-    ##   IT   = self . PrepareItem   ( U                                      , \
-    ##                                 NAMEs [ U ]                            , \
-    ##                                 IDFs  [ U ]                            , \
-    ##                                 self . TreeBrushes [ CNT ]               )
-    ##   self . addTopLevelItem      ( IT                                       )
-    ##   ########################################################################
-    ##   CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
-    ##########################################################################
-    ## self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . RefreshToolTip       ( len ( LISTs )                            )
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
+    self   . Notify               ( 5                                        )
     ##########################################################################
     return
   ############################################################################
-  def loading                          ( self                              ) :
+  def LoadPeopleMeasurements ( self , DB                                   ) :
     ##########################################################################
-    DB       = self . ConnectDB        (                                     )
-    if                                 ( DB == None                        ) :
-      self   . emitNamesShow . emit    (                                     )
+    VARTAB = self . Tables   [ "Variables"                                   ]
+    self   . MEASURE =       {                                               }
+    ##########################################################################
+    VARI   = VariableItem    (                                               )
+    VARI   . Uuid = self . PeopleUuid
+    VARI   . Type = 7
+    VARI   . Name = "Measurements"
+    ##########################################################################
+    BODY   = VARI . GetValue ( DB , VARTAB                                   )
+    if                       ( BODY in [ False , None ]                    ) :
       return
     ##########################################################################
-    self     . Notify                  ( 3                                   )
+    try                                                                      :
+      BODY = BODY . decode   ( "utf-8"                                       )
+    except                                                                   :
+      return
     ##########################################################################
-    FMT      = self . Translations     [ "UI::StartLoading"                  ]
-    MSG      = FMT . format            ( self . windowTitle ( )              )
-    self     . ShowStatus              ( MSG                                 )
-    self     . OnBusy  . emit          (                                     )
-    self     . setBustle               (                                     )
+    if                       ( len ( BODY ) <= 0                           ) :
+      return
     ##########################################################################
-    self     . ObtainsInformation      ( DB                                  )
+    try                                                                      :
+      J    = json . loads    ( BODY                                          )
+    except                                                                   :
+      return
     ##########################################################################
-    ITEMs    = self . Translations     [ self . ClassTag ] [ "MeasureItems"  ]
-    LISTs    =                         [                                     ]
+    self   . MEASURE = J
     ##########################################################################
-    self     . setVacancy              (                                     )
-    self     . GoRelax . emit          (                                     )
-    self     . ShowStatus              ( ""                                  )
-    DB       . Close                   (                                     )
+    return
+  ############################################################################
+  def CovertMeasureItems                ( self                             ) :
     ##########################################################################
-    self     . emitAllNames . emit     ( LISTs                               )
+    ITEMs     = self . Translations     [ self . ClassTag ] [ "MeasureItems" ]
+    LISTs     =                         [                                    ]
+    ##########################################################################
+    for ITEM in ITEMs                                                        :
+      ########################################################################
+      NAME    = self . getMenuItem      ( ITEM                               )
+      V       = 0
+      VS      = ""
+      MER     = 0
+      IMP     = ""
+      OK      = False
+      ########################################################################
+      if                                ( ITEM in self . MEASURE           ) :
+        ######################################################################
+        V     = self . MEASURE          [ ITEM                               ]
+        OK    = True
+      ########################################################################
+      MER     = V
+      ########################################################################
+      if                                ( "Weight" == ITEM                 ) :
+        ######################################################################
+        if                              ( OK                               ) :
+          ####################################################################
+          VS  = self . toMetricLength   ( V                                  )
+          IMP = self . toImperialWeight ( V                                  )
+          IMP = f"{IMP} lb"
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        if                              ( OK                               ) :
+          ####################################################################
+          VS  = self . toMetricLength   ( V                                  )
+          IMP = self . toImperialLength ( V                                  )
+      ########################################################################
+      JV      =                         { "Name"     : NAME                , \
+                                          "Key"      : ITEM                , \
+                                          "Value"    : VS                  , \
+                                          "Metric"   : MER                 , \
+                                          "Imperial" : IMP                   }
+      ########################################################################
+      LISTs   . append                  ( JV                                 )
+    ##########################################################################
+    return LISTs
+  ############################################################################
+  def loading                          ( self                              ) :
+    ##########################################################################
+    DB     = self . ConnectDB          (                                     )
+    if                                 ( DB == None                        ) :
+      self . emitNamesShow . emit      (                                     )
+      return
+    ##########################################################################
+    self   . Notify                    ( 3                                   )
+    ##########################################################################
+    FMT    = self . Translations       [ "UI::StartLoading"                  ]
+    MSG    = FMT . format              ( self . windowTitle ( )              )
+    self   . ShowStatus                ( MSG                                 )
+    self   . OnBusy  . emit            (                                     )
+    self   . setBustle                 (                                     )
+    ##########################################################################
+    self   . ObtainsInformation        ( DB                                  )
+    self   . LoadPeopleMeasurements    ( DB                                  )
+    LISTs  = self . CovertMeasureItems (                                     )
+    ##########################################################################
+    self   . setVacancy                (                                     )
+    self   . GoRelax . emit            (                                     )
+    self   . ShowStatus                ( ""                                  )
+    DB     . Close                     (                                     )
+    ##########################################################################
+    self   . emitAllNames . emit       ( LISTs                               )
     ##########################################################################
     return
   ############################################################################
@@ -233,6 +312,177 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     self . PeopleUuid = uuid
     ##########################################################################
     self . startup  (                                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def toMetricLength ( self , v                                            ) :
+    ##########################################################################
+    DD   = int       ( v / 1000                                              )
+    RR   = int       ( v % 1000                                              )
+    RS   = ""
+    ##########################################################################
+    for i in range   ( 0 , 3                                               ) :
+      ########################################################################
+      MM = int       ( RR % 10                                               )
+      RR = int       ( RR / 10                                               )
+      ########################################################################
+      RS = f"{MM}{RS}"
+    ##########################################################################
+    return f"{DD}.{RS}"
+  ############################################################################
+  def toImperialLength          ( self , v                                 ) :
+    ##########################################################################
+    c   = int                   ( v * 100 / 254                              )
+    f   = int                   ( c / 12000                                  )
+    h   = int                   ( c % 12000                                  )
+    s   = self . toMetricLength ( h                                          )
+    d   = f"{s}\""
+    ##########################################################################
+    if                          ( f > 0                                    ) :
+      ########################################################################
+      d = f"{f}'{d}"
+    ##########################################################################
+    return d
+  ############################################################################
+  def toImperialWeight           ( self , v                                ) :
+    return self . toMetricLength ( int ( v * 100000000 / 45359237 )          )
+  ############################################################################
+  def toMMM                    ( self , msg                                ) :
+    ##########################################################################
+    if                         ( "." in msg                                ) :
+      ########################################################################
+      SS         = msg . split ( "."                                         )
+      ########################################################################
+      if                       ( 2 == len ( SS )                           ) :
+        ######################################################################
+        try                                                                  :
+          ####################################################################
+          vv     = int         ( SS [ 0 ]                                    )
+          vv     = int         ( vv * 1000                                   )
+          ####################################################################
+          RR     = SS          [ 1                                           ]
+          LL     = len         ( RR                                          )
+          ####################################################################
+          if                   ( LL < 3                                    ) :
+            for i in range     ( LL , 3                                    ) :
+              RR = f"{RR}0"
+          ####################################################################
+          zz     = int         ( RR                                          )
+          ####################################################################
+          ww     = int         ( vv + zz                                     )
+          ####################################################################
+          return               ( True  , ww ,                                )
+        except                                                               :
+          return               ( False , 0  ,                                )
+        ######################################################################
+      else :
+        return                 ( False , 0  ,                                )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        vv       = int        ( msg                                          )
+        vv       = int        ( vv * 1000                                    )
+        return                ( True , vv ,                                  )
+        ######################################################################
+      except                                                                 :
+        return                ( False , 0 ,                                  )
+    ##########################################################################
+    return                    ( False , 0 ,                                  )
+  ############################################################################
+  def ModifyItem                     ( self , item , msg                   ) :
+    ##########################################################################
+    KEY    = item . data             ( 0 , Qt . UserRole                     )
+    SVAL   = item . data             ( 1 , Qt . UserRole                     )
+    VAL    = int                     ( SVAL                                  )
+    ##########################################################################
+    OK , R = self . toMMM            ( msg                                   )
+    ##########################################################################
+    if                               ( OK                                  ) :
+      VAL  = R
+    ##########################################################################
+    self   . MEASURE [ KEY ] = VAL
+    ##########################################################################
+    if                               ( "Weight" == KEY                     ) :
+      ########################################################################
+      MER  = self . toMetricLength   ( VAL                                   )
+      IMP  = self . toImperialWeight ( VAL                                   )
+      IMP  = f"{IMP} lb"
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      MER  = self . toMetricLength   ( VAL                                   )
+      IMP  = self . toImperialLength ( VAL                                   )
+    ##########################################################################
+    item   . setText                 ( 1 , MER                               )
+    item   . setText                 ( 2 , IMP                               )
+    self   . Notify                  ( 0                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def nameChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    ##########################################################################
+    if                          ( msg != text                              ) :
+      ########################################################################
+      self . ModifyItem         ( item , msg                                 )
+    ##########################################################################
+    self   . removeParked       (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def StoreMeasures                  ( self                                ) :
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB in self . EmptySet               ) :
+      return
+    ##########################################################################
+    JV     =                         {                                       }
+    ##########################################################################
+    ITEMs  = self . Translations     [ self . ClassTag ] [ "MeasureItems"    ]
+    ##########################################################################
+    for ITEM in ITEMs                                                        :
+      ########################################################################
+      if                             ( ITEM in self . MEASURE              ) :
+        ######################################################################
+        JV [ ITEM ] = self . MEASURE [ ITEM                                  ]
+    ##########################################################################
+    BODY   = json . dumps            ( JV , ensure_ascii = False             )
+    try                                                                      :
+      BODY = BODY . encode           ( 'utf8'                                )
+    except                                                                   :
+      pass
+    ##########################################################################
+    VARTAB = self . Tables           [ "Variables"                           ]
+    DB     . LockWrites              ( [ VARTAB                            ] )
+    VARI   = VariableItem            (                                       )
+    VARI   . Uuid  = self . PeopleUuid
+    VARI   . Type  = 7
+    VARI   . Name  = "Measurements"
+    VARI   . Value = BODY
+    VARI   . AssureValue             ( DB , VARTAB                           )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . Notify                  ( 5                                     )
+    MSG    = self . getMenuItem      ( "SaveCompleted"                       )
+    self   . Talk                    ( MSG , self . getLocality (          ) )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveMeasures ( self                                                  ) :
+    ##########################################################################
+    self . Go      ( self . StoreMeasures                                    )
     ##########################################################################
     return
   ############################################################################
@@ -281,72 +531,67 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                            ( self , pos                         ) :
+  def Menu                        ( self , pos                             ) :
     ##########################################################################
-    if                                ( not self . isPrepared ( )          ) :
+    if                            ( not self . isPrepared ( )              ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction        ( self . HavingMenu                    )
-    if                                ( not doMenu                         ) :
+    doMenu = self . isFunction    ( self . HavingMenu                        )
+    if                            ( not doMenu                             ) :
       return False
     ##########################################################################
-    self   . Notify                   ( 0                                    )
+    self   . Notify               ( 0                                        )
     ##########################################################################
-    items , atItem , uuid = self . GetMenuDetails ( 0                        )
+    items  = self . selectedItems (                                          )
+    atItem = self . currentItem   (                                          )
     ##########################################################################
-    mm     = MenuManager              ( self                                 )
+    mm     = MenuManager          ( self                                     )
     ##########################################################################
-    TRX    = self . Translations
+    self   . AppendRefreshAction  ( mm , 1001                                )
+    self   . AppendRenameAction   ( mm , 1002                                )
+    mm     . addSeparator         (                                          )
     ##########################################################################
-    mm     = self . AmountIndexMenu   ( mm , True                            )
-    self   . AppendRefreshAction      ( mm , 1001                            )
-    self   . AppendRenameAction       ( mm , 1002                            )
-    mm     . addSeparator             (                                      )
+    msg    = self . getMenuItem   ( "Save"                                   )
+    icon   = QIcon                ( ":/images/save.png"                      )
+    mm     . addActionWithIcon    ( 1101 , icon , msg                        )
     ##########################################################################
-    self   . ColumnsMenu              ( mm                                   )
-    self   . LocalityMenu             ( mm                                   )
-    self   . DockingMenu              ( mm                                   )
+    mm     . addSeparator         (                                          )
+    self   . ColumnsMenu          ( mm                                       )
+    self   . LocalityMenu         ( mm                                       )
+    self   . DockingMenu          ( mm                                       )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                  ( self    . menuFont ( )               )
-    aa     = mm . exec_               ( QCursor . pos      ( )               )
-    at     = mm . at                  ( aa                                   )
+    mm     . setFont              ( self    . menuFont ( )                   )
+    aa     = mm . exec_           ( QCursor . pos      ( )                   )
+    at     = mm . at              ( aa                                       )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu ( at                                  )
-    ##########################################################################
-    if                                ( OKAY                               ) :
-      ########################################################################
-      self . restart                  (                                      )
-      ########################################################################
+    if                            ( self . RunDocking   ( mm , aa )        ) :
       return True
     ##########################################################################
-    if                                ( self . RunDocking   ( mm , aa )    ) :
-      return True
-    ##########################################################################
-    if                                ( self . HandleLocalityMenu ( at )   ) :
+    if                            ( self . HandleLocalityMenu ( at )       ) :
       ########################################################################
-      self . restart                  (                                      )
+      self . restart              (                                          )
       ########################################################################
       return True
     ##########################################################################
-    if                                ( self . RunColumnsMenu     ( at )   ) :
+    if                            ( self . RunColumnsMenu     ( at )       ) :
       return True
     ##########################################################################
-    OKAY   = self . RunGroupsMenu     ( at , atItem                          )
-    if                                ( OKAY                               ) :
-      return True
-    ##########################################################################
-    if                                ( at == 1001                         ) :
+    if                            ( at == 1001                             ) :
       ########################################################################
-      self . restart                  (                                      )
+      self . restart              (                                          )
       ########################################################################
       return True
     ##########################################################################
-    if                                ( at == 1002                         ) :
-      self . RenameItem               (                                      )
+    if                            ( at == 1002                             ) :
+      self . RenameItem           (                                          )
+      return True
+    ##########################################################################
+    if                            ( at == 1101                             ) :
+      self . SaveMeasures         (                                          )
       return True
     ##########################################################################
     return True
