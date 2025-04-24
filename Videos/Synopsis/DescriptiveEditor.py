@@ -778,7 +778,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       return False
     ##########################################################################
     pid    = item . data           ( 0 , Qt . UserRole                       )
-    text   = item . text           ( 1                                       )
+    text   = item . text           ( 2                                       )
     pid    = int                   ( pid                                     )
     cc     = OpenCC                ( CODE                                    )
     target = cc . convert          ( text                                    )
@@ -796,7 +796,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       ########################################################################
       return True
     ##########################################################################
-    item   . setText               ( 1 , target                              )
+    item   . setText               ( 2 , target                              )
     self   . DESCRIBE . setContext ( pid , target                            )
     self   . Notify                ( 5                                       )
     ##########################################################################
@@ -854,7 +854,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       return True
     ##########################################################################
     pid    = item . data               ( 0 , Qt . UserRole                   )
-    txt    = item . text               ( 1                                   )
+    txt    = item . text               ( 2                                   )
     pid    = int                       ( pid                                 )
     ##########################################################################
     if                                 ( len ( txt ) <= 0                  ) :
@@ -883,7 +883,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       ########################################################################
       return True
     ##########################################################################
-    item   . setText                   ( 1   , target                        )
+    item   . setText                   ( 2   , target                        )
     self   . DESCRIBE . setContext     ( pid , target                        )
     self   . Notify                    ( 5                                   )
     ##########################################################################
