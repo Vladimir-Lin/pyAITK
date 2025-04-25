@@ -36,6 +36,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitNamesShow       = Signal (                                             )
   emitReload          = Signal (                                             )
   emitUpdated         = Signal (                                             )
+  emitUpdatePTS       = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
   emitPlayer          = Signal ( QWidget                                     )
@@ -60,6 +61,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . ConvertAllCC       = False
     self . SortOrder          = "asc"
     self . BaseTimeEditor     = None
+    self . ConnectedFilmJson  = {                                            }
+    self . CurrentPTS         = -1
+    self . UsePtsForAdd       = False
+    self . TrackPtsForItem    = False
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -91,6 +96,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . emitNamesShow . connect ( self . show                             )
     self . emitReload    . connect ( self . reload                           )
     self . emitFocusIn   . connect ( self . clickIn                          )
+    self . emitUpdatePTS . connect ( self . FilmUpdatePTS                    )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -445,11 +451,16 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     IDX    = -1
     CIT    = self . currentItem         (                                    )
     ##########################################################################
-    if                                  ( CIT in self . EmptySet           ) :
+    if                                  ( self . UsePtsForAdd              and
+                                        ( self . CurrentPTS >= 0         ) ) :
+      ########################################################################
+      vlen = self . CurrentPTS
+      ########################################################################
+    elif                                ( CIT in self . EmptySet           ) :
       ########################################################################
       vlen = self . DESCRIBE . LastestTimestamp ( self . TimeGap             )
       ########################################################################
-    else                                                                     :
+    elif                                ( CIT not in self . EmptySet       ) :
       ########################################################################
       IDX  = self . indexOfTopLevelItem ( CIT                                )
       slen = CIT  . data                ( 0 , Qt . UserRole                  )
@@ -550,6 +561,30 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def FilmUpdatePTS               ( self                                   ) :
+    ##########################################################################
+    if                            ( self . CurrentPTS < 0                  ) :
+      return
+    ##########################################################################
+    item = self . currentItem     (                                          )
+    ##########################################################################
+    if                            ( item in self . EmptySet                ) :
+      return
+    ##########################################################################
+    if                            ( not item . isSelected (              ) ) :
+      return
+    ##########################################################################
+    dlen = self . CurrentPTS
+    slen = item . data            ( 0 , Qt . UserRole                        )
+    vlen = int                    ( slen                                     )
+    DTS  = str                    ( dlen                                     )
+    msg  = self . SCENE . toLTime ( dlen                                     )
+    self . DESCRIBE . setOption   ( vlen , "Duration" , dlen                 )
+    item . setText                ( column , msg                             )
+    item . setData                ( column , Qt . UserRole , DTS             )
+    ##########################################################################
+    return
+  ############################################################################
   def GotoSegments                      ( self                             ) :
     ##########################################################################
     uxid = str                          ( self . ScenarioUuid                )
@@ -618,9 +653,28 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def AcceptJsonFromPlayer ( self , PlayerJson                             ) :
+  def AcceptJsonFromPlayer      ( self , PlayerJson                        ) :
     ##########################################################################
-    print ( json . dumps ( PlayerJson ) )
+    if                          ( "Action" not in PlayerJson               ) :
+      return
+    ##########################################################################
+    ACTION   = PlayerJson       [ "Action"                                   ]
+    ##########################################################################
+    if                          ( "Update" == ACTION                       ) :
+      ########################################################################
+      if                        ( "PTS" in PlayerJson                      ) :
+        ######################################################################
+        PTS  = PlayerJson       [ "Action"                                   ]
+        self . CurrentPTS = int ( int ( PTS ) * 1000                         )
+        ######################################################################
+        if                      ( self . TrackPtsForItem                   ) :
+          ####################################################################
+          self . emitUpdatePTS  (                                            )
+      ########################################################################
+    elif                        ( "Open"   == ACTION                       ) :
+    ##########################################################################
+      self   . ConnectedFilmJson = PlayerJson
+      print ( json . dumps ( PlayerJson ) )
     ##########################################################################
     return
   ############################################################################
@@ -776,28 +830,30 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def TranslationsMenu           ( self , mm , item                        ) :
+  def TranslationsMenu            ( self , mm , item                       ) :
     ##########################################################################
-    if                           ( item in self . EmptySet                 ) :
+    if                            ( item in self . EmptySet                ) :
       return mm
     ##########################################################################
-    TRX    = self . Translations [ "Translations"                            ]
-    msg    = self . Translations [ "UI::Translations"                        ]
-    KEYs   = TRX  . keys         (                                           )
+    TRX    = self . Translations  [ "Translations"                           ]
+    msg    = self . Translations  [ "UI::Translations"                       ]
+    KEYs   = TRX  . keys          (                                          )
     ##########################################################################
-    LOT    = mm   . addMenu      ( msg                                       )
+    LOT    = mm   . addMenu       ( msg                                      )
     ##########################################################################
-    MSG    = self . getMenuItem  ( "ConvertAllCC"                            )
-    mm     . addActionFromMenu   ( LOT                                     , \
-                                   7000                                    , \
-                                   MSG                                     , \
-                                   True                                    , \
-                                   self . ConvertAllCC                       )
+    MSG    = self . getMenuItem   ( "ConvertAllCC"                           )
+    mm     . addActionFromMenu    ( LOT                                    , \
+                                    7000                                   , \
+                                    MSG                                    , \
+                                    True                                   , \
+                                    self . ConvertAllCC                      )
+    ##########################################################################
+    mm     . addSeparatorFromMenu ( LOT                                      )
     ##########################################################################
     for K in KEYs                                                            :
-       msg = TRX                 [ K                                         ]
-       V   = int                 ( K                                         )
-       mm  . addActionFromMenu   ( LOT , V , msg                             )
+       msg = TRX                  [ K                                        ]
+       V   = int                  ( K                                        )
+       mm  . addActionFromMenu    ( LOT , V , msg                            )
     ##########################################################################
     return mm
   ############################################################################
@@ -1070,140 +1126,162 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def Menu                             ( self , pos                        ) :
+  def Menu                              ( self , pos                       ) :
     ##########################################################################
-    if                                 ( not self . isPrepared (         ) ) :
+    if                                  ( not self . isPrepared (        ) ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction         ( self . HavingMenu                   )
-    if                                 ( not doMenu                        ) :
+    doMenu = self . isFunction          ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
-    self   . Notify                    ( 0                                   )
+    self   . Notify                     ( 0                                  )
     items  , atItem , uuid = self . GetMenuDetails ( 0                       )
-    mm     = MenuManager               ( self                                )
+    mm     = MenuManager                ( self                               )
     ##########################################################################
-    self   . BaseTimeMenu              ( mm                                  )
-    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . BaseTimeMenu               ( mm                                 )
+    self   . AppendRefreshAction        ( mm , 1001                          )
     ##########################################################################
-    msg    = self . getMenuItem        ( "Save"                              )
-    icon   = QIcon                     ( ":/images/vtsave.png"               )
-    mm     . addActionWithIcon         ( 1501 , icon , msg                   )
+    msg    = self . getMenuItem         ( "Save"                             )
+    icon   = QIcon                      ( ":/images/vtsave.png"              )
+    mm     . addActionWithIcon          ( 1501 , icon , msg                  )
     ##########################################################################
-    self   . AppendInsertAction        ( mm , 1102                           )
-    self   . AppendRenameAction        ( mm , 1103                           )
-    self   . AppendDeleteAction        ( mm , 1104                           )
+    self   . AppendInsertAction         ( mm , 1102                          )
+    self   . AppendRenameAction         ( mm , 1103                          )
+    self   . AppendDeleteAction         ( mm , 1104                          )
     ##########################################################################
-    mm     . addSeparator              (                                     )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    msg    = self . getMenuItem        ( "OpenSegments"                      )
-    icon   = QIcon                     ( ":/images/addcolumn.png"            )
-    mm     . addActionWithIcon         ( 2001 , icon , msg                   )
+    msg    = self . getMenuItem         ( "OpenSegments"                     )
+    icon   = QIcon                      ( ":/images/addcolumn.png"           )
+    mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
-    msg    = self . getMenuItem        ( "ConnectPlayer"                     )
-    mm     . addAction                 ( 3001 , msg                          )
+    msg    = self . getMenuItem         ( "ConnectPlayer"                    )
+    mm     . addAction                  ( 3001 , msg                         )
     ##########################################################################
-    msg    = self . getMenuItem        ( "DisconnectPlayer"                  )
-    mm     . addAction                 ( 3002 , msg                          )
+    msg    = self . getMenuItem         ( "DisconnectPlayer"                 )
+    mm     . addAction                  ( 3002 , msg                         )
     ##########################################################################
-    mm     . addSeparator              (                                     )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    self   . MarkerMenu                ( mm , atItem                         )
-    self   . TranslateMenu             ( mm , atItem                         )
-    self   . TranslationsMenu          ( mm , atItem                         )
-    self   . LocalityMenu              ( mm                                  )
-    self   . SourceLocalityMenu        ( mm                                  )
-    self   . ColumnsMenu               ( mm                                  )
-    self   . SortingMenu               ( mm                                  )
-    self   . DockingMenu               ( mm                                  )
+    msg    = self . getMenuItem         ( "UsePtsForAdd"                     )
+    mm     . addAction                  ( 4001                             , \
+                                          msg                              , \
+                                          True                             , \
+                                          self . UsePtsForAdd                )
+    ##########################################################################
+    msg    = self . getMenuItem         ( "TrackPtsForItem"                  )
+    mm     . addAction                  ( 4002                             , \
+                                          msg                              , \
+                                          True                             , \
+                                          self . TrackPtsForItem             )
+    ##########################################################################
+    mm     . addSeparator               (                                    )
+    ##########################################################################
+    self   . MarkerMenu                 ( mm , atItem                        )
+    self   . TranslateMenu              ( mm , atItem                        )
+    self   . TranslationsMenu           ( mm , atItem                        )
+    self   . LocalityMenu               ( mm                                 )
+    self   . SourceLocalityMenu         ( mm                                 )
+    self   . ColumnsMenu                ( mm                                 )
+    self   . SortingMenu                ( mm                                 )
+    self   . DockingMenu                ( mm                                 )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont                   ( self    . menuFont (              ) )
-    aa     = mm . exec_                ( QCursor . pos      (              ) )
-    at     = mm . at                   ( aa                                  )
+    mm     . setFont                    ( self    . menuFont (             ) )
+    aa     = mm . exec_                 ( QCursor . pos      (             ) )
+    at     = mm . at                    ( aa                                 )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunBaseTime        (                                     )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunBaseTime         (                                    )
+    if                                  ( OKAY                             ) :
       ########################################################################
-      self . reload                    (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunDocking         ( mm , aa                             )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    OKAY   = self . HandleLocalityMenu ( at                                  )
-    ##########################################################################
-    if                                 ( OKAY                              ) :
-      ########################################################################
-      self . DESCRIBE . setLocality    ( self . getLocality (              ) )
-      self . reload                    (                                     )
+      self . reload                     (                                    )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunDocking          ( mm , aa                            )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . HandleLocalityMenu  ( at                                 )
+    ##########################################################################
+    if                                  ( OKAY                             ) :
       ########################################################################
-      self . reload                    (                                     )
+      self . DESCRIBE . setLocality     ( self . getLocality (             ) )
+      self . reload                     (                                    )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunTranslate       ( at , atItem                         )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunColumnsMenu      ( at                                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunSortingMenu      ( at                                 )
+    if                                  ( OKAY                             ) :
+      ########################################################################
+      self . reload                     (                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunTranslate        ( at , atItem                        )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
     OKAY   = self . HandleSourceLocalityMenu ( at                            )
-    if                                 ( OKAY                              ) :
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . HandleTranslations ( atItem , at                         )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . HandleTranslations  ( atItem , at                        )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . RunMarkerMenu      ( at , atItem                         )
-    if                                 ( OKAY                              ) :
+    OKAY   = self . RunMarkerMenu       ( at , atItem                        )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    if                                 ( 1001 == at                        ) :
+    if                                  ( 1001 == at                       ) :
       ########################################################################
-      self . reload                    (                                     )
+      self . reload                     (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( 1102 == at                        ) :
-      self . InsertItem                (                                     )
+    if                                  ( 1102 == at                       ) :
+      self . InsertItem                 (                                    )
       return True
     ##########################################################################
-    if                                 ( 1103 == at                        ) :
-      self . RenameItem                (                                     )
+    if                                  ( 1103 == at                       ) :
+      self . RenameItem                 (                                    )
       return True
     ##########################################################################
-    if                                 ( 1104 == at                        ) :
-      self . DeleteItems               (                                     )
+    if                                  ( 1104 == at                       ) :
+      self . DeleteItems                (                                    )
       return True
     ##########################################################################
-    if                                 ( 1501 == at                        ) :
-      self . SaveToDatabase            (                                     )
+    if                                  ( 1501 == at                       ) :
+      self . SaveToDatabase             (                                    )
       return True
     ##########################################################################
-    if                                 ( 2001 == at                        ) :
-      self . GotoSegments              (                                     )
+    if                                  ( 2001 == at                       ) :
+      self . GotoSegments               (                                    )
       return True
     ##########################################################################
-    if                                 ( 3001 == at                        ) :
-      self . emitConnector             (                                     )
+    if                                  ( 3001 == at                       ) :
+      self . emitConnector       . emit ( self                               )
       return True
     ##########################################################################
-    if                                 ( 3002 == at                        ) :
-      self . emitDetachConnector       (                                     )
+    if                                  ( 3002 == at                       ) :
+      self . emitDetachConnector . emit ( self                               )
+      return True
+    ##########################################################################
+    if                                  ( 4001 == at                       ) :
+      self . UsePtsForAdd    = not self . UsePtsForAdd
+      return True
+    ##########################################################################
+    if                                  ( 4002 == at                       ) :
+      self . TrackPtsForItem = not self . TrackPtsForItem
       return True
     ##########################################################################
     return True
