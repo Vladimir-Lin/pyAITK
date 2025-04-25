@@ -37,12 +37,14 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitReload          = Signal (                                             )
   emitUpdated         = Signal (                                             )
   emitUpdatePTS       = Signal (                                             )
+  emitUpdatePtsItem   = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
   emitPlayer          = Signal ( QWidget                                     )
   emitConnector       = Signal ( QWidget                                     )
   emitDetachConnector = Signal ( QWidget                                     )
   emitLog             = Signal ( str                                         )
+  AssignPlayerPTS     = Signal ( int                                         )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -63,8 +65,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . BaseTimeEditor     = None
     self . ConnectedFilmJson  = {                                            }
     self . CurrentPTS         = -1
+    self . PlayerConnected    = False
     self . UsePtsForAdd       = False
+    self . UsePtsForItem      = False
     self . TrackPtsForItem    = False
+    self . SyncPlayerTime     = False
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -76,36 +81,36 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 7                                       )
-    self . setColumnWidth          ( 0 , 120                                 )
-    self . setColumnWidth          ( 1 , 120                                 )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnWidth          ( 2 , 600                                 )
-    self . setColumnHidden         ( 3 , True                                )
-    self . setColumnHidden         ( 4 , True                                )
-    self . setColumnHidden         ( 5 , True                                )
-    self . setColumnHidden         ( 6 , True                                )
-    self . setRootIsDecorated      ( False                                   )
-    self . setAlternatingRowColors ( True                                    )
+    self . setColumnCount              ( 7                                   )
+    self . setColumnWidth              ( 0 , 120                             )
+    self . setColumnWidth              ( 1 , 120                             )
+    ## self . setColumnHidden             ( 1 , True                            )
+    self . setColumnWidth              ( 2 , 600                             )
+    ## self . setColumnHidden             ( 3 , True                            )
+    self . setColumnHidden             ( 4 , True                            )
+    ## self . setColumnHidden             ( 5 , True                            )
+    self . setColumnHidden             ( 6 , True                            )
+    self . setRootIsDecorated          ( False                               )
     ##########################################################################
-    self . MountClicked            ( 1                                       )
-    self . MountClicked            ( 2                                       )
+    self . MountClicked                ( 1                                   )
+    self . MountClicked                ( 2                                   )
     ##########################################################################
-    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    self . assignSelectionMode         ( "ExtendedSelection"                 )
     ##########################################################################
-    self . emitNamesShow . connect ( self . show                             )
-    self . emitReload    . connect ( self . reload                           )
-    self . emitFocusIn   . connect ( self . clickIn                          )
-    self . emitUpdatePTS . connect ( self . FilmUpdatePTS                    )
+    self . emitNamesShow     . connect ( self . show                         )
+    self . emitReload        . connect ( self . reload                       )
+    self . emitFocusIn       . connect ( self . clickIn                      )
+    self . emitUpdatePTS     . connect ( self . FilmUpdatePTS                )
+    self . emitUpdatePtsItem . connect ( self . PtsUpdateItem                )
     ##########################################################################
-    self . setFunction             ( self . FunctionDocking , True           )
-    self . setFunction             ( self . HavingMenu      , True           )
+    self . setFunction                 ( self . FunctionDocking , True       )
+    self . setFunction                 ( self . HavingMenu      , True       )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops              ( True                                )
+    self . setDragEnabled              ( True                                )
+    self . setDragDropMode             ( QAbstractItemView . DragDrop        )
     ##########################################################################
-    self . setMinimumSize          ( 80 , 80                                 )
+    self . setMinimumSize              ( 80 , 80                             )
     ##########################################################################
     return
   ############################################################################
@@ -168,7 +173,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    self . defaultSingleClicked (        item , column                       )
+    self . defaultSingleClicked   (        item , column                     )
+    ##########################################################################
+    if                            ( not self . SyncPlayerTime              ) :
+      return
+    ##########################################################################
+    dlen = item . data            ( 0 , Qt . UserRole                        )
+    slen = int                    ( dlen                                     )
+    plen = int                    ( slen / 1000                              )
+    self . AssignPlayerPTS . emit ( plen                                     )
     ##########################################################################
     return
   ############################################################################
@@ -455,12 +468,14 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                         ( self . CurrentPTS >= 0         ) ) :
       ########################################################################
       vlen = self . CurrentPTS
+      IDX  = self . DESCRIBE . TimestampIndex ( vlen                         )
+      IDX  = int                        ( IDX + 1                            )
       ########################################################################
     elif                                ( CIT in self . EmptySet           ) :
       ########################################################################
       vlen = self . DESCRIBE . LastestTimestamp ( self . TimeGap             )
       ########################################################################
-    elif                                ( CIT not in self . EmptySet       ) :
+    else                                                                     :
       ########################################################################
       IDX  = self . indexOfTopLevelItem ( CIT                                )
       slen = CIT  . data                ( 0 , Qt . UserRole                  )
@@ -561,27 +576,53 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def FilmUpdatePTS               ( self                                   ) :
+  def FilmUpdatePTS                   ( self                               ) :
     ##########################################################################
-    if                            ( self . CurrentPTS < 0                  ) :
+    if                                ( self . CurrentPTS < 0              ) :
       return
     ##########################################################################
-    item = self . currentItem     (                                          )
+    item = self . currentItem         (                                      )
     ##########################################################################
-    if                            ( item in self . EmptySet                ) :
+    if                                ( item in self . EmptySet            ) :
       return
     ##########################################################################
-    if                            ( not item . isSelected (              ) ) :
+    if                                ( not item . isSelected (          ) ) :
       return
     ##########################################################################
     dlen = self . CurrentPTS
-    slen = item . data            ( 0 , Qt . UserRole                        )
-    vlen = int                    ( slen                                     )
-    DTS  = str                    ( dlen                                     )
-    msg  = self . SCENE . toLTime ( dlen                                     )
-    self . DESCRIBE . setOption   ( vlen , "Duration" , dlen                 )
-    item . setText                ( column , msg                             )
-    item . setData                ( column , Qt . UserRole , DTS             )
+    slen = item . data                ( 0 , Qt . UserRole                    )
+    vlen = int                        ( slen                                 )
+    DTS  = str                        ( dlen                                 )
+    rlen = self . DESCRIBE . realTime ( dlen                                 )
+    self . DESCRIBE . Replace         ( vlen , rlen                          )
+    msg  = self . SCENE . toLTime     ( dlen                                 )
+    item . setText                    ( 0 , msg                              )
+    item . setData                    ( 0 , Qt . UserRole , DTS              )
+    ##########################################################################
+    return
+  ############################################################################
+  def PtsUpdateItem                         ( self                         ) :
+    ##########################################################################
+    if                                      ( self . CurrentPTS < 0        ) :
+      return
+    ##########################################################################
+    IDX  = self . DESCRIBE . TimestampIndex ( self . CurrentPTS              )
+    ##########################################################################
+    if                                      ( IDX < 0                      ) :
+      return
+    ##########################################################################
+    TLC  = self . topLevelItemCount         (                                )
+    if                                      ( IDX >= TLC                   ) :
+      return
+    ##########################################################################
+    PIT  = self . topLevelItem              ( IDX                            )
+    CIT  = self . currentItem               (                                )
+    ##########################################################################
+    if                                      ( PIT == CIT                   ) :
+      return
+    ##########################################################################
+    PIT  . setSelected                      ( True                           )
+    self . setCurrentItem                   ( PIT                            )
     ##########################################################################
     return
   ############################################################################
@@ -653,37 +694,44 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def AcceptJsonFromPlayer      ( self , PlayerJson                        ) :
+  def AcceptJsonFromPlayer                ( self , PlayerJson              ) :
     ##########################################################################
-    if                          ( "Action" not in PlayerJson               ) :
+    if                                    ( "Action" not in PlayerJson     ) :
       return
     ##########################################################################
-    ACTION   = PlayerJson       [ "Action"                                   ]
+    ACTION     = PlayerJson               [ "Action"                         ]
     ##########################################################################
-    if                          ( "Update" == ACTION                       ) :
+    if                                    ( "Update" == ACTION             ) :
       ########################################################################
-      if                        ( "PTS" in PlayerJson                      ) :
+      if                                  ( "PTS" in PlayerJson            ) :
         ######################################################################
-        PTS  = PlayerJson       [ "Action"                                   ]
-        self . CurrentPTS = int ( int ( PTS ) * 1000                         )
+        PTS    = PlayerJson               [ "PTS"                            ]
+        self   . CurrentPTS = int         ( int ( PTS ) * 1000               )
         ######################################################################
-        if                      ( self . TrackPtsForItem                   ) :
+        if                                ( self . UsePtsForItem           ) :
           ####################################################################
-          self . emitUpdatePTS  (                                            )
+          self . emitUpdatePtsItem . emit (                                  )
+        ######################################################################
+        if                                ( self . TrackPtsForItem         ) :
+          ####################################################################
+          self . emitUpdatePTS     . emit (                                  )
       ########################################################################
-    elif                        ( "Open"   == ACTION                       ) :
+    elif                                  ( "Open"   == ACTION             ) :
     ##########################################################################
-      self   . ConnectedFilmJson = PlayerJson
-      print ( json . dumps ( PlayerJson ) )
+      self     . ConnectedFilmJson = PlayerJson
+      ## print ( json . dumps ( PlayerJson ) )
     ##########################################################################
     return
   ############################################################################
-  def ConnectingToPlayer     ( self , PLAYER                               ) :
+  def ConnectingToPlayer               ( self , PLAYER                     ) :
     ##########################################################################
+    self   . PlayerConnected = True
     self   . PlayerWidget = PLAYER
-    PLAYER . AskToReceive    ( self                                          )
-    self   . Leave . connect ( PLAYER . LeaveReceive                         )
-    PLAYER . Leave . connect ( self   . DisconnectFromPlayer                 )
+    ##########################################################################
+    PLAYER . AskToReceive              ( self                                )
+    self   . Leave           . connect ( PLAYER . LeaveReceive               )
+    self   . AssignPlayerPTS . connect ( PLAYER . AssignPlayerPTS            )
+    PLAYER . Leave           . connect ( self   . DisconnectFromPlayer       )
     ##########################################################################
     return
   ############################################################################
@@ -692,7 +740,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     if                     ( PLAYER != self . PlayerWidget                 ) :
       return
     ##########################################################################
-    self . PlayerWidget = None
+    self . PlayerWidget    = None
+    self . PlayerConnected = False
     ##########################################################################
     return
   ############################################################################
@@ -1156,13 +1205,17 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     icon   = QIcon                      ( ":/images/addcolumn.png"           )
     mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
-    msg    = self . getMenuItem         ( "ConnectPlayer"                    )
-    mm     . addAction                  ( 3001 , msg                         )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "DisconnectPlayer"                 )
-    mm     . addAction                  ( 3002 , msg                         )
-    ##########################################################################
     mm     . addSeparator               (                                    )
+    ##########################################################################
+    if                                  ( self . PlayerConnected           ) :
+      ########################################################################
+      msg  = self . getMenuItem         ( "DisconnectPlayer"                 )
+      mm   . addAction                  ( 3002 , msg                         )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      msg  = self . getMenuItem         ( "ConnectPlayer"                    )
+      mm   . addAction                  ( 3001 , msg                         )
     ##########################################################################
     msg    = self . getMenuItem         ( "UsePtsForAdd"                     )
     mm     . addAction                  ( 4001                             , \
@@ -1170,11 +1223,23 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                           True                             , \
                                           self . UsePtsForAdd                )
     ##########################################################################
-    msg    = self . getMenuItem         ( "TrackPtsForItem"                  )
+    msg    = self . getMenuItem         ( "UsePtsForItem"                    )
     mm     . addAction                  ( 4002                             , \
                                           msg                              , \
                                           True                             , \
+                                          self . UsePtsForItem               )
+    ##########################################################################
+    msg    = self . getMenuItem         ( "TrackPtsForItem"                  )
+    mm     . addAction                  ( 4003                             , \
+                                          msg                              , \
+                                          True                             , \
                                           self . TrackPtsForItem             )
+    ##########################################################################
+    msg    = self . getMenuItem         ( "SyncPlayerTime"                   )
+    mm     . addAction                  ( 4004                             , \
+                                          msg                              , \
+                                          True                             , \
+                                          self . SyncPlayerTime              )
     ##########################################################################
     mm     . addSeparator               (                                    )
     ##########################################################################
@@ -1273,7 +1338,13 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return True
     ##########################################################################
     if                                  ( 3002 == at                       ) :
+      ########################################################################
       self . emitDetachConnector . emit ( self                               )
+      ########################################################################
+      self . ConnectedFilmJson =        {                                    }
+      self . CurrentPTS        = -1
+      self . PlayerConnected   = False
+      ########################################################################
       return True
     ##########################################################################
     if                                  ( 4001 == at                       ) :
@@ -1281,7 +1352,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return True
     ##########################################################################
     if                                  ( 4002 == at                       ) :
+      self . UsePtsForItem   = not self . UsePtsForItem
+      return True
+    ##########################################################################
+    if                                  ( 4003 == at                       ) :
       self . TrackPtsForItem = not self . TrackPtsForItem
+      return True
+    ##########################################################################
+    if                                  ( 4004 == at                       ) :
+      self . SyncPlayerTime  = not self . SyncPlayerTime
       return True
     ##########################################################################
     return True
