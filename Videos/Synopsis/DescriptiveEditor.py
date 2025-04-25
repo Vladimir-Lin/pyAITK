@@ -484,7 +484,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     if                                  ( IDX < 0                          ) :
       ########################################################################
-      IDX  = self . DESCRIBE . TimestampIndex ( vlen                         )
+      IDX  = self . DESCRIBE . TimestampPosition ( vlen                      )
       IDX  = int                        ( IDX + 1                            )
     ##########################################################################
     self   . reload                     (                                    )
