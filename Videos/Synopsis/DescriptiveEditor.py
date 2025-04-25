@@ -29,21 +29,23 @@ from           . Fragment                 import Fragment    as FragmentItem
 from           . Scenario                 import Scenario    as ScenarioItem
 from           . Descriptive              import Descriptive as DescriptiveItem
 ##############################################################################
-class DescriptiveEditor  ( TreeDock                                        ) :
+class DescriptiveEditor        ( TreeDock                                  ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow = Signal (                                                   )
-  emitReload    = Signal (                                                   )
-  emitUpdated   = Signal (                                                   )
-  emitFocusIn   = Signal ( int                                               )
-  emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
-  emitPlayer    = Signal ( QWidget                                           )
-  emitLog       = Signal ( str                                               )
+  emitNamesShow       = Signal (                                             )
+  emitReload          = Signal (                                             )
+  emitUpdated         = Signal (                                             )
+  emitFocusIn         = Signal ( int                                         )
+  emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
+  emitPlayer          = Signal ( QWidget                                     )
+  emitConnector       = Signal ( QWidget                                     )
+  emitDetachConnector = Signal ( QWidget                                     )
+  emitLog             = Signal ( str                                         )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
-    super ( ) . __init__ (        parent        , plan                       )
+    super ( ) . __init__       (        parent        , plan                 )
     ##########################################################################
     self . ClassTag           = "DescriptiveEditor"
     self . FetchTableKey      = self . ClassTag
@@ -55,6 +57,7 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     self . DefaultTitle       = ""
     self . TimeGap            = 5000
     self . sourceLocality     = 1001
+    self . ConvertAllCC       = False
     self . SortOrder          = "asc"
     self . BaseTimeEditor     = None
     ##########################################################################
@@ -615,6 +618,30 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def AcceptJsonFromPlayer ( self , PlayerJson                             ) :
+    ##########################################################################
+    print ( json . dumps ( PlayerJson ) )
+    ##########################################################################
+    return
+  ############################################################################
+  def ConnectingToPlayer     ( self , PLAYER                               ) :
+    ##########################################################################
+    self   . PlayerWidget = PLAYER
+    PLAYER . AskToReceive    ( self                                          )
+    self   . Leave . connect ( PLAYER . LeaveReceive                         )
+    PLAYER . Leave . connect ( self   . DisconnectFromPlayer                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def DisconnectFromPlayer ( self , PLAYER                                 ) :
+    ##########################################################################
+    if                     ( PLAYER != self . PlayerWidget                 ) :
+      return
+    ##########################################################################
+    self . PlayerWidget = None
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -758,7 +785,14 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     msg    = self . Translations [ "UI::Translations"                        ]
     KEYs   = TRX  . keys         (                                           )
     ##########################################################################
-    LOT    = mm . addMenu        ( msg                                       )
+    LOT    = mm   . addMenu      ( msg                                       )
+    ##########################################################################
+    MSG    = self . getMenuItem  ( "ConvertAllCC"                            )
+    mm     . addActionFromMenu   ( LOT                                     , \
+                                   7000                                    , \
+                                   MSG                                     , \
+                                   True                                    , \
+                                   self . ConvertAllCC                       )
     ##########################################################################
     for K in KEYs                                                            :
        msg = TRX                 [ K                                         ]
@@ -767,18 +801,11 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     return mm
   ############################################################################
-  def HandleTranslations           ( self , item , ID                      ) :
+  def ConvertItemCC                ( self , item , CODE                    ) :
     ##########################################################################
-    if                             ( ( ID < 7001 ) or ( ID > 7008 )        ) :
-      return False
-    ##########################################################################
-    CODE   = self . ConvertCCCcode ( int ( ID - 7000  )                      )
-    ##########################################################################
-    if                             ( len ( CODE ) <= 0                     ) :
-      return False
-    ##########################################################################
+    column = 2
     pid    = item . data           ( 0 , Qt . UserRole                       )
-    text   = item . text           ( 2                                       )
+    text   = item . text           ( column                                  )
     pid    = int                   ( pid                                     )
     cc     = OpenCC                ( CODE                                    )
     target = cc . convert          ( text                                    )
@@ -791,14 +818,49 @@ class DescriptiveEditor  ( TreeDock                                        ) :
       LENZ = len                   ( S                                       )
       ########################################################################
     except                                                                   :
-      ########################################################################
-      self . Notify                ( 1                                       )
-      ########################################################################
-      return True
+      return False
     ##########################################################################
-    item   . setText               ( 2 , target                              )
+    item   . setText               ( column , target                         )
     self   . DESCRIBE . setContext ( pid , target                            )
-    self   . Notify                ( 5                                       )
+    ##########################################################################
+    return   True
+  ############################################################################
+  def HandleTranslations             ( self , item , ID                    ) :
+    ##########################################################################
+    if                               ( 7000 == ID                          ) :
+      ########################################################################
+      self   . ConvertAllCC = not self . ConvertAllCC
+      ########################################################################
+      return
+    ##########################################################################
+    if                               ( ( ID < 7001 ) or ( ID > 7008 )      ) :
+      return False
+    ##########################################################################
+    CODE     = self . ConvertCCCcode ( int ( ID - 7000  )                    )
+    ##########################################################################
+    if                               ( len ( CODE ) <= 0                   ) :
+      return False
+    ##########################################################################
+    if                               ( self . ConvertAllCC                 ) :
+      ########################################################################
+      for ait in range               ( 0 , self . topLevelItemCount (    ) ) :
+        ######################################################################
+        ITX  = self . topLeveItem    ( ait                                   )
+        self . ConvertItemCC         ( self , item , CODE                    )
+      ########################################################################
+      self   . Notify                ( 5                                     )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      OKAY   = self . ConvertItemCC  ( self , item , CODE                    )
+      ########################################################################
+      if                             ( OKAY                                ) :
+        ######################################################################
+        self . Notify                ( 1                                     )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        self . Notify                ( 5                                     )
     ##########################################################################
     return True
   ############################################################################
@@ -1038,6 +1100,12 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     icon   = QIcon                     ( ":/images/addcolumn.png"            )
     mm     . addActionWithIcon         ( 2001 , icon , msg                   )
     ##########################################################################
+    msg    = self . getMenuItem        ( "ConnectPlayer"                     )
+    mm     . addAction                 ( 3001 , msg                          )
+    ##########################################################################
+    msg    = self . getMenuItem        ( "DisconnectPlayer"                  )
+    mm     . addAction                 ( 3002 , msg                          )
+    ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
     self   . MarkerMenu                ( mm , atItem                         )
@@ -1128,6 +1196,14 @@ class DescriptiveEditor  ( TreeDock                                        ) :
     ##########################################################################
     if                                 ( 2001 == at                        ) :
       self . GotoSegments              (                                     )
+      return True
+    ##########################################################################
+    if                                 ( 3001 == at                        ) :
+      self . emitConnector             (                                     )
+      return True
+    ##########################################################################
+    if                                 ( 3002 == at                        ) :
+      self . emitDetachConnector       (                                     )
       return True
     ##########################################################################
     return True
