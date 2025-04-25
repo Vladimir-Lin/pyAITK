@@ -951,13 +951,13 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       for ait in range               ( 0 , self . topLevelItemCount (    ) ) :
         ######################################################################
         ITX  = self . topLeveItem    ( ait                                   )
-        self . ConvertItemCC         ( self , item , CODE                    )
+        self . ConvertItemCC         ( item , CODE                           )
       ########################################################################
       self   . Notify                ( 5                                     )
       ########################################################################
     else                                                                     :
       ########################################################################
-      OKAY   = self . ConvertItemCC  ( self , item , CODE                    )
+      OKAY   = self . ConvertItemCC  ( item , CODE                           )
       ########################################################################
       if                             ( OKAY                                ) :
         ######################################################################
