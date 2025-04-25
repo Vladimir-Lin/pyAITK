@@ -490,7 +490,6 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     if                                  ( IDX < 0                          ) :
       ########################################################################
       IDX  = self . DESCRIBE . TimestampPosition ( vlen                      )
-      IDX  = int                        ( IDX + 1                            )
     ##########################################################################
     self   . reload                     (                                    )
     self   . Go                         ( self . WaitFocusIn , ( IDX , )     )
