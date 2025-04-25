@@ -124,6 +124,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . GotoSegments                  , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "SyncPlayerTime"                     , \
+                                      ":/images/documentimport.png"        , \
+                                      self . SwitchSyncPlayer              , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -749,6 +754,12 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def SwitchSyncPlayer ( self                                              ) :
+    ##########################################################################
+    self . SyncPlayerTime = not self . SyncPlayerTime
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -1364,7 +1375,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return True
     ##########################################################################
     if                                  ( 4004 == at                       ) :
-      self . SyncPlayerTime  = not self . SyncPlayerTime
+      self . SwitchSyncPlayer           (                                    )
       return True
     ##########################################################################
     return True
