@@ -124,6 +124,21 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . GotoSegments                  , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "UsePtsForAdd"                       , \
+                                      ":/images/addknowledge.png"          , \
+                                      self . SwitchPtsForAdd               , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "UsePtsForItem"                      , \
+                                      ":/images/exchange.png"              , \
+                                      self . SwitchPtsForItem              , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "TrackPtsForItem"                    , \
+                                      ":/images/lists.png"                 , \
+                                      self . SwitchTrackPtsItem            , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "SyncPlayerTime"                     , \
                                       ":/images/documentimport.png"        , \
                                       self . SwitchSyncPlayer              , \
@@ -731,11 +746,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
         ######################################################################
         if                                ( self . UsePtsForItem           ) :
           ####################################################################
-          self . emitUpdatePtsItem . emit (                                  )
+          self . emitUpdatePTS     . emit (                                  )
         ######################################################################
         if                                ( self . TrackPtsForItem         ) :
           ####################################################################
-          self . emitUpdatePTS     . emit (                                  )
+          self . emitUpdatePtsItem . emit (                                  )
       ########################################################################
     elif                                  ( "Open"   == ACTION             ) :
     ##########################################################################
@@ -763,6 +778,24 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     self . PlayerWidget    = None
     self . PlayerConnected = False
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchPtsForAdd ( self                                               ) :
+    ##########################################################################
+    self . UsePtsForAdd = not self . UsePtsForAdd
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchPtsForItem ( self                                              ) :
+    ##########################################################################
+    self . UsePtsForItem = not self . UsePtsForItem
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchTrackPtsItem ( self                                            ) :
+    ##########################################################################
+    self . TrackPtsForItem = not self . TrackPtsForItem
     ##########################################################################
     return
   ############################################################################
@@ -1375,15 +1408,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return True
     ##########################################################################
     if                                  ( 4001 == at                       ) :
-      self . UsePtsForAdd    = not self . UsePtsForAdd
+      self . SwitchPtsForAdd            (                                    )
       return True
     ##########################################################################
     if                                  ( 4002 == at                       ) :
-      self . UsePtsForItem   = not self . UsePtsForItem
+      self . SwitchPtsForItem           (                                    )
       return True
     ##########################################################################
     if                                  ( 4003 == at                       ) :
-      self . TrackPtsForItem = not self . TrackPtsForItem
+      self . SwitchTrackPtsItem         (                                    )
       return True
     ##########################################################################
     if                                  ( 4004 == at                       ) :
