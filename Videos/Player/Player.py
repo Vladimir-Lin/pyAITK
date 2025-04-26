@@ -285,6 +285,15 @@ class Player               ( Widget , AttachDock                           ) :
     self . NextAnalysis . connect ( self . DoAnalysis                        )
     self . FilmViewed   . connect ( self . PANEL . Bar . AcceptFilm          )
     ##########################################################################
+    self . VMenu        = QMenu   (                                          )
+    ##########################################################################
+    MSG  = self . Translations    [ "Player" ] [ "ChangeStep"                ]
+    CSA  = self . VMenu . addAction ( MSG                                    )
+    CSA  . toggle . connect       ( self . ChangeStep                        )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
     ## self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff            )
     ## self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff            )
     ##########################################################################
@@ -687,6 +696,18 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
+  def ChangeStep            ( self                                         ) :
+    ##########################################################################
+    self . PANEL . addDelta ( self , self . Delta                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def StepChanged ( self , DeltaValue                                      ) :
+    ##########################################################################
+    self . Delta = DeltaValue
+    ##########################################################################
+    return
+  ############################################################################
   def AssignAsMajorPlayer     ( self                                       ) :
     ##########################################################################
     self . AssignMajor . emit ( self                                         )
@@ -911,6 +932,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . show       (                                )
     self   . PANEL  . Analysis . hide       (                                )
     self   . PANEL  . Drawing  . hide       (                                )
+    self   . PANEL  . VMenu    . hide       (                                )
     self   . PANEL  . FineTune . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( False                  )
@@ -951,6 +973,7 @@ class Player               ( Widget , AttachDock                           ) :
     self   . PANEL  . Pause    . hide       (                                )
     self   . PANEL  . Analysis . hide       (                                )
     self   . PANEL  . Drawing  . hide       (                                )
+    self   . PANEL  . VMenu    . hide       (                                )
     self   . PANEL  . FineTune . hide       (                                )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( True                   )
@@ -992,6 +1015,7 @@ class Player               ( Widget , AttachDock                           ) :
     self  . PANEL  . Pause    . hide       (                                 )
     self  . PANEL  . Analysis . show       (                                 )
     self  . PANEL  . Drawing  . show       (                                 )
+    self  . PANEL  . VMenu    . show       (                                 )
     ##########################################################################
     WPLAN . Action ( "Play"         ) . setEnabled ( True                    )
     WPLAN . Action ( "Pause"        ) . setEnabled ( False                   )

@@ -112,6 +112,14 @@ class Panel                        ( Widget                                ) :
     self . Drawing  . setCheckable  ( True                                   )
     self . Drawing  . hide          (                                        )
     ##########################################################################
+    DICO            = QIcon         ( ":/images/Menu.png"                    )
+    self . VMenu    = QPushButton   ( DICO , "" , self                       )
+    self . VMenu    . setIconSize   ( QSize ( 40 , 40                      ) )
+    self . VMenu    . setFlat       ( True                                   )
+    self . VMenu    . setEnabled    ( True                                   )
+    self . VMenu    . setCheckable  ( True                                   )
+    self . VMenu    . hide          (                                        )
+    ##########################################################################
     self . FineTune = QSlider       ( Qt . Horizontal , self                 )
     self . FineTune . setMaximum    ( 3000                                   )
     self . FineTune . setSingleStep ( 1                                      )
@@ -140,6 +148,8 @@ class Panel                        ( Widget                                ) :
     self . FilmSize . setFont       ( FNT                                    )
     self . FilmSize . show          (                                        )
     ##########################################################################
+    self . DeltaEditor = None
+    ##########################################################################
     return
   ############################################################################
   def UpdatePanel                  ( self                                  ) :
@@ -164,6 +174,12 @@ class Panel                        ( Widget                                ) :
     ##########################################################################
     MSG  = self     . Translations [ "Player" ] [ "Analysis"                 ]
     self . Analysis . setToolTip   ( MSG                                     )
+    ##########################################################################
+    MSG  = self     . Translations [ "Player" ] [ "Drawing"                  ]
+    self . Drawing  . setToolTip   ( MSG                                     )
+    ##########################################################################
+    MSG  = self     . Translations [ "Player" ] [ "VMenu"                    ]
+    self . VMenu    . setToolTip   ( MSG                                     )
     ##########################################################################
     return
   ############################################################################
@@ -217,8 +233,38 @@ class Panel                        ( Widget                                ) :
     self . MWin     . setGeometry (     120 , 24 ,  40 , 40                  )
     self . Analysis . setGeometry (     160 , 24 ,  40 , 40                  )
     self . Drawing  . setGeometry (     200 , 24 ,  40 , 40                  )
+    self . VMenu    . setGeometry (     240 , 24 ,  40 , 40                  )
     ##########################################################################
     self . FineTune . setGeometry (       0 , 64 ,   W , 16                  )
+    ##########################################################################
+    if ( self . DeltaEditor not in [ False , None ]                        ) :
+      ########################################################################
+      self . DeltaEditor . setGeometry ( 300 , 24 ,  120 , 24                )
+    ##########################################################################
+    return
+  ############################################################################
+  def addDelta                       ( self , widget , V                   ) :
+    ##########################################################################
+    DSP  = QSpinBox                  ( self                                  )
+    DSP  . setMinimum                ( 1                                     )
+    DSP  . setMaximum                ( 600 * 1000                            )
+    DSP  . setValue                  ( V                                     )
+    ##########################################################################
+    DSP  . valueChanged    . connect ( widget . StepChanged                  )
+    DSP  . editingFinished . connect ( self   . removeDelta                  )
+    ##########################################################################
+    self . DeltaEditor = DSP
+    ##########################################################################
+    return
+  ############################################################################
+  def removeDelta ( self                                                   ) :
+    ##########################################################################
+    if            ( self . DeltaEditor in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    DELX               = self . DeltaEditor
+    self . DeltaEditor = None
+    DELX               . deleteLater (                                       )
     ##########################################################################
     return
   ############################################################################
