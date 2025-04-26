@@ -25,7 +25,7 @@ from   AITK    . Qt6 . Widget      import Widget      as Widget
 ##############################################################################
 from                 . FilmBar     import FilmBar     as FilmBar
 ##############################################################################
-class Panel                        ( Widget                                ) :
+class Panel              ( Widget                                          ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
@@ -248,12 +248,14 @@ class Panel                        ( Widget                                ) :
     DSP  = QSpinBox                  ( self                                  )
     DSP  . setMinimum                ( 1                                     )
     DSP  . setMaximum                ( 600 * 1000                            )
+    DSP  . setSingleStep             ( 10                                    )
     DSP  . setValue                  ( V                                     )
     ##########################################################################
     DSP  . valueChanged    . connect ( widget . StepChanged                  )
     DSP  . editingFinished . connect ( self   . removeDelta                  )
     ##########################################################################
     self . DeltaEditor = DSP
+    DSP  . show                      (                                       )
     ##########################################################################
     return
   ############################################################################

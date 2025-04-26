@@ -17,35 +17,36 @@ import cv2
 import dlib
 ##############################################################################
 import pathlib
-from   pathlib                           import Path
+from   pathlib                                  import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate    import StarDate     as StarDate
-from   AITK    . Documents . JSON        import Load         as LoadJson
-from   AITK    . Documents . JSON        import Save         as SaveJson
+from   AITK    . Calendars . StarDate           import StarDate     as StarDate
+from   AITK    . Documents . JSON               import Load         as LoadJson
+from   AITK    . Documents . JSON               import Save         as SaveJson
 ##############################################################################
-from   PySide6                           import QtCore
-from   PySide6                           import QtGui
-from   PySide6                           import QtWidgets
-from   PySide6 . QtCore                  import *
-from   PySide6 . QtGui                   import *
-from   PySide6 . QtWidgets               import *
-from   AITK    . Qt6                     import *
+from   PySide6                                  import QtCore
+from   PySide6                                  import QtGui
+from   PySide6                                  import QtWidgets
+from   PySide6 . QtCore                         import *
+from   PySide6 . QtGui                          import *
+from   PySide6 . QtWidgets                      import *
+from   AITK    . Qt6                            import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager       import MenuManager  as MenuManager
-from   AITK    . Qt6 . AttachDock        import AttachDock   as AttachDock
-from   AITK    . Qt6 . Widget            import Widget       as Widget
-from   AITK    . Qt6 . GraphicsView      import GraphicsView as GraphicsView
+from   AITK    . Qt6 . MenuManager              import MenuManager  as MenuManager
+from   AITK    . Qt6 . AttachDock               import AttachDock   as AttachDock
+from   AITK    . Qt6 . Widget                   import Widget       as Widget
+from   AITK    . Qt6 . GraphicsView             import GraphicsView as GraphicsView
 ##############################################################################
-from   AITK    . AI  . Pictures . Vision import Vision       as AiVision
+from   AITK    . AI  . Pictures . Vision        import Vision       as AiVision
 ##############################################################################
-from   AITK    . Pictures . Picture      import Picture      as PictureItem
-from   AITK    . People . Faces . Face   import Face         as FaceItem
-from   AITK    . People . Body  . Tit    import Tit          as TitItem
-from   AITK    . People . Body  . Body   import Body         as BodyItem
+from   AITK    . Pictures . Picture             import Picture      as PictureItem
+from   AITK    . People   . Faces . Face        import Face         as FaceItem
+from   AITK    . People   . Body  . Tit         import Tit          as TitItem
+from   AITK    . People   . Body  . Body        import Body         as BodyItem
 ##############################################################################
-from                 . Panel             import Panel        as Panel
+from   AITK    . Videos   . Synopsis . Scenario import Scenario     as ScenarioItem
+from                      . Panel               import Panel        as Panel
 ##############################################################################
 class vlcPlayInternalLayer       ( QWidget                                 ) :
   ############################################################################
@@ -210,6 +211,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . INSTANCE   = vlc . Instance (                                     )
     self . MEDIA      = None
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
+    self . SCENE      = ScenarioItem (                                       )
     ##########################################################################
     self . LAYER      = vlcPlayInternalLayer ( self                          )
     self . LAYER      . MoveCallback  = self . MoveCallback
@@ -287,13 +289,6 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . VMenu        = QMenu   (                                          )
     ##########################################################################
-    MSG  = self . Translations    [ "Player" ] [ "ChangeStep"                ]
-    CSA  = self . VMenu . addAction ( MSG                                    )
-    CSA  . toggle . connect       ( self . ChangeStep                        )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
     ## self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff            )
     ## self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff            )
     ##########################################################################
@@ -304,6 +299,12 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . Settings     = self . Settings
     self . PANEL . Translations = self . Translations
     self . PANEL . UpdatePanel       (                                       )
+    ##########################################################################
+    MSG  = self . Translations       [ "Player" ] [ "ChangeStep"             ]
+    CSA  = self . VMenu . addAction  ( MSG                                   )
+    CSA  . toggled . connect         ( self . ChangeStep                     )
+    ##########################################################################
+    self . PANEL . VMenu . setMenu   ( self . VMenu                          )
     ##########################################################################
     CONF = self  . Settings          [ "Classifier" ] [ "File"               ]
     MAXI = self  . Settings          [ "Classifier" ] [ "Max"                ]
