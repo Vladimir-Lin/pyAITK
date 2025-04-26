@@ -39,6 +39,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitUpdatePTS       = Signal (                                             )
   emitUpdatePtsItem   = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
+  emitGoItem          = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
   emitPlayer          = Signal ( QWidget                                     )
   emitConnector       = Signal ( QWidget                                     )
