@@ -122,36 +122,45 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
     self . AppendSideActionWithIcon ( "OpenSegments"                       , \
-                                      ":/images/addcolumn.png"             , \
+                                      ":/images/descriptive-segments.png"  , \
                                       self . GotoSegments                  , \
                                       True                                 , \
                                       False                                  )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon ( "LinkPlayer"                         , \
+                                      ":/images/descriptive-player-link.png" , \
+                                      self . SwitchConnectPlayer           , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "Chapter"                            , \
-                                      ":/images/catalog.png"               , \
+                                      ":/images/descriptive-chapters.png"  , \
                                       self . SwitchChapters                  )
     self . AppendSideActionWithIcon ( "Paragraph"                          , \
-                                      ":/images/coding.png"                , \
+                                      ":/images/descriptive-paragraphs.png" , \
                                       self . SwitchParagraphs                )
     self . AppendSideActionWithIcon ( "Subtitle"                           , \
-                                      ":/images/paper.png"                 , \
+                                      ":/images/descriptive-subtitles.png" , \
                                       self . SwitchSubtitles                 )
+    self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "UsePtsForAdd"                       , \
-                                      ":/images/addknowledge.png"          , \
+                                      ":/images/descriptive-add-by-video.png" , \
                                       self . SwitchPtsForAdd               , \
                                       True                                 , \
                                       False                                  )
     self . AppendSideActionWithIcon ( "UsePtsForItem"                      , \
-                                      ":/images/exchange.png"              , \
+                                      ":/images/descriptive-change-spot-time.png" , \
                                       self . SwitchPtsForItem              , \
                                       True                                 , \
                                       False                                  )
     self . AppendSideActionWithIcon ( "TrackPtsForItem"                    , \
-                                      ":/images/lists.png"                 , \
+                                      ":/images/descriptive-item-by-video-time.png" , \
                                       self . SwitchTrackPtsItem            , \
                                       True                                 , \
                                       False                                  )
+    self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "SyncPlayerTime"                     , \
-                                      ":/images/documentimport.png"        , \
+                                      ":/images/descriptive-video-by-time.png" , \
                                       self . SwitchSyncPlayer              , \
                                       True                                 , \
                                       False                                  )
@@ -907,6 +916,22 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def SwitchConnectPlayer               ( self                             ) :
+    ##########################################################################
+    if                                  ( self . PlayerConnected           ) :
+      ########################################################################
+      self . emitDetachConnector . emit ( self                               )
+      ########################################################################
+      self . ConnectedFilmJson =        {                                    }
+      self . CurrentPTS        = -1
+      self . PlayerConnected   = False
+      ########################################################################
+    else :
+      ########################################################################
+      self . emitConnector       . emit ( self                               )
+    ##########################################################################
+    return
+  ############################################################################
   def SwitchPtsForAdd ( self                                               ) :
     ##########################################################################
     self . UsePtsForAdd = not self . UsePtsForAdd
@@ -1341,7 +1366,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     mm     . addSeparator               (                                    )
     ##########################################################################
     msg    = self . getMenuItem         ( "OpenSegments"                     )
-    icon   = QIcon                      ( ":/images/addcolumn.png"           )
+    icon   = QIcon                      ( ":/images/descriptive-segments.png" )
     mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
     mm     . addSeparator               (                                    )
@@ -1349,33 +1374,43 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     if                                  ( self . PlayerConnected           ) :
       ########################################################################
       msg  = self . getMenuItem         ( "DisconnectPlayer"                 )
-      mm   . addAction                  ( 3002 , msg                         )
+      icon = QIcon                      ( ":/images/descriptive-player-disconnect.png" )
+      mm   . addActionWithIcon          ( 3002 , icon , msg                  )
       ########################################################################
     else                                                                     :
       ########################################################################
       msg  = self . getMenuItem         ( "ConnectPlayer"                    )
-      mm   . addAction                  ( 3001 , msg                         )
+      icon = QIcon                      ( ":/images/descriptive-player-connect.png" )
+      mm   . addActionWithIcon          ( 3001 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "UsePtsForAdd"                     )
-    mm     . addAction                  ( 4001                             , \
+    icon   = QIcon                      ( ":/images/descriptive-add-by-video.png" )
+    mm     . addActionWithIcon          ( 4001                             , \
+                                          icon                             , \
                                           msg                              , \
                                           True                             , \
                                           self . UsePtsForAdd                )
     ##########################################################################
     msg    = self . getMenuItem         ( "UsePtsForItem"                    )
-    mm     . addAction                  ( 4002                             , \
+    icon   = QIcon                      ( ":/images/descriptive-change-spot-time.png" )
+    mm     . addActionWithIcon          ( 4002                             , \
+                                          icon                             , \
                                           msg                              , \
                                           True                             , \
                                           self . UsePtsForItem               )
     ##########################################################################
     msg    = self . getMenuItem         ( "TrackPtsForItem"                  )
-    mm     . addAction                  ( 4003                             , \
+    icon   = QIcon                      ( ":/images/descriptive-item-by-video-time.png" )
+    mm     . addActionWithIcon          ( 4003                             , \
+                                          icon                             , \
                                           msg                              , \
                                           True                             , \
                                           self . TrackPtsForItem             )
     ##########################################################################
     msg    = self . getMenuItem         ( "SyncPlayerTime"                   )
-    mm     . addAction                  ( 4004                             , \
+    icon   = QIcon                      ( ":/images/descriptive-video-by-time.png" )
+    mm     . addActionWithIcon          ( 4004                             , \
+                                          icon                             , \
                                           msg                              , \
                                           True                             , \
                                           self . SyncPlayerTime              )

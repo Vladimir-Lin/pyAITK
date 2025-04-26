@@ -253,21 +253,23 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL      = Panel ( self , self . PlanFunc                       )
     self . PANEL      . hide  (                                              )
     ##########################################################################
-    self . PANEL . Play     . clicked . connect ( self . DoPlay              )
-    self . PANEL . Stop     . clicked . connect ( self . DoStop              )
-    self . PANEL . Pause    . clicked . connect ( self . DoPause             )
-    self . PANEL . BWin     . clicked . connect ( self . BackToNormal        )
-    self . PANEL . SWin     . clicked . connect ( self . DockStack           )
-    self . PANEL . MWin     . clicked . connect ( self . DockMdi             )
-    self . PANEL . Analysis . clicked . connect ( self . RunAnalysis         )
-    self . PANEL . Drawing  . toggled . connect ( self . SwitchEditor        )
+    self . PANEL . Play      . clicked . connect ( self . DoPlay             )
+    self . PANEL . Stop      . clicked . connect ( self . DoStop             )
+    self . PANEL . Pause     . clicked . connect ( self . DoPause            )
+    self . PANEL . BWin      . clicked . connect ( self . BackToNormal       )
+    self . PANEL . SWin      . clicked . connect ( self . DockStack          )
+    self . PANEL . MWin      . clicked . connect ( self . DockMdi            )
+    self . PANEL . PrevFrame . clicked . connect ( self . DoPreviousFrame    )
+    self . PANEL . NextFrame . clicked . connect ( self . DoNextFrame        )
+    self . PANEL . Analysis  . clicked . connect ( self . RunAnalysis        )
+    self . PANEL . Drawing   . toggled . connect ( self . SwitchEditor       )
     ##########################################################################
-    self . PANEL . Clock    . sliderMoved   . connect ( self . setPosition   )
-    self . PANEL . Clock    . sliderPressed . connect ( self . setPosition   )
+    self . PANEL . Clock     . sliderMoved   . connect ( self . setPosition  )
+    self . PANEL . Clock     . sliderPressed . connect ( self . setPosition  )
     ##########################################################################
-    self . PANEL . FineTune . sliderMoved    . connect ( self . setFineTune  )
-    self . PANEL . FineTune . sliderPressed  . connect ( self . setFineTune  )
-    self . PANEL . FineTune . sliderReleased . connect ( self . releaseFineTune  )
+    self . PANEL . FineTune  . sliderMoved    . connect ( self . setFineTune )
+    self . PANEL . FineTune  . sliderPressed  . connect ( self . setFineTune )
+    self . PANEL . FineTune  . sliderReleased . connect ( self . releaseFineTune )
     ##########################################################################
     AVL  = self  . PLAYER . audio_get_volume (                               )
     self . PANEL . Volume . setValue         ( AVL                           )
@@ -919,23 +921,25 @@ class Player               ( Widget , AttachDock                           ) :
     if       ( self . MEDIA in [ False , None                            ] ) :
       return
     ##########################################################################
-    if                                      ( self . isAnalyzing           ) :
-      self . StoreAnalysis                  (                                )
+    if                                       ( self . isAnalyzing          ) :
+      self . StoreAnalysis                   (                               )
     ##########################################################################
     self   . isPause = False
     self   . isAnalyzing = False
     ##########################################################################
-    self   . PLAYER . play                  (                                )
+    self   . PLAYER . play                   (                               )
     ##########################################################################
-    self   . PANEL  . Play     . setEnabled ( True                           )
-    self   . PANEL  . Play     . hide       (                                )
-    self   . PANEL  . Stop     . setEnabled ( True                           )
-    self   . PANEL  . Pause    . setEnabled ( True                           )
-    self   . PANEL  . Pause    . show       (                                )
-    self   . PANEL  . Analysis . hide       (                                )
-    self   . PANEL  . Drawing  . hide       (                                )
-    self   . PANEL  . VMenu    . hide       (                                )
-    self   . PANEL  . FineTune . hide       (                                )
+    self   . PANEL  . Play      . setEnabled ( True                          )
+    self   . PANEL  . Play      . hide       (                               )
+    self   . PANEL  . Stop      . setEnabled ( True                          )
+    self   . PANEL  . Pause     . setEnabled ( True                          )
+    self   . PANEL  . Pause     . show       (                               )
+    self   . PANEL  . Analysis  . hide       (                               )
+    self   . PANEL  . Drawing   . hide       (                               )
+    self   . PANEL  . VMenu     . hide       (                               )
+    self   . PANEL  . PrevFrame . hide       (                               )
+    self   . PANEL  . NextFrame . hide       (                               )
+    self   . PANEL  . FineTune  . hide       (                               )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( False                  )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( True                   )
@@ -960,23 +964,25 @@ class Player               ( Widget , AttachDock                           ) :
     if       ( self . MEDIA in [ False , None                            ] ) :
       return
     ##########################################################################
-    if                                      ( self . isAnalyzing           ) :
-      self . StoreAnalysis                  (                                )
+    if                                       ( self . isAnalyzing          ) :
+      self . StoreAnalysis                   (                               )
     ##########################################################################
     self   . isPause = False
     self   . isAnalyzing = False
     ##########################################################################
-    self   . PLAYER . stop                  (                                )
+    self   . PLAYER . stop                   (                               )
     ##########################################################################
-    self   . PANEL  . Play     . setEnabled ( True                           )
-    self   . PANEL  . Play     . show       (                                )
-    self   . PANEL  . Stop     . setEnabled ( False                          )
-    self   . PANEL  . Pause    . setEnabled ( True                           )
-    self   . PANEL  . Pause    . hide       (                                )
-    self   . PANEL  . Analysis . hide       (                                )
-    self   . PANEL  . Drawing  . hide       (                                )
-    self   . PANEL  . VMenu    . hide       (                                )
-    self   . PANEL  . FineTune . hide       (                                )
+    self   . PANEL  . Play      . setEnabled ( True                          )
+    self   . PANEL  . Play      . show       (                               )
+    self   . PANEL  . Stop      . setEnabled ( False                         )
+    self   . PANEL  . Pause     . setEnabled ( True                          )
+    self   . PANEL  . Pause     . hide       (                               )
+    self   . PANEL  . Analysis  . hide       (                               )
+    self   . PANEL  . Drawing   . hide       (                               )
+    self   . PANEL  . VMenu     . hide       (                               )
+    self   . PANEL  . PrevFrame . hide       (                               )
+    self   . PANEL  . NextFrame . hide       (                               )
+    self   . PANEL  . FineTune  . hide       (                               )
     ##########################################################################
     WPLAN  . Action ( "Play"         ) . setEnabled ( True                   )
     WPLAN  . Action ( "Pause"        ) . setEnabled ( False                  )
@@ -1008,16 +1014,18 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self  . isPause = True
     ##########################################################################
-    self  . PLAYER . pause                 (                                 )
+    self  . PLAYER . pause                  (                                )
     ##########################################################################
-    self  . PANEL  . Play     . setEnabled ( True                            )
-    self  . PANEL  . Play     . show       (                                 )
-    self  . PANEL  . Stop     . setEnabled ( True                            )
-    self  . PANEL  . Pause    . setEnabled ( True                            )
-    self  . PANEL  . Pause    . hide       (                                 )
-    self  . PANEL  . Analysis . show       (                                 )
-    self  . PANEL  . Drawing  . show       (                                 )
-    self  . PANEL  . VMenu    . show       (                                 )
+    self  . PANEL  . Play      . setEnabled ( True                           )
+    self  . PANEL  . Play      . show       (                                )
+    self  . PANEL  . Stop      . setEnabled ( True                           )
+    self  . PANEL  . Pause     . setEnabled ( True                           )
+    self  . PANEL  . Pause     . hide       (                                )
+    self  . PANEL  . Analysis  . show       (                                )
+    self  . PANEL  . Drawing   . show       (                                )
+    self  . PANEL  . VMenu     . show       (                                )
+    self  . PANEL  . PrevFrame . show       (                                )
+    self  . PANEL  . NextFrame . show       (                                )
     ##########################################################################
     WPLAN . Action ( "Play"         ) . setEnabled ( True                    )
     WPLAN . Action ( "Pause"        ) . setEnabled ( False                   )
@@ -1139,6 +1147,41 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . CalculateFilmBar         (                                        )
     self . UpdateINFO               (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoPreviousFrame               ( self                                 ) :
+    ##########################################################################
+    if                              ( self . MEDIA in [ False , None ]     ) :
+      return
+    ##########################################################################
+    if                              ( self . isStopped (                 ) ) :
+      return
+    ##########################################################################
+    K    = self . PLAYER . get_time (                                        )
+    T    = int                      ( K - 100                                )
+    ##########################################################################
+    if                              ( T < 0                                ) :
+      T  = 0
+    ##########################################################################
+    self . PLAYER . set_time        ( T                                      )
+    ##########################################################################
+    self . CalculateFilmBar         (                                        )
+    self . UpdateINFO               (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoNextFrame              ( self                                      ) :
+    ##########################################################################
+    if                         ( self . MEDIA in [ False , None ]          ) :
+      return
+    ##########################################################################
+    if                         ( self . isStopped (                      ) ) :
+      return
+    ##########################################################################
+    self . PLAYER . next_frame (                                             )
+    self . CalculateFilmBar    (                                             )
+    self . UpdateINFO          (                                             )
     ##########################################################################
     return
   ############################################################################
