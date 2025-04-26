@@ -302,9 +302,10 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     MSG  = self . Translations       [ "Player" ] [ "ChangeStep"             ]
     CSA  = self . VMenu . addAction  ( MSG                                   )
-    CSA  . toggled . connect         ( self . ChangeStep                     )
+    CSA  . triggered . connect       ( self . ChangeStep                     )
     ##########################################################################
     self . PANEL . VMenu . setMenu   ( self . VMenu                          )
+    self . VMenu . setFont           ( self . font (                       ) )
     ##########################################################################
     CONF = self  . Settings          [ "Classifier" ] [ "File"               ]
     MAXI = self  . Settings          [ "Classifier" ] [ "Max"                ]
