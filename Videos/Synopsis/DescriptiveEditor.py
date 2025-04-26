@@ -126,6 +126,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . GotoSegments                  , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "Chapter"                            , \
+                                      ":/images/catalog.png"               , \
+                                      self . SwitchChapters                  )
+    self . AppendSideActionWithIcon ( "Paragraph"                          , \
+                                      ":/images/coding.png"                , \
+                                      self . SwitchParagraphs                )
+    self . AppendSideActionWithIcon ( "Subtitle"                           , \
+                                      ":/images/paper.png"                 , \
+                                      self . SwitchSubtitles                 )
     self . AppendSideActionWithIcon ( "UsePtsForAdd"                       , \
                                       ":/images/addknowledge.png"          , \
                                       self . SwitchPtsForAdd               , \
@@ -288,11 +297,21 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return IT
   ############################################################################
-  def RefreshToolTip          ( self , Total                               ) :
+  def RefreshToolTip               ( self , Total                          ) :
     ##########################################################################
-    FMT  = self . getMenuItem ( "DisplayTotal"                               )
-    MSG  = FMT  . format      ( Total                                        )
-    self . setToolTip         ( MSG                                          )
+    FMT   = self . getMenuItem     ( "DisplayTotal"                          )
+    MSG   = FMT  . format          ( Total                                   )
+    ##########################################################################
+    DRT   = self . DESCRIBE . Duration
+    ##########################################################################
+    if                             ( DRT > 0                               ) :
+      ########################################################################
+      FT  = self . SCENE . toLTime ( DRT                                     )
+      DF  = self . getMenuItem     ( "SceneDuration"                         )
+      SMG = DF   . format          ( FT                                      )
+      MSG = f"{MSG}{SMG}"
+    ##########################################################################
+    self  . setToolTip             ( MSG                                     )
     ##########################################################################
     return
   ############################################################################
@@ -768,6 +787,75 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def SwitchChapters                          ( self                       ) :
+    ##########################################################################
+    items    = self . selectedItems           (                              )
+    ##########################################################################
+    for it in items                                                          :
+      ########################################################################
+      pid    = it . data                      ( 0 , Qt . UserRole            )
+      pid    = int                            ( pid                          )
+      ########################################################################
+      OPT    = self . DESCRIBE . getOption    ( pid , "Chapter"              )
+      ########################################################################
+      if                                      ( OPT                        ) :
+        ######################################################################
+        self . DESCRIBE . setOption           ( pid , "Chapter"   , False    )
+        self . DESCRIBE . setOption           ( pid , "Paragraph" , False    )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        self . DESCRIBE . setOption           ( pid , "Chapter"   , True     )
+        self . DESCRIBE . setOption           ( pid , "Paragraph" , False    )
+      ########################################################################
+      OPS    = self . DESCRIBE . OptionString ( pid                          )
+      it     . setText                        ( 3 , OPS                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchParagraphs                        ( self                       ) :
+    ##########################################################################
+    items    = self . selectedItems           (                              )
+    ##########################################################################
+    for it in items                                                          :
+      ########################################################################
+      pid    = it . data                      ( 0 , Qt . UserRole            )
+      pid    = int                            ( pid                          )
+      ########################################################################
+      OPT    = self . DESCRIBE . getOption    ( pid , "Paragraph"            )
+      ########################################################################
+      if                                      ( OPT                        ) :
+        ######################################################################
+        self . DESCRIBE . setOption           ( pid , "Chapter"   , False    )
+        self . DESCRIBE . setOption           ( pid , "Paragraph" , False    )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        self . DESCRIBE . setOption           ( pid , "Chapter"   , False    )
+        self . DESCRIBE . setOption           ( pid , "Paragraph" , True     )
+      ########################################################################
+      OPS    = self . DESCRIBE . OptionString ( pid                          )
+      it     . setText                        ( 3 , OPS                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchSubtitles                       ( self                         ) :
+    ##########################################################################
+    items  = self . selectedItems           (                                )
+    ##########################################################################
+    for it in items                                                          :
+      ########################################################################
+      pid  = it . data                      ( 0 , Qt . UserRole              )
+      pid  = int                            ( pid                            )
+      ########################################################################
+      OPT  = self . DESCRIBE . getOption    ( pid , "Subtitle"               )
+      self        . DESCRIBE . setOption    ( pid , "Subtitle" , not OPT     )
+      ########################################################################
+      OPS  = self . DESCRIBE . OptionString ( pid                            )
+      it   . setText                        ( 3 , OPS                        )
+    ##########################################################################
+    return
+  ############################################################################
   def AcceptJsonFromPlayer                ( self , PlayerJson              ) :
     ##########################################################################
     if                                    ( "Action" not in PlayerJson     ) :
@@ -1179,71 +1267,24 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return mm
   ############################################################################
-  def RunMarkerMenu                        ( self , at , item              ) :
+  def RunMarkerMenu           ( self , at , item                           ) :
     ##########################################################################
-    if                                     ( item in self . EmptySet       ) :
-      return
+    if                        ( item in self . EmptySet                    ) :
+      return False
     ##########################################################################
-    items    = self . selectedItems        (                                 )
+    if                        ( 77410001 == at                             ) :
+      self . SwitchChapters   (                                              )
+      return True
     ##########################################################################
-    if                                     ( 77410001 == at                ) :
-      ########################################################################
-      for it in items                                                        :
-        ######################################################################
-        pid  = it . data                   ( 0 , Qt . UserRole               )
-        pid  = int                         ( pid                             )
-        ######################################################################
-        OPT  = self . DESCRIBE . getOption ( pid , "Chapter"                 )
-        ######################################################################
-        if                                 ( OPT                           ) :
-          ####################################################################
-          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
-          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
-          ####################################################################
-        else                                                                 :
-          ####################################################################
-          self      . DESCRIBE . setOption ( pid , "Chapter"   , True        )
-          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
-        ######################################################################
-        OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 3 , OPS                         )
+    if                        ( 77410002 == at                             ) :
+      self . SwitchParagraphs (                                              )
+      return True
     ##########################################################################
-    if                                     ( 77410002 == at                ) :
-      ########################################################################
-      for it in items                                                        :
-        ######################################################################
-        pid  = it . data                   ( 0 , Qt . UserRole               )
-        pid  = int                         ( pid                             )
-        ######################################################################
-        OPT  = self . DESCRIBE . getOption ( pid , "Paragraph"               )
-        ######################################################################
-        if                                 ( OPT                           ) :
-          ####################################################################
-          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
-          self      . DESCRIBE . setOption ( pid , "Paragraph" , False       )
-          ####################################################################
-        else                                                                 :
-          ####################################################################
-          self      . DESCRIBE . setOption ( pid , "Chapter"   , False       )
-          self      . DESCRIBE . setOption ( pid , "Paragraph" , True        )
-        ######################################################################
-        OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 3 , OPS                         )
+    if                        ( 77410003 == at                             ) :
+      self . SwitchSubtitles  (                                              )
+      return True
     ##########################################################################
-    if                                     ( 77410003 == at                ) :
-      ########################################################################
-      for it in items                                                        :
-        ######################################################################
-        pid  = it . data                   ( 0 , Qt . UserRole               )
-        pid  = int                         ( pid                             )
-        ######################################################################
-        OPT  = self . DESCRIBE . getOption ( pid , "Subtitle"                )
-        self        . DESCRIBE . setOption ( pid , "Subtitle" , not OPT      )
-        ######################################################################
-        OPS  = self . DESCRIBE . OptionString ( pid                          )
-        it   . setText                     ( 3 , OPS                         )
-    ##########################################################################
-    return False
+    return   False
   ############################################################################
   def BaseTimeMenu ( self , mm                                             ) :
     ##########################################################################
