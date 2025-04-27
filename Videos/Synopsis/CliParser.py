@@ -247,8 +247,8 @@ class CliParser  (                                                         ) :
     if                        ( len ( TEXT ) <= 0                          ) :
       return                  [                                              ]
     ##########################################################################
-    ZTEXT = TEXT . replace    ( "Starring:  " , ""                           )
-    LINEz = TEXT . split      ( ", "                                         )
+    ZTEXT = TEXT  . replace   ( "Starring: " , ""                            )
+    LINEz = ZTEXT . split     ( ", "                                         )
     ##########################################################################
     if                        ( len ( LINEz ) <= 0                         ) :
       return                  [                                              ]
