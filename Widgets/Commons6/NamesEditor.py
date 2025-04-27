@@ -24,17 +24,17 @@ from   AITK    . Qt6                       import *
 from   AITK    . Linguistics . Translator  import Translate
 from   AITK    . Documents   . Name        import Name        as NameItem
 ##############################################################################
-class NamesEditor          ( TreeDock , NameItem                           ) :
+class NamesEditor            ( TreeDock , NameItem                         ) :
   ############################################################################
-  HavingMenu      = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
-  emitNamesShow   = Signal (                                                 )
-  emitAllNames    = Signal ( list                                            )
-  emitNewItem     = Signal ( list                                            )
-  emitRefreshItem = Signal ( QTreeWidgetItem , list                          )
-  CloseMyself     = Signal ( QWidget , str                                   )
+  emitNamesShow     = Signal (                                               )
+  emitAllNames      = Signal ( list                                          )
+  emitNewItem       = Signal ( list                                          )
+  emitRefreshItem   = Signal ( QTreeWidgetItem , list                        )
+  CloseMyself       = Signal ( QWidget , str                                 )
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  def __init__               ( self , parent = None , plan = None          ) :
     ##########################################################################
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
@@ -112,6 +112,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     self   . defaultLocality  = 1001
     self   . defaultRelevance =    0
     self   . ShowCompact      = True
+    self   . DisableCompact   = True
     ##########################################################################
     self   . KEYs =                [ "id"                                    ,
                                      "name"                                  ,
@@ -162,6 +163,16 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     return
   ############################################################################
   def Configure                  ( self                                    ) :
+    return
+  ############################################################################
+  def CloseCompact ( self                                                  ) :
+    ##########################################################################
+    if             ( not self . DisableCompact                             ) :
+      return
+    ##########################################################################
+    self . ShowCompact    = False
+    self . DisableCompact = False
+    ##########################################################################
     return
   ############################################################################
   def appendJsonItem             ( self , JSON                             ) :
@@ -1156,6 +1167,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
       self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
       self  . setColumnWidth          ( 2 , 160                              )
       self  . setColumnWidth          ( 4 , 120                              )
+      self  . CloseCompact            (                                      )
     ##########################################################################
     return
   ############################################################################
