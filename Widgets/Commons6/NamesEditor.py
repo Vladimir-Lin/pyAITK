@@ -512,6 +512,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
       return True
     ##########################################################################
     target = Translate                 ( txt , SRC , DEST                    )
+    target = target . replace          ( "·" , "・" )
     UTF8   = len                       ( target                              )
     ##########################################################################
     if                                 ( UTF8 <= 0                         ) :

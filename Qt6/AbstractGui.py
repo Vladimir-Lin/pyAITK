@@ -58,7 +58,7 @@ class AbstractGui            (                                             ) :
     self . DBs             = {                                               }
     self . Languages       = {                                               }
     self . Menus           = {                                               }
-    self . RunningCounts   = 0
+    self . RunningCounter  = 0
     self . RunningMutex    = threading . Lock (                              )
     self . Gui             = None
     self . StayAlive       = True
@@ -237,24 +237,24 @@ class AbstractGui            (                                             ) :
     ##########################################################################
     return False
   ############################################################################
-  def PushRunnings                 ( self                                  ) :
+  def PushRunnings                  ( self                                 ) :
     ##########################################################################
-    self . RunningMutex  . acquire (                                         )
-    self . RunningCounts = int     ( self . RunningCounts + 1                )
-    self . RunningMutex  . release (                                         )
+    self . RunningMutex   . acquire (                                        )
+    self . RunningCounter = int     ( self . RunningCounter + 1              )
+    self . RunningMutex   . release (                                        )
     ##########################################################################
     return
   ############################################################################
-  def PopRunnings                  ( self                                  ) :
+  def PopRunnings                   ( self                                 ) :
     ##########################################################################
-    self . RunningMutex  . acquire (                                         )
-    self . RunningCounts = int     ( self . RunningCounts - 1                )
-    self . RunningMutex  . release (                                         )
+    self . RunningMutex   . acquire (                                        )
+    self . RunningCounter = int     ( self . RunningCounter - 1              )
+    self . RunningMutex   . release (                                        )
     ##########################################################################
     return
   ############################################################################
   def AnythingRunning ( self                                               ) :
-    return            ( self . RunningCounts > 0                             )
+    return            ( self . RunningCounter > 0                            )
   ############################################################################
   def isBitMask          ( self , a , b                                    ) :
     return               ( ( a & b ) == b                                    )
