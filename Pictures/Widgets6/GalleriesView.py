@@ -1084,8 +1084,7 @@ class GalleriesView            ( IconDock                                  ) :
             JJ = json . loads          ( BODY                                )
             OK = RECG . hasFaces       ( JJ                                  )
             ##################################################################
-            if                         ( OK                                ) :
-              return True
+            return OK
           ####################################################################
         except                                                               :
           pass
