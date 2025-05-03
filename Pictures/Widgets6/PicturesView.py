@@ -190,6 +190,9 @@ class PicturesView              ( IconDock                                 ) :
   ############################################################################
   def Shutdown               ( self                                        ) :
     ##########################################################################
+    if                       ( self . AnythingRunning (                  ) ) :
+      return False
+    ##########################################################################
     self . StayAlive   = False
     self . LoopRunning = False
     ##########################################################################
@@ -200,6 +203,12 @@ class PicturesView              ( IconDock                                 ) :
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . clear             (                                               )
+    self . UuidItemMaps  =   {                                               }
+    self . UuidItemNames =   {                                               }
+    self . PictureOPTs   =   {                                               }
+    self . FoundPictures =   [                                               ]
     ##########################################################################
     self . Leave . emit      ( self                                          )
     ##########################################################################

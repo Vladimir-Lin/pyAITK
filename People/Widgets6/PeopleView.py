@@ -252,6 +252,9 @@ class PeopleView                  ( IconDock                               ) :
   ############################################################################
   def Shutdown               ( self                                        ) :
     ##########################################################################
+    if                       ( self . AnythingRunning (                  ) ) :
+      return False
+    ##########################################################################
     self . StayAlive   = False
     self . LoopRunning = False
     ##########################################################################
@@ -262,6 +265,13 @@ class PeopleView                  ( IconDock                               ) :
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . clear             (                                               )
+    self . UuidItemMaps  =   {                                               }
+    self . UuidItemNames =   {                                               }
+    self . PeopleOPTs    =   {                                               }
+    self . Favourites    =   {                                               }
+    self . UUIDs         =   [                                               ]
     ##########################################################################
     self . Leave . emit      ( self                                          )
     ##########################################################################
