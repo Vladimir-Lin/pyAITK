@@ -126,6 +126,11 @@ class GalleriesView            ( IconDock                                  ) :
     self . AppendSideActionWithIcon ( "BelongsAlbums"                      , \
                                       ":/images/videos.png"                , \
                                       self . OpenCurrentAlbums               )
+    self . AppendSideActionWithIcon ( "DetectFaces"                        , \
+                                      ":/images/detect-faces.png"          , \
+                                      self . RunDetectFacesInGalleries     , \
+                                      False                                , \
+                                      True                                   )
     ##########################################################################
     return
   ############################################################################
@@ -930,6 +935,46 @@ class GalleriesView            ( IconDock                                  ) :
   def ReloadLocality                     ( self , DB                       ) :
     return self . subgroupReloadLocality (        DB                         )
   ############################################################################
+  def DoDetectFacesInGalleries   ( self                                    ) :
+    ##########################################################################
+    print ( "DoDetectFacesInGalleries" )
+    self    . LoopRunning = False
+    ##########################################################################
+    DB      = self . ConnectDB   (                                           )
+    ##########################################################################
+    if                           ( self . NotOkay ( DB )                   ) :
+      ########################################################################
+      self . Notify              ( 1                                         )
+      ########################################################################
+      self . LoopRunning = True
+      ########################################################################
+      return
+    ##########################################################################
+    self   . PushRunnings        (                                           )
+    self   . Notify              ( 3                                         )
+    ##########################################################################
+    ## FMT    = self . Translations [ "UI::StartLoading"                        ]
+    ## MSG    = FMT . format        ( self . windowTitle ( )                    )
+    ## self   . ShowStatus          ( MSG                                       )
+    self   . OnBusy  . emit      (                                           )
+    ##########################################################################
+    ##########################################################################
+    self   . GoRelax . emit      (                                           )
+    ## self   . ShowStatus          ( ""                                        )
+    DB     . Close               (                                           )
+    self   . Notify              ( 5                                         )
+    self   . PopRunnings         (                                           )
+    ##########################################################################
+    self   . LoopRunning = True
+    ##########################################################################
+    return
+  ############################################################################
+  def RunDetectFacesInGalleries ( self                                     ) :
+    ##########################################################################
+    self . Go                   ( self . DoDetectFacesInGalleries            )
+    ##########################################################################
+    return
+  ############################################################################
   def ExportUUIDs              ( self                                      ) :
     ##########################################################################
     if                         ( not self . isSubordination ( )            ) :
@@ -1566,6 +1611,12 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
+    msg    = self . getMenuItem        ( "DetectFaces"                       )
+    icon   = QIcon                     ( ":/images/detect-faces.png"         )
+    mm     . addActionWithIcon         ( 4001 , icon , msg                   )
+    ##########################################################################
+    mm     . addSeparator              (                                     )
+    ##########################################################################
     self   . BlocMenu                  ( mm , atItem , uuid                  )
     self   . PropertiesMenu            ( mm , atItem                         )
     self   . UsageMenu                 ( mm , atItem                         )
@@ -1660,6 +1711,12 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
     if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( 4001 == at                        ) :
+      ########################################################################
+      self . RunDetectFacesInGalleries (                                     )
+      ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 7401                        ) :
