@@ -35,17 +35,21 @@ class GalleriesView            ( IconDock                                  ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  ShowPeopleGroup     = Signal ( str , int , str                             )
-  OwnedPeopleGroup    = Signal ( str , int , str                             )
-  OwnedVideoAlbums    = Signal ( str , int , str ,       QIcon               )
-  ShowPersonalGallery = Signal ( str , int , str       , QIcon               )
-  ShowPersonalIcons   = Signal ( str , int , str , str , QIcon               )
-  ViewFullGallery     = Signal ( str , int , str , int , QIcon               )
-  ShowWebPages        = Signal ( str , int , str , str , QIcon               )
-  OpenVariantTables   = Signal ( str , str , int , str , dict                )
+  ShowPeopleGroup     = Signal ( str , int  , str                            )
+  OwnedPeopleGroup    = Signal ( str , int  , str                            )
+  OwnedVideoAlbums    = Signal ( str , int  , str ,       QIcon              )
+  ShowPersonalGallery = Signal ( str , int  , str       , QIcon              )
+  ShowPersonalIcons   = Signal ( str , int  , str , str , QIcon              )
+  ShowFoundPictures   = Signal ( str , list ,             QIcon              )
+  ViewFullGallery     = Signal ( str , int  , str , int , QIcon              )
+  ShowWebPages        = Signal ( str , int  , str , str , QIcon              )
+  OpenVariantTables   = Signal ( str , str  , int , str , dict               )
   emitOpenSmartNote   = Signal ( str                                         )
-  OpenLogHistory      = Signal ( str , str , str , str , str                 )
+  OpenLogHistory      = Signal ( str , str  , str , str , str                )
   emitLog             = Signal ( str                                         )
+  emitStartDetecting  = Signal (                                             )
+  emitStopDetecting   = Signal (                                             )
+  emitSelectFound     = Signal ( list , list                                 )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -63,11 +67,15 @@ class GalleriesView            ( IconDock                                  ) :
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = True
+    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
+    self . GalleryOPTs        = {                                            }
+    ##########################################################################
     self . KeepDetecting      = False
     self . DetectingTotal     = 0
     self . DetectingCount     = 0
-    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
-    self . GalleryOPTs        = {                                            }
+    self . DetectingWT        = None
+    self . DetectingSB        = None
+    self . DetectingBT        = None
     ##########################################################################
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -94,6 +102,10 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
+    ##########################################################################
+    self . emitStartDetecting . connect ( self . DoStartDetectingBT          )
+    self . emitStopDetecting  . connect ( self . DoStopDetectingBT           )
+    self . emitSelectFound    . connect ( self . ToggleSelectFound           )
     ##########################################################################
     self . setFunction             ( self . HavingMenu , True                )
     ##########################################################################
@@ -131,6 +143,9 @@ class GalleriesView            ( IconDock                                  ) :
     self . AppendSideActionWithIcon ( "BelongsAlbums"                      , \
                                       ":/images/videos.png"                , \
                                       self . OpenCurrentAlbums               )
+    self . AppendSideActionWithIcon ( "PossibleContains"                   , \
+                                      ":/images/possible-contains.png"     , \
+                                      self . RunPossibleGroupInGalleries     )
     self . AppendSideActionWithIcon ( "DetectFaces"                        , \
                                       ":/images/detect-faces.png"          , \
                                       self . RunDetectFacesInGalleries       )
@@ -204,6 +219,12 @@ class GalleriesView            ( IconDock                                  ) :
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
+    ##########################################################################
+    self . clear             (                                               )
+    self . UuidItemMaps  =   {                                               }
+    self . UuidItemNames =   {                                               }
+    self . GalleryOPTs   =   {                                               }
+    self . UUIDs         =   [                                               ]
     ##########################################################################
     self . Leave . emit      ( self                                          )
     ##########################################################################
@@ -941,6 +962,92 @@ class GalleriesView            ( IconDock                                  ) :
   def ReloadLocality                     ( self , DB                       ) :
     return self . subgroupReloadLocality (        DB                         )
   ############################################################################
+  def ForceStopDetectingBT ( self                                          ) :
+    ##########################################################################
+    self . KeepDetecting = False
+    ##########################################################################
+    return
+  ############################################################################
+  def DoStartDetectingBT   ( self                                          ) :
+    ##########################################################################
+    TOTAL = int            ( self . DetectingTotal - self . DetectingCount   )
+    ##########################################################################
+    if                     ( TOTAL < 10                                    ) :
+      return
+    ##########################################################################
+    WPLAN = self . GetPlan (                                                 )
+    ##########################################################################
+    if                     ( WPLAN in [ False , None ]                     ) :
+      return
+    ##########################################################################
+    if                     ( self . DetectingWT not in self . EmptySet     ) :
+      return
+    ##########################################################################
+    if                     ( self . DetectingSB not in self . EmptySet     ) :
+      return
+    ##########################################################################
+    self  . DetectingWT = QTimer             ( self                          )
+    self  . DetectingWT . timeout . connect  ( self . DoRefreshDetectingBT   )
+    self  . DetectingWT . setInterval        ( 250                           )
+    ##########################################################################
+    self  . DetectingSB = QProgressBar       (                               )
+    ##########################################################################
+    self  . DetectingSB . setFormat          ( "%v / %m"                     )
+    self  . DetectingSB . setMinimumWidth    ( 320                           )
+    self  . DetectingSB . setMaximumWidth    ( 320                           )
+    ##########################################################################
+    self  . DetectingBT = QToolButton        (                               )
+    self  . DetectingBT . setAutoRaise       ( True                          )
+    self  . DetectingBT . setText            ( "Stop"                        )
+    self  . DetectingBT . setToolButtonStyle ( Qt . ToolButtonIconOnly       )
+    PIX   = QPixmap                          ( ":/images/stoprecord.png"     )
+    ICON  = QIcon                            ( PIX                           )
+    self  . DetectingBT . setIcon            ( ICON                          )
+    self  . DetectingBT . clicked . connect  ( self . ForceStopDetectingBT   )
+    ##########################################################################
+    WPLAN . statusBar . addPermanentWidget   ( self . DetectingBT            )
+    WPLAN . statusBar . addPermanentWidget   ( self . DetectingSB            )
+    ##########################################################################
+    self  . DetectingSB . setRange           ( 0 , self . DetectingTotal     )
+    self  . DetectingSB . setValue           (     self . DetectingCount     )
+    self  . DetectingWT . start              (                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoStopDetectingBT ( self                                             ) :
+    ##########################################################################
+    if                  ( self . DetectingWT not in self . EmptySet        ) :
+      ########################################################################
+      self . DetectingWT . stop        (                                     )
+      self . DetectingWT . deleteLater (                                     )
+    ##########################################################################
+    if                  ( self . DetectingSB not in self . EmptySet        ) :
+      ########################################################################
+      self . DetectingSB . deleteLater (                                     )
+    ##########################################################################
+    if                  ( self . DetectingBT not in self . EmptySet        ) :
+      ########################################################################
+      self . DetectingBT . deleteLater (                                     )
+    ##########################################################################
+    self   . KeepDetecting  = False
+    self   . DetectingTotal = 0
+    self   . DetectingCount = 0
+    self   . DetectingWT    = None
+    self   . DetectingSB    = None
+    self   . DetectingBT    = None
+    ##########################################################################
+    return
+  ############################################################################
+  def DoRefreshDetectingBT        ( self                                   ) :
+    ##########################################################################
+    if                            ( self . DetectingSB in self . EmptySet  ) :
+      return
+    ##########################################################################
+    self . DetectingSB . setRange ( 0 , self . DetectingTotal                )
+    self . DetectingSB . setValue (     self . DetectingCount                )
+    ##########################################################################
+    return
+  ############################################################################
   def DetectFacesFromPicture           ( self , DB , PCID                  ) :
     ##########################################################################
     RECG   = self . GetRecognizer      (                                     )
@@ -948,11 +1055,38 @@ class GalleriesView            ( IconDock                                  ) :
     if                                 ( RECG in self . EmptySet           ) :
       return
     ##########################################################################
-    PICTAB = "`cios`.`pictures`"
-    DOPTAB = "`cios`.`picturedepot`"
-    VARTAB = "`cios`.`variables_pictures`"
+    PICTAB = self . Tables             [ "Information"                       ]
+    DOPTAB = self . Tables             [ "Depot"                             ]
+    VARTAB = self . Tables             [ "DescribeVariables"                 ]
     ##########################################################################
     PIC    = PictureItem               (                                     )
+    PV     = VariableItem              (                                     )
+    ##########################################################################
+    PV     . Type = 9
+    PV     . Name = "Description"
+    PV     . Uuid  = PCID
+    ##########################################################################
+    RECJ   = PV  . GetValue            ( DB , VARTAB                         )
+    ##########################################################################
+    if                                 ( RECJ not in self . EmptySet       ) :
+      ########################################################################
+      if                               ( len ( RECJ ) > 0                  ) :
+        ######################################################################
+        try                                                                  :
+          ####################################################################
+          BODY = RECJ . decode         ( "utf-8"                             )
+          ####################################################################
+          if                           ( len ( BODY ) > 0                  ) :
+            ##################################################################
+            JJ = json . loads          ( BODY                                )
+            OK = RECG . hasFaces       ( JJ                                  )
+            ##################################################################
+            if                         ( OK                                ) :
+              return True
+          ####################################################################
+        except                                                               :
+          pass
+    ##########################################################################
     INFO   = PIC . GetInformation      ( DB , PICTAB , PCID                  )
     ##########################################################################
     if                                 ( INFO in self . EmptySet           ) :
@@ -964,17 +1098,15 @@ class GalleriesView            ( IconDock                                  ) :
     if                                 ( not OKAY                          ) :
       return False
     ##########################################################################
-    PV     = VariableItem              (                                     )
     OPTs   =                           {                                     }
     ##########################################################################
     J      = RECG . DoBasicDescription ( PIC , INFO , OPTs                   )
+    OK     = RECG . hasFaces           ( J                                   )
     ##########################################################################
-    PV . Uuid  = PCID
-    PV . Value = json . dumps          ( J                                   )
-    ## PV . AssureValue                   ( DB , VARTAB                         )
-    print ( json . dumps ( J ) )
+    PV     . Value = json . dumps      ( J                                   )
+    PV     . AssureValue               ( DB , VARTAB                         )
     ##########################################################################
-    return False
+    return OK
   ############################################################################
   def DetectFacesFromPictures              ( self , DB , PCIDs             ) :
     ##########################################################################
@@ -982,7 +1114,7 @@ class GalleriesView            ( IconDock                                  ) :
     self   . DetectingTotal = len          ( PCIDs                           )
     self   . DetectingCount = 0
     ##########################################################################
-    print ( self . DetectingTotal )
+    self   . emitStartDetecting . emit     (                                 )
     ##########################################################################
     for PCID in PCIDs                                                        :
       ########################################################################
@@ -992,10 +1124,18 @@ class GalleriesView            ( IconDock                                  ) :
       if                                   ( not self . StayAlive          ) :
         continue
       ########################################################################
-      ## OKAY = self . DetectFacesFromPicture ( DB , PCID                       )
+      OKAY = self . DetectFacesFromPicture ( DB , PCID                       )
       ########################################################################
-      ## if                                   ( OKAY                          ) :
-      ##   FCIDs . append                     ( PCID                            )
+      if                                   ( OKAY                          ) :
+        ######################################################################
+        FCIDs . append                     ( PCID                            )
+        ######################################################################
+        MSG   = f"{PCID}"
+        self  . emitLog . emit             ( MSG                             )
+      ########################################################################
+      self . DetectingCount = int          ( self . DetectingCount + 1       )
+    ##########################################################################
+    self   . emitStopDetecting . emit      (                                 )
     ##########################################################################
     return FCIDs
   ############################################################################
@@ -1005,7 +1145,7 @@ class GalleriesView            ( IconDock                                  ) :
     GALT        = GalleryItem        (                                       )
     PCIDs       =                    [                                       ]
     ##########################################################################
-    for GUID in UUIDs                                                        :
+    for GUID in GUIDs                                                        :
       ########################################################################
       if                             ( not self . KeepDetecting            ) :
         continue
@@ -1066,11 +1206,71 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     self    . KeepDetecting = False
     ##########################################################################
+    if                                        ( len ( FCIDs ) > 0          ) :
+      ########################################################################
+      TITLE = self . windowTitle              (                              )
+      ICON  = self . windowIcon               (                              )
+      MSG   = self . getMenuItem              ( "FacesInGalleries"           )
+      MSG   = MSG  . replace                  ( "$(TITLE)" , TITLE           )
+      self  . ShowFoundPictures . emit        ( MSG , FCIDs , ICON           )
+    ##########################################################################
     return
   ############################################################################
-  def RunDetectFacesInGalleries ( self                                     ) :
+  def RunDetectFacesInGalleries   ( self                                   ) :
     ##########################################################################
-    self . Go                   ( self . DoDetectFacesInGalleries            )
+    if ( self . DetectingSB not in self . EmptySet                         ) :
+      ########################################################################
+      self . ForceStopDetectingBT (                                          )
+      ########################################################################
+      return
+    ##########################################################################
+    self . Go                     ( self . DoDetectFacesInGalleries          )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoPossibleGroupInGalleries       ( self                              ) :
+    ##########################################################################
+    UUIDs  = self . getSelectedUuids   (                                     )
+    ##########################################################################
+    if                                 ( len ( UUIDs ) <= 0                ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB          (                                     )
+    ##########################################################################
+    if                                 ( self . NotOkay ( DB )             ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    self   . PushRunnings              (                                     )
+    self   . Notify                    ( 3                                   )
+    ##########################################################################
+    msg    = self . getMenuItem        ( "StartPossibleContains"             )
+    self   . ShowStatus                ( msg                                 )
+    self   . OnBusy  . emit            (                                     )
+    ##########################################################################
+    RELTAB = self . Tables             [ "Relation"                          ]
+    GALT   = GalleryItem               (                                     )
+    FUIDs  = GALT . LookingForContains ( DB                                , \
+                                         RELTAB                            , \
+                                         UUIDs                             , \
+                                         self . GType                      , \
+                                         1                                   )
+    ##########################################################################
+    self   . GoRelax . emit            (                                     )
+    self   . ShowStatus                ( ""                                  )
+    DB     . Close                     (                                     )
+    self   . Notify                    ( 5                                   )
+    self   . PopRunnings               (                                     )
+    ##########################################################################
+    self   . emitSelectFound . emit    ( UUIDs , FUIDs                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunPossibleGroupInGalleries ( self                                   ) :
+    ##########################################################################
+    self . Go                     ( self . DoPossibleGroupInGalleries        )
     ##########################################################################
     return
   ############################################################################
@@ -1340,6 +1540,16 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "DetectFaces"                             )
+    ICON  = QIcon                ( ":/images/detect-faces.png"               )
+    mm    . addActionFromMenuWithIcon ( LOM , 8821001 , ICON , MSG           )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "PossibleContains"                        )
+    ICON  = QIcon                ( ":/images/possible-contains.png"          )
+    mm    . addActionFromMenuWithIcon ( LOM , 8821002 , ICON , MSG           )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
     MSG   = self . getMenuItem   ( "ExportUUIDs"                             )
     mm    . addActionFromMenu    ( LOM , 8831001 , MSG                       )
     ##########################################################################
@@ -1355,6 +1565,9 @@ class GalleriesView            ( IconDock                                  ) :
     mm    . addActionFromMenu    ( LOM , 8831103 , MSG                       )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "OptimizeGalleryOrder"                    )
+    mm    . addActionFromMenu    ( LOM , 8836001 , MSG                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "OptimizeGalleryOrder"                    )
     mm    . addActionFromMenu    ( LOM , 8836001 , MSG                       )
@@ -1411,6 +1624,18 @@ class GalleriesView            ( IconDock                                  ) :
         self . SortByName = True
       ########################################################################
       self   . restart             (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( 8821001 == at                                          ) :
+      ########################################################################
+      self . RunDetectFacesInGalleries (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( 8821002 == at                                          ) :
+      ########################################################################
+      self . RunPossibleGroupInGalleries (                                   )
       ########################################################################
       return True
     ##########################################################################
@@ -1710,12 +1935,6 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
-    msg    = self . getMenuItem        ( "DetectFaces"                       )
-    icon   = QIcon                     ( ":/images/detect-faces.png"         )
-    mm     . addActionWithIcon         ( 4001 , icon , msg                   )
-    ##########################################################################
-    mm     . addSeparator              (                                     )
-    ##########################################################################
     self   . BlocMenu                  ( mm , atItem , uuid                  )
     self   . PropertiesMenu            ( mm , atItem                         )
     self   . UsageMenu                 ( mm , atItem                         )
@@ -1810,12 +2029,6 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
     if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    if                                 ( 4001 == at                        ) :
-      ########################################################################
-      self . RunDetectFacesInGalleries (                                     )
-      ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 7401                        ) :

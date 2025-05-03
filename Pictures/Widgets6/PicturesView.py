@@ -58,6 +58,7 @@ class PicturesView              ( IconDock                                 ) :
     self . RefreshOpts    = True
     self . Watermarking   = False
     self . ShowRecognize  = False
+    self . FoundPictures  =         [                                         ]
     self . PictureOPTs    =         {                                         }
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
@@ -371,7 +372,10 @@ class PicturesView              ( IconDock                                 ) :
   ############################################################################
   def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                      ( self . isOriginal ( )        ) :
+    if                                      ( self . isPrivateListings ( ) ) :
+      return self . FoundPictures
+    ##########################################################################
+    if                                      ( self . isOriginal        ( ) ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -492,6 +496,18 @@ class PicturesView              ( IconDock                                 ) :
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
     DB           . Close               (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def startUuids     ( self , UUIDs                                        ) :
+    ##########################################################################
+    self . FoundPictures = UUIDs
+    self . Grouping      = "PrivateListings"
+    ##########################################################################
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
+    ##########################################################################
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
