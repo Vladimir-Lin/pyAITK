@@ -58,8 +58,8 @@ class PicturesView              ( IconDock                                 ) :
     self . RefreshOpts    = True
     self . Watermarking   = False
     self . ShowRecognize  = False
-    self . FoundPictures  =         [                                         ]
-    self . PictureOPTs    =         {                                         }
+    self . FoundPictures  =         [                                        ]
+    self . PictureOPTs    =         {                                        }
     ##########################################################################
     self . defaultSelectionMode = "ExtendedSelection"
     ##########################################################################
@@ -1081,16 +1081,35 @@ class PicturesView              ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def RemoveItems                      ( self , UUIDs                      ) :
+  def RemoveItems                        ( self , UUIDs                    ) :
     ##########################################################################
-    if                                 ( len ( UUIDs ) <= 0                ) :
+    if                                   ( len ( UUIDs ) <= 0              ) :
       return
     ##########################################################################
-    TITLE  = "RemovePictureItems"
-    RELTAB = self . Tables             [ "Relation"                          ]
-    SQLs   = self . GenerateRemoveSQLs ( UUIDs , self . Relation , RELTAB    )
-    self   . QuickExecuteSQLs          ( TITLE , 100 , RELTAB , SQLs         )
-    self   . loading                   (                                     )
+    if                                   ( self . isPrivateListings (    ) ) :
+      ########################################################################
+      FUIDs  =                           [                                   ]
+      ########################################################################
+      for PCID in self . FoundPictures                                       :
+        ######################################################################
+        if                               ( PCID not in UUIDs               ) :
+          if                             ( PCID not in FUIDs               ) :
+            FUIDs . append               ( PCID                              )
+      ########################################################################
+      self   . FoundPictures = FUIDs
+      ########################################################################
+      FMT    = self . getMenuItem        ( "Total"                           )
+      MSG    = FMT  . format             ( len ( FUIDs )                     )
+      self   . setToolTip                ( MSG                               )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      TITLE  = "RemovePictureItems"
+      RELTAB = self . Tables             [ "Relation"                        ]
+      SQLs   = self . GenerateRemoveSQLs ( UUIDs , self . Relation , RELTAB  )
+      self   . QuickExecuteSQLs          ( TITLE , 100 , RELTAB , SQLs       )
+    ##########################################################################
+    self     . loading                   (                                   )
     ##########################################################################
     return
   ############################################################################

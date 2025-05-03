@@ -118,7 +118,7 @@ class GalleriesView            ( IconDock                                  ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 660 , 800 )                       )
+    return self . SizeSuggestion ( QSize ( 648 , 800 )                       )
   ############################################################################
   def PrepareFetchTableKey       ( self                                    ) :
     ##########################################################################
