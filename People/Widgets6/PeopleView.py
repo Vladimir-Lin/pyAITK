@@ -2801,6 +2801,9 @@ class PeopleView                  ( IconDock                               ) :
     MSG  = self . getMenuItem ( "SearchPornPICs"                             )
     mm   . addActionFromMenu  ( COL , 29436055 , MSG                         )
     ##########################################################################
+    MSG  = self . getMenuItem ( "SearchEvilAngel"                            )
+    mm   . addActionFromMenu  ( COL , 29436056 , MSG                         )
+    ##########################################################################
     return mm
   ############################################################################
   def RunPeopleSourcesMenu       ( self , at , item                        ) :
@@ -2811,7 +2814,8 @@ class PeopleView                  ( IconDock                               ) :
                                    "IAFD"                                  , \
                                    "Private"                               , \
                                    "BANG"                                  , \
-                                   "PornPICs"                                ]
+                                   "PornPICs"                              , \
+                                   "EvilAngel"                               ]
       for N in LISTs                                                         :
         self . OpenPeopleSources ( N          , item                         )
       ########################################################################
@@ -2844,6 +2848,12 @@ class PeopleView                  ( IconDock                               ) :
     if                           ( 29436055 == at                          ) :
       ########################################################################
       self   . OpenPeopleSources ( "PornPICs" , item                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( 29436056 == at                          ) :
+      ########################################################################
+      self   . OpenPeopleSources ( "EvilAngel" , item                        )
       ########################################################################
       return True
     ##########################################################################
