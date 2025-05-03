@@ -22,7 +22,9 @@ from   AITK    . Qt6                        import *
 from   AITK    . Essentials . Relation      import Relation
 from   AITK    . Calendars  . StarDate      import StarDate
 from   AITK    . Calendars  . Periode       import Periode
-from   AITK    . Pictures   . Gallery       import Gallery as GalleryItem
+from   AITK    . Documents  . Variables     import Variables as VariableItem
+from   AITK    . Pictures   . Gallery       import Gallery   as GalleryItem
+from   AITK    . Pictures   . Picture6      import Picture   as PictureItem
 ##############################################################################
 from   AITK    . UUIDs      . UuidListings6 import appendUuid
 from   AITK    . UUIDs      . UuidListings6 import appendUuids
@@ -61,6 +63,9 @@ class GalleriesView            ( IconDock                                  ) :
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = True
+    self . KeepDetecting      = False
+    self . DetectingTotal     = 0
+    self . DetectingCount     = 0
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
     self . GalleryOPTs        = {                                            }
     ##########################################################################
@@ -128,9 +133,7 @@ class GalleriesView            ( IconDock                                  ) :
                                       self . OpenCurrentAlbums               )
     self . AppendSideActionWithIcon ( "DetectFaces"                        , \
                                       ":/images/detect-faces.png"          , \
-                                      self . RunDetectFacesInGalleries     , \
-                                      False                                , \
-                                      True                                   )
+                                      self . RunDetectFacesInGalleries       )
     ##########################################################################
     return
   ############################################################################
@@ -187,6 +190,9 @@ class GalleriesView            ( IconDock                                  ) :
     return self . defaultFocusOut (                                          )
   ############################################################################
   def Shutdown               ( self                                        ) :
+    ##########################################################################
+    if                       ( self . AnythingRunning (                  ) ) :
+      return False
     ##########################################################################
     self . StayAlive   = False
     self . LoopRunning = False
@@ -935,37 +941,130 @@ class GalleriesView            ( IconDock                                  ) :
   def ReloadLocality                     ( self , DB                       ) :
     return self . subgroupReloadLocality (        DB                         )
   ############################################################################
-  def DoDetectFacesInGalleries   ( self                                    ) :
+  def DetectFacesFromPicture           ( self , DB , PCID                  ) :
     ##########################################################################
-    print ( "DoDetectFacesInGalleries" )
-    self    . LoopRunning = False
+    RECG   = self . GetRecognizer      (                                     )
     ##########################################################################
-    DB      = self . ConnectDB   (                                           )
+    if                                 ( RECG in self . EmptySet           ) :
+      return
     ##########################################################################
-    if                           ( self . NotOkay ( DB )                   ) :
+    PICTAB = "`cios`.`pictures`"
+    DOPTAB = "`cios`.`picturedepot`"
+    VARTAB = "`cios`.`variables_pictures`"
+    ##########################################################################
+    PIC    = PictureItem               (                                     )
+    INFO   = PIC . GetInformation      ( DB , PICTAB , PCID                  )
+    ##########################################################################
+    if                                 ( INFO in self . EmptySet           ) :
+      return False
+    ##########################################################################
+    QQ     = f"select `file` from {DOPTAB} where ( `uuid` = {PCID} ) ;"
+    OKAY   = PIC . FromDB              ( DB , QQ                             )
+    ##########################################################################
+    if                                 ( not OKAY                          ) :
+      return False
+    ##########################################################################
+    PV     = VariableItem              (                                     )
+    OPTs   =                           {                                     }
+    ##########################################################################
+    J      = RECG . DoBasicDescription ( PIC , INFO , OPTs                   )
+    ##########################################################################
+    PV . Uuid  = PCID
+    PV . Value = json . dumps          ( J                                   )
+    ## PV . AssureValue                   ( DB , VARTAB                         )
+    print ( json . dumps ( J ) )
+    ##########################################################################
+    return False
+  ############################################################################
+  def DetectFacesFromPictures              ( self , DB , PCIDs             ) :
+    ##########################################################################
+    FCIDs  =                               [                                 ]
+    self   . DetectingTotal = len          ( PCIDs                           )
+    self   . DetectingCount = 0
+    ##########################################################################
+    print ( self . DetectingTotal )
+    ##########################################################################
+    for PCID in PCIDs                                                        :
       ########################################################################
-      self . Notify              ( 1                                         )
+      if                                   ( not self . KeepDetecting      ) :
+        continue
       ########################################################################
-      self . LoopRunning = True
+      if                                   ( not self . StayAlive          ) :
+        continue
+      ########################################################################
+      ## OKAY = self . DetectFacesFromPicture ( DB , PCID                       )
+      ########################################################################
+      ## if                                   ( OKAY                          ) :
+      ##   FCIDs . append                     ( PCID                            )
+    ##########################################################################
+    return FCIDs
+  ############################################################################
+  def GetPicturesFromGalleries       ( self , DB , GUIDs                   ) :
+    ##########################################################################
+    RELTAB      = self . Tables      [ "Relation"                            ]
+    GALT        = GalleryItem        (                                       )
+    PCIDs       =                    [                                       ]
+    ##########################################################################
+    for GUID in UUIDs                                                        :
+      ########################################################################
+      if                             ( not self . KeepDetecting            ) :
+        continue
+      ########################################################################
+      if                             ( not self . StayAlive                ) :
+        continue
+      ########################################################################
+      UUIDs     = GALT . GetPictures ( DB , RELTAB , GUID , self . GType , 1 )
+      ########################################################################
+      for PCID in UUIDs                                                      :
+        ######################################################################
+        if                           ( PCID not in PCIDs                   ) :
+          PCIDs . append             ( PCID                                  )
+    ##########################################################################
+    return PCIDs
+  ############################################################################
+  def DoDetectFacesInGalleries                ( self                       ) :
+    ##########################################################################
+    RECG    = self . GetRecognizer            (                              )
+    ##########################################################################
+    if                                        ( RECG in self . EmptySet    ) :
+      return
+    ##########################################################################
+    UUIDs   = self . getSelectedUuids         (                              )
+    ##########################################################################
+    if                                        ( len ( UUIDs ) <= 0         ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB                (                              )
+    ##########################################################################
+    if                                        ( self . NotOkay ( DB )      ) :
+      ########################################################################
+      self  . Notify                          ( 1                            )
       ########################################################################
       return
     ##########################################################################
-    self   . PushRunnings        (                                           )
-    self   . Notify              ( 3                                         )
+    self    . KeepDetecting = True
     ##########################################################################
-    ## FMT    = self . Translations [ "UI::StartLoading"                        ]
-    ## MSG    = FMT . format        ( self . windowTitle ( )                    )
-    ## self   . ShowStatus          ( MSG                                       )
-    self   . OnBusy  . emit      (                                           )
+    self    . PushRunnings                    (                              )
+    self    . Notify                          ( 3                            )
     ##########################################################################
+    msg     = self . getMenuItem              ( "StartDetectFaces"           )
+    self    . ShowStatus                      ( msg                          )
+    self    . OnBusy  . emit                  (                              )
     ##########################################################################
-    self   . GoRelax . emit      (                                           )
-    ## self   . ShowStatus          ( ""                                        )
-    DB     . Close               (                                           )
-    self   . Notify              ( 5                                         )
-    self   . PopRunnings         (                                           )
+    PCIDs   = self . GetPicturesFromGalleries ( DB , UUIDs                   )
+    FCIDs   =                                 [                              ]
     ##########################################################################
-    self   . LoopRunning = True
+    if                                        ( len ( PCIDs ) > 0          ) :
+      ########################################################################
+      FCIDs = self . DetectFacesFromPictures  ( DB , PCIDs                   )
+    ##########################################################################
+    self    . GoRelax . emit                  (                              )
+    self    . ShowStatus                      ( ""                           )
+    DB      . Close                           (                              )
+    self    . Notify                          ( 5                            )
+    self    . PopRunnings                     (                              )
+    ##########################################################################
+    self    . KeepDetecting = False
     ##########################################################################
     return
   ############################################################################
