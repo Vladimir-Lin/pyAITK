@@ -137,6 +137,9 @@ class GalleriesView            ( IconDock                                  ) :
     self . AppendSideActionWithIcon ( "ViewFullPictures"                   , \
                                       ":/images/searchimages.png"          , \
                                       self . ViewCurrentGallery              )
+    self . AppendSideActionWithIcon ( "AllPictures"                        , \
+                                      ":/images/galleries-all.png"         , \
+                                      self . ViewAllPictures                 )
     self . AppendSideActionWithIcon ( "BelongsCrowd"                       , \
                                       ":/images/peoplegroups.png"          , \
                                       self . OpenCurrentCrowds               )
@@ -1277,6 +1280,56 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def DoViewAllPictures                       ( self                       ) :
+    ##########################################################################
+    UUIDs   = self . getSelectedUuids         (                              )
+    ##########################################################################
+    if                                        ( len ( UUIDs ) <= 0         ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB                (                              )
+    ##########################################################################
+    if                                        ( self . NotOkay ( DB )      ) :
+      ########################################################################
+      self  . Notify                          ( 1                            )
+      ########################################################################
+      return
+    ##########################################################################
+    self    . KeepDetecting = True
+    ##########################################################################
+    self    . PushRunnings                    (                              )
+    self    . Notify                          ( 3                            )
+    ##########################################################################
+    msg     = self . getMenuItem              ( "StartViewAllPictures"       )
+    self    . ShowStatus                      ( msg                          )
+    self    . OnBusy  . emit                  (                              )
+    ##########################################################################
+    PCIDs   = self . GetPicturesFromGalleries ( DB , UUIDs                   )
+    ##########################################################################
+    self    . GoRelax . emit                  (                              )
+    self    . ShowStatus                      ( ""                           )
+    DB      . Close                           (                              )
+    self    . Notify                          ( 5                            )
+    self    . PopRunnings                     (                              )
+    ##########################################################################
+    self    . KeepDetecting = False
+    ##########################################################################
+    if                                        ( len ( PCIDs ) > 0          ) :
+      ########################################################################
+      TITLE = self . windowTitle              (                              )
+      ICON  = self . windowIcon               (                              )
+      MSG   = self . getMenuItem              ( "AllInGalleries"             )
+      MSG   = MSG  . replace                  ( "$(TITLE)" , TITLE           )
+      self  . ShowFoundPictures . emit        ( MSG , PCIDs , ICON           )
+    ##########################################################################
+    return
+  ############################################################################
+  def ViewAllPictures ( self                                               ) :
+    ##########################################################################
+    self . Go         ( self . DoViewAllPictures                             )
+    ##########################################################################
+    return
+  ############################################################################
   def ExportUUIDs              ( self                                      ) :
     ##########################################################################
     if                         ( not self . isSubordination ( )            ) :
@@ -1543,13 +1596,17 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "AllPictures"                             )
+    ICON  = QIcon                ( ":/images/galleries-all.png"              )
+    mm    . addActionFromMenuWithIcon ( LOM , 8821001 , ICON , MSG           )
+    ##########################################################################
     MSG   = self . getMenuItem   ( "DetectFaces"                             )
     ICON  = QIcon                ( ":/images/detect-faces.png"               )
-    mm    . addActionFromMenuWithIcon ( LOM , 8821001 , ICON , MSG           )
+    mm    . addActionFromMenuWithIcon ( LOM , 8821002 , ICON , MSG           )
     ##########################################################################
     MSG   = self . getMenuItem   ( "PossibleContains"                        )
     ICON  = QIcon                ( ":/images/possible-contains.png"          )
-    mm    . addActionFromMenuWithIcon ( LOM , 8821002 , ICON , MSG           )
+    mm    . addActionFromMenuWithIcon ( LOM , 8821003 , ICON , MSG           )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -1632,11 +1689,17 @@ class GalleriesView            ( IconDock                                  ) :
     ##########################################################################
     if            ( 8821001 == at                                          ) :
       ########################################################################
-      self . RunDetectFacesInGalleries (                                     )
+      self . ViewAllPictures (                                               )
       ########################################################################
       return True
     ##########################################################################
     if            ( 8821002 == at                                          ) :
+      ########################################################################
+      self . RunDetectFacesInGalleries (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if            ( 8821003 == at                                          ) :
       ########################################################################
       self . RunPossibleGroupInGalleries (                                   )
       ########################################################################
