@@ -42,6 +42,7 @@ class PictureEditor               ( VcfWidget                              ) :
   Adjustment           = Signal   ( QWidget , QSize                          )
   JsonCallback         = Signal   ( dict                                     )
   Leave                = Signal   ( QWidget                                  )
+  emitGeometryChange   = Signal   ( QGraphicsItem                            )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -50,10 +51,11 @@ class PictureEditor               ( VcfWidget                              ) :
     self . MainGui       = None
     self . HumanMeasure  = None
     self . RequestItem   = None
-    self . MainTables    =        {                                          }
-    self . CurrentPeople =        {                                          }
-    self . setJsonCaller          ( self . JsonCaller                        )
-    self . JsonCallback . connect ( self . JsonAccepter                      )
+    self . MainTables    =              {                                    }
+    self . CurrentPeople =              {                                    }
+    self . setJsonCaller                ( self . JsonCaller                  )
+    self . JsonCallback       . connect ( self . JsonAccepter                )
+    self . emitGeometryChange . connect ( self . doGeometryChange            )
     ##########################################################################
     return
   ############################################################################
@@ -180,6 +182,14 @@ class PictureEditor               ( VcfWidget                              ) :
       self . RequestItem = ITEM
       ########################################################################
       self . ConnectHumanMeasure . emit ( self                               )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                  ( CALLER == "GeometryChange"       ) :
+      ########################################################################
+      ITEM = JSON                       [ "Item"                             ]
+      ########################################################################
+      self . emitGeometryChange . emit ( ITEM                               )
       ########################################################################
       return
     ##########################################################################

@@ -42,17 +42,18 @@ class VcfWidget           ( QGraphicsView                                  , \
                             VcfDisplay                                     , \
                             VcfManager                                     ) :
   ############################################################################
-  attachNone     = Signal ( QWidget                                          )
-  attachDock     = Signal ( QWidget , str , int , int                        )
-  attachMdi      = Signal ( QWidget , int                                    )
-  emitMenuCaller = Signal ( dict                                             )
-  emitLog        = Signal ( str                                              )
-  emitBustle     = Signal (                                                  )
-  emitVacancy    = Signal (                                                  )
-  OnBusy         = Signal (                                                  )
-  GoRelax        = Signal (                                                  )
+  attachNone         = Signal ( QWidget                                      )
+  attachDock         = Signal ( QWidget , str , int , int                    )
+  attachMdi          = Signal ( QWidget , int                                )
+  emitMenuCaller     = Signal ( dict                                         )
+  emitLog            = Signal ( str                                          )
+  emitBustle         = Signal (                                              )
+  emitVacancy        = Signal (                                              )
+  OnBusy             = Signal (                                              )
+  GoRelax            = Signal (                                              )
+  emitGeometryChange = Signal ( QGraphicsItem                                )
   ############################################################################
-  def __init__            ( self , parent = None , plan = None             ) :
+  def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
     super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )
@@ -78,11 +79,12 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . setRenderHint         ( QPainter . TextAntialiasing       , True  )
     ## self . setRenderHint         ( QPainter . LosslessImageRendering , True  )
     ##########################################################################
-    self . emitMenuCaller . connect ( self . acceptMenuCaller                )
-    self . emitBustle     . connect ( self . DoBustle                        )
-    self . emitVacancy    . connect ( self . DoVacancy                       )
-    self . OnBusy         . connect ( self . AtBusy                          )
-    self . GoRelax        . connect ( self . OnRelax                         )
+    self . emitMenuCaller     . connect ( self . acceptMenuCaller            )
+    self . emitBustle         . connect ( self . DoBustle                    )
+    self . emitVacancy        . connect ( self . DoVacancy                   )
+    self . OnBusy             . connect ( self . AtBusy                      )
+    self . GoRelax            . connect ( self . OnRelax                     )
+    self . emitGeometryChange . connect ( self . doGeometryChange            )
     ##########################################################################
     return
   ############################################################################
@@ -202,6 +204,12 @@ class VcfWidget           ( QGraphicsView                                  , \
   def addLog              ( self , msg                                     ) :
     ##########################################################################
     self . emitLog . emit ( msg                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def doGeometryChange           ( self , ITEM                             ) :
+    ##########################################################################
+    ITEM . prepareGeometryChange (                                           )
     ##########################################################################
     return
   ############################################################################

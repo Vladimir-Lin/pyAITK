@@ -278,7 +278,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       self   . AddFaceRegion              ( R                                )
     ##########################################################################
     self     . Gui . GoRelax . emit       (                                  )
-    self     . prepareGeometryChange      (                                  )
+    self     . CallGeometryChange         (                                  )
     self     . Notify                     ( 5                                )
     ##########################################################################
     return
@@ -292,7 +292,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     KPS  = RECG . DoDetectSimpleBody ( self . PICOP                          )
     self . AddBodyRegion             ( KPS                                   )
-    self . prepareGeometryChange     (                                       )
+    self . CallGeometryChange        (                                       )
     self . Notify                    ( 5                                     )
     ##########################################################################
     return
@@ -321,7 +321,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       R     = self . RectangleToQRect        ( RT                            )
       self  . AddFaceRegion                  ( R                             )
     ##########################################################################
-    self    . prepareGeometryChange          (                               )
+    self    . CallGeometryChange             (                               )
     self    . Notify                         ( 5                             )
     ##########################################################################
     return
