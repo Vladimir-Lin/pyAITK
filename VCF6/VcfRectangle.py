@@ -66,7 +66,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . Scaling    = False
     self . Editing    = False
     self . Angle      = 0.0
-    self . mcMargin   =  6
+    self . mcMargin   =  8
     self . mdMargin   = int        ( self . mcMargin * 2                     )
     self . Transform  = QTransform (                                         )
     self . Transform  . reset      (                                         )

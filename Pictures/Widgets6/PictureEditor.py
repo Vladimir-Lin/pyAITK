@@ -416,8 +416,34 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def assignFilename ( self , Uuid                                         ) :
+  def assignFilename              ( self , FILENAME                        ) :
     ##########################################################################
+    PIC  = PictureItem            (                                          )
+    OK   = PIC . Load             ( FILENAME                                 )
+    ##########################################################################
+    if                            ( not OK                                 ) :
+      return
+    ##########################################################################
+    self . PerfectView            (                                          )
+    ##########################################################################
+    VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
+    VRIT . setOptions             ( self . Options , False                   )
+    self . assignItemProperties   ( VRIT                                     )
+    VRIT . setMenuCaller          ( self . MenuCallerEmitter                 )
+    VRIT . setZValue              ( 10000                                    )
+    VRIT . PICOP = PIC
+    VRIT . Image = PIC . toQImage (                                          )
+    VRIT . asImageRect            (                                          )
+    VRIT . PrepareForActions      (                                          )
+    ##########################################################################
+    VRIT . logFunc = self . addLog
+    ##########################################################################
+    FS   = VRIT . ImageSize       (                                          )
+    ##########################################################################
+    self . addItem                ( VRIT                                     )
+    self . Scene . addItem        ( VRIT                                     )
+    self . setPrepared            ( True                                     )
+    self . DoAdjustments          ( FS                                       )
     ##########################################################################
     return
 ##############################################################################
