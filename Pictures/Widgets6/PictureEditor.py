@@ -14,29 +14,31 @@ import binascii
 import hashlib
 import base64
 ##############################################################################
-from   io                                               import BytesIO
-from   wand . image                                     import Image
-from   PIL                                              import Image            as Pillow
+from   io                                                   import BytesIO
+from   wand . image                                         import Image
+from   PIL                                                  import Image            as Pillow
 ##############################################################################
-from   PySide6                                          import QtCore
-from   PySide6                                          import QtGui
-from   PySide6                                          import QtWidgets
-from   PySide6 . QtCore                                 import *
-from   PySide6 . QtGui                                  import *
-from   PySide6 . QtWidgets                              import *
-from   AITK    . Qt6                                    import *
-from   AITK    . VCF6                                   import *
+from   PySide6                                              import QtCore
+from   PySide6                                              import QtGui
+from   PySide6                                              import QtWidgets
+from   PySide6 . QtCore                                     import *
+from   PySide6 . QtGui                                      import *
+from   PySide6 . QtWidgets                                  import *
+from   AITK    . Qt6                                        import *
+from   AITK    . VCF6                                       import *
 ##############################################################################
-from   AITK    . Pictures . Picture6                    import Picture          as PictureItem
-from   AITK    . Pictures . Gallery                     import Gallery          as GalleryItem
+from   AITK    . Pictures . Picture6                        import Picture          as PictureItem
+from   AITK    . Pictures . Gallery                         import Gallery          as GalleryItem
 ##############################################################################
-from   AITK    . People   . Faces6   . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
-from   AITK    . People   . Widgets6 . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
-from   AITK    . People   . Widgets6 . PeopleDetails    import PeopleDetails    as PeopleDetails
+from   AITK    . People   . Faces6       . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
+## from   AITK    . People   . Measurements . VcfMeasureRegion import VcfMeasureRegion as VcfMeasureRegion
+from   AITK    . People   . Widgets6     . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
+from   AITK    . People   . Widgets6     . PeopleDetails    import PeopleDetails    as PeopleDetails
 ##############################################################################
 class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
   ObtainsCurrentPeople = Signal   ( QWidget                                  )
+  ConnectHumanMeasure  = Signal   ( QWidget                                  )
   Adjustment           = Signal   ( QWidget , QSize                          )
   JsonCallback         = Signal   ( dict                                     )
   Leave                = Signal   ( QWidget                                  )
@@ -46,10 +48,17 @@ class PictureEditor               ( VcfWidget                              ) :
     super ( ) . __init__          (        parent ,        plan              )
     ##########################################################################
     self . MainGui       = None
+    self . HumanMeasure  = None
+    self . RequestItem   = None
     self . MainTables    =        {                                          }
     self . CurrentPeople =        {                                          }
     self . setJsonCaller          ( self . JsonCaller                        )
     self . JsonCallback . connect ( self . JsonAccepter                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareForActions ( self                                             ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -156,11 +165,57 @@ class PictureEditor               ( VcfWidget                              ) :
       ########################################################################
       return
     ##########################################################################
+    if                           ( CALLER == "GetCurrentPeople"            ) :
+      ########################################################################
+      ITEM = JSON                [ "Item"                                    ]
+      self . RequestItem = ITEM
+      ########################################################################
+      self . ObtainsCurrentPeople . emit ( self                              )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                  ( CALLER == "ConnectMeasure"       ) :
+      ########################################################################
+      ITEM = JSON                       [ "Item"                             ]
+      self . RequestItem = ITEM
+      ########################################################################
+      self . ConnectHumanMeasure . emit ( self                               )
+      ########################################################################
+      return
+    ##########################################################################
     return
   ############################################################################
   def setCurrentPeople ( self , JSON                                       ) :
     ##########################################################################
     self . CurrentPeople = JSON
+    ##########################################################################
+    if                 ( self . RequestItem in self . EmptySet             ) :
+      return
+    ##########################################################################
+    self . RequestItem . setCurrentPeople ( JSON                             )
+    self . RequestItem = None
+    ##########################################################################
+    return
+  ############################################################################
+  def leaveHumanMeasure ( self , widget                                    ) :
+    ##########################################################################
+    if                  ( widget == self . HumanMeasure                    ) :
+      self . HumanMeasure = None
+    ##########################################################################
+    return
+  ############################################################################
+  def setHumanMeasure          ( self , widget                             ) :
+    ##########################################################################
+    self . HumanMeasure = widget
+    ##########################################################################
+    if                         ( widget not in self . EmptySet             ) :
+      widget . Leave . connect ( self . leaveHumanMeasure                    )
+    ##########################################################################
+    if                         ( self . RequestItem in self . EmptySet     ) :
+      return
+    ##########################################################################
+    self . RequestItem . setHumanMeasure ( widget                            )
+    self . RequestItem = None
     ##########################################################################
     return
   ############################################################################
@@ -214,6 +269,9 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT . Region      = rect
     VRIT . PictureItem = parent
     VRIT . setRange              ( RR                                        )
+    VRIT . PrepareForActions     (                                           )
+    ##########################################################################
+    VRIT . logFunc = self . addLog
     ##########################################################################
     self . addItem               ( VRIT , parent                             )
     ## self . Scene . addItem       ( VRIT                                      )
@@ -275,6 +333,8 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT . PictureItem = parent
     VRIT . setRange                 ( RR                                     )
     ##########################################################################
+    VRIT . logFunc = self . addLog
+    ##########################################################################
     self . addItem                  ( VRIT , parent                          )
     ## self . Scene . addItem          ( VRIT                                   )
     ##########################################################################
@@ -326,6 +386,8 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT . Image = PIC . toQImage (                                          )
     VRIT . asImageRect            (                                          )
     ##########################################################################
+    VRIT . logFunc = self . addLog
+    ##########################################################################
     self . addItem                ( VRIT                                     )
     self . Scene . addItem        ( VRIT                                     )
     ##########################################################################
@@ -341,12 +403,21 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
     VRIT . LoadImage            ( Uuid                                       )
     VRIT . asImageRect          (                                            )
+    VRIT . PrepareForActions    (                                            )
+    ##########################################################################
+    VRIT . logFunc = self . addLog
+    ##########################################################################
     FS   = VRIT . ImageSize     (                                            )
     ##########################################################################
     self . addItem              ( VRIT                                       )
     self . Scene . addItem      ( VRIT                                       )
     self . setPrepared          ( True                                       )
     self . DoAdjustments        ( FS                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def assignFilename ( self , Uuid                                         ) :
+    ##########################################################################
     ##########################################################################
     return
 ##############################################################################

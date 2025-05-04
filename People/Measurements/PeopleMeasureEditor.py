@@ -31,6 +31,7 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   emitNamesShow = Signal  (                                                  )
   emitAllNames  = Signal  ( list                                             )
   emitLog       = Signal  ( str                                              )
+  HumanMeasure  = Signal  ( QWidget                                          )
   ############################################################################
   def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -80,6 +81,11 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
+    self . AppendSideActionWithIcon ( "AssignMeasurement"                  , \
+                                      ":/images/animal.png"                , \
+                                      self . AssignMeasurement             , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -486,6 +492,12 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     ##########################################################################
     return
   ############################################################################
+  def AssignMeasurement        ( self                                      ) :
+    ##########################################################################
+    self . HumanMeasure . emit ( self                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 3                              )
@@ -555,6 +567,10 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     icon   = QIcon                ( ":/images/save.png"                      )
     mm     . addActionWithIcon    ( 1101 , icon , msg                        )
     ##########################################################################
+    msg    = self . getMenuItem   ( "AssignMeasurement"                      )
+    icon   = QIcon                ( ":/images/animal.png"                    )
+    mm     . addActionWithIcon    ( 5001 , icon , msg                        )
+    ##########################################################################
     mm     . addSeparator         (                                          )
     self   . ColumnsMenu          ( mm                                       )
     self   . LocalityMenu         ( mm                                       )
@@ -592,6 +608,10 @@ class PeopleMeasureEditor ( TreeDock                                       ) :
     ##########################################################################
     if                            ( at == 1101                             ) :
       self . SaveMeasures         (                                          )
+      return True
+    ##########################################################################
+    if                            ( at == 5001                             ) :
+      self . AssignMeasurement    (                                          )
       return True
     ##########################################################################
     return True

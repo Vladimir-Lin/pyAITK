@@ -66,6 +66,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . Scaling    = False
     self . Editing    = False
     self . Angle      = 0.0
+    self . mcMargin   =  6
+    self . mdMargin   = int        ( self . mcMargin * 2                     )
     self . Transform  = QTransform (                                         )
     self . Transform  . reset      (                                         )
     ##########################################################################
@@ -192,6 +194,8 @@ class VcfRectangle              ( VcfItem                                  ) :
   def atCorner                ( self , pos                                 ) :
     ##########################################################################
     SS        = self . ScreenRect
+    MC        = self . mcMargin
+    MD        = self . mdMargin
     ##########################################################################
     LL        = SS   . left   (                                              )
     RR        = SS   . right  (                                              )
@@ -200,19 +204,19 @@ class VcfRectangle              ( VcfItem                                  ) :
     WW        = SS   . width  (                                              )
     HH        = SS   . height (                                              )
     ##########################################################################
-    Inner     = QRectF        ( LL + 4 , TT + 4 , WW - 8 , HH - 8            )
+    Inner     = QRectF        ( LL + MC , TT + MC , WW - MD , HH - MD        )
     ##########################################################################
     if                        ( Inner . contains ( pos )                   ) :
       return self . vrInside
     ##########################################################################
-    LT        = QRectF        ( LL     , TT     ,      4 ,      4            )
-    RT        = QRectF        ( RR - 4 , TT     ,      4 ,      4            )
-    LB        = QRectF        ( LL     , BB - 4 ,      4 ,      4            )
-    RB        = QRectF        ( RR - 4 , BB - 4 ,      4 ,      4            )
-    LC        = QRectF        ( LL     , TT + 4 ,      4 , HH - 8            )
-    RC        = QRectF        ( RR - 4 , TT + 4 ,      4 , HH - 8            )
-    TC        = QRectF        ( LL + 4 , TT     , WW - 8 ,      4            )
-    BC        = QRectF        ( LL + 4 , BB - 4 , WW - 8 ,      4            )
+    LT        = QRectF        ( LL      , TT      ,      MC ,      MC        )
+    RT        = QRectF        ( RR - MC , TT      ,      MC ,      MC        )
+    LB        = QRectF        ( LL      , BB - MC ,      MC ,      MC        )
+    RB        = QRectF        ( RR - MC , BB - MC ,      MC ,      MC        )
+    LC        = QRectF        ( LL      , TT + MC ,      MC , HH - MD        )
+    RC        = QRectF        ( RR - MC , TT + MC ,      MC , HH - MD        )
+    TC        = QRectF        ( LL + MC , TT      , WW - MD ,      MC        )
+    BC        = QRectF        ( LL + MC , BB - MC , WW - MD ,      MC        )
     ##########################################################################
     if                        ( LT . contains ( pos )                      ) :
       return self . vrTopLeft

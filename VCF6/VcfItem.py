@@ -54,6 +54,7 @@ class VcfItem                   ( QGraphicsItem                            , \
     self . Modified         = False
     self . Overlay          = False
     self . Lockup           = False
+    self . logFunc          = None
     self . Related          =            [                                   ]
     self . Relations        =            {                                   }
     self . pens             =            [                                   ]
@@ -261,6 +262,15 @@ class VcfItem                   ( QGraphicsItem                            , \
     self . UnlockGui (                                                       )
     ##########################################################################
     return True
+  ############################################################################
+  def addLog       ( self , msg                                            ) :
+    ##########################################################################
+    if             ( self . logFunc in [ False , None ]                    ) :
+      return
+    ##########################################################################
+    self . logFunc (        msg                                              )
+    ##########################################################################
+    return
   ############################################################################
   def setOptions ( self , options , privated                               ) :
     ##########################################################################

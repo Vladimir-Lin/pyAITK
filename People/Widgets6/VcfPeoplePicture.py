@@ -19,32 +19,32 @@ from   PIL                            import Image as Pillow
 import cv2
 import dlib
 import skimage
-import numpy                          as np
-import mediapipe                      as mp
+import numpy                                                                as np
+import mediapipe                                                            as mp
 ##############################################################################
-from   PySide6                          import QtCore
-from   PySide6                          import QtGui
-from   PySide6                          import QtWidgets
-from   PySide6 . QtCore                 import *
-from   PySide6 . QtGui                  import *
-from   PySide6 . QtWidgets              import *
-from   AITK    . Qt6                    import *
-from   AITK    . VCF6                   import *
+from   PySide6                                         import QtCore
+from   PySide6                                         import QtGui
+from   PySide6                                         import QtWidgets
+from   PySide6 . QtCore                                import *
+from   PySide6 . QtGui                                 import *
+from   PySide6 . QtWidgets                             import *
+from   AITK    . Qt6                                   import *
+from   AITK    . VCF6                                  import *
 ##############################################################################
-from   AITK    . Documents  . JSON      import Load         as LoadJson
-from   AITK    . Documents  . JSON      import Save         as SaveJson
+from   AITK    . Documents  . JSON                     import Load          as LoadJson
+from   AITK    . Documents  . JSON                     import Save          as SaveJson
 ##############################################################################
-from   AITK    . Essentials . Object    import Object       as Object
-from   AITK    . Pictures   . Picture6  import Picture      as PictureItem
-from   AITK    . Pictures   . Gallery   import Gallery      as GalleryItem
+from   AITK    . Essentials . Object                   import Object        as Object
+from   AITK    . Pictures   . Picture6                 import Picture       as PictureItem
+from   AITK    . Pictures   . Gallery                  import Gallery       as GalleryItem
 ##############################################################################
-from   AITK    . People . Faces  . Face import Face         as FaceItem
-from   AITK    . People . Body   . Tit  import Tit          as TitItem
-from   AITK    . People . Body   . Body import Body         as BodyItem
+from   AITK    . People     . Faces    . Face          import Face          as FaceItem
+from   AITK    . People     . Body     . Tit           import Tit           as TitItem
+from   AITK    . People     . Body     . Body          import Body          as BodyItem
 ##############################################################################
-from   AITK    . People . Faces6 . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
+from   AITK    . People     . Faces6   . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
 ##############################################################################
-from   AITK    . Math . Geometry . Contour import Contour as Contour
+from   AITK    . Math       . Geometry . Contour       import Contour       as Contour
 ##############################################################################
 class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
@@ -63,9 +63,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def PrepareForActions ( self                                             ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
-    self . LastestZ       = None
+    self . HumanMeasure  = None
+    self . CurrentPeople =        {                                          }
+    ##########################################################################
+    self . LastestZ      = None
     self . setFlag                ( QGraphicsItem . ItemIsMovable , False    )
     self . setZValue              ( 10000                                    )
     ##########################################################################
@@ -159,6 +167,47 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return QRect         ( X , Y , W , H                                     )
   ############################################################################
+  def setCurrentPeople ( self , JSON                                       ) :
+    ##########################################################################
+    self . CurrentPeople = JSON
+    self . addLog      ( json . dumps ( JSON )                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def leaveHumanMeasure ( self , widget                                    ) :
+    ##########################################################################
+    if                  ( widget == self . HumanMeasure                    ) :
+      self . HumanMeasure = None
+    ##########################################################################
+    return
+  ############################################################################
+  def setHumanMeasure          ( self , widget                             ) :
+    ##########################################################################
+    self . HumanMeasure = widget
+    ##########################################################################
+    if                         ( widget not in self . EmptySet             ) :
+      ########################################################################
+      widget . Leave . connect ( self . leaveHumanMeasure                    )
+      self   . addLog          ( "Human Body Measurement connected"          )
+    ##########################################################################
+    return
+  ############################################################################
+  def GetCurrentPeople  ( self                                             ) :
+    ##########################################################################
+    JSON =              { "Function" : "GetCurrentPeople"                  , \
+                          "Item"     : self                                  }
+    self . DoJsonCaller ( JSON                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ConnectMeasure    ( self                                             ) :
+    ##########################################################################
+    JSON =              { "Function" : "ConnectMeasure"                    , \
+                          "Item"     : self                                  }
+    self . DoJsonCaller ( JSON                                               )
+    ##########################################################################
+    return
+  ############################################################################
   def AddBodyRegion            ( self , KeyPoints                          ) :
     ##########################################################################
     SIZE = self . Image . size (                                             )
@@ -188,6 +237,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     W    = self . Image . width  (                                           )
     H    = self . Image . height (                                           )
     R    = QRect                 ( 0 , 0 , W , H                             )
+    ##########################################################################
+    self . AddFaceRegion         ( R                                         )
+    self . Notify                ( 5                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def AddSmallRegion             ( self                                    ) :
+    ##########################################################################
+    W    = self . Image . width  (                                           )
+    H    = self . Image . height (                                           )
+    R    = QRect                 ( 0 , 0 , W / 4 , H / 4                     )
     ##########################################################################
     self . AddFaceRegion         ( R                                         )
     self . Notify                ( 5                                         )
@@ -364,18 +424,20 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def SaveAs                       ( self                                  ) :
+  def SaveAs                          ( self                               ) :
     ##########################################################################
-    Filename , _ = QFileDialog . getSaveFileName                             (
-                                     self . Gui                              ,
-                                     "匯出圖片" ,
-                                     ""                                      ,
-                                     "JPEG (*.jpg);;PNG (*.png)"             )
-    if                             ( len ( Filename ) <= 0                 ) :
+    TITLE        = self . getMenuItem ( "ExportPicture"                      )
+    FILTERs      = self . getMenuItem ( "PictureFilters"                     )
+    Filename , _ = QFileDialog . getSaveFileName                           ( \
+                                        self . Gui                         , \
+                                        TITLE                              , \
+                                        ""                                 , \
+                                        FILTERs                              )
+    if                                ( len ( Filename ) <= 0              ) :
       return
     ##########################################################################
-    self . Image . save            ( Filename                                )
-    self . Notify                  ( 5                                       )
+    self . Image . save               ( Filename                             )
+    self . Notify                     ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -472,6 +534,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem   ( "AddSelectionRegion"                      )
     mm    . addActionFromMenu    ( LOM , 98438302 , MSG                      )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "AddSmallRegion"                          )
+    mm    . addActionFromMenu    ( LOM , 98438303 , MSG                      )
+    ##########################################################################
     mm    = self . RollImageMenu ( mm , LOM                                  )
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -493,6 +558,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 98438302                           ) :
       ########################################################################
       self . AddSelectionRegion (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 98438303                           ) :
+      ########################################################################
+      self . AddSmallRegion     (                                            )
       ########################################################################
       return True
     ##########################################################################
@@ -543,9 +614,15 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     msg    = self . getMenuItem ( "SaveImage"                                )
     mm     . addAction          ( 1002 , msg                                 )
-    ##########################################################################
     msg    = self . getMenuItem ( "OriginalPosition"                         )
     mm     . addAction          ( 1003 , msg                                 )
+    ##########################################################################
+    mm     . addSeparator       (                                            )
+    ##########################################################################
+    msg    = self . getMenuItem ( "ObtainsCurrentPeople"                     )
+    mm     . addAction          ( 4001 , msg                                 )
+    msg    = self . getMenuItem ( "ConnectHumanMeasure"                      )
+    mm     . addAction          ( 4002 , msg                                 )
     ##########################################################################
     mm     . addSeparator       (                                            )
     self   . ContourEditorMenu  ( mm , 7000 , self . convex                  )
@@ -593,6 +670,18 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . OriginalRect       (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( 4001 == at                               ) :
+      ########################################################################
+      self . GetCurrentPeople   (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( 4002 == at                               ) :
+      ########################################################################
+      self . ConnectMeasure     (                                            )
       ########################################################################
       return True
     ##########################################################################
