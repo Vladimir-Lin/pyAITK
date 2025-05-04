@@ -12,16 +12,6 @@ import gettext
 import json
 import math
 ##############################################################################
-from   io                             import BytesIO
-from   wand . image                   import Image
-from   PIL                            import Image as Pillow
-##############################################################################
-import cv2
-import dlib
-import skimage
-import numpy                                                                as np
-import mediapipe                                                            as mp
-##############################################################################
 from   PySide6                                         import QtCore
 from   PySide6                                         import QtGui
 from   PySide6                                         import QtWidgets
@@ -70,6 +60,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
+    self . SquareFactor  = 1.5
     self . HumanMeasure  = None
     self . CurrentPeople =        {                                          }
     ##########################################################################
@@ -256,117 +247,82 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FacialRecognition                      ( self , Square = False       ) :
+  def FacialRecognition                   ( self , Square = False          ) :
     ##########################################################################
-    ## self        . Gui . OnBusy  . emit       (                               )
+    RECG     = self . GetRecognizer       (                                  )
     ##########################################################################
-    AI          = self . Settings            [ "AI"                          ]
-    HAAR        = AI                         [ "HAAR"                        ]
-    EYES        = AI                         [ "Eyes"                        ]
-    MOUTH       = AI                         [ "Mouth"                       ]
-    FIVEMARKS   = AI                         [ "Fivemarks"                   ]
-    LANDMARKS   = AI                         [ "Landmarks"                   ]
-    RESNET      = AI                         [ "Resnet"                      ]
+    if                                    ( RECG in self . EmptySet        ) :
+      return
     ##########################################################################
-    FC          = cv2  . CascadeClassifier   ( HAAR                          )
-    FIVE        = dlib . shape_predictor     ( FIVEMARKS                     )
-    PREDICTOR   = dlib . shape_predictor     ( LANDMARKS                     )
-    FACIAL      = dlib . face_recognition_model_v1 ( RESNET                  )
+    self     . Gui . OnBusy  . emit       (                                  )
     ##########################################################################
-    IMG         = self . PICOP . toOpenCV    (                               )
-    GRAY        = cv2  . cvtColor            ( IMG , cv2 . COLOR_BGR2GRAY    )
-    WW          = self . PICOP . Width       (                               )
-    HH          = self . PICOP . Height      (                               )
+    WW       = self . PICOP . Width       (                                  )
+    HH       = self . PICOP . Height      (                                  )
+    FACEs    = RECG . DoDetectSimpleFaces ( self . PICOP                     )
     ##########################################################################
-    FACE        = FaceItem                   (                               )
-    FACE        . Classifier = FC
-    FACE        . Fivemarks  = FIVE
-    FACE        . Predictor  = PREDICTOR
-    FACE        . Facial     = FACIAL
-    ##########################################################################
-    FACEs       = FACE . ToFaces             ( GRAY                          )
+    if                                    ( len ( FACEs ) <= 0             ) :
+      ########################################################################
+      self   . Notify                     ( 1                                )
+      ########################################################################
+      return
     ##########################################################################
     for F in FACEs                                                           :
       ########################################################################
-      if                                     ( Square                      ) :
+      if                                  ( Square                         ) :
         ######################################################################
-        FACE    . setFull                    ( WW , HH                       )
-        SRQ     = FACE . RectangleFromOpenCV ( F                             )
-        KRQ     = FACE . ScaleRectangle      ( SRQ , 1.4                     )
-        KQQ     = FACE . ToSquareRectangle   ( KRQ                           )
-        SSK     = FACE . RestraintRectangle  ( FACE . Full , KQQ             )
-        ######################################################################
-        F [ 0 ] = SSK                        [ "X"                           ]
-        F [ 1 ] = SSK                        [ "Y"                           ]
-        F [ 2 ] = SSK                        [ "W"                           ]
-        F [ 3 ] = SSK                        [ "H"                           ]
+        FACE = FaceItem                   (                                  )
+        FACE . setFull                    ( WW , HH                          )
+        F    = FACE . ToSquareRestraint   ( F , self . SquareFactor          )
       ########################################################################
-      X         = F                          [ 0                             ]
-      Y         = F                          [ 1                             ]
-      W         = F                          [ 2                             ]
-      H         = F                          [ 3                             ]
-      R         = QRect                      ( X , Y , W , H                 )
-      ########################################################################
-      self      . AddFaceRegion              ( R                             )
+      R      = self . RectangleToQRect    ( F                                )
+      self   . AddFaceRegion              ( R                                )
     ##########################################################################
-    ## self        . Gui . GoRelax . emit       (                               )
-    ## self        . prepareGeometryChange      (                               )
-    self        . Notify                     ( 5                             )
+    self     . Gui . GoRelax . emit       (                                  )
+    self     . prepareGeometryChange      (                                  )
+    self     . Notify                     ( 5                                )
     ##########################################################################
     return
   ############################################################################
-  def BodyPoseEstimation           ( self                                  ) :
+  def BodyPoseEstimation             ( self                                ) :
     ##########################################################################
-    IMG  = self . PICOP . toOpenCV (                                         )
-    RGB  = cv2  . cvtColor         ( IMG , cv2 . COLOR_BGR2RGB               )
-    WW   = self . PICOP . Width    (                                         )
-    HH   = self . PICOP . Height   (                                         )
+    RECG = self . GetRecognizer      (                                       )
     ##########################################################################
-    BDI  = BodyItem                (                                         )
-    KPS  = BDI . GetBodyKeyPoints  ( RGB , WW , HH                           )
+    if                               ( RECG in self . EmptySet             ) :
+      return
     ##########################################################################
-    self . AddBodyRegion           ( KPS                                     )
+    KPS  = RECG . DoDetectSimpleBody ( self . PICOP                          )
+    self . AddBodyRegion             ( KPS                                   )
+    self . prepareGeometryChange     (                                       )
+    self . Notify                    ( 5                                     )
     ##########################################################################
     return
   ############################################################################
-  def BoobsRecognition          ( self                                     ) :
+  def BoobsRecognition                       ( self                        ) :
     ##########################################################################
-    AI       = self . Settings  [ "AI"                                       ]
-    SVM      = AI               [ "Boobs-SVM"                                ]
-    CASCADE  = AI               [ "Boobs-Cascade"                            ]
+    RECG    = self . GetRecognizer           (                               )
     ##########################################################################
-    IMG      = self . PICOP . toOpenCV       (                               )
-    GRAY     = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY    )
-    RGB      = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2RGB     )
-    WW       = self . PICOP . Width          (                               )
-    HH       = self . PICOP . Height         (                               )
+    if                                       ( RECG in self . EmptySet     ) :
+      return
     ##########################################################################
-    TIT     = TitItem           (                                            )
-    TIT     . LoadClassifier    ( CASCADE                                    )
-    TIT     . LoadDetector      ( SVM                                        )
+    BOOBs   = RECG . DoDetectSimpleBoobs     ( self . PICOP                  )
+    DLIBs   = RECG . DoDetectSimpleDlibBoobs ( self . PICOP                  )
     ##########################################################################
-    BOOBs   = TIT . ToBoobs     ( GRAY                                       )
-    DLIBs   = TIT . ToDlibBoobs ( RGB                                        )
+    for BF in DLIBs                                                          :
+      BOOBs . append                         ( BF                            )
     ##########################################################################
-    for F in BOOBs                                                           :
+    if                                       ( len ( BOOBs ) <= 0          ) :
       ########################################################################
-      X     = F                 [ 0                                          ]
-      Y     = F                 [ 1                                          ]
-      W     = F                 [ 2                                          ]
-      H     = F                 [ 3                                          ]
-      R     = QRect             ( X , Y , W , H                              )
+      self  . Notify                         ( 1                             )
       ########################################################################
-      self  . AddFaceRegion     ( R                                          )
+      return
     ##########################################################################
-    for id in range ( 0 , len ( DLIBs ) )                                    :
+    for RT in BOOBs                                                          :
       ########################################################################
-      X     = DLIBs [ id ] . left   (                                        )
-      Y     = DLIBs [ id ] . top    (                                        )
-      W     = DLIBs [ id ] . width  (                                        )
-      H     = DLIBs [ id ] . height (                                        )
-      R     = QRect             ( X , Y , W , H                              )
-      ########################################################################
-      self  . AddFaceRegion     ( R                                          )
+      R     = self . RectangleToQRect        ( RT                            )
+      self  . AddFaceRegion                  ( R                             )
+    ##########################################################################
+    self    . prepareGeometryChange          (                               )
+    self    . Notify                         ( 5                             )
     ##########################################################################
     return
   ############################################################################
@@ -625,6 +581,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm     . addAction          ( 4001 , msg                                 )
     msg    = self . getMenuItem ( "ConnectHumanMeasure"                      )
     mm     . addAction          ( 4002 , msg                                 )
+    msg    = self . getMenuItem ( "LoadDescriptions"                         )
+    mm     . addAction          ( 4003 , msg                                 )
     ##########################################################################
     mm     . addSeparator       (                                            )
     self   . ContourEditorMenu  ( mm , 7000 , self . convex                  )
@@ -684,6 +642,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( 4002 == at                               ) :
       ########################################################################
       self . ConnectMeasure     (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( 4003 == at                               ) :
+      ########################################################################
       ########################################################################
       return True
     ##########################################################################

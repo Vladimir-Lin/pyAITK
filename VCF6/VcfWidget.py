@@ -47,6 +47,10 @@ class VcfWidget           ( QGraphicsView                                  , \
   attachMdi      = Signal ( QWidget , int                                    )
   emitMenuCaller = Signal ( dict                                             )
   emitLog        = Signal ( str                                              )
+  emitBustle     = Signal (                                                  )
+  emitVacancy    = Signal (                                                  )
+  OnBusy         = Signal (                                                  )
+  GoRelax        = Signal (                                                  )
   ############################################################################
   def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -75,6 +79,10 @@ class VcfWidget           ( QGraphicsView                                  , \
     ## self . setRenderHint         ( QPainter . LosslessImageRendering , True  )
     ##########################################################################
     self . emitMenuCaller . connect ( self . acceptMenuCaller                )
+    self . emitBustle     . connect ( self . DoBustle                        )
+    self . emitVacancy    . connect ( self . DoVacancy                       )
+    self . OnBusy         . connect ( self . AtBusy                          )
+    self . GoRelax        . connect ( self . OnRelax                         )
     ##########################################################################
     return
   ############################################################################
@@ -161,6 +169,34 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     self . Visiblity (        visible                                        )
     ##########################################################################
+    return
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoBustle                ( self                                       ) :
+    self . Bustle             (                                              )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  def DoVacancy               ( self                                       ) :
+    self . Vacancy            (                                              )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
     return
   ############################################################################
   def addLog              ( self , msg                                     ) :
