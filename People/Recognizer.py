@@ -503,45 +503,85 @@ class Recognizer (                                                         ) :
                           scale     = 1.05                                 , \
                           neighbors = 5                                    , \
                           minsize   = ( 32 , 32 )                          ) :
-    return self . Classifier . detectMultiScale                              (
-             gray                                                          , \
-             scaleFactor  = scale                                          , \
-             minNeighbors = neighbors                                      , \
-             minSize      = minsize                                          )
+    ##########################################################################
+    FACEs   =         [                                                      ]
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      FACEs = self . Classifier . detectMultiScale                           (
+               gray                                                        , \
+               scaleFactor  = scale                                        , \
+               minNeighbors = neighbors                                    , \
+               minSize      = minsize                                        )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    return FACEs
   ############################################################################
   def ClassifierToEyes ( self                                              , \
                          gray                                              , \
                          scale     = 1.1                                   , \
                          neighbors = 10                                    , \
                          minsize   = ( 15 , 10 )                           ) :
-    return self . EyesDetector . detectMultiScale                            (
-             gray                                                          , \
-             scaleFactor  = scale                                          , \
-             minNeighbors = neighbors                                      , \
-             minSize      = minsize                                          )
+    ##########################################################################
+    EYEs   =           [                                                     ]
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      EYEs = self . EyesDetector . detectMultiScale                          (
+               gray                                                        , \
+               scaleFactor  = scale                                        , \
+               minNeighbors = neighbors                                    , \
+               minSize      = minsize                                        )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    return EYEs
   ############################################################################
   def ClassifierToMouthes ( self                                           , \
                             gray                                           , \
                             scale     = 1.1                                , \
                             neighbors = 10                                 , \
                             minsize   = ( 15 , 10 )                        ) :
-    return self . MouthDetector . detectMultiScale                           (
-             gray                                                          , \
-             scaleFactor  = scale                                          , \
-             minNeighbors = neighbors                                      , \
-             minSize      = minsize                                          )
+    ##########################################################################
+    MOUTHes   =           [                                                  ]
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      MOUTHes = self . MouthDetector . detectMultiScale                      (
+                  gray                                                     , \
+                  scaleFactor  = scale                                     , \
+                  minNeighbors = neighbors                                 , \
+                  minSize      = minsize                                     )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    return MOUTHes
   ############################################################################
   def ClassifierToBoobs ( self                                             , \
                           gray                                             , \
                           scale     = 1.05                                 , \
                           neighbors = 5                                    , \
                           minsize   = ( 32 , 32 )                          ) :
-    return self . CvBoob . detectMultiScale                                  (
-             gray                                                          , \
-             scaleFactor  = scale                                          , \
-             minNeighbors = neighbors                                      , \
-             minSize      = minsize                                        , \
-             flags        = cv2 . CASCADE_SCALE_IMAGE                        )
+    ##########################################################################
+    BOOBs   =           [                                                    ]
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      BOOBs = self . CvBoob . detectMultiScale                               (
+                gray                                                       , \
+                scaleFactor  = scale                                       , \
+                minNeighbors = neighbors                                   , \
+                minSize      = minsize                                     , \
+                flags        = cv2 . CASCADE_SCALE_IMAGE                     )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    return BOOBs
   ############################################################################
   def DoClassifierToFaces            ( self , GRAY , OPTs                  ) :
     ##########################################################################
@@ -569,8 +609,13 @@ class Recognizer (                                                         ) :
   ############################################################################
   def DoDlibToBoobs                  ( self , RGB , OPTs                   ) :
     ##########################################################################
-    BOOBs   = self . DlibBoob        (        RGB                            )
     LISTs   =                        [                                       ]
+    try                                                                      :
+      ########################################################################
+      BOOBs = self . DlibBoob        (        RGB                            )
+      ########################################################################
+    except                                                                   :
+      return LISTs
     ##########################################################################
     if                               ( BOOBs in [ False , None           ] ) :
       return LISTs
