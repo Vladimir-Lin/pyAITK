@@ -433,6 +433,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     THINGs  = DESC                  [ "Things"                               ]
     self    . addLog                ( "\n" . join ( THINGs )                 )
     ##########################################################################
+    print ( json . dumps ( DESC ) )
     ## if                              ( "Classification" in DESC             ) :
     ##   ########################################################################
     ##   ITEMs = DESC                  [ "Classification"                       ]

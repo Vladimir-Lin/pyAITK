@@ -412,6 +412,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . assignItemProperties ( VRIT                                       )
     VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
     VRIT . LoadImage            ( Uuid                                       )
+    self . Go                   ( VRIT . FetchPictureDetections              )
     VRIT . asImageRect          (                                            )
     VRIT . PrepareForActions    (                                            )
     ##########################################################################
