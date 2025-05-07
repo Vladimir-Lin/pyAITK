@@ -1106,7 +1106,9 @@ class GalleriesView            ( IconDock                                  ) :
     OK     = RECG . hasFaces           ( J                                   )
     ##########################################################################
     PV     . Value = json . dumps      ( J                                   )
+    DB     . LockWrites                ( [ VARTAB                          ] )
     PV     . AssureValue               ( DB , VARTAB                         )
+    DB     . UnlockTables              (                                     )
     ##########################################################################
     return OK
   ############################################################################
