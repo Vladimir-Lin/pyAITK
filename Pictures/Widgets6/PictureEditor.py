@@ -405,6 +405,9 @@ class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
   def AddPicture                  ( self , PIC , Z                         ) :
     ##########################################################################
+    if                            ( PIC in self . EmptySet                 ) :
+      return
+    ##########################################################################
     VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
     VRIT . setOptions             ( self . Options , False                   )
     self . assignItemProperties   ( VRIT                                     )
