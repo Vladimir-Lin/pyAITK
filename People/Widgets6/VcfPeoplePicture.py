@@ -54,11 +54,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions ( self                                             ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
     self . SquareFactor  = 1.5
@@ -74,6 +69,66 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . PrepareContourDetails  (                                          )
     ##########################################################################
     return
+  ############################################################################
+  def PrepareForActions             ( self                                 ) :
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "AddSelectionRegion"                 , \
+                                      ":/images/selectimage.png"           , \
+                                      self . AddSelectionRegion            , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    ## self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ## self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
+    ## self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
+    ## self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
+    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    ## self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
+    ## self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    ## self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    ## self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
+    ## self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    ## self . LinkAction ( "Search"     , self . Search          , Enabled      )
+    ## self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    ## self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    ## self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    ## self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , self . Gui . windowTitle (        ) )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . statusMessage     ( self . Gui . windowTitle (                  ) )
+    self . SwitchSideTools   ( True                                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . setActionLabel    ( "Label" , ""                                )
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+      self . SwitchSideTools   ( False                                       )
+    ##########################################################################
+    return   True
   ############################################################################
   def Painting                       ( self , p , region , clip , color    ) :
     ##########################################################################
@@ -637,7 +692,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm    . addActionFromMenu    ( LOM , 98438301 , MSG                      )
     ##########################################################################
     MSG   = self . getMenuItem   ( "AddSelectionRegion"                      )
-    mm    . addActionFromMenu    ( LOM , 98438302 , MSG                      )
+    ICON  = QIcon                ( ":/images/selectimage.png"                )
+    mm    . addActionFromMenuWithIcon ( LOM , 98438302 , ICON , MSG          )
     ##########################################################################
     MSG   = self . getMenuItem   ( "AddSmallRegion"                          )
     mm    . addActionFromMenu    ( LOM , 98438303 , MSG                      )
@@ -739,9 +795,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self   . StatesMenu         ( mm                                         )
     self   . LayerMenu          ( mm                                         )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont            ( gview   . menuFont ( )                     )
     aa     = mm . exec_         ( QCursor . pos      ( )                     )
     at     = mm . at            ( aa                                         )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunLayerMenu       ( at                                  )
     if                          ( OKAY                                     ) :
