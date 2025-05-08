@@ -156,7 +156,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . AttachRatio (                                         Enabled     )
+    self . Gui . AttachRatio (                                   Enabled     )
     ##########################################################################
     return
   ############################################################################
