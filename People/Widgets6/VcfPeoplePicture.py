@@ -77,18 +77,32 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
                                       self . AddSelectionRegion            , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "AddSmallRegion"                     , \
+                                      ":/images/maximize.png"              , \
+                                      self . AddSmallRegion                , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "SquareFacial"                       , \
+                                      ":/images/frame.png"                 , \
+                                      self . RunSquareFacial               , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
+    self . LinkAction ( "OriginalView" ,self.Gui.OriginalView , Enabled      )
+    self . LinkAction ( "ZoomIn"     , self . Gui . ZoomIn    , Enabled      )
+    self . LinkAction ( "ZoomOut"    , self . Gui . ZoomOut   , Enabled      )
+    ##########################################################################
     ## self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ## self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
     ## self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
-    ## self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
+    self . LinkAction ( "Export"     , self . SaveAs          , Enabled      )
     ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     ## self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
-    ## self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItem      , Enabled      )
     ## self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
     ## self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
     ## self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
@@ -325,6 +339,15 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     for F in FACEs                                                           :
       ########################################################################
+      WW     = F                          [ "W"                              ]
+      HH     = F                          [ "H"                              ]
+      ########################################################################
+      if                                  ( WW < 96                        ) :
+        continue
+      ########################################################################
+      if                                  ( HH < 96                        ) :
+        continue
+      ########################################################################
       if                                  ( Square                         ) :
         ######################################################################
         FACE = FaceItem                   (                                  )
@@ -337,6 +360,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self     . Gui . GoRelax . emit       (                                  )
     self     . CallGeometryChange         (                                  )
     self     . Notify                     ( 5                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunSquareFacial ( self                                               ) :
+    ##########################################################################
+    self . Go         ( self . FacialRecognition , ( True  , )               )
     ##########################################################################
     return
   ############################################################################
@@ -666,7 +695,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm    . addActionFromMenu      ( LOM , 98438501 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem     ( "SquareFacial"                          )
-    mm    . addActionFromMenu      ( LOM , 98438502 , MSG                    )
+    ICON  = QIcon                  ( ":/images/frame.png"                    )
+    mm    . addActionFromMenuWithIcon ( LOM , 98438502 , ICON , MSG          )
     ##########################################################################
     return
   ############################################################################
@@ -696,7 +726,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm    . addActionFromMenuWithIcon ( LOM , 98438302 , ICON , MSG          )
     ##########################################################################
     MSG   = self . getMenuItem   ( "AddSmallRegion"                          )
-    mm    . addActionFromMenu    ( LOM , 98438303 , MSG                      )
+    ICON  = QIcon                ( ":/images/maximize.png"                   )
+    mm    . addActionFromMenuWithIcon ( LOM , 98438303 , ICON , MSG          )
     ##########################################################################
     mm    = self . RollImageMenu ( mm , LOM                                  )
     mm    . addSeparatorFromMenu ( LOM                                       )
@@ -736,7 +767,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                          ( at == 98438502                           ) :
       ########################################################################
-      self . Go                 ( self . FacialRecognition , ( True  , )     )
+      self . RunSquareFacial    (                                            )
       ########################################################################
       return True
     ##########################################################################
@@ -774,7 +805,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm     . addActionWithIcon  ( 1001 , icon , msg                          )
     ##########################################################################
     msg    = self . getMenuItem ( "SaveImage"                                )
-    mm     . addAction          ( 1002 , msg                                 )
+    icon   = QIcon              ( ":/images/GoRight.png"                     )
+    mm     . addActionWithIcon  ( 1002 , icon , msg                          )
+    ##########################################################################
     msg    = self . getMenuItem ( "OriginalPosition"                         )
     mm     . addAction          ( 1003 , msg                                 )
     ##########################################################################
