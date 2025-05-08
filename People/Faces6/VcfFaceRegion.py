@@ -56,11 +56,6 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions ( self                                             ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
   def setVcfFaceRegionDefaults ( self                                      ) :
     ##########################################################################
     self . PictureDPI      = 96
@@ -126,6 +121,72 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . PrepareContourDetails (                                           )
     ##########################################################################
     return
+  ############################################################################
+  def PrepareForActions             ( self                                 ) :
+    ##########################################################################
+    self . AppendSideActionWithIcon ( "AdjustToSquare"                     , \
+                                      ":/images/minimize.png"              , \
+                                      self . AdjustToSquare                , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions    ( self         ,                          Enabled   ) :
+    ##########################################################################
+    self . LinkAction  ( "OriginalView" ,self.Gui.OriginalView , Enabled     )
+    self . LinkAction  ( "ZoomIn"     , self . Gui . ZoomIn    , Enabled     )
+    self . LinkAction  ( "ZoomOut"    , self . Gui . ZoomOut   , Enabled     )
+    ##########################################################################
+    ## self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ## self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
+    ## self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
+    ## self . LinkAction ( "Export"     , self . SaveAs          , Enabled      )
+    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    ## self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
+    ## self . LinkAction ( "Delete"     , self . DeleteItem      , Enabled      )
+    self . LinkAction  ( "Cut"        , self.CropCurrentImage  , Enabled     )
+    ## self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
+    ## self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    ## self . LinkAction ( "Search"     , self . Search          , Enabled      )
+    ## self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    ## self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    ## self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    ## self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    self . AttachRatio (                                         Enabled     )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , self . Gui . windowTitle (        ) )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . statusMessage     ( self . Gui . windowTitle (                  ) )
+    self . SwitchSideTools   ( True                                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def FocusOut                 ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . setActionLabel    ( "Label" , ""                                )
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
+      self . LinkVoice         ( None                                        )
+      self . SwitchSideTools   ( False                                       )
+    ##########################################################################
+    return   True
   ############################################################################
   def Painting                       ( self , p , region , clip , color    ) :
     ##########################################################################
@@ -1275,16 +1336,17 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return False
   ############################################################################
-  def RegionMenu             ( self , mm                                   ) :
+  def RegionMenu                      ( self , mm                          ) :
     ##########################################################################
-    MSG = self . getMenuItem ( "RegionOperation"                             )
-    COL = mm   . addMenu     ( MSG                                           )
+    MSG = self . getMenuItem          ( "RegionOperation"                    )
+    COL = mm   . addMenu              ( MSG                                  )
     ##########################################################################
-    msg = self . getMenuItem ( "AdjustToSquare"                              )
-    mm  . addActionFromMenu  ( COL , 21451301 , msg                          )
+    msg = self . getMenuItem          ( "AdjustToSquare"                     )
+    icon  = QIcon                     ( ":/images/minimize.png"              )
+    mm    . addActionFromMenuWithIcon ( COL , 21451301 , icon , msg          )
     ##########################################################################
-    msg = self . getMenuItem ( "AdjustWithinPicture"                         )
-    mm  . addActionFromMenu  ( COL , 21451302 , msg                          )
+    msg = self . getMenuItem          ( "AdjustWithinPicture"                )
+    mm  . addActionFromMenu           ( COL , 21451302 , msg                 )
     ##########################################################################
     return mm
   ############################################################################
@@ -1354,9 +1416,13 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . LayerMenu              ( mm                                     )
     self   . PluginsMenu            ( mm                                     )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont                ( gview   . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunContourEditorMenu ( mm , at , 68727000 , self.convex  )
     if                              ( OKAY                                 ) :

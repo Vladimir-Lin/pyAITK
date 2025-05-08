@@ -90,19 +90,19 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions    ( self         ,                          Enabled   ) :
     ##########################################################################
-    self . LinkAction ( "OriginalView" ,self.Gui.OriginalView , Enabled      )
-    self . LinkAction ( "ZoomIn"     , self . Gui . ZoomIn    , Enabled      )
-    self . LinkAction ( "ZoomOut"    , self . Gui . ZoomOut   , Enabled      )
+    self . LinkAction  ( "OriginalView" ,self.Gui.OriginalView , Enabled     )
+    self . LinkAction  ( "ZoomIn"     , self . Gui . ZoomIn    , Enabled     )
+    self . LinkAction  ( "ZoomOut"    , self . Gui . ZoomOut   , Enabled     )
     ##########################################################################
     ## self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ## self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
     ## self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
-    self . LinkAction ( "Export"     , self . SaveAs          , Enabled      )
+    self . LinkAction  ( "Export"     , self . SaveAs          , Enabled     )
     ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     ## self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItem      , Enabled      )
+    self . LinkAction  ( "Delete"     , self . DeleteItem      , Enabled     )
     ## self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
     ## self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
     ## self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
@@ -113,6 +113,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ## self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
     ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    self . AttachRatio (                                         Enabled     )
     ##########################################################################
     return
   ############################################################################
