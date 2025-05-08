@@ -302,9 +302,8 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     VRIT . logFunc = self . addLog
     ##########################################################################
+    VRIT . setPrepared           ( True                                      )
     self . addItem               ( VRIT , parent                             )
-    ## self . Scene . addItem       ( VRIT                                      )
-    ##########################################################################
     self . emitGeometryChange . emit ( VRIT                                  )
     ##########################################################################
     return
@@ -446,6 +445,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . Scene . addItem      ( VRIT                                       )
     self . setPrepared          ( True                                       )
     self . DoAdjustments        ( FS                                         )
+    self . emitGeometryChange . emit ( VRIT                                  )
     ##########################################################################
     return
   ############################################################################
@@ -478,6 +478,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . Scene . addItem        ( VRIT                                     )
     self . setPrepared            ( True                                     )
     self . DoAdjustments          ( FS                                       )
+    self . emitGeometryChange . emit ( VRIT                                  )
     ##########################################################################
     return
 ##############################################################################
