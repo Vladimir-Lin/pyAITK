@@ -171,6 +171,7 @@ class CrowdView              ( IconDock                                    ) :
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
+    self . clear             (                                               )
     ##########################################################################
     self . Leave . emit      ( self                                          )
     ##########################################################################
