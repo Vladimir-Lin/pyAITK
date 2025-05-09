@@ -115,20 +115,31 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     for Id in [ 11 , 12 , 13 , 21 , 22 , 23 , 24 , 25 , 26 , 27 , 28 , 29  ] :
       ########################################################################
-      self . Painter . pens [ Id ] . setWidthF ( 2.5                         )
+      self . Painter . pens     [ Id ] . setWidthF ( 2.5                     )
     ##########################################################################
     self . defaultMeasurePoints  (                                           )
     self . PrepareContourDetails (                                           )
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    self . AppendSideActionWithIcon ( "AdjustToSquare"                     , \
-                                      ":/images/minimize.png"              , \
-                                      self . AdjustToSquare                , \
-                                      True                                 , \
-                                      False                                  )
+    self . AppendSideActionWithIcon        ( "AdjustToSquare"              , \
+                                             ":/images/minimize.png"       , \
+                                             self . AdjustToSquare         , \
+                                             True                          , \
+                                             False                           )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "68Facial"                    , \
+                                             ":/images/detect-faces.png"   , \
+                                             self . Mark68Recognition      , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "468Facial"                   , \
+                                             ":/images/human.png"          , \
+                                             self . Mark468Recognition     , \
+                                             True                          , \
+                                             False                           )
     ##########################################################################
     return
   ############################################################################
@@ -626,8 +637,13 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . FACEs      = [                                                    ]
     self . EYEs       = [                                                    ]
     self . MOUTHs     = [                                                    ]
+    self . POSEs      = { "Pose"   : False                                   }
+    self . MESHs      = { "Mesh"   : False                                   }
+    self . NIPPLEs    = { "Nipple" : False                                   }
     ##########################################################################
     for Id in range     ( 21 , 30                                          ) :
+      ########################################################################
+      self . Painter . switches = {                                          }
       ########################################################################
       if                ( Id not in self . Painter . pathes                ) :
         continue
@@ -669,106 +685,49 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  def CvRectToQRectF       ( self , R                                      ) :
+  def RectToQRectF                                     ( self , R          ) :
     ##########################################################################
-    RX = self . PictureItem . Xratio
-    RY = self . PictureItem . Yratio
-    BX = self . Region . x (                                                 )
-    BY = self . Region . y (                                                 )
-    XX = R                 [ 0                                               ]
-    YY = R                 [ 1                                               ]
-    WW = R                 [ 2                                               ]
-    HH = R                 [ 3                                               ]
+    pt = self . Region . topLeft                       (                     )
     ##########################################################################
-    XX = BX + XX
-    YY = BY + YY
-    ##########################################################################
-    XX = float             ( float ( XX ) / RX                               )
-    YY = float             ( float ( YY ) / RY                               )
-    WW = float             ( float ( WW ) / RX                               )
-    HH = float             ( float ( HH ) / RY                               )
-    RF = QRectF            ( XX , YY , WW , HH                               )
-    ##########################################################################
-    RR = self . PictureItem . mapToItem ( self , RF                          )
-    ##########################################################################
-    XX = RR [ 0 ] . x      (                                                 )
-    YY = RR [ 0 ] . y      (                                                 )
-    WW = RR [ 2 ] . x      (                                                 )
-    HH = RR [ 2 ] . y      (                                                 )
-    WW = WW - XX
-    HH = HH - YY
-    ##########################################################################
-    return QRectF          ( XX , YY , WW , HH                               )
+    return self . PictureItem . PictureRectToItemQRect ( self , pt , R       )
   ############################################################################
-  def BasicFacialRecognition             ( self                            ) :
+  def BasicFacialRecognition                ( self                         ) :
     ##########################################################################
-    self      . CalculateGeometry        (                                   )
+    RECG   = self . GetRecognizer           (                                )
     ##########################################################################
-    X         = self . Region . x        (                                   )
-    Y         = self . Region . y        (                                   )
-    W         = self . Region . width    (                                   )
-    H         = self . Region . height   (                                   )
-    PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
-    if                                   ( PIC in self . EmptySet          ) :
+    if                                      ( RECG in self . EmptySet      ) :
+      self . Notify                         ( 1                              )
       return
     ##########################################################################
-    DIR       = self . Settings          [ "Data"                            ]
-    AI        = self . Settings          [ "AiData"                          ]
-    HAAR      = AI                       [ "HAAR"                            ]
-    EYES      = AI                       [ "Eyes"                            ]
-    MOUTH     = AI                       [ "Mouth"                           ]
-    FIVEMARKS = AI                       [ "Fivemarks"                       ]
-    LANDMARKS = AI                       [ "Landmarks"                       ]
-    RESNET    = AI                       [ "Resnet"                          ]
+    self   . CalculateGeometry              (                                )
+    PIC    = self . PictureItem . PICOP . CropQRect ( self . Region          )
     ##########################################################################
-    HAAR      = f"{DIR}/{HAAR}"
-    EYES      = f"{DIR}/{EYES}"
-    MOUTH     = f"{DIR}/{MOUTH}"
-    FIVEMARKS = f"{DIR}/{FIVEMARKS}"
-    LANDMARKS = f"{DIR}/{LANDMARKS}"
-    RESNET    = f"{DIR}/{RESNET}"
+    if                                      ( PIC in self . EmptySet       ) :
+      self . Notify                         ( 1                              )
+      return
     ##########################################################################
-    FC        = cv2  . CascadeClassifier ( HAAR                              )
-    EC        = cv2  . CascadeClassifier ( EYES                              )
-    MC        = cv2  . CascadeClassifier ( MOUTH                             )
-    FIVE      = dlib . shape_predictor   ( FIVEMARKS                         )
-    PREDICTOR = dlib . shape_predictor   ( LANDMARKS                         )
-    FACIAL    = dlib . face_recognition_model_v1 ( RESNET                    )
+    self   . Gui . OnBusy  . emit           (                                )
     ##########################################################################
-    IMG       = PIC  . toOpenCV          (                                   )
-    GRAY      = cv2  . cvtColor          ( IMG , cv2 . COLOR_BGR2GRAY        )
-    WW        = PIC  . Width             (                                   )
-    HH        = PIC  . Height            (                                   )
+    PARTs  = RECG . DoDetectSimpleFaceParts ( PIC                            )
     ##########################################################################
-    FACE      = FaceItem                 (                                   )
-    FACE      . Classifier    = FC
-    FACE      . EyesDetector  = EC
-    FACE      . MouthDetector = MC
-    FACE      . Fivemarks     = FIVE
-    FACE      . Predictor     = PREDICTOR
-    FACE      . Facial        = FACIAL
+    for F in PARTs                          [ "Faces"                      ] :
+      ########################################################################
+      QR   = self . RectToQRectF            ( F                              )
+      self . FACEs . append                 ( QR                             )
     ##########################################################################
-    FACEs     = FACE . ToFaces           ( GRAY                              )
-    EYEs      = FACE . ToEyes            ( GRAY                              )
-    MOUTHs    = FACE . ToMouthes         ( GRAY                              )
+    for E in PARTs                          [ "Eyes"                       ] :
+      ########################################################################
+      QR   = self . RectToQRectF            ( E                              )
+      self . EYEs . append                  ( QR                             )
     ##########################################################################
-    self      . FACEs           =        [                                   ]
-    self      . EYEs            =        [                                   ]
-    self      . MOUTHs          =        [                                   ]
+    for M in PARTs                          [ "Mouthes"                    ] :
+      ########################################################################
+      QR   = self . RectToQRectF            ( M                              )
+      self . MOUTHs . append                ( QR                             )
     ##########################################################################
-    for F in FACEs                                                           :
-      QR      = self . CvRectToQRectF    ( F                                 )
-      self    . FACEs . append           ( QR                                )
-    ##########################################################################
-    for E in EYEs                                                            :
-      QR      = self . CvRectToQRectF    ( E                                 )
-      self    . EYEs . append            ( QR                                )
-    ##########################################################################
-    for M in MOUTHs                                                          :
-      QR      = self . CvRectToQRectF    ( M                                 )
-      self    . MOUTHs . append          ( QR                                )
-    ##########################################################################
-    self      . Notify                   ( 5                                 )
+    self   . Gui . GoRelax . emit           (                                )
+    self   . CallGeometryChange             (                                )
+    self   . Notify                         ( 5                              )
     ##########################################################################
     return
   ############################################################################
@@ -815,118 +774,88 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
         ######################################################################
         AT = AT + 1
     ##########################################################################
-    self . Painter . pathes  [ Id ] = PP
+    self . Painter . pathes   [ Id ] = PP
+    self . Painter . switches [ Id ] = True
     ##########################################################################
     return
   ############################################################################
-  def Mark68Recognition                  ( self                            ) :
+  def Mark68Recognition                   ( self                           ) :
     ##########################################################################
-    self      . CalculateGeometry        (                                   )
+    RECG   = self . GetRecognizer         (                                  )
     ##########################################################################
-    X         = self . Region . x        (                                   )
-    Y         = self . Region . y        (                                   )
-    W         = self . Region . width    (                                   )
-    H         = self . Region . height   (                                   )
-    PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
-    if                                   ( PIC in [ False , None ]         ) :
+    if                                    ( RECG in self . EmptySet        ) :
+      self . Notify                       ( 1                                )
       return
     ##########################################################################
-    DIR       = self . Settings          [ "Data"                            ]
-    AI        = self . Settings          [ "AiData"                          ]
-    HAAR      = AI                       [ "HAAR"                            ]
-    EYES      = AI                       [ "Eyes"                            ]
-    MOUTH     = AI                       [ "Mouth"                           ]
-    FIVEMARKS = AI                       [ "Fivemarks"                       ]
-    LANDMARKS = AI                       [ "Landmarks"                       ]
-    RESNET    = AI                       [ "Resnet"                          ]
+    self   . CalculateGeometry            (                                  )
     ##########################################################################
-    HAAR      = f"{DIR}/{HAAR}"
-    EYES      = f"{DIR}/{EYES}"
-    MOUTH     = f"{DIR}/{MOUTH}"
-    FIVEMARKS = f"{DIR}/{FIVEMARKS}"
-    LANDMARKS = f"{DIR}/{LANDMARKS}"
-    RESNET    = f"{DIR}/{RESNET}"
+    PIC    = self . PictureItem . PICOP . CropQRect ( self . Region          )
     ##########################################################################
-    FC        = cv2  . CascadeClassifier ( HAAR                              )
-    EC        = cv2  . CascadeClassifier ( EYES                              )
-    MC        = cv2  . CascadeClassifier ( MOUTH                             )
-    FIVE      = dlib . shape_predictor   ( FIVEMARKS                         )
-    PREDICTOR = dlib . shape_predictor   ( LANDMARKS                         )
-    FACIAL    = dlib . face_recognition_model_v1 ( RESNET                    )
-    ##########################################################################
-    IMG       = PIC  . toOpenCV          (                                   )
-    GRAY      = cv2  . cvtColor          ( IMG , cv2 . COLOR_BGR2GRAY        )
-    WW        = PIC  . Width             (                                   )
-    HH        = PIC  . Height            (                                   )
-    ##########################################################################
-    FACE      = FaceItem                 (                                   )
-    FACE      . Classifier    = FC
-    FACE      . EyesDetector  = EC
-    FACE      . MouthDetector = MC
-    FACE      . Fivemarks     = FIVE
-    FACE      . Predictor     = PREDICTOR
-    FACE      . Facial        = FACIAL
-    ##########################################################################
-    FACEs     = FACE . ToFaces           ( GRAY                              )
-    if                                   ( len ( FACEs ) != 1              ) :
+    if                                    ( PIC in self . EmptySet         ) :
+      self . Notify                       ( 1                                )
       return
     ##########################################################################
-    FACE      . setFull                  ( W , H                             )
-    FACE      . setRectangleFromOpenCV   ( FACEs [ 0 ]                       )
-    v         = FACE . ToFeatures        ( IMG , GRAY                        )
-    FACE      . FeatureWeights           (                                   )
-    SS        = FACE . ToFullFaceRectangle       (                           )
-    FACE      . NoseBridge = FACE . GetNoseAngle (                           )
-    self      . NoseBridge = FACE . NoseBridge
-    if ( int ( self . RotateAngle ( ) * 100 ) == 0 )                         :
-      self    . NoseBridge = None
+    self   . Gui . OnBusy  . emit         (                                  )
     ##########################################################################
-    ## 畫出臉型
+    LMANS  = RECG . DoDetectFaceLandmarks ( PIC                              )
     ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Shape"                           )
-    self      . CvPointToPath            ( 21 , False , F                    )
+    if LMANS                              [ "Found"                        ] :
+      ########################################################################
+      LMS  = LMANS                        [ "Landmarks"                      ]
+      ########################################################################
+      self . NoseBridge = LMS             [ "Nose" ] [ "Angle"               ]
+      ZERO = int                          ( self . RotateAngle ( ) * 100     )
+      if                                  ( 0 == ZERO                      ) :
+        self . NoseBridge = None
+      ########################################################################
+      ## 畫出臉型
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Shape"                    )
+      self . CvPointToPath                ( 21 , False , F                   )
+      ########################################################################
+      ## 畫出右眉(在左邊)
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Eyebrow" , "Right"        )
+      self . CvPointToPath                ( 22 , False , F                   )
+      ########################################################################
+      ## 畫出左眉(在右邊)
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Eyebrow" , "Left"         )
+      self . CvPointToPath                ( 23 , False , F                   )
+      ########################################################################
+      ## 畫出鼻樑
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Nose" , "Bridge"          )
+      self . CvPointToPath                ( 24 , False , F                   )
+      ########################################################################
+      ## 畫出鼻孔部
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Nose" , "Nostril"         )
+      self . CvPointToPath                ( 25 , False , F                   )
+      ########################################################################
+      ## 畫出右眼(在左邊)
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Eyes" , "Right"           )
+      self . CvPointToPath                ( 26 , True  , F                   )
+      ########################################################################
+      ## 畫出左眼(在右邊)
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Eyes" , "Left"            )
+      self . CvPointToPath                ( 27 , True , F                    )
+      ########################################################################
+      ## 畫出外嘴唇
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Mouth" , "Outer"          )
+      self . CvPointToPath                ( 28 , True  , F                   )
+      ########################################################################
+      ## 畫出內嘴唇
+      ########################################################################
+      F    = RECG . LandmarkToNpArray     ( LMS , "Mouth" , "Inner"          )
+      self . CvPointToPath                ( 29 , True  , F                   )
     ##########################################################################
-    ## 畫出右眉(在左邊)
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Eyebrow" , "Right"               )
-    self      . CvPointToPath            ( 22 , False , F                    )
-    ##########################################################################
-    ## 畫出左眉(在右邊)
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Eyebrow" , "Left"                )
-    self      . CvPointToPath            ( 23 , False , F                    )
-    ##########################################################################
-    ## 畫出鼻樑
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Nose" , "Bridge"                 )
-    self      . CvPointToPath            ( 24 , False , F                    )
-    ##########################################################################
-    ## 畫出鼻孔部
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Nose" , "Nostril"                )
-    self      . CvPointToPath            ( 25 , False , F                    )
-    ##########################################################################
-    ## 畫出右眼(在左邊)
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Eyes" , "Right"                  )
-    self      . CvPointToPath            ( 26 , True  , F                    )
-    ##########################################################################
-    ## 畫出左眼(在右邊)
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Eyes" , "Left"                   )
-    self      . CvPointToPath            ( 27 , True , F                    )
-    ##########################################################################
-    ## 畫出外嘴唇
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Mouth" , "Outer"                 )
-    self      . CvPointToPath            ( 28 , True  , F                    )
-    ##########################################################################
-    ## 畫出內嘴唇
-    ##########################################################################
-    F         = FACE . LandmarkToNpArray ( "Mouth" , "Inner"                 )
-    self      . CvPointToPath            ( 29 , True  , F                    )
-    ##########################################################################
-    self      . Notify                   ( 5                                 )
+    self   . Gui . GoRelax . emit         (                                  )
+    self   . CallGeometryChange           (                                  )
+    self   . Notify                       ( 5                                )
     ##########################################################################
     return
   ############################################################################
@@ -942,6 +871,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     H         = self . Region . height     (                                 )
     PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
     if                                     ( PIC in [ False , None ]       ) :
+      self    . Notify                     ( 1                               )
       return
     ##########################################################################
     IMG       = PIC  . toOpenCV            (                                 )
@@ -963,6 +893,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
                                              SH                              )
     ##########################################################################
     self      . MESHs = { "Mesh" : False                                     }
+    ##########################################################################
     if                                     ( PTS [ "Ready" ]               ) :
       ########################################################################
       self    . CalculateGeometry          (                                 )
@@ -975,8 +906,11 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
                                              "Points"  : PTS                 ,
                                              "Texture" : BLOB                }
       self    . SyncFaceMesh               (                                 )
-    ##########################################################################
-    self      . Notify                     ( 5                               )
+      ########################################################################
+      self    . Notify                     ( 5                               )
+      ########################################################################
+    else                                                                     :
+      self    . Notify                     ( 1                               )
     ##########################################################################
     return
   ############################################################################
@@ -1235,27 +1169,29 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def RecognitionMenu        ( self , mm                                   ) :
+  def RecognitionMenu                ( self , mm                           ) :
     ##########################################################################
-    TRX = self . Translations
+    TRX  = self . Translations
     ##########################################################################
-    MSG = self . getMenuItem ( "FeatureRecognition"                          )
-    COL = mm   . addMenu     ( MSG                                           )
+    MSG  = self . getMenuItem        ( "FeatureRecognition"                  )
+    COL  = mm   . addMenu            ( MSG                                   )
     ##########################################################################
-    msg = TRX                [ "UI::ClearAll"                                ]
-    mm  . addActionFromMenu  ( COL , 21451101 , msg                          )
+    msg  = TRX                       [ "UI::ClearAll"                        ]
+    mm   . addActionFromMenu         ( COL , 21451101 , msg                  )
     ##########################################################################
-    msg = self . getMenuItem ( "EyesMouthFacial"                             )
-    mm  . addActionFromMenu  ( COL , 21451102 , msg                          )
+    msg  = self . getMenuItem        ( "EyesMouthFacial"                     )
+    mm   . addActionFromMenu         ( COL , 21451102 , msg                  )
     ##########################################################################
-    msg = self . getMenuItem ( "68Facial"                                    )
-    mm  . addActionFromMenu  ( COL , 21451103 , msg                          )
+    msg  = self . getMenuItem        ( "68Facial"                            )
+    ICON = QIcon                     ( ":/images/detect-faces.png"           )
+    mm   . addActionFromMenuWithIcon ( COL , 21451103 , ICON , MSG           )
     ##########################################################################
-    msg = self . getMenuItem ( "468Facial"                                   )
-    mm  . addActionFromMenu  ( COL , 21451104 , msg                          )
+    msg  = self . getMenuItem        ( "468Facial"                           )
+    ICON = QIcon                     ( ":/images/human.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 21451104 , ICON , MSG           )
     ##########################################################################
-    msg = self . getMenuItem ( "Nipple"                                      )
-    mm  . addActionFromMenu  ( COL , 21451105 , msg                          )
+    msg  = self . getMenuItem        ( "Nipple"                              )
+    mm   . addActionFromMenu         ( COL , 21451105 , msg                  )
     ##########################################################################
     return mm
   ############################################################################

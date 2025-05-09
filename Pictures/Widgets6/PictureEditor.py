@@ -43,6 +43,7 @@ class PictureEditor               ( VcfWidget                              ) :
   JsonCallback         = Signal   ( dict                                     )
   Leave                = Signal   ( QWidget                                  )
   emitGeometryChange   = Signal   ( QGraphicsItem                            )
+  emitAssignPicture    = Signal   ( QGraphicsItem                            )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -56,6 +57,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . setJsonCaller                ( self . JsonCaller                  )
     self . JsonCallback       . connect ( self . JsonAccepter                )
     self . emitGeometryChange . connect ( self . doGeometryChange            )
+    self . emitAssignPicture  . connect ( self . keepAssignPicture           )
     ##########################################################################
     return
   ############################################################################
@@ -428,16 +430,15 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def assignPicture                  ( self , Uuid                         ) :
+  def GoLoadPicture                 ( self , VRIT , Uuid                   ) :
     ##########################################################################
-    self . PerfectView               (                                       )
+    VRIT . LoadImage                ( Uuid                                   )
+    self . emitAssignPicture . emit ( VRIT                                   )
     ##########################################################################
-    VRIT = VcfPeoplePicture          ( self , None , self . PlanFunc         )
-    VRIT . setOptions                ( self . Options , False                )
-    VRIT . UiConf = self . UiConf
-    self . assignItemProperties      ( VRIT                                  )
-    VRIT . setMenuCaller             ( self . MenuCallerEmitter              )
-    VRIT . LoadImage                 ( Uuid                                  )
+    return
+  ############################################################################
+  def keepAssignPicture              ( self , VRIT                         ) :
+    ##########################################################################
     self . Go                        ( VRIT . FetchPictureDetections         )
     VRIT . asImageRect               (                                       )
     VRIT . PrepareForActions         (                                       )
@@ -445,13 +446,27 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT . logFunc = self . addLog
     ##########################################################################
     FS   = VRIT . ImageSize          (                                       )
-    ##########################################################################
     VRIT . setPrepared               ( True                                  )
     self . addItem                   ( VRIT                                  )
     self . Scene . addItem           ( VRIT                                  )
     self . setPrepared               ( True                                  )
     self . DoAdjustments             ( FS                                    )
     self . emitGeometryChange . emit ( VRIT                                  )
+    self . GoRelax            . emit (                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def assignPicture             ( self , Uuid                              ) :
+    ##########################################################################
+    self . OnBusy . emit        (                                            )
+    self . PerfectView          (                                            )
+    VRIT = VcfPeoplePicture     ( self , None , self . PlanFunc              )
+    VRIT . setOptions           ( self . Options , False                     )
+    VRIT . UiConf = self . UiConf
+    self . assignItemProperties ( VRIT                                       )
+    VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
+    ARGs =                      ( VRIT , Uuid ,                              )
+    self . Go                   ( self . GoLoadPicture , ARGs                )
     ##########################################################################
     return
   ############################################################################
