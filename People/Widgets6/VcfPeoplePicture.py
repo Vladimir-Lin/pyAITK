@@ -12,30 +12,30 @@ import gettext
 import json
 import math
 ##############################################################################
-from   PySide6                                         import QtCore
-from   PySide6                                         import QtGui
-from   PySide6                                         import QtWidgets
-from   PySide6 . QtCore                                import *
-from   PySide6 . QtGui                                 import *
-from   PySide6 . QtWidgets                             import *
-from   AITK    . Qt6                                   import *
-from   AITK    . VCF6                                  import *
+from   PySide6                                          import QtCore
+from   PySide6                                          import QtGui
+from   PySide6                                          import QtWidgets
+from   PySide6 . QtCore                                 import *
+from   PySide6 . QtGui                                  import *
+from   PySide6 . QtWidgets                              import *
+from   AITK    . Qt6                                    import *
+from   AITK    . VCF6                                   import *
 ##############################################################################
-from   AITK    . Documents  . JSON                     import Load          as LoadJson
-from   AITK    . Documents  . JSON                     import Save          as SaveJson
-from   AITK    . Documents  . Variables                import Variables     as VariableItem
+from   AITK    . Documents  . JSON                      import Load          as LoadJson
+from   AITK    . Documents  . JSON                      import Save          as SaveJson
+from   AITK    . Documents  . Variables                 import Variables     as VariableItem
 ##############################################################################
-from   AITK    . Essentials . Object                   import Object        as Object
-from   AITK    . Pictures   . Picture6                 import Picture       as PictureItem
-from   AITK    . Pictures   . Gallery                  import Gallery       as GalleryItem
+from   AITK    . Essentials . Object                    import Object        as Object
+from   AITK    . Pictures   . Picture6                  import Picture       as PictureItem
+from   AITK    . Pictures   . Gallery                   import Gallery       as GalleryItem
 ##############################################################################
-from   AITK    . People     . Faces    . Face          import Face          as FaceItem
-from   AITK    . People     . Body     . Tit           import Tit           as TitItem
-from   AITK    . People     . Body     . Body          import Body          as BodyItem
+from   AITK    . People     . Faces     . Face          import Face          as FaceItem
+from   AITK    . People     . Body      . Tit           import Tit           as TitItem
+from   AITK    . People     . Body      . Body          import Body          as BodyItem
 ##############################################################################
-from   AITK    . People     . Faces6   . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
+from   AITK    . People     . Faces6    . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
 ##############################################################################
-from   AITK    . Math       . Geometry . Contour       import Contour       as Contour
+from   AITK    . Math       . Geometry6 . Contour       import Contour       as Contour
 ##############################################################################
 class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################

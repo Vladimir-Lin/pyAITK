@@ -11,33 +11,33 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   io                                        import BytesIO
-from   wand . image                              import Image
-from   PIL                                       import Image        as Pillow
+from   io                                         import BytesIO
+from   wand . image                               import Image
+from   PIL                                        import Image   as Pillow
 ##############################################################################
 import cv2
 import dlib
 import skimage
-import numpy                                                         as np
-import mediapipe                                                     as mp
+import numpy                                                     as np
+import mediapipe                                                 as mp
 ##############################################################################
-from   PySide6                                   import QtCore
-from   PySide6                                   import QtGui
-from   PySide6                                   import QtWidgets
-from   PySide6 . QtCore                          import *
-from   PySide6 . QtGui                           import *
-from   PySide6 . QtWidgets                       import *
-from   AITK    . Qt6                             import *
-from   AITK    . VCF6                            import *
+from   PySide6                                    import QtCore
+from   PySide6                                    import QtGui
+from   PySide6                                    import QtWidgets
+from   PySide6 . QtCore                           import *
+from   PySide6 . QtGui                            import *
+from   PySide6 . QtWidgets                        import *
+from   AITK    . Qt6                              import *
+from   AITK    . VCF6                             import *
 ##############################################################################
-from   AITK    . Essentials . Object             import Object       as Object
-from   AITK    . Pictures   . Picture6           import Picture      as PictureItem
-from   AITK    . Pictures   . Gallery            import Gallery      as GalleryItem
-from   AITK    . Math       . Geometry . Contour import Contour      as Contour
+from   AITK    . Essentials . Object              import Object  as Object
+from   AITK    . Pictures   . Picture6            import Picture as PictureItem
+from   AITK    . Pictures   . Gallery             import Gallery as GalleryItem
+from   AITK    . Math       . Geometry6 . Contour import Contour as Contour
 ##############################################################################
-from   AITK    . People . Faces . Face           import Face         as FaceItem
-from   AITK    . People . Body  . Tit            import Tit          as TitItem
-from   AITK    . People . Body  . Body           import Body         as BodyItem
+from   AITK    . People . Faces . Face            import Face    as FaceItem
+from   AITK    . People . Body  . Tit             import Tit     as TitItem
+from   AITK    . People . Body  . Body            import Body    as BodyItem
 ##############################################################################
 class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
