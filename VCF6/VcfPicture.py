@@ -60,15 +60,17 @@ class VcfPicture                 ( VcfRectangle                            , \
   ############################################################################
   def setVcfPictureDefaults ( self                                         ) :
     ##########################################################################
-    self . PictureDPI = 96.0
-    self . Image      = None
-    self . Original   = None
-    self . PICOP      = None
-    self . Printable  = True
-    self . Scaling    = False
-    self . Xratio     = 0.0
-    self . Yratio     = 0.0
-    self . Details    =     {                                                }
+    self . PictureDPI    = 96.0
+    self . Image         = None
+    self . Original      = None
+    self . PICOP         = None
+    self . Printable     = True
+    self . Scaling       = False
+    self . Xratio        = 0.0
+    self . Yratio        = 0.0
+    self . Details       =  {                                                }
+    self . CurrentPeople =  {                                                }
+    self . Descriptions  =  {                                                }
     ##########################################################################
     self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
     self . setFlag ( QGraphicsItem . ItemIsFocusable          , True         )

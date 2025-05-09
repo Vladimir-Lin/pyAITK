@@ -478,8 +478,18 @@ class CliParser  (                                                         ) :
     self   . LOG              ( QQ                                           )
     DB     . Query            ( QQ                                           )
     ##########################################################################
+    QQ     = f"optimize table {FPD1} ;"
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    RR     = DB . FetchAll    (                                              )
+    ##########################################################################
+    QQ     = f"optimize table {FPD2} ;"
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    RR     = DB . FetchAll    (                                              )
+    ##########################################################################
     DB     . Close            (                                              )
-    self   . LOG              ( "MovePictureDescriptions Completed"          )
+    self   . LOG              ( "ParkPictureDescriptions Completed"          )
     ##########################################################################
     return
   ############################################################################
@@ -514,6 +524,16 @@ class CliParser  (                                                         ) :
     QQ     = " " . join       ( QQ . split (                               ) )
     self   . LOG              ( QQ                                           )
     DB     . Query            ( QQ                                           )
+    ##########################################################################
+    QQ     = f"optimize table {FPD1} ;"
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    RR     = DB . FetchAll    (                                              )
+    ##########################################################################
+    QQ     = f"optimize table {FPD2} ;"
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    RR     = DB . FetchAll    (                                              )
     ##########################################################################
     DB     . Close            (                                              )
     self   . LOG              ( "MovePictureDescriptions Completed"          )

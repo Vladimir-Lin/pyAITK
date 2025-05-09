@@ -83,7 +83,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . LinkAction  ( "ZoomIn"       , self . ZoomIn        , Enabled     )
     self . LinkAction  ( "ZoomOut"      , self . ZoomOut       , Enabled     )
     ##########################################################################
-    self . AttachRatio (                                         Enabled     )
+    self . AttachRatio (                                         True        )
     ##########################################################################
     return
   ############################################################################
@@ -121,6 +121,7 @@ class PictureEditor               ( VcfWidget                              ) :
   def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
+    self . AttachRatio       ( False                                         )
     self . LinkVoice         ( None                                          )
     self . defaultCloseEvent (        event                                  )
     ##########################################################################
@@ -410,6 +411,7 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
     VRIT . setOptions             ( self . Options , False                   )
+    VRIT . UiConf = self . UiConf
     self . assignItemProperties   ( VRIT                                     )
     VRIT . setMenuCaller          ( self . MenuCallerEmitter                 )
     VRIT . setZValue              ( Z                                        )
@@ -426,61 +428,63 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def assignPicture             ( self , Uuid                              ) :
+  def assignPicture                  ( self , Uuid                         ) :
     ##########################################################################
-    self . PerfectView          (                                            )
+    self . PerfectView               (                                       )
     ##########################################################################
-    VRIT = VcfPeoplePicture     ( self , None , self . PlanFunc              )
-    VRIT . setOptions           ( self . Options , False                     )
-    self . assignItemProperties ( VRIT                                       )
-    VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
-    VRIT . LoadImage            ( Uuid                                       )
-    self . Go                   ( VRIT . FetchPictureDetections              )
-    VRIT . asImageRect          (                                            )
-    VRIT . PrepareForActions    (                                            )
+    VRIT = VcfPeoplePicture          ( self , None , self . PlanFunc         )
+    VRIT . setOptions                ( self . Options , False                )
+    VRIT . UiConf = self . UiConf
+    self . assignItemProperties      ( VRIT                                  )
+    VRIT . setMenuCaller             ( self . MenuCallerEmitter              )
+    VRIT . LoadImage                 ( Uuid                                  )
+    self . Go                        ( VRIT . FetchPictureDetections         )
+    VRIT . asImageRect               (                                       )
+    VRIT . PrepareForActions         (                                       )
     ##########################################################################
     VRIT . logFunc = self . addLog
     ##########################################################################
-    FS   = VRIT . ImageSize     (                                            )
+    FS   = VRIT . ImageSize          (                                       )
     ##########################################################################
-    VRIT . setPrepared          ( True                                       )
-    self . addItem              ( VRIT                                       )
-    self . Scene . addItem      ( VRIT                                       )
-    self . setPrepared          ( True                                       )
-    self . DoAdjustments        ( FS                                         )
+    VRIT . setPrepared               ( True                                  )
+    self . addItem                   ( VRIT                                  )
+    self . Scene . addItem           ( VRIT                                  )
+    self . setPrepared               ( True                                  )
+    self . DoAdjustments             ( FS                                    )
     self . emitGeometryChange . emit ( VRIT                                  )
     ##########################################################################
     return
   ############################################################################
-  def assignFilename              ( self , FILENAME                        ) :
+  def assignFilename                 ( self , FILENAME                     ) :
     ##########################################################################
-    PIC  = PictureItem            (                                          )
-    OK   = PIC . Load             ( FILENAME                                 )
+    PIC  = PictureItem               (                                       )
+    OK   = PIC . Load                ( FILENAME                              )
     ##########################################################################
-    if                            ( not OK                                 ) :
+    if                               ( not OK                              ) :
       return
     ##########################################################################
-    self . PerfectView            (                                          )
+    self . PerfectView               (                                       )
     ##########################################################################
-    VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
-    VRIT . setOptions             ( self . Options , False                   )
-    self . assignItemProperties   ( VRIT                                     )
-    VRIT . setMenuCaller          ( self . MenuCallerEmitter                 )
-    VRIT . setZValue              ( 10000                                    )
-    VRIT . PICOP = PIC
-    VRIT . Image = PIC . toQImage (                                          )
-    VRIT . asImageRect            (                                          )
-    VRIT . PrepareForActions      (                                          )
+    VRIT = VcfPeoplePicture          ( self , None , self . PlanFunc         )
+    VRIT . setOptions                ( self . Options , False                )
+    VRIT . UiConf = self . UiConf
+    self . assignItemProperties      ( VRIT                                  )
+    VRIT . setMenuCaller             ( self . MenuCallerEmitter              )
+    VRIT . setZValue                 ( 10000                                 )
+    VRIT . PICOP  = PIC
+    VRIT . Image  = PIC . toQImage   (                                       )
+    VRIT . asImageRect               (                                       )
+    VRIT . PrepareForActions         (                                       )
     ##########################################################################
     VRIT . logFunc = self . addLog
     ##########################################################################
-    FS   = VRIT . ImageSize       (                                          )
+    FS   = VRIT . ImageSize          (                                       )
     ##########################################################################
-    VRIT . setPrepared            ( True                                     )
-    self . addItem                ( VRIT                                     )
-    self . Scene . addItem        ( VRIT                                     )
-    self . setPrepared            ( True                                     )
-    self . DoAdjustments          ( FS                                       )
+    VRIT . setPrepared               ( True                                  )
+    self . addItem                   ( VRIT                                  )
+    self . Scene . addItem           ( VRIT                                  )
+    self . setPrepared               ( True                                  )
+    self . DoAdjustments             ( FS                                    )
     self . emitGeometryChange . emit ( VRIT                                  )
     ##########################################################################
     return

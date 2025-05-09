@@ -73,6 +73,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     self . setAttribute          ( Qt . WA_InputMethodEnabled                )
     self . VoiceJSON =           {                                           }
+    self . UiConf    =           {                                           }
     self . setDefaultZoom        (                                           )
     self . setScene              ( self . Scene                              )
     self . setRenderHint         ( QPainter . Antialiasing           , True  )

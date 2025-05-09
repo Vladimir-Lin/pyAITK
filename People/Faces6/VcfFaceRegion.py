@@ -11,9 +11,9 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   io                             import BytesIO
-from   wand . image                   import Image
-from   PIL                            import Image as Pillow
+from   io                                        import BytesIO
+from   wand . image                              import Image
+from   PIL                                       import Image        as Pillow
 ##############################################################################
 import cv2
 import dlib
@@ -144,7 +144,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ## self . LinkAction ( "Export"     , self . SaveAs          , Enabled      )
     ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     ## self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
-    ## self . LinkAction ( "Delete"     , self . DeleteItem      , Enabled      )
+    self . LinkAction  ( "Delete"     , self.DeleteThisRegion  , Enabled     )
     self . LinkAction  ( "Cut"        , self.CropCurrentImage  , Enabled     )
     ## self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
     ## self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
@@ -156,7 +156,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . Gui . AttachRatio (                                   Enabled     )
+    self . Gui . AttachRatio (                                   True        )
     ##########################################################################
     return
   ############################################################################
@@ -709,7 +709,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     W         = self . Region . width    (                                   )
     H         = self . Region . height   (                                   )
     PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
-    if                                   ( PIC in [ False , None ]         ) :
+    if                                   ( PIC in self . EmptySet          ) :
       return
     ##########################################################################
     DIR       = self . Settings          [ "Data"                            ]

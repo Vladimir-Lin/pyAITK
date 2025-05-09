@@ -56,6 +56,7 @@ class VcfItem                   ( QGraphicsItem                            , \
     self . Lockup           = False
     self . AtMenu           = False
     self . logFunc          = None
+    self . UiConf           =            {                                   }
     self . Related          =            [                                   ]
     self . Relations        =            {                                   }
     self . pens             =            [                                   ]

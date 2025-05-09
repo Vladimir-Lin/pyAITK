@@ -102,16 +102,17 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . LimitValues [ "LineEditingId"     ] = 34621145
     self . LimitValues [ "LineEditingWidth"  ] = 6.0
     self . LimitValues [ "LineEditingCircle" ] = 20
-    self . LineStartPoint =        {                                         }
-    self . LineEndPoint   =        {                                         }
+    self . LineStartPoint     =    {                                         }
+    self . LineEndPoint       =    {                                         }
     ##########################################################################
-    self . EditingMode      = 0
-    self . MeasureRule      =      {                                         }
-    self . AddingRule       = False
-    self . AddMeasuring     = False
-    self . MeasureSpin      = None
-    self . MeasureLineWidth = None
-    self . MeasurePoints    =      [                                         ]
+    self . EditingMode        = 0
+    self . MeasureRule        =    {                                         }
+    self . AddingRule         = False
+    self . AddMeasuring       = False
+    self . MeasureSpin        = None
+    self . MeasureLineWidth   = None
+    self . RulerToDescription = True
+    self . MeasurePoints      =    [                                         ]
     ##########################################################################
     self . LimitValues [ "RollImageAngle"     ] = 0.0
     self . LimitValues [ "RollImageAngleStep" ] = 0.001
@@ -923,38 +924,38 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PaintMeasurePoints ( self , p , region , clip , color                ) :
+  def PaintMeasurePoints            ( self , p , region , clip , color     ) :
     ##########################################################################
-    if                   ( len ( self . MeasurePoints ) <= 0               ) :
+    if                              ( len ( self . MeasurePoints ) <= 0    ) :
       return
     ##########################################################################
-    FID  = self . Painter . Names [ "MeasureFont"                            ]
+    FID    = self . Painter . Names [ "MeasureFont"                          ]
     ##########################################################################
     for MP in self . MeasurePoints                                           :
       ########################################################################
-      CC = MP            [ "Color"                                           ]
-      L1 = MP            [ "P1"                                              ]
-      L2 = MP            [ "P2"                                              ]
-      LL = self . CalculateMeasureLength ( L1 , L2                           )
+      CC   = MP            [ "Color"                                         ]
+      L1   = MP            [ "P1"                                            ]
+      L2   = MP            [ "P2"                                            ]
+      LL   = self . CalculateMeasureLength ( L1 , L2                         )
       ########################################################################
-      QC = QColor        ( CC [ "R" ] , CC [ "G" ] , CC [ "B" ]              )
-      PX = QPen          ( QC                                                )
-      PX . setWidthF     ( 7.0                                               )
-      p  . setPen        ( PX                                                )
-      p  . setBrush      ( QBrush ( QC                                     ) )
+      QC   = QColor        ( CC [ "R" ] , CC [ "G" ] , CC [ "B" ]            )
+      PX   = QPen          ( QC                                              )
+      PX   . setWidthF     ( 7.0                                             )
+      p    . setPen        ( PX                                              )
+      p    . setBrush      ( QBrush ( QC                                   ) )
       ########################################################################
-      P1 = QPointF       ( L1 [ "X" ] , L1 [ "Y" ]                           )
-      P2 = QPointF       ( L2 [ "X" ] , L2 [ "Y" ]                           )
+      P1   = QPointF       ( L1 [ "X" ] , L1 [ "Y" ]                         )
+      P2   = QPointF       ( L2 [ "X" ] , L2 [ "Y" ]                         )
       ########################################################################
-      p  . drawLine      ( P1 , P2                                           )
+      p    . drawLine      ( P1 , P2                                         )
       ########################################################################
-      p  . setFont       ( self . Painter . fonts [ FID ]                    )
-      PX . setWidthF     ( 2.54                                              )
-      p  . setPen        ( PX                                                )
+      p    . setFont       ( self . Painter . fonts [ FID ]                  )
+      PX   . setWidthF     ( 2.54                                            )
+      p    . setPen        ( PX                                              )
       ########################################################################
-      LT = int           ( LL                                                )
-      LT = f"{LT}"
-      p  . drawText      ( P2 . x ( ) + 60 , P2 . y ( ) + 60 , LT            )
+      LT   = int           ( LL                                              )
+      LT   = f"{LT}"
+      p    . drawText      ( P2 . x ( ) + 60 , P2 . y ( ) + 60 , LT          )
     ##########################################################################
     return
   ############################################################################
@@ -1132,6 +1133,11 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def RecoverRulerSettings ( self                                          ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def MeasureRuleMenu               ( self , mm , LOM                      ) :
     ##########################################################################
     MM     = 100
@@ -1163,6 +1169,16 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     MSG    = self . getMenuItem     ( "AddingRule"                           )
     mm     . addActionFromMenu      ( ROM , 78021101 , MSG                   )
+    ##########################################################################
+    MSG    = self . getMenuItem     ( "RulerToDescription"                   )
+    mm     . addActionFromMenu      ( ROM                                  , \
+                                      78021102                             , \
+                                      MSG                                  , \
+                                      True                                 , \
+                                      self . RulerToDescription              )
+    ##########################################################################
+    MSG    = self . getMenuItem     ( "RecoverRuler"                         )
+    mm     . addActionFromMenu      ( ROM , 78021103 , MSG                   )
     ##########################################################################
     mm     . addWidgetWithMenu      ( ROM , 78021151 , LSP                   )
     mm     . addWidgetWithMenu      ( ROM , 78021152 , LWF                   )
@@ -1215,6 +1231,18 @@ class VcfRectangle              ( VcfItem                                  ) :
     if                               ( at == 78021101                      ) :
       ########################################################################
       self . AddingRuleLine          (                                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                               ( at == 78021102                      ) :
+      ########################################################################
+      self . RulerToDescription = not self . RulerToDescription
+      ########################################################################
+      return True
+    ##########################################################################
+    if                               ( at == 78021103                      ) :
+      ########################################################################
+      self . RecoverRulerSettings    (                                       )
       ########################################################################
       return True
     ##########################################################################

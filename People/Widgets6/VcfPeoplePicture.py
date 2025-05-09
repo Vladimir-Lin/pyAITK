@@ -56,12 +56,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
-    self . SquareFactor  = 1.5
-    self . HumanMeasure  = None
-    self . CurrentPeople =        {                                          }
-    self . Descriptions  =        {                                          }
+    self . SquareFactor = 1.5
+    self . HumanMeasure = None
     ##########################################################################
-    self . LastestZ      = None
+    self . LastestZ     = None
     self . setFlag                ( QGraphicsItem . ItemIsMovable , False    )
     self . setZValue              ( 10000                                    )
     ##########################################################################
@@ -70,23 +68,34 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    self . AppendSideActionWithIcon ( "AddSelectionRegion"                 , \
-                                      ":/images/selectimage.png"           , \
-                                      self . AddSelectionRegion            , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendSideActionWithIcon ( "AddSmallRegion"                     , \
-                                      ":/images/maximize.png"              , \
-                                      self . AddSmallRegion                , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendSideActionWithIcon ( "SquareFacial"                       , \
-                                      ":/images/frame.png"                 , \
-                                      self . RunSquareFacial               , \
-                                      True                                 , \
-                                      False                                  )
+    self . AppendSideActionWithIcon        ( "FetchDetections"             , \
+                                             ":/images/sqltable.png"       , \
+                                             self . RunFetchPictureDetections , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "SaveDetections"              , \
+                                             ":/images/saveall.png"        , \
+                                             self . RunSavePictureDetections , \
+                                             True                          , \
+                                             False                           )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "AddSelectionRegion"          , \
+                                             ":/images/selectimage.png"    , \
+                                             self . AddSelectionRegion     , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "AddSmallRegion"              , \
+                                             ":/images/maximize.png"       , \
+                                             self . AddSmallRegion         , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "SquareFacial"                , \
+                                             ":/images/frame.png"          , \
+                                             self . RunSquareFacial        , \
+                                             True                          , \
+                                             False                           )
     ##########################################################################
     return
   ############################################################################
@@ -114,7 +123,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . Gui . AttachRatio (                                   Enabled     )
+    self . Gui . AttachRatio (                                   True        )
     ##########################################################################
     return
   ############################################################################
@@ -487,22 +496,49 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def LinePointsEditingFinished  ( self , P1 , P2                          ) :
+  def LinePointsEditingFinished     ( self , P1 , P2                       ) :
     ##########################################################################
     EM     = self . EditingMode
     self   . EditingMode = 0
     ##########################################################################
-    if                           ( EM == 23521001                          ) :
+    if                              ( EM == 23521001                       ) :
       ########################################################################
-      self . AssignRuleLine      ( P1 , P2                                   )
+      self . AssignRuleLine         ( P1 , P2                                )
+      self . StoreRulerDescriptions (                                        )
       ########################################################################
       return
     ##########################################################################
-    if                           ( EM == 23521002                          ) :
+    if                              ( EM == 23521002                       ) :
       ########################################################################
-      self . AssignMeasurePoints ( P1 , P2                                   )
+      self . AssignMeasurePoints    ( P1 , P2                                )
       ########################################################################
       return
+    ##########################################################################
+    return
+  ############################################################################
+  def RecoverRulerSettings      ( self                                     ) :
+    ##########################################################################
+    if                          ( "Editing" not in self . Descriptions     ) :
+      return
+    ##########################################################################
+    EDESC = self . Descriptions [ "Editing"                                  ]
+    ##########################################################################
+    if                          ( "Ruler" not in EDESC                     ) :
+      return
+    ##########################################################################
+    self . MeasureRule = self . Descriptions [ "Editing" ] [ "Ruler" ]
+    ##########################################################################
+    return
+  ############################################################################
+  def StoreRulerDescriptions ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . RulerToDescription               ) :
+      return
+    ##########################################################################
+    if                       ( "Editing" not in self . Descriptions        ) :
+      self . Descriptions [ "Editing" ] = {                                  }
+    ##########################################################################
+    self   . Descriptions [ "Editing" ] [ "Ruler" ] = self . MeasureRule
     ##########################################################################
     return
   ############################################################################
@@ -584,6 +620,51 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def RunFetchPictureDetections ( self                                     ) :
+    ##########################################################################
+    self . Go                   ( self . FetchPictureDetections              )
+    ##########################################################################
+    return
+  ############################################################################
+  def SavePictureDetections       ( self                                   ) :
+    ##########################################################################
+    UUID   = self . ObjectUuid    (                                          )
+    ##########################################################################
+    if                            ( UUID <= 0                              ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB     (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( DB )                  ) :
+      ########################################################################
+      self . Notify               ( 1                                        )
+      ########################################################################
+      return
+    ##########################################################################
+    VARTAB = self . Tables        [ "DescribeVariables"                      ]
+    ##########################################################################
+    PV     = VariableItem         (                                          )
+    ##########################################################################
+    PV     . Type  = 9
+    PV     . Name  = "Description"
+    PV     . Uuid  = UUID
+    PV     . Value = json . dumps ( self . Descriptions                      )
+    ##########################################################################
+    DB     . LockWrites           ( [ VARTAB                               ] )
+    PV     . AssureValue          ( DB , VARTAB                              )
+    DB     . UnlockTables         (                                          )
+    ##########################################################################
+    DB     . Close                (                                          )
+    self   . Notify               ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunSavePictureDetections ( self                                      ) :
+    ##########################################################################
+    self . Go                  ( self . SavePictureDetections                )
+    ##########################################################################
+    return
+  ############################################################################
   def ShowObjectRectangles ( self                                          ) :
     ##########################################################################
     if                     ( "Description" not in self . Descriptions      ) :
@@ -649,21 +730,26 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PictureOpsMenu          ( self , mm                                  ) :
+  def PictureOpsMenu                 ( self , mm                           ) :
     ##########################################################################
-    UUID = self . ObjectUuid  (                                              )
+    UUID = self . ObjectUuid         (                                       )
     ##########################################################################
-    if                        ( UUID <= 0                                  ) :
+    if                               ( UUID <= 0                           ) :
       return
     ##########################################################################
-    MSG  = self . getMenuItem ( "PicturesProcess"                            )
-    LOM  = mm   . addMenu     ( MSG                                          )
+    MSG  = self . getMenuItem        ( "PicturesProcess"                     )
+    LOM  = mm   . addMenu            ( MSG                                   )
     ##########################################################################
-    MSG  = self . getMenuItem ( "FetchDetections"                            )
-    mm   . addActionFromMenu  ( LOM , 38913101 , MSG                         )
+    MSG  = self . getMenuItem        ( "FetchDetections"                     )
+    ICON = QIcon                     ( ":/images/sqltable.png"               )
+    mm   . addActionFromMenuWithIcon ( LOM , 38913101 , ICON , MSG           )
     ##########################################################################
-    MSG  = self . getMenuItem ( "ShowObjectRectangles"                       )
-    mm   . addActionFromMenu  ( LOM , 38913102 , MSG                         )
+    MSG  = self . getMenuItem        ( "SaveDetections"                      )
+    ICON = QIcon                     ( ":/images/saveall.png"                )
+    mm   . addActionFromMenuWithIcon ( LOM , 38913102 , ICON , MSG           )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "ShowObjectRectangles"                )
+    mm   . addActionFromMenu         ( LOM , 38913103 ,        MSG           )
     ##########################################################################
     ##########################################################################
     ##########################################################################
@@ -676,11 +762,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                  ( 38913101 == at                                   ) :
       ########################################################################
-      self . Go         ( self . FetchPictureDetections                      )
+      self . RunFetchPictureDetections (                                     )
       ########################################################################
       return True
     ##########################################################################
     if                  ( 38913102 == at                                   ) :
+      ########################################################################
+      self . RunSavePictureDetections (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( 38913103 == at                                   ) :
       ########################################################################
       self . Go         ( self . ShowObjectRectangles                        )
       ########################################################################
@@ -825,8 +917,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm     . addSeparator       (                                            )
     self   . PictureOpsMenu     ( mm                                         )
     self   . ContourEditorMenu  ( mm , 7000 , self . convex                  )
+    mm     . addSeparator       (                                            )
     self   . RecognitionMenu    ( mm                                         )
     self   . MeasureMenu        ( mm                                         )
+    mm     . addSeparator       (                                            )
     self   . StatesMenu         ( mm                                         )
     self   . LayerMenu          ( mm                                         )
     ##########################################################################
