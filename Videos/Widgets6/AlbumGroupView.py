@@ -146,7 +146,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
     self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
     ##########################################################################
-    self . TellStory  (                                        Enabled       )
+    ## self . TellStory  (                                        Enabled       )
     ##########################################################################
     return
   ############################################################################
