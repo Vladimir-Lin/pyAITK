@@ -1095,7 +1095,8 @@ class Recognizer (                                                         ) :
     Landmarks [ "Eyes" ] [ "InnerRect" ] = RT
     ##########################################################################
     T         = Landmarks   [ "Nose" ] [ "Bridge" ] [ 0                      ]
-    B         = Landmarks   [ "Nose" ] [ "Bridge" ] [ 1                      ]
+    ## B         = Landmarks   [ "Nose" ] [ "Bridge" ] [ 1                      ]
+    B         = Landmarks   [ "Nose" ] [ "Bridge" ] [ 3                      ]
     dX        = int         ( T [ 0 ] - B [ 0 ]                              )
     dY        = int         ( T [ 1 ] - B [ 1 ]                              )
     ##########################################################################
