@@ -12,14 +12,6 @@ import gettext
 import json
 ##############################################################################
 from   io                                         import BytesIO
-from   wand . image                               import Image
-from   PIL                                        import Image   as Pillow
-##############################################################################
-import cv2
-import dlib
-import skimage
-import numpy                                                     as np
-import mediapipe                                                 as mp
 ##############################################################################
 from   PySide6                                    import QtCore
 from   PySide6                                    import QtGui
@@ -69,7 +61,9 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . MOUTHs          =   [                                             ]
     self . POSEs           =   { "Pose"   : False                            }
     self . MESHs           =   { "Mesh"   : False                            }
+    self . MeshRadius      = 8.0
     self . NIPPLEs         =   { "Nipple" : False                            }
+    self . FEATUREs        =   { "Ready"  : False                            }
     self . GeometryChanged = self . FaceGeometryChanged
     self . FaceCallbacks   =   [                                             ]
     self . setZValue           ( 50000                                       )
@@ -303,15 +297,17 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  def DrawFaceMeshes                ( self , p                             ) :
+  def DrawFaceMeshes             ( self , p                                ) :
     ##########################################################################
-    self . Painter . setPainter     ( p , "NoseBridge"                       )
+    self . Painter . setPainter  ( p , "NoseBridge"                          )
     ##########################################################################
-    PTS  = self . MESHs             [ "Points" ] [ "Draws"                   ]
+    PTS  = self . MESHs          [ "Points" ] [ "Draws"                      ]
+    MR   = self . MeshRadius
     ##########################################################################
     for JP in PTS                                                            :
-      VT = self . pjsonToQPointF    ( JP                                     )
-      p  . drawEllipse              ( VT , 8 , 8                             )
+      ########################################################################
+      VT = self . pjsonToQPointF ( JP                                        )
+      p  . drawEllipse           ( VT , MR , MR                              )
     ##########################################################################
     return
   ############################################################################
@@ -708,7 +704,12 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     self   . Gui . OnBusy  . emit           (                                )
     ##########################################################################
+    PT     = self . Region . topLeft        (                                )
     PARTs  = RECG . DoDetectSimpleFaceParts ( PIC                            )
+    self   . FACEs  = self . PictureItem . PictureRectToItemQRect          ( \
+                                              self                         , \
+                                              PT                           , \
+                                              PARTs [ "Faces" ]              )
     ##########################################################################
     for F in PARTs                          [ "Faces"                      ] :
       ########################################################################
@@ -779,7 +780,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  def Mark68Recognition                   ( self                           ) :
+  def DoMark68Recognition                 ( self                           ) :
     ##########################################################################
     RECG   = self . GetRecognizer         (                                  )
     ##########################################################################
@@ -859,143 +860,156 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  ## MediaPipe Face Mesh Recognition
-  ############################################################################
-  def Mark468Recognition                   ( self                          ) :
+  def Mark68Recognition ( self                                             ) :
     ##########################################################################
-    self      . CalculateGeometry          (                                 )
-    ##########################################################################
-    X         = self . Region . x          (                                 )
-    Y         = self . Region . y          (                                 )
-    W         = self . Region . width      (                                 )
-    H         = self . Region . height     (                                 )
-    PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
-    if                                     ( PIC in [ False , None ]       ) :
-      self    . Notify                     ( 1                               )
-      return
-    ##########################################################################
-    IMG       = PIC  . toOpenCV            (                                 )
-    RGB       = cv2  . cvtColor            ( IMG , cv2 . COLOR_BGR2RGB       )
-    WW        = PIC  . Width               (                                 )
-    HH        = PIC  . Height              (                                 )
-    BX        = self . ScreenRect . x      (                                 )
-    BY        = self . ScreenRect . y      (                                 )
-    SW        = self . ScreenRect . width  (                                 )
-    SH        = self . ScreenRect . height (                                 )
-    ##########################################################################
-    F         = FaceItem                   (                                 )
-    PTS       = F . Detect468Landmarks     ( RGB                           , \
-                                             WW                            , \
-                                             HH                            , \
-                                             BX                            , \
-                                             BY                            , \
-                                             SW                            , \
-                                             SH                              )
-    ##########################################################################
-    self      . MESHs = { "Mesh" : False                                     }
-    ##########################################################################
-    if                                     ( PTS [ "Ready" ]               ) :
-      ########################################################################
-      self    . CalculateGeometry          (                                 )
-      PIC     = self . PictureItem . CropCurrentImage ( self . Region        )
-      BLOB    = BytesIO                    (                                 )
-      PIC     . Image . format = "png"
-      PIC     . Image . save               ( file = BLOB                     )
-      ########################################################################
-      self    . MESHs =                    { "Mesh"    : True                ,
-                                             "Points"  : PTS                 ,
-                                             "Texture" : BLOB                }
-      self    . SyncFaceMesh               (                                 )
-      ########################################################################
-      self    . Notify                     ( 5                               )
-      ########################################################################
-    else                                                                     :
-      self    . Notify                     ( 1                               )
+    self . Go           ( self . DoMark68Recognition                         )
     ##########################################################################
     return
   ############################################################################
-  def NippleRecognition         ( self                                     ) :
+  ## MediaPipe Face Mesh Recognition
+  ############################################################################
+  def DoMark468Recognition                ( self                           ) :
     ##########################################################################
-    DIR     = self . Settings   [ "Data"                                     ]
-    AI      = self . Settings   [ "AiData"                                   ]
-    SVM     = AI                [ "Boobs-SVM"                                ]
-    CASCADE = AI                [ "Boobs-Cascade"                            ]
+    RECG   = self  . GetRecognizer        (                                  )
     ##########################################################################
-    SVM     = f"{DIR}/{SVM}"
-    CASCADE = f"{DIR}/{CASCADE}"
+    if                                    ( RECG in self . EmptySet        ) :
+      self . Notify                       ( 1                                )
+      return
     ##########################################################################
-    IMG     = self . PictureItem . PICOP . toOpenCV (                        )
-    GRAY    = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY     )
-    RGB     = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2RGB      )
-    WW      = self . PictureItem . PICOP . Width  (                          )
-    HH      = self . PictureItem . PICOP . Height (                          )
+    self   . CalculateGeometry            (                                  )
     ##########################################################################
-    TIT     = TitItem           (                                            )
-    TIT     . LoadClassifier    ( CASCADE                                    )
-    TIT     . LoadDetector      ( SVM                                        )
+    PIC    = self  . PictureItem . PICOP . CropQRect ( self . Region         )
     ##########################################################################
-    BOOBs   = TIT . ToBoobs     ( GRAY                                       )
-    DLIBs   = TIT . ToDlibBoobs ( RGB                                        )
+    if                                    ( PIC in self . EmptySet         ) :
+      self . Notify                       ( 1                                )
+      return
     ##########################################################################
-    RECTs   =                   [                                            ]
+    self   . Gui   . OnBusy  . emit       (                                  )
     ##########################################################################
-    for F in BOOBs                                                           :
-      ########################################################################
-      X     = F                 [ 0                                          ]
-      Y     = F                 [ 1                                          ]
-      W     = F                 [ 2                                          ]
-      H     = F                 [ 3                                          ]
-      R     =                   { "X" : X , "Y" : Y , "W" : W , "H" : H      }
-      ########################################################################
-      RECTs . append            ( R                                          )
+    REGZ   = self  . QRectToRectangle     ( self . Region                    )
+    SCRZ   = self  . QRectToRectangle     ( self . ScreenRect                )
+    OPTs   =                              { "Region" : REGZ                , \
+                                            "Screen" : SCRZ                  }
+    MESH   = RECG  . DoDetectFaceMeshes   ( PIC , OPTs                       )
     ##########################################################################
-    for id in range ( 0 , len ( DLIBs ) )                                    :
-      ########################################################################
-      X     = DLIBs [ id ] . left   (                                        )
-      Y     = DLIBs [ id ] . top    (                                        )
-      W     = DLIBs [ id ] . width  (                                        )
-      H     = DLIBs [ id ] . height (                                        )
-      R     =                   { "X" : X , "Y" : Y , "W" : W , "H" : H      }
-      ########################################################################
-      RECTs . append            ( R                                          )
+    self   . MESHs =                      { "Mesh" : False                   }
     ##########################################################################
-    DRAWs   =                   [                                            ]
-    RX      = self . PictureItem . Xratio
-    RY      = self . PictureItem . Yratio
+    if                                    ( MESH [ "Ready"               ] ) :
+      ########################################################################
+      BLOB = BytesIO                      (                                  )
+      PIC  . Image . format = "png"
+      PIC  . Image . save                 ( file = BLOB                      )
+      ########################################################################
+      self . MESHs =                      { "Mesh"    : True               , \
+                                            "Points"  : MESH               , \
+                                            "Texture" : BLOB                 }
+      self . SyncFaceMesh                 (                                  )
+      ########################################################################
+      self . Notify                       ( 5                                )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . Notify                       ( 1                                )
     ##########################################################################
-    for R in RECTs                                                           :
-      ########################################################################
-      X     = R                 [ "X"                                        ]
-      Y     = R                 [ "Y"                                        ]
-      W     = R                 [ "W"                                        ]
-      H     = R                 [ "H"                                        ]
-      ########################################################################
-      XX    = float             ( float ( X ) / RX                           )
-      YY    = float             ( float ( Y ) / RY                           )
-      PT    = QPointF           ( XX , YY                                    )
-      ########################################################################
-      PX    = self . PictureItem . mapToItem ( self , PT                     )
-      ########################################################################
-      WW    = float             ( float ( W ) / RX                           )
-      HH    = float             ( float ( H ) / RY                           )
-      PT    = QPointF           ( WW , HH                                    )
-      ########################################################################
-      PW    = self . PictureItem . mapToItem ( self , PT                     )
-      ########################################################################
-      X     = PX . x            (                                            )
-      Y     = PX . y            (                                            )
-      W     = PW . x            (                                            )
-      H     = PW . y            (                                            )
-      ########################################################################
-      R     =                   { "X" : X , "Y" : Y , "W" : W , "H" : H      }
-      ########################################################################
-      DRAWs . append            ( R                                          )
+    self   . Gui   . GoRelax . emit         (                                  )
+    self   . CallGeometryChange           (                                  )
     ##########################################################################
-    self     . NIPPLEs =        { "Nipple" : True                          , \
-                                  "Boobs"  : RECTs                         , \
-                                  "Draws"  : DRAWs                           }
+    return
+  ############################################################################
+  def Mark468Recognition ( self                                            ) :
     ##########################################################################
-    self     . Notify           ( 5                                          )
+    self . Go            ( self . DoMark468Recognition                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoNippleRecognition            ( self                                ) :
+    ##########################################################################
+    RECG   = self . GetRecognizer    (                                       )
+    ##########################################################################
+    if                               ( RECG in self . EmptySet             ) :
+      self . Notify                  ( 1                                     )
+      return
+    ##########################################################################
+    self   . CalculateGeometry       (                                       )
+    ##########################################################################
+    PIC    = self . PictureItem . PICOP . CropQRect ( self . Region          )
+    ##########################################################################
+    if                               ( PIC in self . EmptySet              ) :
+      self . Notify                  ( 1                                     )
+      return
+    ##########################################################################
+    self   . Gui . OnBusy  . emit    (                                       )
+    ##########################################################################
+    PT     = self . Region . topLeft (                                       )
+    BOOBs  = RECG . DoDetectAllBoobs ( PIC                                   )
+    DRAWs  = self . PictureItem . PictureRectsToLocalRects                 ( \
+                                       self                                , \
+                                       PT                                  , \
+                                       BOOBs                                 )
+    ##########################################################################
+    if                               ( len ( BOOBs ) > 0                   ) :
+      ########################################################################
+      self . NIPPLEs =               { "Nipple" : True                     , \
+                                       "Boobs"  : BOOBs                    , \
+                                       "Draws"  : DRAWs                      }
+      ########################################################################
+      self . Notify                  ( 5                                     )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . NIPPLEs =               { "Nipple" : False                    , \
+                                       "Boobs"  : [                      ] , \
+                                       "Draws"  : [                      ]   }
+      ########################################################################
+      self . Notify                  ( 1                                     )
+    ##########################################################################
+    self   . Gui . GoRelax . emit    (                                       )
+    self   . CallGeometryChange      (                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def NippleRecognition ( self                                             ) :
+    ##########################################################################
+    self . Go           ( self . DoNippleRecognition                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoExtractFaceFeatures               ( self                           ) :
+    ##########################################################################
+    RECG   = self . GetRecognizer         (                                  )
+    ##########################################################################
+    if                                    ( RECG in self . EmptySet        ) :
+      self . Notify                       ( 1                                )
+      return
+    ##########################################################################
+    self   . CalculateGeometry            (                                  )
+    ##########################################################################
+    PIC    = self . PictureItem . PICOP . CropQRect ( self . Region          )
+    ##########################################################################
+    if                                    ( PIC in self . EmptySet         ) :
+      self . Notify                       ( 1                                )
+      return
+    ##########################################################################
+    self   . Gui . OnBusy  . emit         (                                  )
+    ##########################################################################
+    FF     = RECG . DoExtractFaceFeatures ( PIC                              )
+    self   . FEATUREs = FF
+    ##########################################################################
+    if                                    ( FF [ "Ready" ]                 ) :
+      ########################################################################
+      self . Notify                       ( 5                                )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . Notify                       ( 1                                )
+    ##########################################################################
+    self   . Gui . GoRelax . emit         (                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExtractFaceFeatures ( self                                           ) :
+    ##########################################################################
+    self . Go             ( self . DoExtractFaceFeatures                     )
     ##########################################################################
     return
   ############################################################################
@@ -1033,6 +1047,8 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     self . PaperRect = self . rectToPaper ( self . ScreenRect                )
     self . CalculateGeometry              (                                  )
+    self . CallGeometryChange             (                                  )
+    self . Notify                         ( 5                                )
     ##########################################################################
     return
   ############################################################################
@@ -1155,7 +1171,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     return
     ##########################################################################
     JSON = self . MESHs
-    JSON [ "Measure" ]             = {                                       }
+    JSON [ "Measure" ]             =                    {                    }
     JSON [ "Measure" ] [ "P1"    ] = self . MeasureRule [ "P1"               ]
     JSON [ "Measure" ] [ "P2"    ] = self . MeasureRule [ "P2"               ]
     JSON [ "Measure" ] [ "Value" ] = self . MeasureRule [ "Value"            ]
@@ -1193,6 +1209,9 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     msg  = self . getMenuItem        ( "Nipple"                              )
     mm   . addActionFromMenu         ( COL , 21451105 , msg                  )
     ##########################################################################
+    msg  = self . getMenuItem        ( "ExtractFaceFeatures"                 )
+    mm   . addActionFromMenu         ( COL , 21451106 , msg                  )
+    ##########################################################################
     return mm
   ############################################################################
   def RunRecognitionMenu            ( self , at                            ) :
@@ -1224,6 +1243,12 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if                              ( at == 21451105                       ) :
       ########################################################################
       self . NippleRecognition      (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 21451106                       ) :
+      ########################################################################
+      self . ExtractFaceFeatures    (                                        )
       ########################################################################
       return True
     ##########################################################################
