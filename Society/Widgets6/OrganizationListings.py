@@ -200,7 +200,7 @@ class OrganizationListings     ( TreeDock                                  ) :
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . TellStory  (                                         Enabled      )
+    ## self . TellStory  (                                         Enabled      )
     ##########################################################################
     return
   ############################################################################
