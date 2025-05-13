@@ -13,9 +13,3 @@ SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/documents/documents.pri)
-include ($${PWD}/Equations/Equations.pri)
-include ($${PWD}/Fuzzy/Fuzzy.pri)
-include ($${PWD}/Geometry/Geometry.pri)
-include ($${PWD}/Geometry6/Geometry6.pri)
-include ($${PWD}/Numbers/Numbers.pri)
-include ($${PWD}/Widgets/Widgets.pri)
