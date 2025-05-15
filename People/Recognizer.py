@@ -1019,7 +1019,7 @@ class Recognizer (                                                         ) :
     RH   = RRCT                          [ "H"                               ]
     RH   = int                           ( RH - 4                            )
     RZ   = int                           ( RH / 2                            )
-    RP   = int                           ( RH / 3                            )
+    RP   = int                           ( RH / 5                            )
     MPIC . MaskCircle                    ( CX , CY , RZ                      )
     MPIC . MaskCircle                    ( CX , CY , RP , 0                  )
     ##########################################################################
