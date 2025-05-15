@@ -1000,13 +1000,11 @@ class Recognizer (                                                         ) :
     if                                   ( HH < MH                         ) :
       MK = False
     ##########################################################################
-    """
     if                                   ( not MK                          ) :
       return                             { "Mean"     :                  {   \
                                              "Ready"  : False            } , \
                                            "Dominant" :                  {   \
                                              "Ready"  : False            }   }
-    """
     ##########################################################################
     EPIC = PIC  . Crop                   ( XX , YY , WW , HH                 )
     EW   = EPIC . Width                  (                                   )
