@@ -22,14 +22,20 @@ from   AITK  . Database   . Columns        import Columns
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-HAIRSREL       = "`affiliations`.`relations_people_0009`"
-HPICREL        = "`affiliations`.`relations_pictures_0009`"
-HAIRSNAM       = "`appellations`.`names_commons_0014`"
-HAIRSNOTE      = "`notez`.`notes_commons_0027`"
-HAIRSPARAM     = "`cios`.`parameters`"
-HairsShortType = 20
-HairsLongType  = 1100000000000000020
-HairsTypeName  = "Hairs"
+HAIRSREL        = "`affiliations`.`relations_people_0009`"
+HPICREL         = "`affiliations`.`relations_pictures_0009`"
+HAIRSNAM        = "`appellations`.`names_commons_0014`"
+HAIRSNOTE       = "`notez`.`notes_commons_0027`"
+HAIRSPARAM      = "`cios`.`parameters`"
+HairsShortType  = 20
+HairsLongType   = 1100000000000000020
+HairsTypeName   = "Hairs"
+##############################################################################
+HairColorRanges =                                                          { \
+  "Brown"       : ( [  10 ,  50 ,  50 ] , [  30 , 255 , 150 ]            ) , \
+  "Blue"        : ( [  90 ,  50 ,  50 ] , [ 130 , 255 , 255 ]            ) , \
+  "Green"       : ( [  40 ,  50 ,  50 ] , [  80 , 255 , 255 ]            ) , \
+  "Gray"        : ( [   0 ,   0 ,  50 ] , [ 179 ,  50 , 150 ]            )   }
 ##############################################################################
 class Hairs              ( Columns                                         ) :
   ############################################################################
