@@ -49,7 +49,7 @@ class Picture     (                                                        ) :
     self . Filename = ""
     self . Data     = None
     self . Image    = None
-    self . CvImage  = None
+    self . CvMask   = None
     self . Icon     = None
     self . IconData = None
     self . CRC32    = 0
