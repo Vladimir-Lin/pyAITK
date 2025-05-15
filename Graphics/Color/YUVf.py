@@ -13,7 +13,7 @@ class YUVf                    ( CommonColor                                ) :
   def __init__                ( self                                       ) :
     ##########################################################################
     self . ColorModel = "YUV"
-    self . ValueType  = "Float"
+    self . ValueType  = "Double"
     ##########################################################################
     self . Y          = float ( 0.0                                          )
     self . U          = float ( 0.0                                          )

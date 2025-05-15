@@ -13,7 +13,7 @@ class RGBf                    ( CommonColor                                ) :
   def __init__                ( self                                       ) :
     ##########################################################################
     self . ColorModel = "RGB"
-    self . ValueType  = "Float"
+    self . ValueType  = "Double"
     ##########################################################################
     self . R          = float ( 0.0                                          )
     self . G          = float ( 0.0                                          )

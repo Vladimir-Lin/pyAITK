@@ -13,7 +13,7 @@ class HSVf                    ( CommonColor                                ) :
   def __init__                ( self                                       ) :
     ##########################################################################
     self . ColorModel = "HSV"
-    self . ValueType  = "Float"
+    self . ValueType  = "Double"
     ##########################################################################
     self . H          = float ( 0.0                                          )
     self . S          = float ( 0.0                                          )
