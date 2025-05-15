@@ -60,12 +60,48 @@ class RGBAf                   ( CommonColor                                ) :
     ##########################################################################
     return     True
   ############################################################################
-  def fromRGBAi                       ( self , iRGBA                       ) :
+  def fromRGBAi                  ( self , iRGBA                            ) :
     ##########################################################################
-    self . R = self . ConstraintFloat ( float ( iRGBA . R ) / 255.0          )
-    self . G = self . ConstraintFloat ( float ( iRGBA . G ) / 255.0          )
-    self . B = self . ConstraintFloat ( float ( iRGBA . B ) / 255.0          )
-    self . A = self . ConstraintFloat ( float ( iRGBA . A ) / 255.0          )
+    self . R = self . ScaleFloat (        iRGBA . R                          )
+    self . G = self . ScaleFloat (        iRGBA . G                          )
+    self . B = self . ScaleFloat (        iRGBA . B                          )
+    self . A = self . ScaleFloat (        iRGBA . A                          )
     ##########################################################################
     return
+  ############################################################################
+  def toRGBA ( self                                                        ) :
+    return   [ self . R , self . G , self . B , self . A                     ]
+  ############################################################################
+  def toABGR ( self                                                        ) :
+    return   [ self . A , self . B , self . G , self . R                     ]
+  ############################################################################
+  def toNpABGR        ( self                                               ) :
+    return np . array ( [ [ self . toABGR ( ) ] ] , dtype = np . float64     )
+  ############################################################################
+  def toNpRGBA        ( self                                               ) :
+    return np . array ( [ [ self . toRGBA ( ) ] ] , dtype = np . float64     )
+  ############################################################################
+  def fromCvRGBA     ( self , RGBA                                         ) :
+    ##########################################################################
+    self . R = float ( RGBA [ 0 ]                                            )
+    self . G = float ( RGBA [ 1 ]                                            )
+    self . B = float ( RGBA [ 2 ]                                            )
+    self . A = float ( RGBA [ 3 ]                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def fromCvABGR     ( self , ABGR                                         ) :
+    ##########################################################################
+    self . A = float ( ABGR [ 0 ]                                            )
+    self . B = float ( ABGR [ 1 ]                                            )
+    self . G = float ( ABGR [ 2 ]                                            )
+    self . R = float ( ABGR [ 3 ]                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def Distance           ( self ,                       C                  ) :
+    ##########################################################################
+    NP = self . toNpRGBA (                                                   )
+    ##########################################################################
+    return np . sqrt     ( np . sum ( ( NP [ 0 ][ 0 ] - C ) ** 2           ) )
 ##############################################################################
