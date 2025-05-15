@@ -51,7 +51,7 @@ class Color    ( CommonColor                                               ) :
         RR = RGBi          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -61,7 +61,7 @@ class Color    ( CommonColor                                               ) :
         RR = RGBf          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -73,7 +73,7 @@ class Color    ( CommonColor                                               ) :
         RR = RGBAi         (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -83,7 +83,7 @@ class Color    ( CommonColor                                               ) :
         RR = RGBAf         (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -95,7 +95,7 @@ class Color    ( CommonColor                                               ) :
         RR = HSVi          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -105,7 +105,7 @@ class Color    ( CommonColor                                               ) :
         RR = HSVf          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -117,7 +117,7 @@ class Color    ( CommonColor                                               ) :
         RR = YUVi          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )
@@ -127,7 +127,7 @@ class Color    ( CommonColor                                               ) :
         RR = YUVf          (                                                 )
         OK = RR . fromJson ( JSON                                            )
         ######################################################################
-        if                 ( not OK                                          )
+        if                 ( not OK                                        ) :
           return           ( False , {                                   } , )
         ######################################################################
         return             ( True  , R                                     , )

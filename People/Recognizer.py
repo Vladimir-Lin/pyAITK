@@ -16,10 +16,13 @@ import dlib
 import numpy as np
 ##############################################################################
 import mediapipe
-from   mediapipe . tasks                import python
-from   mediapipe . tasks     . python   import vision
+from   mediapipe . tasks                    import python
+from   mediapipe . tasks     . python       import vision
 ##############################################################################
-from   AITK      . Calendars . StarDate import StarDate
+from   AITK      . Calendars . StarDate     import StarDate
+from   AITK      . Graphics  . Color . RGBi import RGBi
+from   AITK      . Graphics  . Color . HSVi import HSVi
+from   AITK      . People    . Eyes  . Iris import EyeColorRanges
 from   AITK      . People    . Faces . Face import FaceLandmarks468Meshes
 from   AITK      . People    . Faces . Face import FaceLandmarks468Polygons
 ##############################################################################
@@ -431,6 +434,19 @@ class Recognizer (                                                         ) :
     h     = int                   ( B - T + 1                                )
     ##########################################################################
     return self . CreateRectangle ( x , y , w , h                            )
+  ############################################################################
+  def PointsToCvPoints ( self , BX , BY , POINTs                           ) :
+    ##########################################################################
+    PTs   =            [                                                     ]
+    ##########################################################################
+    for PT in POINTs                                                         :
+      ########################################################################
+      XP  = PT         [ "X"                                                 ]
+      YP  = PT         [ "Y"                                                 ]
+      ########################################################################
+      PTs . append     ( [ int ( XP - BX ) , int ( YP - BY ) ]               )
+    ##########################################################################
+    return PTs
   ############################################################################
   def CvToRectangle               ( self , rect                            ) :
     ##########################################################################
@@ -847,15 +863,18 @@ class Recognizer (                                                         ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def CalculateMeanColor ( self , PIC                                      ) :
+  def CalculateMeanColor ( self , PIC , MASK = None                        ) :
     ##########################################################################
-    M = cv2 . mean       ( PIC . toOpenCV (                                ) )
+    if                   ( MASK in [ False , None ]                        ) :
+      M = cv2 . mean     ( PIC . toOpenCV (                                ) )
+    else                                                                     :
+      M = cv2 . mean     ( PIC . toOpenCV ( ) , mask = MASK                  )
     ##########################################################################
     return               { "Model" : "RGB"                                 , \
                            "Value" : "Double"                              , \
-                           "R"     : M [ 2 ]                               , \
-                           "G"     : M [ 1 ]                               , \
-                           "B"     : M [ 0 ]                                 }
+                           "R"     : float ( M [ 2 ] / 255.0 )             , \
+                           "G"     : float ( M [ 1 ] / 255.0 )             , \
+                           "B"     : float ( M [ 0 ] / 255.0 )               }
   ############################################################################
   def ConvertRGBtoHSV  ( self , RGB                                        ) :
     ##########################################################################
@@ -932,6 +951,127 @@ class Recognizer (                                                         ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def FindOutEyeColor ( self , HUE                                         ) :
+    ##########################################################################
+    global EyeColorRanges
+    ##########################################################################
+    HV   = int        ( HUE                                                  )
+    ##########################################################################
+    for CN , ( LV , UV ) in EyeColorRanges . items (                       ) :
+      ########################################################################
+      HL = LV         [ 0                                                    ]
+      HU = UV         [ 0                                                    ]
+      ########################################################################
+      if              ( ( HL <= HV ) and ( HV <= HU )                      ) :
+        return CN
+    ##########################################################################
+    return ""
+  ############################################################################
+  def DoLookForIrisColor                 ( self                            , \
+                                           PIC                             , \
+                                           ESOCKET                         , \
+                                           EBALL                           , \
+                                           OPTs = {                      } ) :
+    ##########################################################################
+    RECT = self . GetRectangleFromPoints ( ESOCKET                           )
+    RRCT = self . GetRectangleFromPoints ( EBALL                             )
+    ##########################################################################
+    XX   = int                           ( RECT [ "X"                      ] )
+    YY   = int                           ( RECT [ "Y"                      ] )
+    WW   = int                           ( RECT [ "W"                      ] )
+    HH   = int                           ( RECT [ "H"                      ] )
+    ##########################################################################
+    MW   = 20
+    MH   = 20
+    MK   = True
+    ##########################################################################
+    if                                   ( "MinimumWidth"  in OPTs         ) :
+      MW = OPTs                          [ "MinimumWidth"                    ]
+    ##########################################################################
+    if                                   ( "MinimumHeight" in OPTs         ) :
+      MH = OPTs                          [ "MinimumWidth"                    ]
+    ##########################################################################
+    if                                   ( WW < MW                         ) :
+      MK = False
+    ##########################################################################
+    if                                   ( HH < MH                         ) :
+      MK = False
+    ##########################################################################
+    """
+    if                                   ( not MK                          ) :
+      return                             { "Mean"     :                  {   \
+                                             "Ready"  : False            } , \
+                                           "Dominant" :                  {   \
+                                             "Ready"  : False            }   }
+    """
+    ##########################################################################
+    EPIC = PIC  . Crop                   ( XX , YY , WW , HH                 )
+    EW   = EPIC . Width                  (                                   )
+    EH   = EPIC . Height                 (                                   )
+    MPIC = self . Create                 ( "Picture"                         )
+    MPIC . CreateMask                    ( EW , EH                           )
+    ##########################################################################
+    CX   = RRCT                          [ "CX"                              ]
+    CY   = RRCT                          [ "CY"                              ]
+    CX   = int                           ( CX - XX                           )
+    CY   = int                           ( CY - YY                           )
+    RH   = RRCT                          [ "H"                               ]
+    RH   = int                           ( RH - 4                            )
+    RZ   = int                           ( RH / 2                            )
+    RP   = int                           ( RH / 3                            )
+    MPIC . MaskCircle                    ( CX , CY , RZ                      )
+    MPIC . MaskCircle                    ( CX , CY , RP , 0                  )
+    ##########################################################################
+    MRPC = MPIC . MaskImage              ( EPIC                              )
+    IMG  = EPIC . toOpenCV               (                                   )
+    HSV  = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2HSV         )
+    M    = cv2  . mean                   ( IMG , mask = MPIC . CvMask        )
+    MC   = RGBi                          ( int ( M [ 2 ]                 ) , \
+                                           int ( M [ 1 ]                 ) , \
+                                           int ( M [ 0 ]                 )   )
+    HC   = HSVi                          (                                   )
+    HC   . fromRGBi                      ( MC                                )
+    CR   = float                         ( M [ 2 ] / 255.0                   )
+    CG   = float                         ( M [ 1 ] / 255.0                   )
+    CB   = float                         ( M [ 0 ] / 255.0                   )
+    HIST = cv2  . calcHist               ( [ HSV                         ] , \
+                                           [ 0                           ] , \
+                                           MPIC . CvMask                   , \
+                                           [ 180                         ] , \
+                                           [ 0 , 180                     ]   )
+    HUE  = np   . argmax                 ( HIST                              )
+    MEC  = self . FindOutEyeColor        ( HC . H                            )
+    DEC  = self . FindOutEyeColor        ( HUE                               )
+    ##########################################################################
+    return                               { "Mean"      :                 {   \
+                                             "Ready"   : True              , \
+                                             "RGB"     :                 {   \
+                                               "Model" : "RGB"             , \
+                                               "Value" : "Double"          , \
+                                               "R"     : CR                , \
+                                               "G"     : CG                , \
+                                               "B"     : CB              } , \
+                                             "HSV"     : HC . toJson (   ) , \
+                                             "Name"    : MEC             } , \
+                                           "Dominant"  :                 {   \
+                                             "Ready"   : True              , \
+                                             "Hue"     : float ( HUE )     , \
+                                             "Name"    : DEC             }   }
+  ############################################################################
+  def DoDetectIrisColor                ( self , PIC , MESH , OPTs = { }    ) :
+    ##########################################################################
+    RETS = self . GetPointsByMeshIndex ( MESH ,  72                          )
+    RPTS = self . GetPointsByMeshIndex ( MESH , 139                          )
+    REYE = self . DoLookForIrisColor   ( PIC  , RETS , RPTS , OPTs           )
+    ##########################################################################
+    LETS = self . GetPointsByMeshIndex ( MESH ,  76                          )
+    LPTS = self . GetPointsByMeshIndex ( MESH , 140                          )
+    LEYE = self . DoLookForIrisColor   ( PIC  , LETS , LPTS , OPTs           )
+    ##########################################################################
+    return                             { "Right" : REYE , "Left" : LEYE      }
   ############################################################################
   def DoExtractFaceFeatures         ( self , PIC , OPTs = { }              ) :
     ##########################################################################
@@ -1371,7 +1511,7 @@ class Recognizer (                                                         ) :
     ##########################################################################
     return ZTs
   ############################################################################
-  def GetPointsFromMeshes ( self , MESHes , KEY = "Pixels" , INDEXes       ) :
+  def GetPointsFromMeshes ( self , MESHes , INDEXes , KEY = "Pixels"       ) :
     ##########################################################################
     POINTs   =            [                                                  ]
     ##########################################################################
@@ -1380,6 +1520,23 @@ class Recognizer (                                                         ) :
       POINTs . append     ( MESHes [ KEY ] [ id ]                            )
     ##########################################################################
     return POINTs
+  ############################################################################
+  def GetPointsByMeshIndex            ( self                               , \
+                                        MESHes                             , \
+                                        ID                                 , \
+                                        KEY = "Pixels"                     ) :
+    ##########################################################################
+    TOTAL = len                       ( FaceLandmarks468Meshes               )
+    ##########################################################################
+    if                                ( ID < 0                             ) :
+      return                          [                                      ]
+    ##########################################################################
+    if                                ( ID >= TOTAL                        ) :
+      return                          [                                      ]
+    ##########################################################################
+    return self . GetPointsFromMeshes ( MESHes                             , \
+                                        FaceLandmarks468Meshes [ ID ]      , \
+                                        KEY                                  )
   ############################################################################
   def DoDetectFaceMeshes              ( self , PIC , OPTs = { }            ) :
     ##########################################################################

@@ -8,7 +8,7 @@ import numpy as np
 import colour
 from . CommonColor import CommonColor
 ##############################################################################
-class RGBi                  ( CommonColor                                  ) :
+class RGBAi                 ( CommonColor                                  ) :
   ############################################################################
   def __init__              ( self                                         ) :
     ##########################################################################
