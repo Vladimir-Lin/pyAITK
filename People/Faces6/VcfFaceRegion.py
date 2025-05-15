@@ -26,10 +26,10 @@ from   AITK    . Essentials . Object              import Object  as Object
 from   AITK    . Pictures   . Picture6            import Picture as PictureItem
 from   AITK    . Pictures   . Gallery             import Gallery as GalleryItem
 from   AITK    . Math       . Geometry6 . Contour import Contour as Contour
-##############################################################################
-from   AITK    . People . Faces . Face            import Face    as FaceItem
-from   AITK    . People . Body  . Tit             import Tit     as TitItem
-from   AITK    . People . Body  . Body            import Body    as BodyItem
+from   AITK    . Graphics   . Color     . Color   import Color   as GColor
+from   AITK    . People     . Faces     . Face    import Face    as FaceItem
+from   AITK    . People     . Body      . Tit     import Tit     as TitItem
+from   AITK    . People     . Body      . Body    import Body    as BodyItem
 ##############################################################################
 class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
