@@ -1230,7 +1230,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       ########################################################################
       for ait in range               ( 0 , self . topLevelItemCount (    ) ) :
         ######################################################################
-        ITX  = self . topLeveItem    ( ait                                   )
+        ITX  = self . topLevelItem   ( ait                                   )
         self . ConvertItemCC         ( item , CODE                           )
       ########################################################################
       self   . Notify                ( 5                                     )
