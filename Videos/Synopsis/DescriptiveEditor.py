@@ -223,6 +223,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     dlen = item . data            ( 0 , Qt . UserRole                        )
     slen = int                    ( dlen                                     )
+    slen = int                    ( slen + self . DESCRIBE . BaseTime        )
     plen = int                    ( slen / 1000                              )
     self . AssignPlayerPTS . emit ( plen                                     )
     ##########################################################################
