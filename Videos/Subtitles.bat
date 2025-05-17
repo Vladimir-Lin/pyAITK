@@ -1,0 +1,12 @@
+ffmpeg.exe \
+-i video.mp4 \
+-i metadata.txt \
+-i EN.ass \
+-i TW.ass \
+-i CN.ass \
+-c copy -map_metadata 1 -map 0:v -map 0:a \
+-map 2 -c:s mov_text -metadata:s:s:0 language=eng \
+-map 3 -c:s mov_text -metadata:s:s:1 language=zht \
+-map 4 -c:s mov_text -metadata:s:s:2 language=zhs \
+-metadata title="" \
+-y video-subtitle.mp4

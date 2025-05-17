@@ -200,6 +200,24 @@ class Scenario           ( Columns                                         ) :
                "Duration"    : self . Duration                             , \
                "Description" : self . Description                            }
   ############################################################################
+  def toCTime  ( self , MSEC                                               ) :
+    ##########################################################################
+    SDT  = int ( MSEC / 1000000                                              )
+    RDT  = int ( MSEC % 1000000                                              )
+    RDT  = int ( RDT  /   10000                                              )
+    RTDT = int ( RDT  /      10                                              )
+    RNDT = int ( RDT  %      10                                              )
+    MDT  = int ( SDT  /      60                                              )
+    ZDT  = int ( SDT  %      60                                              )
+    ZTDT = int ( ZDT  /      10                                              )
+    ZNDT = int ( ZDT  %      10                                              )
+    WDT  = int ( MDT  /      60                                              )
+    HDT  = int ( MDT  %      60                                              )
+    HTDR = int ( HDT  /      10                                              )
+    HNDR = int ( HDT  %      10                                              )
+    ##########################################################################
+    return f"{WDT}:{HTDR}{HNDR}:{ZTDT}{ZNDT}.{RTDT}{RNDT}"
+  ############################################################################
   def toSTime   ( self , SDT                                               ) :
     ##########################################################################
     MDT   = int ( SDT / 60                                                   )

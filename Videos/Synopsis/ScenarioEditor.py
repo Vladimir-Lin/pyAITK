@@ -21,8 +21,9 @@ from   AITK    . Qt6                   import *
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
-from           . Fragment              import Fragment as FragmentItem
-from           . Scenario              import Scenario as ScenarioItem
+from           . Fragment              import Fragment    as FragmentItem
+from           . Scenario              import Scenario    as ScenarioItem
+from           . Descriptive           import Descriptive as DescriptiveItem
 ##############################################################################
 class ScenarioEditor             ( TreeDock                                ) :
   ############################################################################
@@ -894,6 +895,86 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def DoExportASS                        ( self , filename                 ) :
+    ##########################################################################
+    FMT       = "Dialogue: 0,$(START),$(END),Default,,0,0,0,,$(MESSAGE)"
+    ROWS      = [ "[Events]" ,
+                  "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text" ]
+    ##########################################################################
+    LOC       = self . getLocality       (                                   )
+    TOTAL     = self . topLevelItemCount (                                   )
+    ##########################################################################
+    for id in range                      ( 0 , TOTAL                       ) :
+      ########################################################################
+      item    = self . topLevelItem      ( id                                )
+      BTS     = item . data              ( 7             , Qt . UserRole     )
+      JSOZ    = item . data              ( self . JsonAt , Qt . UserRole     )
+      DESC    = DescriptiveItem          (                                   )
+      DESC    . setJson                  ( JSOZ [ "Description" ]            )
+      DESC    . Locality = LOC
+      BT      = int                      ( BTS                               )
+      ########################################################################
+      for T in DESC . TIMESTAMPs                                             :
+        ######################################################################
+        OK , JJ = DESC . itemJson        ( T                                 )
+        ######################################################################
+        if                               ( not OK                          ) :
+          continue
+        ######################################################################
+        JOPTs = JJ                       [ "Options"                         ]
+        ######################################################################
+        if                               ( "Subtitle" not in JOPTs         ) :
+          continue
+        ######################################################################
+        SOPT  = JOPTs                    [ "Subtitle"                        ]
+        if                               ( not SOPT                        ) :
+          continue
+        ######################################################################
+        DT    = 0
+        if                               ( "Duration" in JOPTs             ) :
+          DT  = JOPTs                    [ "Duration"                        ]
+        ######################################################################
+        ST    = int                      ( T  + BT                           )
+        ET    = int                      ( ST + DT                           )
+        NAME  = JJ                       [ "Name"                            ]
+        ######################################################################
+        SS    = self . SCENE . toCTime   ( ST                                )
+        ES    = self . SCENE . toCTime   ( ET                                )
+        MSG   = FMT
+        MSG   = MSG  . replace           ( "$(START)"   , SS                 )
+        MSG   = MSG  . replace           ( "$(END)"     , ES                 )
+        MSG   = MSG  . replace           ( "$(MESSAGE)" , NAME               )
+        ROWS  . append                   ( MSG                               )
+    ##########################################################################
+    TEXT      = "\n" . join              ( ROWS                              )
+    ##########################################################################
+    with open ( filename , "w" , encoding="utf-8" ) as f                     :
+      f       . write                    ( TEXT                              )
+    ##########################################################################
+    self      . Notify                   ( 5                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportASS                  ( self                                    ) :
+    ##########################################################################
+    Title   = self . getMenuItem ( "ExportASS"                               )
+    Filters = self . getMenuItem ( "AssFilters"                              )
+    ASSFILE = "subtitle.ass"
+    ##########################################################################
+    ( ASS , filter ) = QFileDialog . getSaveFileName                         (
+                         self                                              , \
+                         Title                                             , \
+                         ASSFILE                                           , \
+                         Filters                                             )
+    ##########################################################################
+    if                           ( len ( ASS ) <= 0                        ) :
+      self  . Notify             ( 1                                         )
+      return
+    ##########################################################################
+    self    . Go                 ( self . DoExportASS , ( ASS , )            )
+    ##########################################################################
+    return
+  ############################################################################
   def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
@@ -1356,6 +1437,10 @@ class ScenarioEditor             ( TreeDock                                ) :
     mm     = self . AmountIndexMenu    ( mm , True                           )
     mm     . addSeparator              (                                     )
     ##########################################################################
+    msg    = self . getMenuItem        ( "ExportASS"                         )
+    icon   = QIcon                     ( ":/images/saveall.png"              )
+    mm     . addActionWithIcon         ( 3501 , icon , msg                   )
+    ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1102                           )
     self   . AppendRenameAction        ( mm , 1103                           )
@@ -1430,6 +1515,10 @@ class ScenarioEditor             ( TreeDock                                ) :
     OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
     ##########################################################################
     if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( 3501 == at                        ) :
+      self . ExportASS                 (                                     )
       return True
     ##########################################################################
     return True

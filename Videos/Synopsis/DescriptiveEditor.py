@@ -796,6 +796,74 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def DoExportASS                          ( self , filename               ) :
+    ##########################################################################
+    BT        = self . DESCRIBE . BaseTime
+    FMT       = "Dialogue: 0,$(START),$(END),Default,,0,0,0,,$(MESSAGE)"
+    ROWS      = [ "[Events]" ,
+                  "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text" ]
+    ##########################################################################
+    for T in self . DESCRIBE . TIMESTAMPs                                    :
+      ########################################################################
+      OK , JJ = self . DESCRIBE . itemJson ( T                               )
+      ########################################################################
+      if                                   ( not OK                        ) :
+        continue
+      ########################################################################
+      JOPTs   = JJ                         [ "Options"                       ]
+      ########################################################################
+      if                                   ( "Subtitle" not in JOPTs       ) :
+        continue
+      ########################################################################
+      SOPT    = JOPTs                      [ "Subtitle"                      ]
+      if                                   ( not SOPT                      ) :
+        continue
+      ########################################################################
+      DT      = 0
+      if                                   ( "Duration" in JOPTs           ) :
+        DT    = JOPTs                      [ "Duration"                      ]
+      ########################################################################
+      ST      = int                        ( T  + BT                         )
+      ET      = int                        ( ST + DT                         )
+      NAME    = JJ                         [ "Name"                          ]
+      ########################################################################
+      SS      = self . SCENE . toCTime     ( ST                              )
+      ES      = self . SCENE . toCTime     ( ET                              )
+      MSG     = FMT
+      MSG     = MSG  . replace             ( "$(START)"   , SS               )
+      MSG     = MSG  . replace             ( "$(END)"     , ES               )
+      MSG     = MSG  . replace             ( "$(MESSAGE)" , NAME             )
+      ROWS    . append                     ( MSG                             )
+    ##########################################################################
+    TEXT      = "\n" . join                ( ROWS                            )
+    ##########################################################################
+    with open ( filename , "w" , encoding="utf-8" ) as f                     :
+      f       . write                      ( TEXT                            )
+    ##########################################################################
+    self      . Notify                     ( 5                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportASS                  ( self                                    ) :
+    ##########################################################################
+    Title   = self . getMenuItem ( "ExportASS"                               )
+    Filters = self . getMenuItem ( "AssFilters"                              )
+    ASSFILE = "subtitle.ass"
+    ##########################################################################
+    ( ASS , filter ) = QFileDialog . getSaveFileName                         (
+                         self                                              , \
+                         Title                                             , \
+                         ASSFILE                                           , \
+                         Filters                                             )
+    ##########################################################################
+    if                           ( len ( ASS ) <= 0                        ) :
+      self  . Notify             ( 1                                         )
+      return
+    ##########################################################################
+    self    . Go                 ( self . DoExportASS , ( ASS , )            )
+    ##########################################################################
+    return
+  ############################################################################
   def SwitchChapters                          ( self                       ) :
     ##########################################################################
     items    = self . selectedItems           (                              )
@@ -1383,6 +1451,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       icon = QIcon                      ( ":/images/descriptive-player-connect.png" )
       mm   . addActionWithIcon          ( 3001 , icon , msg                  )
     ##########################################################################
+    msg    = self . getMenuItem         ( "ExportASS"                        )
+    icon   = QIcon                      ( ":/images/saveall.png"             )
+    mm     . addActionWithIcon          ( 3501 , icon , msg                  )
+    ##########################################################################
     msg    = self . getMenuItem         ( "UsePtsForAdd"                     )
     icon   = QIcon                      ( ":/images/descriptive-add-by-video.png" )
     mm     . addActionWithIcon          ( 4001                             , \
@@ -1519,6 +1591,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       self . CurrentPTS        = -1
       self . PlayerConnected   = False
       ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( 3501 == at                       ) :
+      self . ExportASS                  (                                    )
       return True
     ##########################################################################
     if                                  ( 4001 == at                       ) :
