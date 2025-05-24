@@ -321,32 +321,52 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
     self . Bustle             (                                              )
     return
   ############################################################################
-  def setBustle               ( self                                       ) :
-    self . emitBustle  . emit (                                              )
+  def setBustle                 ( self                                     ) :
+    ##########################################################################
+    try                                                                      :
+      self . emitBustle  . emit (                                            )
+    except                                                                   :
+      pass
+    ##########################################################################
     return
   ############################################################################
   def DoVacancy               ( self                                       ) :
     self . Vacancy            (                                              )
     return
   ############################################################################
-  def setVacancy              ( self                                       ) :
-    self . emitVacancy . emit (                                              )
+  def setVacancy                ( self                                     ) :
+    ##########################################################################
+    try                                                                      :
+      self . emitVacancy . emit (                                            )
+    except                                                                   :
+      pass
+    ##########################################################################
     return
   ############################################################################
   def AcceptToolTip           ( self , item            , tooltip           ) :
     item . setToolTip         ( tooltip                                      )
     return
   ############################################################################
-  def assignToolTip                 ( self , item , tooltip                ) :
-    self . emitAssignToolTip . emit (        item , tooltip                  )
+  def assignToolTip                   ( self , item , tooltip              ) :
+    ##########################################################################
+    try                                                                      :
+      self . emitAssignToolTip . emit (        item , tooltip                )
+    except                                                                   :
+      pass
+    ##########################################################################
     return
   ############################################################################
   def AssignStatusMessage     ( self , message , timeout = 0               ) :
     self . statusMessage      (        message , timeout                     )
     return
   ############################################################################
-  def ShowStatus                      ( self , message , timeout = 0       ) :
-    self . SubmitStatusMessage . emit (        message , timeout             )
+  def ShowStatus                        ( self , message , timeout = 0     ) :
+    ##########################################################################
+    try                                                                      :
+      self . SubmitStatusMessage . emit (        message , timeout           )
+    except                                                                   :
+      pass
+    ##########################################################################
     return
   ############################################################################
   def DoTtsTalk                 ( self , message , locality                ) :
@@ -355,9 +375,12 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
     ##########################################################################
     return
   ############################################################################
-  def TtsTalk                   ( self , message , locality                ) :
+  def TtsTalk                     ( self , message , locality              ) :
     ##########################################################################
-    self . SubmitTtsTalk . emit (        message , locality                  )
+    try                                                                      :
+      self . SubmitTtsTalk . emit (        message , locality                )
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
@@ -413,8 +436,13 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def Shutdown                ( self                                       ) :
-    self . Leave . emit       ( self                                         )
+  def Shutdown            ( self                                           ) :
+    ##########################################################################
+    try                                                                      :
+      self . Leave . emit ( self                                             )
+    except                                                                   :
+      pass
+    ##########################################################################
     return True
   ############################################################################
   def Relocation              ( self                                       ) :
@@ -625,9 +653,12 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
     ##########################################################################
     return
   ############################################################################
-  def DoSelectOne                ( self                                    ) :
+  def DoSelectOne                 ( self                                   ) :
     ##########################################################################
-    self . emitSelectOne  . emit (                                           )
+    try                                                                      :
+      self . emitSelectOne . emit (                                          )
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
