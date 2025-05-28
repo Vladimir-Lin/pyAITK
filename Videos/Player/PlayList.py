@@ -112,7 +112,7 @@ class PlayList             ( TreeDock                                      ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 480 )                       )
+    return self . SizeSuggestion ( QSize ( 336 , 480 )                       )
   ############################################################################
   def Visiblity                         ( self , visible                   ) :
     ##########################################################################

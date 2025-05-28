@@ -11,52 +11,22 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                    import QtCore
-from   PyQt5                    import QtGui
-from   PyQt5                    import QtWidgets
+from   PySide6             import QtCore
+from   PySide6             import QtGui
+from   PySide6             import QtWidgets
+from   PySide6 . QtCore    import *
+from   PySide6 . QtGui     import *
+from   PySide6 . QtWidgets import *
+from   AITK    . Qt6       import *
 ##############################################################################
-from   PyQt5 . QtCore           import QObject
-from   PyQt5 . QtCore           import pyqtSignal
-from   PyQt5 . QtCore           import pyqtSlot
-from   PyQt5 . QtCore           import Qt
-from   PyQt5 . QtCore           import QPoint
-from   PyQt5 . QtCore           import QPointF
-from   PyQt5 . QtCore           import QRect
-from   PyQt5 . QtCore           import QSize
-from   PyQt5 . QtCore           import QByteArray
-##############################################################################
-from   PyQt5 . QtGui            import QCursor
-from   PyQt5 . QtGui            import QKeySequence
-from   PyQt5 . QtGui            import QPainter
-from   PyQt5 . QtGui            import QColor
-from   PyQt5 . QtGui            import QBrush
-from   PyQt5 . QtGui            import QPen
-from   PyQt5 . QtGui            import QIcon
-from   PyQt5 . QtGui            import QPixmap
-from   PyQt5 . QtGui            import QImage
-from   PyQt5 . QtGui            import QPainter
-##############################################################################
-from   PyQt5 . QtWidgets        import QApplication
-from   PyQt5 . QtWidgets        import QWidget
-from   PyQt5 . QtWidgets        import qApp
-from   PyQt5 . QtWidgets        import QMenu
-from   PyQt5 . QtWidgets        import QAction
-from   PyQt5 . QtWidgets        import QShortcut
-from   PyQt5 . QtWidgets        import QToolTip
-from   PyQt5 . QtWidgets        import QMenu
-from   PyQt5 . QtWidgets        import QColorDialog
-from   PyQt5 . QtWidgets        import QSpinBox
-##############################################################################
-from   AITK  . Qt . MenuManager import MenuManager as MenuManager
-from   AITK  . Qt . Widget      import Widget      as Widget
-##############################################################################
-class ColorWidget                 ( Widget                                 ) :
+class ColorWidget                   ( Widget                               ) :
   ############################################################################
-  HavingMenu   = 1371434312
+  HavingMenu       = 1371434312
   ############################################################################
-  emitSetColor     = pyqtSignal   ( QColor                                   )
-  emitColorChanged = pyqtSignal   ( QColor                                   )
-  Leave            = pyqtSignal   ( QWidget                                  )
+  emitSetColor     = Signal         ( QColor                                 )
+  emitColorChanged = Signal         ( QColor                                 )
+  emitCallPicker   = Signal         (                                        )
+  Leave            = Signal         ( QWidget                                )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -69,7 +39,11 @@ class ColorWidget                 ( Widget                                 ) :
     self . TransparentSpin = None
     self . setColorToolTip          (                                        )
     ##########################################################################
-    self . emitSetColor . connect   ( self . setColor                        )
+    self . setMinimumWidth          ( 32                                     )
+    self . setMaximumWidth          ( 32                                     )
+    ##########################################################################
+    self . emitSetColor   . connect ( self . setColor                        )
+    self . emitCallPicker . connect ( self . SystemPickColor                 )
     ##########################################################################
     return
   ############################################################################
@@ -95,6 +69,13 @@ class ColorWidget                 ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def mouseDoubleClickEvent           ( self , event                       ) :
+    ##########################################################################
+    super ( ) . mouseDoubleClickEvent (        event                         )
+    self      . emitCallPicker . emit (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def paintEvent           ( self , event                                  ) :
     ##########################################################################
     if                     ( self . Image == None                          ) :
@@ -107,9 +88,16 @@ class ColorWidget                 ( Widget                                 ) :
   ############################################################################
   def resizeEvent           ( self , event                                 ) :
     ##########################################################################
+    super ( ) . resizeEvent ( event                                          )
+    ##########################################################################
     self . PrepareImage     (                                                )
     ##########################################################################
-    super ( ) . resizeEvent ( event                                          )
+    return
+  ############################################################################
+  def showEvent           ( self , event                                   ) :
+    ##########################################################################
+    super ( ) . showEvent ( event                                            )
+    self . PrepareImage   (                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -196,6 +184,7 @@ class ColorWidget                 ( Widget                                 ) :
     ALPHA   . setMinimum         ( 0                                         )
     ALPHA   . setMaximum         ( 255                                       )
     ALPHA   . setValue           ( 255 - self . Color . alpha ( )            )
+    ALPHA   . setMinimumWidth    ( 140                                       )
     ##########################################################################
     if                           ( self . hasPlan ( )                      ) :
       ########################################################################
