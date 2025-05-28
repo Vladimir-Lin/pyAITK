@@ -48,6 +48,8 @@ class Plan                      ( PurePlan                                 ) :
     self . MyFunc             = None
     self . getSystemColorFunc = None
     self . setSystemColorFunc = None
+    self . getSourceTextFunc  = None
+    self . getTargetTextFunc  = None
     ##########################################################################
     return
   ############################################################################
