@@ -167,13 +167,19 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "SearchText"                         , \
                                       ":/images/descriptive-search.png"    , \
-                                      self . SearchItemByText                )
+                                      self . SearchItemByText              , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "ReplaceText"                        , \
                                       ":/images/descriptive-replace.png"   , \
-                                      self . ReplaceItemByText               )
+                                      self . ReplaceItemByText             , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "ReplacePartial"                     , \
                                       ":/images/descriptive-replace-partial.png" , \
-                                      self . ReplacePartialByText            )
+                                      self . ReplacePartialByText          , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
