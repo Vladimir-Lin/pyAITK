@@ -164,6 +164,16 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . SwitchSyncPlayer              , \
                                       True                                 , \
                                       False                                  )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon ( "SearchText"                         , \
+                                      ":/images/descriptive-search.png"    , \
+                                      self . SearchItemByText                )
+    self . AppendSideActionWithIcon ( "ReplaceText"                        , \
+                                      ":/images/descriptive-replace.png"   , \
+                                      self . ReplaceItemByText               )
+    self . AppendSideActionWithIcon ( "ReplacePartial"                     , \
+                                      ":/images/descriptive-replace-partial.png" , \
+                                      self . ReplacePartialByText            )
     ##########################################################################
     return
   ############################################################################
@@ -1536,15 +1546,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                           self . SyncPlayerTime              )
     ##########################################################################
     msg    = self . getMenuItem         ( "SearchText"                       )
-    icon   = QIcon                      ( ":/images/descriptive-video-by-time.png" )
+    icon   = QIcon                      ( ":/images/descriptive-search.png"  )
     mm     . addActionWithIcon          ( 5001 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "ReplaceText"                       )
-    icon   = QIcon                      ( ":/images/descriptive-video-by-time.png" )
+    icon   = QIcon                      ( ":/images/descriptive-replace.png" )
     mm     . addActionWithIcon          ( 5002 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "ReplacePartial"                   )
-    icon   = QIcon                      ( ":/images/descriptive-video-by-time.png" )
+    icon   = QIcon                      ( ":/images/descriptive-replace-partial.png" )
     mm     . addActionWithIcon          ( 5003 , icon , msg                  )
     ##########################################################################
     mm     . addSeparator               (                                    )
