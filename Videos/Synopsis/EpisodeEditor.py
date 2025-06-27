@@ -1209,42 +1209,42 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     WW   = self . EditingWidget . width  (                                   )
     HH   = self . EditingWidget . height (                                   )
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    if ( self . EditingWidget . CompanyAndNames not in [ False , None ]    ) :
+    if                             ( self . ALBUM . Uuid > 0               ) :
       ########################################################################
-      TH   = self . EditingWidget . CompanyAndNames . height (               )
-      self .        EditingWidget . CompanyAndNames . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . Identifiers   not in [ False , None ]      ) :
+      if ( self . EditingWidget . CompanyAndNames not in [ False , None ]  ) :
+        ######################################################################
+        TH   = self . EditingWidget . CompanyAndNames . height (             )
+        self .        EditingWidget . CompanyAndNames . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . Identifiers     . height (               )
-      self .        EditingWidget . Identifiers     . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . PeopleView    not in [ False , None ]      ) :
+      if ( self . EditingWidget . Identifiers   not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . Identifiers     . height (             )
+        self .        EditingWidget . Identifiers     . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . PeopleView      . height (               )
-      self .        EditingWidget . PeopleView      . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . CandidateView not in [ False , None ]      ) :
+      if ( self . EditingWidget . PeopleView    not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . PeopleView      . height (             )
+        self .        EditingWidget . PeopleView      . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . CandidateView   . height (               )
-      self .        EditingWidget . CandidateView   . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . GalleryViewer not in [ False , None ]      ) :
+      if ( self . EditingWidget . CandidateView not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . CandidateView   . height (             )
+        self .        EditingWidget . CandidateView   . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . GalleryViewer   . height (               )
-      self .        EditingWidget . GalleryViewer   . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . MainVideos    not in [ False , None ]      ) :
+      if ( self . EditingWidget . GalleryViewer not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . GalleryViewer   . height (             )
+        self .        EditingWidget . GalleryViewer   . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . MainVideos      . height (               )
-      self .        EditingWidget . MainVideos      . resize ( WW , TH       )
-    ##########################################################################
-    if ( self . EditingWidget . SecondVideos  not in [ False , None ]      ) :
+      if ( self . EditingWidget . MainVideos    not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . MainVideos      . height (             )
+        self .        EditingWidget . MainVideos      . resize ( WW , TH     )
       ########################################################################
-      TH   = self . EditingWidget . SecondVideos    . height (               )
-      self .        EditingWidget . SecondVideos    . resize ( WW , TH       )
+      if ( self . EditingWidget . SecondVideos  not in [ False , None ]    ) :
+        ######################################################################
+        TH   = self . EditingWidget . SecondVideos    . height (             )
+        self .        EditingWidget . SecondVideos    . resize ( WW , TH     )
     ##########################################################################
     TH     = self . EditingWidget . TitleSplit      . height (               )
     self   .        EditingWidget . TitleSplit      . resize ( WW , TH       )
