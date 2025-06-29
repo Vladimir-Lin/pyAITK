@@ -713,26 +713,30 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     ##########################################################################
     return True
   ############################################################################
-  def UpdateUuidName                ( self , item , pid , name             ) :
+  def UpdateUuidName         ( self , item , pid , name                    ) :
     ##########################################################################
-    if                              ( self . get ( "uuid" ) <= 0           ) :
+    if                       ( self . get ( "uuid" ) <= 0                  ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB       (                                        )
-    if                              ( self . NotOkay ( DB )                ) :
+    DB    = self . ConnectDB (                                               )
+    if                       ( self . NotOkay ( DB )                       ) :
       return
     ##########################################################################
-    TABLE  = self . Tables          [ "Names"                                ]
+    TABLE = self . Tables    [ "Names"                                       ]
     ##########################################################################
-    self   . set                    ( "id"   , pid                           )
-    self   . set                    ( "name" , name                          )
+    self  . set              ( "id"   , pid                                  )
+    self  . set              ( "name" , name                                 )
     ##########################################################################
-    DB     . LockWrites             ( [ TABLE ]                              )
-    self   . UpdateNameById         ( DB , TABLE                             )
-    DB     . UnlockTables           (                                        )
+    self  . OnBusy . emit    (                                               )
+    self  . setBustle        (                                               )
+    DB    . LockWrites       ( [ TABLE ]                                     )
+    self  . UpdateNameById   ( DB , TABLE                                    )
+    DB    . UnlockTables     (                                               )
     ##########################################################################
-    DB     . Close                  (                                        )
-    self   . Notify                 ( 5                                      )
+    DB    . Close            (                                               )
+    self  . setVacancy       (                                               )
+    self  . GoRelax . emit   (                                               )
+    self  . Notify           ( 5                                             )
     ##########################################################################
     return
   ############################################################################
