@@ -270,7 +270,8 @@ def GenerateAlbumFolder  ( DIR                                             ) :
   if                     ( not Path ( DIR ) . is_dir ( )                   ) :
     return
   ############################################################################
-  ROOTs    =             [ "DP"                                            , \
+  ROOTs    =             [ "audios"                                        , \
+                           "DP"                                            , \
                            "Features"                                      , \
                            "images"                                        , \
                            "projects"                                      , \
