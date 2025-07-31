@@ -1227,6 +1227,13 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def AdjustCapLength                     ( self                           ) :
+    ##########################################################################
+    self . DESCRIBE   . AutoAdjustLengths (                                  )
+    self . emitReload . emit              (                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -1706,6 +1713,9 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     icon   = QIcon                      ( ":/images/descriptive-replace-partial.png" )
     mm     . addActionWithIcon          ( 5003 , icon , msg                  )
     ##########################################################################
+    msg    = self . getMenuItem         ( "AdjustCapLength"                  )
+    mm     . addAction                  ( 5004        , msg                  )
+    ##########################################################################
     mm     . addSeparator               (                                    )
     ##########################################################################
     self   . MarkerMenu                 ( mm , atItem                        )
@@ -1846,6 +1856,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     if                                  ( 5003 == at                       ) :
       self . ReplacePartialByText       (                                    )
+      return True
+    ##########################################################################
+    if                                  ( 5004 == at                       ) :
+      self . AdjustCapLength            (                                    )
       return True
     ##########################################################################
     return True
