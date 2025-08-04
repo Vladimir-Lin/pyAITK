@@ -1666,11 +1666,16 @@ class Recognizer (                                                         ) :
     ##########################################################################
     global RVERSION
     ##########################################################################
-    J      =                              { "Information" : INFO             }
-    IMG    = PIC  . toOpenCV              (                                  )
-    GRAY   = cv2  . cvtColor              ( IMG , cv2 . COLOR_BGR2GRAY       )
-    IRGB   = cv2  . cvtColor              ( IMG , cv2 . COLOR_BGR2RGB        )
-    MRGB   = self . CvToMediaPipeImage    ( IRGB                             )
+    try                                                                      :
+      ########################################################################
+      J    =                              { "Information" : INFO             }
+      IMG  = PIC  . toOpenCV              (                                  )
+      GRAY = cv2  . cvtColor              ( IMG , cv2 . COLOR_BGR2GRAY       )
+      IRGB = cv2  . cvtColor              ( IMG , cv2 . COLOR_BGR2RGB        )
+      MRGB = self . CvToMediaPipeImage    ( IRGB                             )
+      ########################################################################
+    except                                                                   :
+      return                              {                                  }
     ##########################################################################
     WW     = PIC  . Width                 (                                  )
     HH     = PIC  . Height                (                                  )
