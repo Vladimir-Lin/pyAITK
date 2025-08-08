@@ -1606,50 +1606,44 @@ class AbstractGui            (                                             ) :
     ##########################################################################
     return
   ############################################################################
-  def OrderingPUIDs           ( self , atUuid , UUIDs , PUIDs              ) :
+  def JoinsTwoUUIDs    ( self , UUIDs , PUIDs                              ) :
     ##########################################################################
-    atUuid    = int           ( atUuid                                       )
-    UUIDs     = list          ( map ( int , UUIDs )                          )
-    PUIDs     = list          ( map ( int , PUIDs )                          )
-    ##########################################################################
-    KUIDs     =               [                                              ]
     for UUID in PUIDs                                                        :
-      if                      ( UUID not in UUIDs                          ) :
-        KUIDs . append        ( UUID                                         )
+      if               ( UUID not in UUIDs                                 ) :
+        UUIDs . append ( UUID                                                )
     ##########################################################################
-    if                        ( atUuid <= 0                                ) :
-      for UUID in UUIDs                                                      :
-        KUIDs . append        ( UUID                                         )
-      return KUIDs
+    return UUIDs
+  ############################################################################
+  def OrderingPUIDs                  ( self , atUuid , UUIDs , PUIDs       ) :
+    ##########################################################################
+    atUuid    = int                  ( atUuid                                )
+    UUIDs     = list                 ( map ( int , UUIDs )                   )
+    PUIDs     = list                 ( map ( int , PUIDs )                   )
+    ##########################################################################
+    KUIDs     =                      [                                       ]
+    for UUID in PUIDs                                                        :
+      if                             ( UUID not in UUIDs                   ) :
+        KUIDs . append               ( UUID                                  )
+    ##########################################################################
+    if                               ( atUuid <= 0                         ) :
+      return self . JoinsTwoUUIDs    ( KUIDs , UUIDs                         )
     ##########################################################################
     try                                                                      :
       ########################################################################
-      atPos   = KUIDs . index ( atUuid                                       )
+      atPos   = KUIDs . index        ( atUuid                                )
       ########################################################################
     except                                                                   :
-      for UUID in UUIDs                                                      :
-        KUIDs . append        ( UUID                                         )
-      return KUIDs
+      return self . JoinsTwoUUIDs    ( KUIDs , UUIDs                         )
     ##########################################################################
-    if                        ( atPos <= 0                                 ) :
-      for UUID in PUIDs                                                      :
-        ######################################################################
-        if                    ( UUID not in UUIDs                          ) :
-          UUIDs . append      ( UUID                                         )
-      return UUIDs
+    if                               ( atPos <= 0                          ) :
+      return self . JoinsTwoUUIDs    ( PUIDs , KUIDs                         )
     ##########################################################################
-    TOTAL     = len           ( KUIDs                                        )
-    REMAIN    =               ( TOTAL - atPos                                )
-    LEFTs     = KUIDs         [          : atPos                             ]
-    RIGHTs    = KUIDs         [ - REMAIN :                                   ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      if                      ( UUID not in LEFTs                          ) :
-        LEFTs . append        ( UUID                                         )
-    ##########################################################################
-    for UUID in RIGHTs                                                       :
-      if                      ( UUID not in LEFTs                          ) :
-        LEFTs . append        ( UUID                                         )
+    TOTAL     = len                  ( KUIDs                                 )
+    REMAIN    =                      ( TOTAL - atPos                         )
+    LEFTs     = KUIDs                [          : atPos                      ]
+    RIGHTs    = KUIDs                [ - REMAIN :                            ]
+    LEFTs     = self . JoinsTwoUUIDs ( LEFTs , UUIDs                         )
+    LEFTs     = self . JoinsTwoUUIDs ( LEFTs , RIGHTs                        )
     ##########################################################################
     return LEFTs
   ############################################################################
