@@ -1219,7 +1219,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     BLEN        = item . data              ( 7 , Qt . UserRole               )
     OKAY , ZLEN = self . SCENE . FromFTime ( name                            )
-    SLEN        = int                      ( ZLEN - BLEN                     )
+    SLEN        = int                      ( ZLEN - int ( BLEN )             )
     ##########################################################################
     if                                     ( not OKAY                      ) :
       ########################################################################
