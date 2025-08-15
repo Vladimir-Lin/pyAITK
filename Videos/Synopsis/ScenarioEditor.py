@@ -188,7 +188,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     if                              ( column in [ 0 ]                      ) :
       ########################################################################
       ## 位序
-      pass
+      return
     ##########################################################################
     if                              ( column in [ 1 , 3 , 4 , 5 ]          ) :
       ########################################################################
@@ -197,6 +197,8 @@ class ScenarioEditor             ( TreeDock                                ) :
                                       "editingFinished"                    , \
                                       self . nameChanged                     )
       line . setFocus               ( Qt . TabFocusReason                    )
+      ########################################################################
+      return
     ##########################################################################
     if                              ( column in [ 2 ]                      ) :
       ########################################################################
@@ -212,6 +214,8 @@ class ScenarioEditor             ( TreeDock                                ) :
       cb   . addJson                ( LL , val                               )
       cb   . setMaxVisibleItems     ( 10                                     )
       cb   . showPopup              (                                        )
+      ########################################################################
+      return
     ##########################################################################
     if                              ( column in [ 6 ]                      ) :
       ########################################################################
@@ -225,6 +229,8 @@ class ScenarioEditor             ( TreeDock                                ) :
       line . setText                ( xlen                                   )
       line . blockSignals           ( False                                  )
       line . setFocus               ( Qt . TabFocusReason                    )
+      ########################################################################
+      return
     ##########################################################################
     if                              ( column in [ 8 ]                      ) :
       ########################################################################
@@ -289,6 +295,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     IT      . setData                ( 7 , Qt . UserRole , str ( BT   )      )
     IT      . setText                ( 8 , ETIME                             )
     IT      . setTextAlignment       ( 8 , Qt . AlignRight                   )
+    IT      . setData                ( 8 , Qt . UserRole , str ( ELEN )      )
     IT      . setText                ( 9 , str ( CPEO )                      )
     IT      . setData                ( 9 , Qt . UserRole , CPEO              )
     IT      . setTextAlignment       ( 9 , Qt . AlignRight                   )
