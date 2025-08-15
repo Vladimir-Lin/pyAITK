@@ -8,5 +8,5 @@ ffmpeg.exe \
 -map 2 -c:s mov_text -metadata:s:s:0 language=eng \
 -map 3 -c:s mov_text -metadata:s:s:1 language=zht \
 -map 4 -c:s mov_text -metadata:s:s:2 language=zhs \
--metadata title="" \
+-map 5 -c:s mov_text -metadata:s:s:3 language=jpn \
 -y video-subtitle.mp4
