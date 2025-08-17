@@ -2038,14 +2038,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     self   . PickedUuid = uuid
     L      = LineEdit                  ( None , self . PlanFunc              )
-    OK     = self . attacheStatusBar   ( L , 1                               )
-    ##########################################################################
-    if                                 ( not OK                            ) :
-      ########################################################################
-      L    . deleteLater               (                                     )
-      self . Notify                    ( 1                                   )
-      ########################################################################
-      return
+    L      . setMinimumWidth           ( 120                                 )
+    L      . setMaximumWidth           ( 120                                 )
+    p      = self      . GetPlan       (                                     )
+    p      . statusBar . addPermanentWidget ( L                              )
     ##########################################################################
     L      . blockSignals              ( True                                )
     L      . editingFinished . connect ( self . AssignIdentifier             )
