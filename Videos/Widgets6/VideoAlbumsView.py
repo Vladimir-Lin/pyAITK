@@ -1962,14 +1962,10 @@ class VideoAlbumsView             ( IconDock                               ) :
   def SearchIdentifier                 ( self                              ) :
     ##########################################################################
     L      = LineEdit                  ( None , self . PlanFunc              )
-    OK     = self . attacheStatusBar   ( L , 1                               )
-    ##########################################################################
-    if                                 ( not OK                            ) :
-      ########################################################################
-      L    . deleteLater               (                                     )
-      self . Notify                    ( 1                                   )
-      ########################################################################
-      return
+    L      . setMinimumWidth           ( 120                                 )
+    L      . setMaximumWidth           ( 120                                 )
+    p      = self      . GetPlan       (                                     )
+    p      . statusBar . addPermanentWidget ( L                              )
     ##########################################################################
     L      . blockSignals              ( True                                )
     L      . editingFinished . connect ( self . FindIdentifiers              )
@@ -2001,15 +1997,14 @@ class VideoAlbumsView             ( IconDock                               ) :
     IDF     . Type = 76
     IDF     . Name = identifier
     ##########################################################################
-    IDF     . WipeOut                 ( DB , IDFTAB                          )
-    IDF     . Append                  ( DB , IDFTAB                          )
+    IDF     . Assure                  ( DB , IDFTAB                          )
     ##########################################################################
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
-    self    . Notify                  ( 0                                    )
+    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
