@@ -3352,14 +3352,20 @@ class VideoAlbumsView             ( IconDock                               ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
-    self   . GroupsMenu            ( mm , uuid , atItem                      )
-    self   . VideosMenu            ( mm , uuid , atItem                      )
-    self   . AlbumSourcesMenu      ( mm ,        atItem                      )
-    self   . WebSearchMenu         ( mm ,        atItem                      )
+    ##########################################################################
+    if                             ( atItem not in self . EmptySet         ) :
+      ########################################################################
+      self . GroupsMenu            ( mm , uuid , atItem                      )
+      self . VideosMenu            ( mm , uuid , atItem                      )
+      mm   . addSeparator          (                                         )
+      self . AlbumSourcesMenu      ( mm ,        atItem                      )
+      self . WebSearchMenu         ( mm ,        atItem                      )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     self   . UsageMenu             ( mm ,        atItem                      )
     self   . DisplayMenu           ( mm                                      )
     mm     . addSeparator          (                                         )
+    ##########################################################################
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . ScrollBarMenu         ( mm                                      )
