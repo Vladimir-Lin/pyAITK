@@ -2860,7 +2860,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     mm    . addActionFromMenuWithIcon ( LOM , 34231501 , ICO , MSG           )
     ##########################################################################
     MSG   = self . getMenuItem        ( "LogHistory"                         )
-    ICO   = QIcon                     ( ":/images/documents.png"             )
+    ICO   = QIcon                     ( ":/images/notes.png"                 )
     mm    . addActionFromMenuWithIcon ( LOM , 34231401 , ICO , MSG           )
     ##########################################################################
     mm    . addSeparatorFromMenu      ( LOM                                  )
