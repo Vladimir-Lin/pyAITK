@@ -29,17 +29,22 @@ class Download    (                                                        ) :
   ############################################################################
   def Clear       ( self                                                   ) :
     ##########################################################################
-    self . Headers   = [ 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:8.0) Gecko/20100101 Firefox/8.0' ]
-    self . Filename  = ""
-    self . URL       = ""
-    self . Responses = { }
-    self . isHTTPS   = False
-    self . Success   = False
-    self . Data      = BytesIO       (                                       )
-    self . download  = pycurl . Curl (                                       )
-    self . Code      = 0
-    self . Error     = ""
-    self . Timeout   = 30
+    self . Headers     = [ 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:8.0) Gecko/20100101 Firefox/8.0' ]
+    self . Filename    = ""
+    self . URL         = ""
+    self . Responses   = { }
+    self . isHTTPS     = False
+    self . Success     = False
+    self . WriteCookie = False
+    self . ReadCookie  = False
+    self . CookieFile  = ""
+    self . PostFields  = False
+    self . Data        = BytesIO       (                                     )
+    self . Fields      =               [                                     ]
+    self . download    = pycurl . Curl (                                     )
+    self . Code        = 0
+    self . Error       = ""
+    self . Timeout     = 30
     ##########################################################################
     return
   ############################################################################
@@ -186,27 +191,48 @@ class Download    (                                                        ) :
     ##########################################################################
     URL      = self . toAsciiURL         (                                   )
     ##########################################################################
-    try                                                                      :
+    ## try                                                                      :
+    ##   ########################################################################
+    self   . download . setopt         ( pycurl . URL            , URL     )
+    self   . download . setopt         ( pycurl . HEADERFUNCTION         , \
+                                         self   . GetHeader                )
+    ########################################################################
+    self   . download . setopt         ( pycurl . WRITEDATA              , \
+                                         self   . Data                     )
+    ########################################################################
+    self   . download . setopt         ( pycurl . HTTPHEADER             , \
+                                         self   . Headers                  )
+    self   . download . setopt         ( pycurl . FOLLOWLOCATION , 1       )
+    ########################################################################
+    if                                 ( len ( self . CookieFile ) > 0   ) :
+      ######################################################################
+      if                               ( self . WriteCookie              ) :
+        ####################################################################
+        self . download . setopt       ( pycurl . COOKIEJAR              , \
+                                         self   . CookieFile               )
+      ######################################################################
+      if                               ( self . ReadCookie               ) :
+        ####################################################################
+        self . download . setopt       ( pycurl . COOKIEFILE             , \
+                                         self   . CookieFile               )
+    ########################################################################
+    if                                 ( self . PostFields               ) :
+      ######################################################################
+      FIELDz = urllib   . parse . urlencode ( self . Fields                )
+      print ( FIELDz )
+      self   . download . setopt       ( pycurl . POST       , 1           )
+      self   . download . setopt       ( pycurl . POSTFIELDS , FIELDz      )
+    ########################################################################
+    if                                 ( self   . Timeout > 0            ) :
+      self . download . setopt         ( pycurl . CONNECTTIMEOUT         , \
+                                         self   . Timeout                  )
       ########################################################################
-      self   . download . setopt         ( pycurl . URL            , URL     )
-      self   . download . setopt         ( pycurl . HEADERFUNCTION         , \
-                                           self   . GetHeader                )
-      self   . download . setopt         ( pycurl . WRITEDATA              , \
-                                           self   . Data                     )
-      self   . download . setopt         ( pycurl . HTTPHEADER             , \
-                                           self   . Headers                  )
-      self   . download . setopt         ( pycurl . FOLLOWLOCATION , 1       )
-      ########################################################################
-      if                                 ( self   . Timeout > 0            ) :
-        self . download . setopt         ( pycurl . CONNECTTIMEOUT         , \
-                                           self   . Timeout                  )
-      ########################################################################
-      self   . CheckHttps                (                                   )
-      self   . Success  = self . Execute (                                   )
-      self   . download . close          (                                   )
-      ########################################################################
-    except                                                                   :
-      return self . Success
+    self   . CheckHttps                (                                   )
+    self   . Success  = self . Execute (                                   )
+    self   . download . close          (                                   )
+    ##   ########################################################################
+    ## except                                                                   :
+    ##   return self . Success
     ##########################################################################
     return self . Success
 ##############################################################################

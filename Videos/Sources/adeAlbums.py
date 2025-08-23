@@ -28,6 +28,9 @@ from   AITK    . Networking . WebPage  import WebPage      as WebPage
 ##############################################################################
 from           . AlbumSources          import AlbumSources as AlbumSources
 ##############################################################################
+sys . path . append ( os . path . abspath ( os . path . dirname ( os . path . dirname ( os . path . abspath ( __file__ ) ) + "/../../../" ) ) + "/Crawlers" )
+## from   JavBus  . Film                  import ObtainsFilmDetails as ObtainsFilmDetails
+##############################################################################
 class adeAlbums          ( AlbumSources                                    ) :
   ############################################################################
   ############################################################################
@@ -50,8 +53,9 @@ class adeAlbums          ( AlbumSources                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def StartDownload ( self , item                                          ) :
+  def StartDownload   ( self , item                                        ) :
     ##########################################################################
+    ## self . DoDownload ( item , ObtainsFilmDetails                            )
     ##########################################################################
     return
   ############################################################################

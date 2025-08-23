@@ -21,15 +21,17 @@ from   PySide6 . QtGui                 import *
 from   PySide6 . QtWidgets             import *
 from   AITK    . Qt6                   import *
 ##############################################################################
-from   AITK    . Essentials . Relation import Relation     as Relation
-from   AITK    . Calendars  . StarDate import StarDate     as StarDate
-from   AITK    . Calendars  . Periode  import Periode      as Periode
-from   AITK    . Networking . WebPage  import WebPage      as WebPage
+from   AITK    . Essentials . Relation import Relation           as Relation
+from   AITK    . Calendars  . StarDate import StarDate           as StarDate
+from   AITK    . Calendars  . Periode  import Periode            as Periode
+from   AITK    . Networking . WebPage  import WebPage            as WebPage
 ##############################################################################
-from           . AlbumSources          import AlbumSources as AlbumSources
+from           . AlbumSources          import AlbumSources       as AlbumSources
+##############################################################################
+sys . path . append ( os . path . abspath ( os . path . dirname ( os . path . dirname ( os . path . abspath ( __file__ ) ) + "/../../../" ) ) + "/Crawlers" )
+from   JavBus  . Film                  import ObtainsFilmDetails as ObtainsFilmDetails
 ##############################################################################
 class javbusAlbums       ( AlbumSources                                    ) :
-  ############################################################################
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
@@ -50,8 +52,9 @@ class javbusAlbums       ( AlbumSources                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def StartDownload ( self , item                                          ) :
+  def StartDownload   ( self , item                                        ) :
     ##########################################################################
+    self . DoDownload ( item , ObtainsFilmDetails                            )
     ##########################################################################
     return
   ############################################################################
