@@ -642,7 +642,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     IDz    = self . AlbumOPTs         [ UUID ] [ "Identifiers"               ]
     ##########################################################################
     UMSG   = ""
-    IDKz   = ""
+    IDKz   = self . getMenuItem       ( "NoIdentifier"                       )
     ##########################################################################
     if                                ( len ( IDz ) > 0                    ) :
       ########################################################################
@@ -684,6 +684,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                                 ( self . NotOkay ( DB )             ) :
       return
     ##########################################################################
+    self         . PushRunnings        (                                     )
+    self         . OnBusy . emit       (                                     )
+    self         . FetchingINFO = True
+    ##########################################################################
     ALMTAB       = self . Tables       [ "Albums"                            ]
     IDFTAB       = self . Tables       [ "Identifiers"                       ]
     PICTAB       = self . Tables       [ "Relation"                          ]
@@ -698,6 +702,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
     VIDTAB       = self . Tables       [ "Relation"                          ]
     REL          = Relation            (                                     )
+    ALBUM        = AlbumItem           (                                     )
+    ALBUM        . Settings = self . Settings
+    ALBUM        . Tables   = self . Tables
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
@@ -785,28 +792,22 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       self       . AlbumOPTs [ U ] [ "People"    ] = PEOs
       ########################################################################
-      IDz        =                     [                                     ]
-      QQ         = f"""select `name` from {IDFTAB}
-                       where ( `type` = 76 )
-                         and ( `uuid` = {U} )
-                         order by `id` asc ;"""
-      DB         . Query               ( QQ                                  )
-      ALL        = DB . FetchAll       (                                     )
-      if                               ( ALL not in [ False , None ]       ) :
-        if                             ( len ( ALL ) > 0                   ) :
-          for IDFI in ALL                                                    :
-            ##################################################################
-            IDS  = self . assureString ( IDFI [ 0 ]                          )
-            ##################################################################
-            if                         ( len ( IDS ) > 0                   ) :
-              if                       ( IDS not in IDz                    ) :
-                IDz . append           ( IDS                                 )
-      ########################################################################
+      ALBUM      . Uuid = U
+      IDz        = ALBUM . GetIdentifiers ( DB                               )
       self       . AlbumOPTs [ U ] [ "Identifiers" ] = IDz
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
+    self         . GoRelax . emit      (                                     )
+    self         . FetchingINFO = False
     DB           . Close               (                                     )
+    ##########################################################################
+    if                                 ( self . StayAlive                  ) :
+      ########################################################################
+      self       . Notify              ( 2                                   )
+      self       . ShowStatus          ( ""                                  )
+    ##########################################################################
+    self         . PopRunnings         (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -2833,7 +2834,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     MSG   = self . getMenuItem        ( "DateEvents"                         )
     ICO   = QIcon                     ( ":/images/calendars.png"             )
-    mm    . addActionFromMenuWithIcon ( LOM , 24231501 , ICO , MSG           )
+    mm    . addActionFromMenuWithIcon ( LOM , 34231501 , ICO , MSG           )
     ##########################################################################
     MSG   = self . getMenuItem        ( "LogHistory"                         )
     ICO   = QIcon                     ( ":/images/documents.png"             )
@@ -3355,8 +3356,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     self   . VideosMenu            ( mm , uuid , atItem                      )
     self   . AlbumSourcesMenu      ( mm ,        atItem                      )
     self   . WebSearchMenu         ( mm ,        atItem                      )
+    mm     . addSeparator          (                                         )
     self   . UsageMenu             ( mm ,        atItem                      )
     self   . DisplayMenu           ( mm                                      )
+    mm     . addSeparator          (                                         )
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . ScrollBarMenu         ( mm                                      )
