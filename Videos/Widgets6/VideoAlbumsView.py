@@ -85,6 +85,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = True
+    self . ReportDetails      = False
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7                  ]
     self . AlbumOPTs          = {                                            }
     ##########################################################################
@@ -180,6 +181,9 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def TellStory               ( self , Enabled                             ) :
     ##########################################################################
+    if                        ( not self . ReportDetails                   ) :
+      return
+    ##########################################################################
     if                        ( not self . isGrouping (                  ) ) :
       return
     ##########################################################################
@@ -223,7 +227,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
     self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
     ##########################################################################
-    ## self . TellStory  (                                        Enabled       )
+    self . TellStory  (                                        Enabled       )
     ##########################################################################
     return
   ############################################################################
@@ -2240,7 +2244,10 @@ class VideoAlbumsView             ( IconDock                               ) :
   def ReloadLocality                     ( self , DB                       ) :
     return self . subgroupReloadLocality (        DB                         )
   ############################################################################
-  def UpdateAlbumUsage           ( self , uuid , usage                     ) :
+  def UpdateAlbumUsage           ( self , UUIDs , usage                    ) :
+    ##########################################################################
+    if                           ( len ( UUIDs ) <= 0                      ) :
+      return
     ##########################################################################
     DB     = self . ConnectDB    (                                           )
     if                           ( self . NotOkay ( DB )                   ) :
@@ -2250,16 +2257,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     DB     . LockWrites          ( [ ALMTAB                                ] )
     ##########################################################################
-    QQ     = f"""update {ALMTAB}
+    for U in UUIDs                                                           :
+      ########################################################################
+      QQ   = f"""update {ALMTAB}
                  set `used` = {usage}
-                 where ( `uuid` = {uuid} ) ; """
-    DB     . Query               ( " " . join ( QQ . split (             ) ) )
+                 where ( `uuid` = {U} ) ; """
+      DB   . Query               ( " " . join ( QQ . split (             ) ) )
+      ########################################################################
+      self . AlbumOPTs           [ U ] [ "Used" ] = usage
+      self . GenerateItemToolTip ( U                                         )
     ##########################################################################
     DB     . UnlockTables        (                                           )
     DB     . Close               (                                           )
-    ##########################################################################
-    self   . AlbumOPTs           [ uuid ] [ "Used" ] = usage
-    self   . GenerateItemToolTip ( uuid                                      )
+    self   . Notify              ( 5                                         )
     ##########################################################################
     return
   ############################################################################
@@ -2658,6 +2668,13 @@ class VideoAlbumsView             ( IconDock                               ) :
                                    True                                    , \
                                    self . ShowIdentifier                     )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "ReportDetails"                           )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   34621102                                , \
+                                   MSG                                     , \
+                                   True                                    , \
+                                   self . ReportDetails                      )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "Search"                                  )
@@ -2693,6 +2710,12 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       self   . clear                   (                                     )
       self   . startup                 (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621102                    ) :
+      ########################################################################
+      self . ReportDetails = not self . ReportDetails
       ########################################################################
       return True
     ##########################################################################
@@ -3221,30 +3244,31 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return mm
   ############################################################################
-  def RunUsageMenu               ( self , at , item                        ) :
+  def RunUsageMenu                  ( self , at , item                     ) :
     ##########################################################################
-    if                           ( at < 29431000                           ) :
+    if                              ( at < 29431000                        ) :
       return False
     ##########################################################################
-    if                           ( at > 29431100                           ) :
+    if                              ( at > 29431100                        ) :
       return False
     ##########################################################################
-    uuid  = item  . data         ( Qt . UserRole                             )
-    uuid  = int                  ( uuid                                      )
+    uuid  = item  . data            ( Qt . UserRole                          )
+    uuid  = int                     ( uuid                                   )
     ##########################################################################
-    if                           ( uuid not in self . AlbumOPTs            ) :
+    if                              ( uuid not in self . AlbumOPTs         ) :
       return
     ##########################################################################
-    VID   = int                  ( at - 29431000                             )
+    VID   = int                     ( at - 29431000                          )
     VSD   = f"{VID}"
     VAKEY = "VideoAlbumsView"
-    USAGE = self  . Translations [ VAKEY ] [ "Usage"                         ]
+    USAGE = self  . Translations    [ VAKEY ] [ "Usage"                      ]
     ##########################################################################
-    if                           ( VSD not in USAGE                        ) :
+    if                              ( VSD not in USAGE                     ) :
       return False
     ##########################################################################
-    VP    =                      ( uuid , VID ,                              )
-    self  . Go                   ( self . UpdateAlbumUsage , VP              )
+    UUIDs = self . getSelectedUuids (                                        )
+    VP    =                         ( UUIDs , VID ,                          )
+    self  . Go                      ( self . UpdateAlbumUsage , VP           )
     ##########################################################################
     return True
   ############################################################################
