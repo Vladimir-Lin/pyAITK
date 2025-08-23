@@ -112,8 +112,8 @@ class VtkBody                 ( VtkWidget                                  ) :
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self . RunElementsMenu ( at )         ) :
-      return True
+    ## if                             ( self . RunElementsMenu ( at )         ) :
+    ##   return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True

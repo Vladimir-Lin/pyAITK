@@ -158,6 +158,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . AppendSideActionWithIcon        ( "VideoFragments"              , \
                                              ":/images/vfragments.png"     , \
                                              self . OpenVFragments           )
+    self . AppendSideActionWithIcon        ( "AssignIdentifier"            , \
+                                             ":/images/jointag.png"        , \
+                                             self . OpenAlbumIdentifier      )
     self . AppendSideActionWithIcon        ( "DateEvents"                  , \
                                              ":/images/calendars.png"      , \
                                              self . OpenAlbumDateEvents      )
@@ -614,6 +617,9 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def GenerateItemToolTip             ( self , UUID                        ) :
     ##########################################################################
+    if                                ( not self . StayAlive               ) :
+      return
+    ##########################################################################
     if                                ( UUID not in self . UuidItemMaps    ) :
       return
     ##########################################################################
@@ -633,8 +639,14 @@ class VideoAlbumsView             ( IconDock                               ) :
     PEOs   = self . AlbumOPTs         [ UUID ] [ "People"                    ]
     VIDs   = self . AlbumOPTs         [ UUID ] [ "Videos"                    ]
     URLs   = self . AlbumOPTs         [ UUID ] [ "URLs"                      ]
+    IDz    = self . AlbumOPTs         [ UUID ] [ "Identifiers"               ]
     ##########################################################################
     UMSG   = ""
+    IDKz   = ""
+    ##########################################################################
+    if                                ( len ( IDz ) > 0                    ) :
+      ########################################################################
+      IDKz = " , " . join             ( IDz                                  )
     ##########################################################################
     if                                ( f"{USD}" in USAGE                  ) :
       ########################################################################
@@ -647,6 +659,7 @@ class VideoAlbumsView             ( IconDock                               ) :
                                         GALs                               , \
                                         SGPs                               , \
                                         URLs                               , \
+                                        IDKz                               , \
                                         UMSG                                 )
     ##########################################################################
     if                                ( UUID in self . UuidItemNames       ) :
@@ -672,6 +685,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       return
     ##########################################################################
     ALMTAB       = self . Tables       [ "Albums"                            ]
+    IDFTAB       = self . Tables       [ "Identifiers"                       ]
     PICTAB       = self . Tables       [ "Relation"                          ]
     ## PICTAB       = self . Tables       [ "RelationPictures"                  ]
     GALTAB       = self . Tables       [ "Relation"                          ]
@@ -770,6 +784,25 @@ class VideoAlbumsView             ( IconDock                               ) :
       PEOs       = REL . CountFirst    ( DB , PEOTAB                         )
       ########################################################################
       self       . AlbumOPTs [ U ] [ "People"    ] = PEOs
+      ########################################################################
+      IDz        =                     [                                     ]
+      QQ         = f"""select `name` from {IDFTAB}
+                       where ( `type` = 76 )
+                         and ( `uuid` = {U} )
+                         order by `id` asc ;"""
+      DB         . Query               ( QQ                                  )
+      ALL        = DB . FetchAll       (                                     )
+      if                               ( ALL not in [ False , None ]       ) :
+        if                             ( len ( ALL ) > 0                   ) :
+          for IDFI in ALL                                                    :
+            ##################################################################
+            IDS  = self . assureString ( IDFI [ 0 ]                          )
+            ##################################################################
+            if                         ( len ( IDS ) > 0                   ) :
+              if                       ( IDS not in IDz                    ) :
+                IDz . append           ( IDS                                 )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Identifiers" ] = IDz
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
@@ -1983,8 +2016,18 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def UpdateIdentifier                ( self , UUID , identifier           ) :
     ##########################################################################
+    IDz     = identifier
+    IDz     . strip                   (                                      )
+    IDz     . lstrip                  (                                      )
+    IDz     . rstrip                  (                                      )
+    ##########################################################################
+    if                                ( len ( IDz ) <= 0                   ) :
+      self  . Notify                  ( 1                                    )
+      return
+    ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
+      self  . Notify                  ( 1                                    )
       return
     ##########################################################################
     MSG     = self . getMenuItem      ( "UpdateIdentifier"                   )
@@ -1995,15 +2038,13 @@ class VideoAlbumsView             ( IconDock                               ) :
     IDF     = IdentifierItem          (                                      )
     IDF     . Uuid = UUID
     IDF     . Type = 76
-    IDF     . Name = identifier
+    IDF     . Name = IDz
     ##########################################################################
     IDF     . Assure                  ( DB , IDFTAB                          )
     ##########################################################################
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
-    ##########################################################################
     DB      . Close                   (                                      )
-    ##########################################################################
     self    . Notify                  ( 5                                    )
     ##########################################################################
     return
@@ -2301,6 +2342,23 @@ class VideoAlbumsView             ( IconDock                               ) :
       return
     ##########################################################################
     self   . OpenIdentWebPageURLs ( atItem , "Equivalent"                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenAlbumIdentifier          ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data         ( Qt . UserRole                           )
+    uuid   = int                   ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return
+    ##########################################################################
+    self   . AssignAlbumIdentifier ( uuid                                    )
     ##########################################################################
     return
   ############################################################################
@@ -2737,7 +2795,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     mm    . addSeparatorFromMenu      ( LOM                                  )
     ##########################################################################
     MSG   = self . getMenuItem        ( "AssignIdentifier"                   )
-    mm    . addActionFromMenu         ( LOM , 34635201 ,        MSG          )
+    ICON  = QIcon                     ( ":/images/jointag.png"               )
+    mm    . addActionFromMenuWithIcon ( LOM , 34635201 , ICON , MSG          )
     ##########################################################################
     MSG   = self . getMenuItem        ( "Vendors"                            )
     mm    . addActionFromMenu         ( LOM , 34635202 ,        MSG          )
