@@ -13,25 +13,15 @@ import threading
 import json
 ##############################################################################
 import mysql . connector
-from   mysql . connector                   import Error
+from   mysql . connector               import Error
 ##############################################################################
 import AITK
-from   AITK  . Database   . Query          import Query
-from   AITK  . Database   . Connection     import Connection
-from   AITK  . Database   . Pair           import Pair
-from   AITK  . Database   . Columns        import Columns
+from   AITK  . Database   . Query      import Query
+from   AITK  . Database   . Connection import Connection
+from   AITK  . Database   . Pair       import Pair
+from   AITK  . Database   . Columns    import Columns
 ##############################################################################
-from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
-from   AITK  . Essentials . Relation       import Relation       as Relation
-##############################################################################
-## HAIRSREL       = "`affiliations`.`relations_people_0009`"
-## HPICREL        = "`affiliations`.`relations_pictures_0009`"
-## HAIRSNAM       = "`appellations`.`names_commons_0014`"
-## HAIRSNOTE      = "`notez`.`notes_commons_0027`"
-## HAIRSPARAM     = "`cios`.`parameters`"
-## HairsShortType = 20
-## HairsLongType  = 1100000000000000020
-## HairsTypeName  = "Hairs"
+from   AITK  . Essentials . Relation   import Relation as Relation
 ##############################################################################
 class Scenario           ( Columns                                         ) :
   ############################################################################
@@ -475,7 +465,8 @@ class Scenario           ( Columns                                         ) :
     T2    = REL . get                   ( "t2"                               )
     RR    = REL . get                   ( "relation"                         )
     ##########################################################################
-    MQ    = f"""select `uuid` from {SCNTAB} where ( `used` in ( {UQ} ) )"""
+    MQ    = f"""select `uuid` from {SCNTAB}
+                where ( `used` in ( {UQ} ) )"""
     QQ    = f"""select `second` from {RELTAB}
                where ( `first` = {UUID} )
                  and ( `t1` = {T1} )
@@ -515,7 +506,8 @@ class Scenario           ( Columns                                         ) :
     T2    = REL . get                   ( "t2"                               )
     RR    = REL . get                   ( "relation"                         )
     ##########################################################################
-    MQ    = f"""select `uuid` from {SCNTAB} where ( `used` in ( {UQ} ) )"""
+    MQ    = f"""select `uuid` from {SCNTAB}
+                where ( `used` in ( {UQ} ) )"""
     QQ    = f"""select `first` from {RELTAB}
                where ( `second` = {UUID} )
                  and ( `t1` = {T1} )
@@ -557,7 +549,145 @@ class Scenario           ( Columns                                         ) :
     ##########################################################################
     return self . SqlDataToJsonListings ( RR                                 )
   ############################################################################
+  def MoveListsByFirst ( self                                              , \
+                         DB                                                , \
+                         SCNTAB                                            , \
+                         RELTAB                                            , \
+                         REL                                               , \
+                         UsedOptions                                       , \
+                         UUID                                              , \
+                         UUIDs                                             ) :
+    ##########################################################################
+    UQ        = " , " . join     ( str(x) for x in UsedOptions               )
+    FUID      = REL . get        ( "first"                                   )
+    T1        = REL . get        ( "t1"                                      )
+    T2        = REL . get        ( "t2"                                      )
+    RR        = REL . get        ( "relation"                                )
+    ##########################################################################
+    MQ        = f"""select `uuid` from {SCNTAB}
+                    where ( `used` in ( {UQ} ) )"""
+    QQ        = f"""select `second` from {RELTAB}
+                    where ( `first` = {FUID} )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} )
+                      and ( `second` in ( {MQ} ) )
+                    order by `position` asc ;"""
+    ##########################################################################
+    LISTs     = DB . ObtainUuids ( " " . join ( QQ . split (             ) ) )
+    ##########################################################################
+    FUIDs     =                  [                                           ]
+    for U in LISTs                                                           :
+      if                         ( U not in UUIDs                          ) :
+        FUIDs . append           ( U                                         )
+    ##########################################################################
+    FLEN      = len              ( FUIDs                                     )
+    ATI       = FUIDs . index    ( UUID                                      )
+    if                           ( ATI < 0                                 ) :
+      ATI     = 0
+    FUIDs     . insert           ( ATI , UUIDs                               )
+    ##########################################################################
+    IDC       = 100000
+    ##########################################################################
+    for U in FUIDs                                                           :
+      ########################################################################
+      QQ      = f"""update {RELTAB}
+                    set `position` = {IDC}
+                    where ( `first` = {FUID} )
+                      and ( `second` = {U} ) )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} ) ;"""
+      DB      . Query            ( " " . join ( QQ . split (             ) ) )
+      ########################################################################
+      IDC     = IDC + 1
+    ##########################################################################
+    IDC       = 0
+    ##########################################################################
+    for U in FUIDs                                                           :
+      ########################################################################
+      QQ      = f"""update {RELTAB}
+                    set `position` = {IDC}
+                    where ( `first` = {FUID} )
+                      and ( `second` = {U} ) )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} ) ;"""
+      DB      . Query            ( " " . join ( QQ . split (             ) ) )
+      ########################################################################
+      IDC     = IDC + 1
+    ##########################################################################
+    return
   ############################################################################
+  def MoveListsBySecond ( self                                             , \
+                          DB                                               , \
+                          SCNTAB                                           , \
+                          RELTAB                                           , \
+                          REL                                              , \
+                          UsedOptions                                      , \
+                          UUID                                             , \
+                          UUIDs                                            ) :
+    ##########################################################################
+    UQ        = " , " . join     ( str(x) for x in UsedOptions               )
+    FUID      = REL . get        ( "second"                                  )
+    T1        = REL . get        ( "t1"                                      )
+    T2        = REL . get        ( "t2"                                      )
+    RR        = REL . get        ( "relation"                                )
+    ##########################################################################
+    MQ        = f"""select `uuid` from {SCNTAB}
+                    where ( `used` in ( {UQ} ) )"""
+    QQ        = f"""select `first` from {RELTAB}
+                    where ( `second` = {FUID} )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} )
+                      and ( `first` in ( {MQ} ) )
+                    order by `reverse` asc ;"""
+    ##########################################################################
+    LISTs     = DB . ObtainUuids ( " " . join ( QQ . split (             ) ) )
+    ##########################################################################
+    FUIDs     =                  [                                           ]
+    for U in LISTs                                                           :
+      if                         ( U not in UUIDs                          ) :
+        FUIDs . append           ( U                                         )
+    ##########################################################################
+    FLEN      = len              ( FUIDs                                     )
+    ATI       = FUIDs . index    ( UUID                                      )
+    if                           ( ATI < 0                                 ) :
+      ATI     = 0
+    FUIDs     . insert           ( ATI , UUIDs                               )
+    ##########################################################################
+    IDC       = 100000
+    ##########################################################################
+    for U in FUIDs                                                           :
+      ########################################################################
+      QQ      = f"""update {RELTAB}
+                    set `position` = {IDC}
+                    where ( `first` = {U} )
+                      and ( `second` = {FUID} ) )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} ) ;"""
+      DB      . Query            ( " " . join ( QQ . split (             ) ) )
+      ########################################################################
+      IDC     = IDC + 1
+    ##########################################################################
+    IDC       = 0
+    ##########################################################################
+    for U in FUIDs                                                           :
+      ########################################################################
+      QQ      = f"""update {RELTAB}
+                    set `position` = {IDC}
+                    where ( `first` = {U} )
+                      and ( `second` = {FUID} ) )
+                      and ( `t1` = {T1} )
+                      and ( `t2` = {T2} )
+                      and ( `relation` = {RR} ) ;"""
+      DB      . Query            ( " " . join ( QQ . split (             ) ) )
+      ########################################################################
+      IDC     = IDC + 1
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

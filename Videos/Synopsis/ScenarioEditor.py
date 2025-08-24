@@ -133,6 +133,9 @@ class ScenarioEditor             ( TreeDock                                ) :
     self . AppendSideActionWithIcon ( "ScenarioCrowds"                     , \
                                       ":/images/buddy.png"                 , \
                                       self . GotoItemCrowds                  )
+    self . AppendSideActionWithIcon ( "ExportASS"                          , \
+                                      ":/images/saveall.png"               , \
+                                      self . ExportASS                       )
     ##########################################################################
     return
   ############################################################################
@@ -682,6 +685,10 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     if                     ( source == self                                ) :
       ########################################################################
+      if                   ( atItem . isSelected ( )                       ) :
+        self . Notify      ( 2                                               )
+        return True
+      ########################################################################
       self . Go            ( self . MovingScenarios    , VAL                 )
       ########################################################################
     else                                                                     :
@@ -697,6 +704,13 @@ class ScenarioEditor             ( TreeDock                                ) :
     if                          ( COUNT <= 0                               ) :
       return
     ##########################################################################
+    if                          ( self . isSubordination (               ) ) :
+      pass
+    elif                        ( self . isReverse       (               ) ) :
+      pass
+    else                                                                     :
+      return
+    ##########################################################################
     DB     = self . ConnectDB   (                                            )
     if                          ( DB == None                               ) :
       return
@@ -704,11 +718,35 @@ class ScenarioEditor             ( TreeDock                                ) :
     self   . OnBusy  . emit     (                                            )
     self   . setBustle          (                                            )
     ##########################################################################
+    RELTAB = self . Tables      [ "Relation"                                 ]
+    SCNTAB = self . Tables      [ "Scenarios"                                ]
+    ##########################################################################
+    if                          ( self . isSubordination (               ) ) :
+      ########################################################################
+      self . SCENE . MoveListsByFirst                                      ( \
+                                  DB                                       , \
+                                  SCNTAB                                   , \
+                                  RELTAB                                   , \
+                                  self . Relation                          , \
+                                  self . UsedOptions                       , \
+                                  UUID                                     , \
+                                  UUIDs                                      )
+      ########################################################################
+    elif                        ( self . isReverse       (               ) ) :
+      ########################################################################
+      self . SCENE . MoveListsBySecond                                     ( \
+                                  DB                                       , \
+                                  SCNTAB                                   , \
+                                  RELTAB                                   , \
+                                  self . Relation                          , \
+                                  self . UsedOptions                       , \
+                                  UUID                                     , \
+                                  UUIDs                                      )
     ##########################################################################
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
-    self   . Notify             ( 5                                          )
+    self   . loading            (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -717,6 +755,13 @@ class ScenarioEditor             ( TreeDock                                ) :
     COUNT  = len                ( UUIDs                                      )
     ##########################################################################
     if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    if                          ( self . isSubordination (               ) ) :
+      pass
+    elif                        ( self . isReverse       (               ) ) :
+      pass
+    else                                                                     :
       return
     ##########################################################################
     DB     = self . ConnectDB   (                                            )
@@ -749,7 +794,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
-    self   . Notify             ( 5                                          )
+    self   . loading            (                                            )
     ##########################################################################
     return
   ############################################################################
