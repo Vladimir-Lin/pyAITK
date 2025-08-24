@@ -1433,7 +1433,8 @@ class CliParser  (                                                         ) :
     ##########################################################################
     QQ      = f"""select `uuid` from {IDFTAB}
                   where ( `type` = 76 )
-                  and ( `name` like %s ) ;"""
+                  and ( `name` like %s )
+                  order by `name` asc ;"""
     QQ      = " " . join    ( QQ . split ( )                                 )
     self    . LOG           ( QQ                                             )
     ##########################################################################
@@ -1507,7 +1508,8 @@ class CliParser  (                                                         ) :
       ########################################################################
       QQ    = f"""select `uuid` from {IDFTAB}
                   where ( `type` = 76 )
-                  and ( `name` like %s ) ;"""
+                  and ( `name` like %s )
+                  order by `name` asc ;"""
       QQ    = " " . join    ( QQ . split ( )                                 )
       ########################################################################
       self  . LOG           ( QQ                                             )
