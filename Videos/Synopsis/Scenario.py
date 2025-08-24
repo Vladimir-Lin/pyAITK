@@ -577,12 +577,14 @@ class Scenario           ( Columns                                         ) :
     LISTs     = DB . ObtainUuids ( " " . join ( QQ . split (             ) ) )
     ##########################################################################
     FUIDs     =                  [                                           ]
+    RUIDs     =                  [                                           ]
+    for U in UUIDs                                                           :
+      RUIDs   . append           ( int ( U )                                 )
+    RUIDs     . reverse          (                                           )
     for U in LISTs                                                           :
-      if                         ( U not in UUIDs                          ) :
+      if                         ( U not in RUIDs                          ) :
         FUIDs . append           ( U                                         )
     ##########################################################################
-    RUIDs     = UUIDs
-    sorted                       ( RUIDs , reverse =True                     )
     ATI       = FUIDs . index    ( UUID                                      )
     if                           ( ATI < 0                                 ) :
       ATI     = 0
@@ -651,12 +653,14 @@ class Scenario           ( Columns                                         ) :
     LISTs     = DB . ObtainUuids ( " " . join ( QQ . split (             ) ) )
     ##########################################################################
     FUIDs     =                  [                                           ]
+    RUIDs     =                  [                                           ]
+    for U in UUIDs                                                           :
+      RUIDs   . append           ( int ( U )                                 )
+    RUIDs     . reverse          (                                           )
     for U in LISTs                                                           :
-      if                         ( U not in UUIDs                          ) :
+      if                         ( U not in RUIDs                          ) :
         FUIDs . append           ( U                                         )
     ##########################################################################
-    RUIDs     = UUIDs
-    sorted                       ( RUIDs , reverse =True                     )
     ATI       = FUIDs . index    ( UUID                                      )
     if                           ( ATI < 0                                 ) :
       ATI     = 0
