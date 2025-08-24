@@ -105,7 +105,7 @@ class FragmentEditor          ( TreeDock                                   ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 600 , 200 )                       )
+    return self . SizeSuggestion ( QSize ( 600 , 120 )                       )
   ############################################################################
   def setAlbumUuid         ( self , UUID                                   ) :
     ##########################################################################
