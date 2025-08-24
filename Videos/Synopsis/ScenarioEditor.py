@@ -518,15 +518,15 @@ class ScenarioEditor             ( TreeDock                                ) :
                                        mimeData                            , \
                                        mousePos                            ) :
     ##########################################################################
-    RDN    = self . RegularDropNew   ( mimeData                              )
+    RDN      = self . RegularDropNew ( mimeData                              )
     if                               ( not RDN                             ) :
       return False
     ##########################################################################
-    mtype  = self   . DropInJSON     [ "Mime"                                ]
-    UUIDs  = self   . DropInJSON     [ "UUIDs"                               ]
-    atItem = self   . itemAt         ( mousePos                              )
-    title  = source . windowTitle    (                                       )
-    CNT    = len                     ( UUIDs                                 )
+    mtype    = self   . DropInJSON   [ "Mime"                                ]
+    UUIDs    = self   . DropInJSON   [ "UUIDs"                               ]
+    atItem   = self   . itemAt       ( mousePos                              )
+    title    = source . windowTitle  (                                       )
+    CNT      = len                   ( UUIDs                                 )
     ##########################################################################
     if                               ( mtype in [ "people/uuids"         ] ) :
       ########################################################################
@@ -540,7 +540,7 @@ class ScenarioEditor             ( TreeDock                                ) :
       ########################################################################
       return True
     ##########################################################################
-    if                               ( not self . isOriginal (           ) ) :
+    if                               ( self . isOriginal (               ) ) :
       return False
     ##########################################################################
     if                               ( mtype not in [ "scenario/uuids" ]  ) :
