@@ -135,7 +135,9 @@ class ScenarioEditor             ( TreeDock                                ) :
                                       self . GotoItemCrowds                  )
     self . AppendSideActionWithIcon ( "ExportASS"                          , \
                                       ":/images/saveall.png"               , \
-                                      self . ExportASS                       )
+                                      self . ExportASS                     , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
