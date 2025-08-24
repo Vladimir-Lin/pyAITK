@@ -86,11 +86,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . setColumnCount              ( 7                                   )
     self . setColumnWidth              ( 0 , 120                             )
     self . setColumnWidth              ( 1 , 120                             )
-    ## self . setColumnHidden             ( 1 , True                            )
+    self . setColumnHidden             ( 1 , True                            )
     self . setColumnWidth              ( 2 , 600                             )
     ## self . setColumnHidden             ( 3 , True                            )
     self . setColumnHidden             ( 4 , True                            )
-    ## self . setColumnHidden             ( 5 , True                            )
+    self . setColumnHidden             ( 5 , True                            )
     self . setColumnHidden             ( 6 , True                            )
     self . setRootIsDecorated          ( False                               )
     ##########################################################################
