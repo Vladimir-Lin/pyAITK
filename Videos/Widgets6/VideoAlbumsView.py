@@ -3225,6 +3225,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                           ( uuid not in self . AlbumOPTs            ) :
       return
     ##########################################################################
+    if                           ( "Used" not in self . AlbumOPTs [ uuid ] ) :
+      return
+    ##########################################################################
     VAKEY = "VideoAlbumsView"
     MSG   = self  . getMenuItem  ( "AlbumUsage"                              )
     COL   = mm    . addMenu      ( MSG                                       )
