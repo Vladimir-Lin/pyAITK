@@ -511,19 +511,12 @@ class ScenarioEditor             ( TreeDock                                ) :
     return self . MimeType ( mime , ";" . join ( FMTs  )                     )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                        ( self                                , \
                                        source                              , \
                                        mimeData                            , \
                                        mousePos                            ) :
-    ##########################################################################
-    if                               ( self == source                      ) :
-      return False
     ##########################################################################
     RDN    = self . RegularDropNew   ( mimeData                              )
     if                               ( not RDN                             ) :
@@ -547,10 +540,10 @@ class ScenarioEditor             ( TreeDock                                ) :
       ########################################################################
       return True
     ##########################################################################
-    if                               ( mtype not in [ "scenario/uuids" ]  ) :
+    if                               ( not self . isOriginal (           ) ) :
       return False
     ##########################################################################
-    if                               ( not self . isGrouping (           ) ) :
+    if                               ( mtype not in [ "scenario/uuids" ]  ) :
       return False
     ##########################################################################
     return RDN
@@ -578,6 +571,9 @@ class ScenarioEditor             ( TreeDock                                ) :
       self . ShowStatus           ( MSG                                      )
       ########################################################################
       return True
+    ##########################################################################
+    if                            ( not self . isOriginal (              ) ) :
+      return False
     ##########################################################################
     if                            ( mtype not in [ "scenario/uuids" ]      ) :
       return False
