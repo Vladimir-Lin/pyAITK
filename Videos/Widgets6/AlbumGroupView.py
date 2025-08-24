@@ -46,6 +46,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . PrivateGroup  = True
     self . ExtraINFOs    = True
     self . FetchingINFO  = False
+    self . ReportDetails = False
     ##########################################################################
     self . Grouping      = "Tag"
     self . OldGrouping   = "Tag"
@@ -111,6 +112,12 @@ class AlbumGroupView         ( IconDock                                    ) :
   ############################################################################
   def TellStory               ( self , Enabled                             ) :
     ##########################################################################
+    if                        ( not self . ReportDetails                   ) :
+      return
+    ##########################################################################
+    if                        (     self . isOriginal (                  ) ) :
+      return
+    ##########################################################################
     GG   = self . Grouping
     TT   = self . windowTitle (                                              )
     MM   = self . getMenuItem ( "AlbumGroupParameter"                        )
@@ -146,7 +153,7 @@ class AlbumGroupView         ( IconDock                                    ) :
     self . LinkAction ( "SelectNone" , self . SelectNone     , Enabled       )
     self . LinkAction ( "Font"       , self . ChangeItemFont , Enabled       )
     ##########################################################################
-    ## self . TellStory  (                                        Enabled       )
+    self . TellStory  (                                        Enabled       )
     ##########################################################################
     return
   ############################################################################
@@ -834,6 +841,13 @@ class AlbumGroupView         ( IconDock                                    ) :
     msg = self . getMenuItem ( "AssignTables"                                )
     mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
     ##########################################################################
+    msg = self . getMenuItem ( "ReportDetails"                               )
+    mm  . addActionFromMenu  ( LOM                                         , \
+                               34621102                                    , \
+                               msg                                         , \
+                               True                                        , \
+                               self . ReportDetails                          )
+    ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
@@ -865,6 +879,12 @@ class AlbumGroupView         ( IconDock                                    ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621102                    ) :
+      ########################################################################
+      self . ReportDetails = not self . ReportDetails
       ########################################################################
       return True
     ##########################################################################
