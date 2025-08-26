@@ -31,6 +31,7 @@ from   AITK . Documents . JSON           import Load           as LoadJson
 from   AITK . Documents . JSON           import Save           as SaveJson
 from   AITK . Documents . Name           import Name           as NameItem
 from   AITK . Documents . Name           import Naming         as Naming
+from   AITK . Documents . Identifier     import Identifier     as IdentifierItem
 from   AITK . Documents . ParameterQuery import ParameterQuery as ParameterQuery
 from   AITK . Documents . Variables      import Variables      as VariableItem
 ##############################################################################
@@ -404,6 +405,95 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return
   ############################################################################
+  def OrganizeNamesByJapanese ( self                                       ) :
+    ##########################################################################
+    DB     = Connection       (                                              )
+    ##########################################################################
+    if                        ( not DB . ConnectTo ( self . DbConf )       ) :
+      ########################################################################
+      self . LOG              ( json . dumps  ( TABLEs )                     )
+      ########################################################################
+      return
+    ##########################################################################
+    DB     . Prepare          (                                              )
+    ##########################################################################
+    PEOTAB = "`leagues`.`people_av_0003`"
+    WESNAM = "`appellations`.`names_people_0004`"
+    JPNNAM = "`appellations`.`names_people_0005`"
+    PEONAM = "`appellations`.`names_people_0010`"
+    OTHNAM = "`appellations`.`names_others_0020`"
+    COLS   = "`uuid`,`locality`,`priority`,`relevance`,`flags`,`utf8`,`length`,`name`,`ltime`"
+    ##########################################################################
+    QQ     = f"""insert into {JPNNAM} ( {COLS} )
+                 select {COLS} from {OTHNAM}
+                 where ( `uuid` in ( select `uuid` from {PEOTAB} ) ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    QQ     = f"""delete  from {OTHNAM}
+                 where ( `uuid` in ( select `uuid` from {PEOTAB} ) ) ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    QQ     = f"""select `uuid` from {WESNAM}
+                 where ( `uuid` in ( select `uuid` from {PEOTAB} ) )
+                 group by `uuid` asc ;"""
+    QQ     = " " . join       ( QQ . split (                               ) )
+    self   . LOG              ( QQ                                           )
+    UUIDs  = DB . ObtainUuids ( QQ                                           )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ   = f"""select `relevance` from {WESNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                 group by `relevance` asc ;"""
+      QQ   = " " . join       ( QQ . split (                               ) )
+      self . LOG              ( QQ                                           )
+      REVs = DB . ObtainUuids ( QQ                                           )
+      ########################################################################
+      for R in REVs                                                          :
+        ######################################################################
+        QQ = f"""select `priority` from {JPNNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} )
+                   order by `priority` desc
+                   limit 0 , 1 ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        PP = DB . GetOne      ( QQ , -1                                      )
+        PP = int              ( int ( PP ) + 1                               )
+        ######################################################################
+        QQ = f"""update {WESNAM}
+                 set `priority` = `priority` + {PP}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} )
+                 order by `priority` desc ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
+        ######################################################################
+        QQ = f"""insert into {JPNNAM} ( {COLS} )
+                 select {COLS} from {WESNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} ) ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
+        ######################################################################
+        QQ = f"""delete  from {WESNAM}
+                 where ( `uuid` in ( {UUID} ) )
+                   and ( `relevance` = {R} ) ;"""
+        QQ = " " . join       ( QQ . split (                               ) )
+        self . LOG            ( QQ                                           )
+        DB . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . Close            (                                              )
+    self   . LOG              ( "OrganizeNamesByJapanese Completed"          )
+    ##########################################################################
+    return
+  ############################################################################
   def ParkPeopleVideos        ( self                                       ) :
     ##########################################################################
     DB     = Connection       (                                              )
@@ -440,9 +530,206 @@ class CliParser  (                                                         ) :
       QQ   = " " . join       ( QQ . split (                               ) )
       self . LOG              ( QQ                                           )
       DB   . Query            ( QQ                                           )
+      DB   . Optimize         ( TAGREL                                       )
     ##########################################################################
+    DB     . Optimize         ( VIDREL                                       )
     DB     . Close            (                                              )
     self   . LOG              ( "ParkPeopleVideos Completed"                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ParkOrganizationVideos  ( self                                       ) :
+    ##########################################################################
+    DB     = Connection       (                                              )
+    ##########################################################################
+    if                        ( not DB . ConnectTo ( self . DbConf )       ) :
+      ########################################################################
+      self . LOG              ( json . dumps  ( TABLEs )                     )
+      ########################################################################
+      return
+    ##########################################################################
+    DB     . Prepare          (                                              )
+    ##########################################################################
+    VIDREL =   "`affiliations`.`relations_videos_0008`"
+    LTRELs = [ "`affiliations`.`relations_videos_0010`"                      ]
+    COLS   = "`first`,`t1`,`second`,`t2`,`relation`,`position`,`reverse`,`prefer`,`membership`,`description`,`ltime`"
+    ##########################################################################
+    for TAGREL in LTRELs                                                     :
+      ########################################################################
+      QQ   = f"""insert into {VIDREL} ( {COLS} )
+                 select {COLS} from {TAGREL}
+                 where ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 )
+                 order by `id` asc ;"""
+      QQ   = " " . join       ( QQ . split (                               ) )
+      self . LOG              ( QQ                                           )
+      DB   . Query            ( QQ                                           )
+      ########################################################################
+      QQ   = f"""delete  from {TAGREL}
+                 where ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 ) ;"""
+      QQ   = " " . join       ( QQ . split (                               ) )
+      self . LOG              ( QQ                                           )
+      DB   . Query            ( QQ                                           )
+      DB   . Optimize         ( TAGREL                                       )
+    ##########################################################################
+    DB     . Optimize         ( VIDREL                                       )
+    DB     . Close            (                                              )
+    self   . LOG              ( "ParkOrganizationVideos Completed"           )
+    ##########################################################################
+    return
+  ############################################################################
+  def ParkVideoByIdentifiers    ( self                                     ) :
+    ##########################################################################
+    DB     = Connection         (                                            )
+    ##########################################################################
+    if                          ( not DB . ConnectTo ( self . DbConf )     ) :
+      ########################################################################
+      self . LOG                ( json . dumps  ( TABLEs )                   )
+      ########################################################################
+      return
+    ##########################################################################
+    DB     . Prepare            (                                            )
+    ##########################################################################
+    IDFTAB = "`cios`.`identifiers`"
+    VIDREL = "`affiliations`.`relations_videos_0008`"
+    QQ     = f"""select `uuid` from {IDFTAB}
+                 where ( `type` = 38 )
+                 group by `uuid` asc ;"""
+    QQ     = " " . join         ( QQ . split (                             ) )
+    UUIDs  = DB  . ObtainUuids  ( QQ                                         )
+    ##########################################################################
+    DB     . LockWrites         ( [ VIDREL , IDFTAB                        ] )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      IDF  = IdentifierItem     (                                            )
+      IDF  . Uuid =  UUID
+      IDF  . Type =  38
+      IDs  = IDF  . Identifiers (        DB , IDFTAB                         )
+      ########################################################################
+      if                        ( len ( IDs ) <= 0                         ) :
+        continue
+      ########################################################################
+      LL   =                    [                                            ]
+      ########################################################################
+      for ID in IDs                                                          :
+        ######################################################################
+        S  = f"( `name` like \"{ID}\" )"
+        LL . append             ( S                                          )
+      ########################################################################
+      LZ   = " or " . join      ( LL                                         )
+      if                        ( len ( LL ) > 1                           ) :
+        ######################################################################
+        QQ = f"""select `uuid` from {IDFTAB}
+                 where ( `type` = 76 )
+                   and ( {LZ} )
+                   order by `name` asc ;"""
+        ######################################################################
+      else                                                                   :
+        QQ = f"""select `uuid` from {IDFTAB}
+                 where ( `type` = 76 )
+                   and {LZ}
+                   order by `name` asc ;"""
+      ########################################################################
+      QQ     = " " . join       ( QQ . split (                             ) )
+      self   . LOG              ( QQ                                         )
+      ########################################################################
+      AMIDs  = DB . ObtainUuids ( QQ                                         )
+      ########################################################################
+      QQ     = f"""select `second` from {VIDREL}
+                   where ( `first` = {UUID} )
+                   and ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 )
+                   order by `position` asc ;"""
+      QQ     = " " . join       ( QQ . split (                             ) )
+      OVIDs  = DB . ObtainUuids ( QQ                                         )
+      ########################################################################
+      IDV    = -1
+      QQ     = f"""select `position` from {VIDREL}
+                   where ( `first` = {UUID} )
+                   and ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 )
+                   order by `position` desc
+                   limit 0 , 1 ;"""
+      QQ     = " " . join       ( QQ . split (                             ) )
+      DB     . Query            ( QQ                                         )
+      rr     = DB . FetchOne    (                                            )
+      ########################################################################
+      if                        ( not rr                                   ) :
+        pass
+      else                                                                   :
+        IDV  = int              ( rr [ 0                                   ] )
+      ########################################################################
+      IDV    = int              ( IDV + 1                                    )
+      TOT    = 0
+      ########################################################################
+      for AMID in AMIDs                                                      :
+        ######################################################################
+        if                      ( AMID in OVIDs                            ) :
+          continue
+        ######################################################################
+        QQ   = f"""insert into {VIDREL}
+                   ( `first` , `t1` , `second` , `t2` , `relation` , `position` )
+                   values
+                   ( {UUID} , 38 , {AMID} , 76 , 1 , {IDV} ) ;"""
+        QQ   = " " . join       ( QQ . split (                             ) )
+        self . LOG              ( QQ                                         )
+        DB   . Query            ( QQ                                         )
+        ######################################################################
+        IDV  = int              ( IDV + 1                                    )
+        TOT  = int              ( TOT + 1                                    )
+      ########################################################################
+      if                        ( TOT <= 0                                 ) :
+        continue
+      ########################################################################
+      for OVID in OVIDs                                                      :
+        ######################################################################
+        if                      ( OVID not in AMIDs                        ) :
+          AMIDs . append        ( OVID                                       )
+      ########################################################################
+      IDV    = 1000000
+      ########################################################################
+      for AMID in AMIDs                                                      :
+        ######################################################################
+        QQ   = f"""update {VIDREL}
+                   set `position` = {IDV}
+                   where ( `first` = {UUID} )
+                     and ( `second` = {AMID} )
+                     and ( `t1` = 38 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 ) ;"""
+        QQ   = " " . join       ( QQ . split (                             ) )
+        self . LOG              ( QQ                                         )
+        DB   . Query            ( QQ                                         )
+        ######################################################################
+        IDV  = int              ( IDV + 1                                    )
+      ########################################################################
+      IDV    = 0
+      ########################################################################
+      for AMID in AMIDs                                                      :
+        ######################################################################
+        QQ   = f"""update {VIDREL}
+                   set `position` = {IDV}
+                   where ( `first` = {UUID} )
+                     and ( `second` = {AMID} )
+                     and ( `t1` = 38 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 ) ;"""
+        QQ   = " " . join       ( QQ . split (                             ) )
+        self . LOG              ( QQ                                         )
+        DB   . Query            ( QQ                                         )
+        ######################################################################
+        IDV  = int              ( IDV + 1                                    )
+    ##########################################################################
+    DB       . UnlockTables     (                                            )
+    DB       . Optimize         ( VIDREL                                     )
+    DB       . Close            (                                            )
+    self     . LOG              ( "ParkVideoByIdentifiers Completed"         )
     ##########################################################################
     return
   ############################################################################
@@ -2886,9 +3173,30 @@ class CliParser  (                                                         ) :
       ########################################################################
       return                     ( True  , False ,                           )
     ##########################################################################
+    if                           ( "organizenamesbyjapanese" == anchor     ) :
+      ########################################################################
+      threading . Thread         ( target = self . OrganizeNamesByJapanese ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
+    ##########################################################################
     if                           ( "parkpeoplevideos"       == anchor      ) :
       ########################################################################
       threading . Thread         ( target = self . ParkPeopleVideos        ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
+    ##########################################################################
+    if                           ( "parkorganizationvideos" == anchor      ) :
+      ########################################################################
+      threading . Thread         ( target = self . ParkOrganizationVideos  ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
+    ##########################################################################
+    if                           ( "parkvideobyidentifiers" == anchor      ) :
+      ########################################################################
+      threading . Thread         ( target = self . ParkVideoByIdentifiers  ) \
                 . start          (                                           )
       ########################################################################
       return                     ( True  , False ,                           )

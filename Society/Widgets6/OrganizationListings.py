@@ -264,11 +264,15 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem               ( self , UUID , NAME                       ) :
+  def PrepareItem               ( self , UUID , NAME , BRUSH               ) :
     ##########################################################################
     IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
     IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
     IT . setTextAlignment       ( 2    , Qt . AlignRight                     )
+    ##########################################################################
+    for COL in range            ( 0 , self . columnCount (               ) ) :
+      ########################################################################
+      IT . setBackground        ( COL , BRUSH                                )
     ##########################################################################
     return IT
   ############################################################################
@@ -344,10 +348,17 @@ class OrganizationListings     ( TreeDock                                  ) :
     UUIDs  = JSON                 [ "UUIDs"                                  ]
     NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
+    CNT    = 0
+    MOD    = len                  ( self . TreeBrushes                       )
+    ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( U                                      , \
+                                    NAMEs [ U ]                            , \
+                                    self . TreeBrushes [ CNT ]               )
       self . addTopLevelItem      ( IT                                       )
+      ########################################################################
+      CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
     MSG    = FMT  . format        ( len ( UUIDs )                            )
@@ -1615,120 +1626,120 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                                 ( not self . isPrepared ( )         ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                    ( 0                                   )
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
-    if                             ( self . isSearching ( )                ) :
+    if                                 ( self . isSearching ( )            ) :
       ########################################################################
-      msg  = self . getMenuItem    ( "NotSearch"                             )
-      mm   . addAction             ( 1002 , msg                              )
+      msg  = self . getMenuItem        ( "NotSearch"                         )
+      mm   . addAction                 ( 1002 , msg                          )
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addSeparator          (                                         )
+    mm     = self . AmountIndexMenu    ( mm , True                           )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendInsertAction    ( mm , 1101                               )
-    self   . AppendRenameAction    ( mm , 1102                               )
-    self   . AppendDeleteAction    ( mm , 1103                               )
-    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
-    self   . AppendTranslateAllAction (          mm , 3001                   )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1101                           )
+    self   . AppendRenameAction        ( mm , 1102                           )
+    self   . AppendDeleteAction        ( mm , 1103                           )
+    self   . TryAppendEditNamesAction  ( atItem , mm , 1601                  )
+    self   . AppendTranslateAllAction  (          mm , 3001                  )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . FunctionsMenu         ( mm , uuid , atItem                      )
-    self   . GroupsMenu            ( mm ,        atItem                      )
-    self   . ColumnsMenu           ( mm                                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    self   . FunctionsMenu             ( mm , uuid , atItem                  )
+    self   . GroupsMenu                ( mm ,        atItem                  )
+    self   . ColumnsMenu               ( mm                                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
     self   . AtMenu = True
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    mm     . setFont                   ( self    . menuFont ( )              )
+    aa     = mm . exec_                ( QCursor . pos      ( )              )
+    at     = mm . at                   ( aa                                  )
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return
     ##########################################################################
-    OKAY   = self . RunDocking     ( mm , aa                                 )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu  ( at , uuid , atItem                   )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunColumnsMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
-    if                             ( OKAY                                  ) :
-      return True
-    ##########################################################################
-    if                             ( at == 1001                            ) :
-      ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1002                            ) :
+    OKAY   = self . RunGroupsMenu      ( at , atItem                         )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 1001                        ) :
+      ########################################################################
+      self . restart                   (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 1002                        ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                                 ( at == 1101                        ) :
+      self . InsertItem                (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . RenameItem            (                                         )
+    if                                 ( at == 1102                        ) :
+      self . RenameItem                (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . DeleteItems           (                                         )
+    if                                 ( at == 1103                        ) :
+      self . DeleteItems               (                                     )
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
+    if                                 ( at == 1601                        ) :
       ########################################################################
-      uuid = self . itemUuid       ( atItem , 0                              )
-      NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "Organization" , uuid , NAM      )
+      uuid = self . itemUuid           ( atItem , 0                          )
+      NAM  = self . Tables             [ "NamesEditing"                      ]
+      self . EditAllNames              ( self , "Organization" , uuid , NAM  )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                                 ( at == 3001                        ) :
+      self . Go                        ( self . TranslateAll                 )
       return True
     ##########################################################################
     return True
