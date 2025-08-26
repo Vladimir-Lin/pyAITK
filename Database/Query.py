@@ -201,8 +201,8 @@ class Query ( )                                                              :
   ## Lock a table
   ## 鎖住指定表格
   ############################################################################
-  def LockWrite ( self , table )                                             :
-    return self . LockWrites ( self , [ table ] )
+  def LockWrite              ( self , table                                ) :
+    return self . LockWrites (      [ table ]                                )
   ############################################################################
   ## Lock tables
   ## 鎖住指定表格列表
