@@ -31,6 +31,7 @@ class AlbumGroupView         ( IconDock                                    ) :
   AlbumSubgroup     = Signal ( str , int , str                               )
   AlbumGroup        = Signal ( str , int , str                               )
   ShowPersonalIcons = Signal ( str , int , str , str , QIcon                 )
+  ShowWebPages      = Signal ( str ,       int , str , str , QIcon           )
   OpenVariantTables = Signal ( str , str , int , str , dict                  )
   emitLog           = Signal ( str                                           )
   ############################################################################
@@ -823,6 +824,20 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenWebPageListings      ( self , Related , zuid , item              ) :
+    ##########################################################################
+    if                         ( not self . isSubgroup ( )                 ) :
+      return
+    ##########################################################################
+    text = item . text         (                                             )
+    icon = self . windowIcon   (                                             )
+    uuid = int                 ( zuid                                        )
+    xsid = str                 ( uuid                                        )
+    ##########################################################################
+    self . ShowWebPages . emit ( text , 158 , xsid , Related , icon          )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     ## self . defaultOpenItemNamesEditor ( item , "Albums" , "NamesEditing"     )
@@ -833,20 +848,33 @@ class AlbumGroupView         ( IconDock                                    ) :
   def CommandParser ( self , language , message , timestamp                ) :
     return          { "Match" : False                                        }
   ############################################################################
-  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+  def FunctionsMenu                   ( self , mm , uuid , item            ) :
     ##########################################################################
-    msg = self . getMenuItem ( "Functions"                                   )
-    LOM = mm   . addMenu     ( msg                                           )
+    msg   = self . getMenuItem        ( "Functions"                          )
+    LOM   = mm   . addMenu            ( msg                                  )
     ##########################################################################
-    msg = self . getMenuItem ( "AssignTables"                                )
-    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    msg   = self . getMenuItem        ( "AssignTables"                       )
+    mm    . addActionFromMenu         ( LOM , 25351301 , msg                 )
     ##########################################################################
-    msg = self . getMenuItem ( "ReportDetails"                               )
-    mm  . addActionFromMenu  ( LOM                                         , \
-                               34621102                                    , \
-                               msg                                         , \
-                               True                                        , \
-                               self . ReportDetails                          )
+    if                                ( uuid > 0 ) :
+      ########################################################################
+      mm  . addSeparatorFromMenu      ( LOM                                  )
+      ########################################################################
+      msg = self . getMenuItem        ( "WebPages"                           )
+      mm  . addActionFromMenu         ( LOM , 34621321 , msg                 )
+      ########################################################################
+      msg = self . getMenuItem        ( "IdentWebPage"                       )
+      ICO = QIcon                     ( ":/images/webfind.png"               )
+      mm  . addActionFromMenuWithIcon ( LOM , 34621322 , ICO , msg           )
+      ########################################################################
+      mm  . addSeparatorFromMenu      ( LOM                                  )
+    ##########################################################################
+    msg   = self . getMenuItem        ( "ReportDetails"                      )
+    mm    . addActionFromMenu         ( LOM                                , \
+                                        34621102                           , \
+                                        msg                                , \
+                                        True                               , \
+                                        self . ReportDetails                 )
     ##########################################################################
     return mm
   ############################################################################
@@ -879,6 +907,18 @@ class AlbumGroupView         ( IconDock                                    ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621321                    ) :
+      ########################################################################
+      self . OpenWebPageListings       ( "Subordination" , uuid , item       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 34621322                    ) :
+      ########################################################################
+      self . OpenWebPageListings       ( "Equivalent"    , uuid , item       )
       ########################################################################
       return True
     ##########################################################################

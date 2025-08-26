@@ -1671,7 +1671,7 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu (                                     )
+    OKAY   = self . RunAmountIndexMenu ( at                                  )
     if                                 ( OKAY                              ) :
       ########################################################################
       self . restart                   (                                     )
