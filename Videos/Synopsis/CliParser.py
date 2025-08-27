@@ -733,86 +733,94 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def UncatalogIdentifiers  ( self                                         ) :
+  def UncatalogIdentifiers   ( self , cmd , sequences                      ) :
     ##########################################################################
-    DB      = Connection    (                                                )
+    DB       = Connection    (                                               )
     ##########################################################################
-    if                      ( not DB . ConnectTo ( self . DbConf )         ) :
+    if                       ( not DB . ConnectTo ( self . DbConf )        ) :
       ########################################################################
-      self  . LOG           ( json . dumps  ( TABLEs )                       )
+      self   . LOG           ( json . dumps  ( TABLEs )                      )
       ########################################################################
       return
     ##########################################################################
-    DB      . Prepare       (                                                )
+    LVAL     = 0
     ##########################################################################
-    IDFTAB  = "`cios`.`identifiers`"
-    VIDREL  = "`affiliations`.`relations_videos_0008`"
-    IDFs    =               [                                                ]
-    IDs     =               [                                                ]
+    if                       ( len ( sequences ) > 2                       ) :
+      ########################################################################
+      LVAL   = int           ( sequences [ 2 ]                               )
     ##########################################################################
-    RQ      = f"""select `second` from {VIDREL}
-                  where ( `t1` = 38 )
-                    and ( `t2` = 76 )
-                    and ( `relation` = 1 )"""
-    QQ      = f"""select `name` from {IDFTAB}
-                  where ( `type` = 76 )
-                    and ( `uuid` not in ( {RQ} ) ) ;"""
-    QQ      = " " . join    ( QQ . split (                                 ) )
-    self    . LOG           ( QQ                                             )
-    DB      . Query         ( QQ                                             )
-    ALL     = DB . FetchAll (                                                )
-    REMAINs = len           ( ALL                                            )
+    DB       . Prepare       (                                               )
+    ##########################################################################
+    IDFTAB   = "`cios`.`identifiers`"
+    VIDREL   = "`affiliations`.`relations_videos_0008`"
+    IDFs     =               [                                               ]
+    IDs      =               [                                               ]
+    ##########################################################################
+    RQ       = f"""select `second` from {VIDREL}
+                   where ( `t1` = 38 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 )"""
+    QQ       = f"""select `name` from {IDFTAB}
+                   where ( `type` = 76 )
+                     and ( `uuid` not in ( {RQ} ) ) ;"""
+    QQ       = " " . join    ( QQ . split (                                ) )
+    self     . LOG           ( QQ                                            )
+    DB       . Query         ( QQ                                            )
+    ALL      = DB . FetchAll (                                               )
+    REMAINs  = len           ( ALL                                           )
     ##########################################################################
     for IDF in ALL                                                           :
       ########################################################################
-      if                    ( 1 != len ( IDF )                             ) :
+      if                     ( 1 != len ( IDF )                            ) :
         continue
       ########################################################################
-      IDR   = IDF           [ 0                                              ]
+      IDR    = IDF           [ 0                                             ]
       ########################################################################
       try                                                                    :
-        IDZ = IDR . decode  ( "utf-8"                                        )
+        IDZ  = IDR . decode  ( "utf-8"                                       )
       except                                                                 :
         continue
       ########################################################################
-      if                    ( "-" not in IDZ                               ) :
+      if                     ( "-" not in IDZ                              ) :
         continue
       ########################################################################
-      IDS   = IDZ . split   ( "-"                                            )
+      IDS    = IDZ . split   ( "-"                                           )
       ########################################################################
-      if                    ( 2 != len ( IDS )                             ) :
+      if                     ( 2 != len ( IDS )                            ) :
         continue
       ########################################################################
-      IDA   = IDS           [ 0                                              ]
+      IDA    = IDS           [ 0                                             ]
       ########################################################################
-      if                    ( IDA in IDs                                   ) :
+      if                     ( IDA in IDs                                  ) :
         continue
       ########################################################################
-      IDs   . append        ( IDA                                            )
+      IDs    . append        ( IDA                                           )
     ##########################################################################
-    IDKs    =               [                                                ]
-    IDs     . sort          (                                                )
-    CNT     = len           ( IDs                                            )
+    IDKs     =               [                                               ]
+    IDs      . sort          (                                               )
+    CNT      = len           ( IDs                                           )
     ##########################################################################
     for IDN in IDs                                                           :
       ########################################################################
-      QQ    = f"""select count(*) from {IDFTAB}
-                  where ( `type` = 76 )
-                    and ( `name` like '{IDN}-%' ) ;"""
-      QQ    = " " . join    ( QQ . split (                                 ) )
-      DB    . Query         ( QQ                                             )
-      AWS   = DB . FetchOne (                                                )
+      QQ     = f"""select count(*) from {IDFTAB}
+                   where ( `type` = 76 )
+                     and ( `name` like '{IDN}-%' ) ;"""
+      QQ     = " " . join    ( QQ . split (                                ) )
+      DB     . Query         ( QQ                                            )
+      AWS    = DB . FetchOne (                                               )
       ########################################################################
-      if                    ( 1 != len ( AWS )                             ) :
+      if                     ( 1 != len ( AWS )                            ) :
         continue
       ########################################################################
-      CTS   = int           ( AWS [ 0 ]                                      )
-      IDKs  . append        ( f"{IDN} / {CTS}"                               )
+      CTS    = int           ( AWS [ 0 ]                                     )
+      if                     ( CTS >= LVAL                                 ) :
+        IDKs . append        ( f"{IDN} / {CTS}"                              )
     ##########################################################################
-    DB      . Close         (                                                )
-    IDV     = "\n" . join   ( IDKs                                           )
-    self    . LOG           ( IDV                                            )
-    self    . LOG           ( f"UncatalogIdentifiers {CNT} {REMAINs} Completed" )
+    DB       . Close         (                                               )
+    IDV      = "\n" . join   ( IDKs                                          )
+    self     . LOG           ( IDV                                           )
+    MSG      = f"UncatalogIdentifiers Completed\n{CNT} catalogues\n{REMAINs} Episodes\nDisplay larger than {LVAL}"
+    self     . LOG           ( MSG                                           )
     ##########################################################################
     return
   ############################################################################
@@ -3286,7 +3294,9 @@ class CliParser  (                                                         ) :
     ##########################################################################
     if                           ( "uncatalogidentifiers" == anchor        ) :
       ########################################################################
-      threading . Thread         ( target = self . UncatalogIdentifiers    ) \
+      VAL       =                ( cmd , sequences ,                         )
+      threading . Thread         ( target = self . UncatalogIdentifiers    , \
+                                   args   = VAL                            ) \
                 . start          (                                           )
       ########################################################################
       return                     ( True  , False ,                           )
