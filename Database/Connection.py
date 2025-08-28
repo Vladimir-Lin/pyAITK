@@ -21,7 +21,8 @@ class Connection (                                                         ) :
     self . mc      = False
     self . Error   = ""
     self . Success = False
-    self . Message = [ ]
+    self . Message = [                                                       ]
+    self . Options = {                                                       }
     ##########################################################################
     return
   ############################################################################

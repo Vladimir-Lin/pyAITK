@@ -40,6 +40,10 @@ from   AITK . UUIDs     . UuidListings6  import appendUuids
 from   AITK . UUIDs     . UuidListings6  import assignUuids
 from   AITK . UUIDs     . UuidListings6  import getUuids
 ##############################################################################
+sys . path . append ( os . path . abspath ( os . path . dirname ( os . path . dirname ( os . path . abspath ( __file__ ) ) + "/../../../" ) ) + "/Crawlers" )
+from   JavFree . Videos                  import RandomScanJavFreeAllCatalogues as RandomScanJavFreeAllCatalogues
+from   JavFree . Videos                  import StopRunning                    as StopJavFreeVideoRunning
+##############################################################################
 class CliParser  (                                                         ) :
   ############################################################################
   def __init__   ( self                                                    ) :
@@ -915,6 +919,20 @@ class CliParser  (                                                         ) :
     ##########################################################################
     DB     . Close            (                                              )
     self   . LOG              ( "MovePictureDescriptions Completed"          )
+    ##########################################################################
+    return
+  ############################################################################
+  def JavFreeScanAllCatalogues     ( self                                  ) :
+    ##########################################################################
+    ROOT = self . Settings         [ "Program"                               ]
+    ROOT = os . path . abspath     ( f"{ROOT}/../"                           )
+    RandomScanJavFreeAllCatalogues ( ROOT , self . LOG                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def JavFreeStopVideos     ( self                                         ) :
+    ##########################################################################
+    StopJavFreeVideoRunning (                                                )
     ##########################################################################
     return
   ############################################################################
@@ -3315,6 +3333,19 @@ class CliParser  (                                                         ) :
       ########################################################################
       return                     ( True  , False ,                           )
     ##########################################################################
+    if                           ( "javfreestopvideos" == anchor           ) :
+      ########################################################################
+      threading . Thread         ( target = self . JavFreeStopVideos       ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
+    ##########################################################################
+    if                           ( "javfreescanallcatalogues" == anchor    ) :
+      ########################################################################
+      threading . Thread         ( target = self . JavFreeScanAllCatalogues ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
     ##########################################################################
     return                       ( True  , False ,                           )
   ############################################################################
