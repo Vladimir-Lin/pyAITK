@@ -40,7 +40,7 @@ class adeCrowds          ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "adeCrowds"
-    self   . WebPath  =         [ "https://www.adultdvdempire.com"           ]
+    self   . WebPaths =         [ "https://www.adultdvdempire.com"           ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################
