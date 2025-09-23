@@ -480,39 +480,43 @@ class PeopleSources      ( TreeDock                                        ) :
   ############################################################################
   def ObtainsInformation                 ( self , DB                       ) :
     ##########################################################################
-    self . Total = 0
-    ##########################################################################
     WEBTAB       = self . Tables         [ "Webpages"                        ]
     RELTAB       = self . Tables         [ "Relation"                        ]
     UUID         = self . Relation . get ( "first"                           )
     GTYPE        = self . GType
-    WPATH        = self . WebPath
-    WLIKE        = f"{WPATH}%"
+    TT           = 0
     ##########################################################################
-    RQ           = f"""select `second` from {RELTAB}
+    for WPATH in self . WebPaths                                             :
+      ########################################################################
+      WPATH      = self . WebPath
+      WLIKE      = f"{WPATH}%"
+      ########################################################################
+      RQ         = f"""select `second` from {RELTAB}
                        where ( `first` =  {UUID} )
                          and ( `t1` = {GTYPE} )
                          and ( `t2` = 208 )
                          and ( `relation` = 10 )"""
-    WQ           = f"""select `uuid` from {WEBTAB}
+      WQ         = f"""select `uuid` from {WEBTAB}
                        where ( `uuid` in ( {RQ} ) )
                          and ( `name` like %s )"""
-    QQ           = f"""select count(*) from {RELTAB}
+      QQ         = f"""select count(*) from {RELTAB}
                        where ( `first` =  {UUID} )
                          and ( `t1` = {GTYPE} )
                          and ( `t2` = 208 )
                          and ( `relation` = 10 )
                          and ( `second` in ( {WQ} ) ) ;"""
-    DB           . QueryValues           ( QQ , ( WLIKE ,                  ) )
-    RR           = DB . FetchOne         (                                   )
+      DB         . QueryValues           ( QQ , ( WLIKE ,                  ) )
+      RR         = DB . FetchOne         (                                   )
+      ########################################################################
+      if                                 ( RR in self . EmptySet           ) :
+        continue
+      ########################################################################
+      if                                 ( len ( RR ) != 1                 ) :
+        continue
+      ########################################################################
+      TT         = int                   ( TT + int ( RR [ 0 ] )             )
     ##########################################################################
-    if                                   ( RR in self . EmptySet           ) :
-      return
-    ##########################################################################
-    if                                   ( len ( RR ) != 1                 ) :
-      return
-    ##########################################################################
-    self . Total = int                   ( RR [ 0                          ] )
+    self . Total = TT
     ##########################################################################
     return
   ############################################################################
