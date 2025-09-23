@@ -40,8 +40,9 @@ class evilCrowds         ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "evilCrowds"
-    self   . WebPath  = "https://www.evilangel.com/en/pornstar/"
-    ## https://www.evilangelfilms.com/actor/Tori-Black
+    self   . WebPaths =         [ "https://www.evilangel.com/en/pornstar/" , \
+                                  "https://www.evilangelfilms.com/actor/"  , \
+                                  "https://evilangel.empirestores.co/porn-videos/" ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################

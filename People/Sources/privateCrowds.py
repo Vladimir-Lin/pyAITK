@@ -40,7 +40,7 @@ class privateCrowds      ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "privateCrowds"
-    self   . WebPath  = "https://www.private.com/"
+    self   . WebPaths =         [ "https://www.private.com/"                 ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################

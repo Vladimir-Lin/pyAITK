@@ -44,17 +44,17 @@ class PeopleSources      ( TreeDock                                        ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
-    self . EditAllNames = None
-    self . ClassTag     = ""
-    self . BType        = "People"
-    self . GType        = 7
-    self . WebPath      = ""
+    self . EditAllNames       = None
+    self . ClassTag           = ""
+    self . BType              = "People"
+    self . GType              = 7
+    self . WebPaths           = [                                            ]
     ##########################################################################
-    self . Total        = 0
-    self . StartId      = 0
-    self . Amount       = 40
-    self . Order        = "asc"
-    self . Grouping     = "Subordination"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 40
+    self . Order              = "asc"
+    self . Grouping           = "Subordination"
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -342,45 +342,46 @@ class PeopleSources      ( TreeDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsItemUuids                      ( self , DB                    ) :
+  def ObtainsItemUuids                 ( self , DB                         ) :
     ##########################################################################
-    ORDER   = self . getSortingOrder (                                       )
-    WEBTAB  = self . Tables          [ "Webpages"                            ]
-    RELTAB  = self . Tables          [ "Relation"                            ]
-    UUID    = self . Relation . get  ( "first"                               )
-    SID     = self . StartId
-    AMOUNT  = self . Amount
-    GTYPE   = self . GType
-    WPATH   = self . WebPath
-    WLIKE   = f"{WPATH}%"
-    LMTS    = f"limit {SID} , {AMOUNT}"
+    ORDER     = self . getSortingOrder (                                     )
+    WEBTAB    = self . Tables          [ "Webpages"                          ]
+    RELTAB    = self . Tables          [ "Relation"                          ]
+    UUID      = self . Relation . get  ( "first"                             )
+    UUIDs     =                        [                                     ]
+    SID       = self . StartId
+    AMOUNT    = self . Amount
+    GTYPE     = self . GType
     ##########################################################################
-    RQ      = f"""select `second` from {RELTAB}
-                  where ( `first` =  {UUID} )
-                    and ( `t1` = {GTYPE} )
-                    and ( `t2` = 208 )
-                    and ( `relation` = 10 )"""
-    WQ      = f"""select `uuid` from {WEBTAB}
-                  where ( `uuid` in ( {RQ} ) )
-                    and ( `name` like %s )"""
-    QQ      = f"""select `second` from {RELTAB}
-                  where ( `first` =  {UUID} )
-                    and ( `t1` = {GTYPE} )
-                    and ( `t2` = 208 )
-                    and ( `relation` = 10 )
-                    and ( `second` in ( {WQ} ) )
-                    order by `position` {ORDER} {LMTS} ;"""
-    DB      . QueryValues            ( QQ , ( WLIKE ,                      ) )
-    ALL     = DB . FetchAll          (                                       )
-    ##########################################################################
-    if                               ( ALL in self . EmptySet              ) :
-      return                         [                                       ]
-    ##########################################################################
-    UUIDs   =                        [                                       ]
-    ##########################################################################
-    for RR in ALL                                                            :
+    for WPATH in self . WebPaths                                             :
       ########################################################################
-      UUIDs . append                 ( int ( RR [ 0                      ] ) )
+      WLIKE   = f"{WPATH}%"
+      LMTS    = f"limit {SID} , {AMOUNT}"
+      ########################################################################
+      RQ      = f"""select `second` from {RELTAB}
+                    where ( `first` =  {UUID} )
+                      and ( `t1` = {GTYPE} )
+                      and ( `t2` = 208 )
+                      and ( `relation` = 10 )"""
+      WQ      = f"""select `uuid` from {WEBTAB}
+                    where ( `uuid` in ( {RQ} ) )
+                      and ( `name` like %s )"""
+      QQ      = f"""select `second` from {RELTAB}
+                    where ( `first` =  {UUID} )
+                      and ( `t1` = {GTYPE} )
+                      and ( `t2` = 208 )
+                      and ( `relation` = 10 )
+                      and ( `second` in ( {WQ} ) )
+                      order by `position` {ORDER} {LMTS} ;"""
+      DB      . QueryValues            ( QQ , ( WLIKE ,                    ) )
+      ALL     = DB . FetchAll          (                                     )
+      ########################################################################
+      if                               ( ALL in self . EmptySet            ) :
+        continue
+      ########################################################################
+      for RR in ALL                                                          :
+        ######################################################################
+        UUIDs . append                 ( int ( RR [ 0                    ] ) )
     ##########################################################################
     return UUIDs
   ############################################################################

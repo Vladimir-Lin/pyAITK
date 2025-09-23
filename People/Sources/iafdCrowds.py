@@ -40,7 +40,7 @@ class iafdCrowds         ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "iafdCrowds"
-    self   . WebPath  = "https://www.iafd.com/person.rme/id="
+    self   . WebPaths =         [ "https://www.iafd.com/person.rme/id="      ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################

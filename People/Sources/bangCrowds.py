@@ -40,7 +40,7 @@ class bangCrowds         ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "bangCrowds"
-    self   . WebPath  = "https://www.bang.com/"
+    self   . WebPath  =         [ "https://www.bang.com/"                    ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################

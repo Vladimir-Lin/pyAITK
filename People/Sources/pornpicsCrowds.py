@@ -40,7 +40,8 @@ class pornpicsCrowds     ( PeopleSources                                   ) :
   def PrepareForActions         ( self , title , uuid                      ) :
     ##########################################################################
     self   . ClassTag = "pornpicsCrowds"
-    self   . WebPath  = "https://www.pornpics.com/pornstars/"
+    self   . WebPaths =         [ "https://www.pornpics.com/pornstars/"    , \
+                                  "https://www.pornpics.com/?q="             ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################
