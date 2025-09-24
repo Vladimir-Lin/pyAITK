@@ -42,7 +42,8 @@ class evilCrowds         ( PeopleSources                                   ) :
     self   . ClassTag = "evilCrowds"
     self   . WebPaths =         [ "https://www.evilangel.com/en/pornstar/" , \
                                   "https://www.evilangelfilms.com/actor/"  , \
-                                  "https://evilangel.empirestores.co/porn-videos/" ]
+                                  "https://evilangel.empirestores.co/porn-videos/" ,
+                                  "https://store.evilangelvideo.com/porn-videos/" ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################
