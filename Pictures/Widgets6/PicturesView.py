@@ -397,30 +397,34 @@ class PicturesView              ( IconDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def GenerateItemToolTip             ( self , UUID                        ) :
+  def GenerateItemToolTip               ( self , UUID                      ) :
     ##########################################################################
-    if                                ( UUID not in self . UuidItemMaps    ) :
+    if                                  ( UUID not in self . UuidItemMaps  ) :
       return
     ##########################################################################
-    if                                ( UUID not in self . PictureOPTs     ) :
+    if                                  ( UUID not in self . PictureOPTs   ) :
       return
     ##########################################################################
-    FMT    = self . getMenuItem       ( "PictureToolTip"                     )
-    ##########################################################################
-    WIDTH  = self . PictureOPTs       [ UUID ] [ "Width"                     ]
-    HEIGHT = self . PictureOPTs       [ UUID ] [ "Height"                    ]
-    FORMAT = self . PictureOPTs       [ UUID ] [ "Format"                    ]
-    FSIZE  = self . PictureOPTs       [ UUID ] [ "FileSize"                  ]
-    ##########################################################################
-    text   = FMT . format             ( UUID                               , \
-                                        WIDTH                              , \
-                                        HEIGHT                             , \
-                                        FORMAT                             , \
-                                        FSIZE                                )
-    ##########################################################################
-    item   = self . UuidItemMaps      [ UUID                                 ]
-    self   . emitAssignToolTip . emit ( item , text                          )
-    self   . EmitInfoIcon             ( UUID                                 )
+    try                                                                      :
+      ########################################################################
+      FMT    = self . getMenuItem       ( "PictureToolTip"                   )
+      ########################################################################
+      WIDTH  = self . PictureOPTs       [ UUID ] [ "Width"                   ]
+      HEIGHT = self . PictureOPTs       [ UUID ] [ "Height"                  ]
+      FORMAT = self . PictureOPTs       [ UUID ] [ "Format"                  ]
+      FSIZE  = self . PictureOPTs       [ UUID ] [ "FileSize"                ]
+      ########################################################################
+      text   = FMT . format             ( UUID                             , \
+                                          WIDTH                            , \
+                                          HEIGHT                           , \
+                                          FORMAT                           , \
+                                          FSIZE                              )
+      item   = self . UuidItemMaps      [ UUID                               ]
+      self   . emitAssignToolTip . emit ( item , text                        )
+      self   . EmitInfoIcon             ( UUID                               )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
