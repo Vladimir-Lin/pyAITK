@@ -229,6 +229,7 @@ class GalleriesView            ( IconDock                                  ) :
     self . GalleryOPTs   =   {                                               }
     self . UUIDs         =   [                                               ]
     ##########################################################################
+    self . FinalizeBusy      (                                               )
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True

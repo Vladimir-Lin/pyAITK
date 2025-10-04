@@ -150,6 +150,8 @@ class VideoListings          ( TreeDock                                    ) :
     self . AttachActions     ( False                                         )
     self . LinkVoice         ( None                                          )
     self . defaultCloseEvent (        event                                  )
+    self . FinalizeBusy      (                                               )
+    ## self . Leave . emit      ( self                                          )
     ##########################################################################
     return
   ############################################################################

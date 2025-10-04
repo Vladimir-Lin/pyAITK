@@ -251,6 +251,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . LinkVoice         ( None                                          )
     self . clear             (                                               )
     ##########################################################################
+    self . FinalizeBusy      (                                               )
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True

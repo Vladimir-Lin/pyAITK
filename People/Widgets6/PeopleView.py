@@ -273,6 +273,7 @@ class PeopleView                  ( IconDock                               ) :
     self . Favourites    =   {                                               }
     self . UUIDs         =   [                                               ]
     ##########################################################################
+    self . FinalizeBusy      (                                               )
     self . Leave . emit      ( self                                          )
     ##########################################################################
     return True
