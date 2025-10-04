@@ -695,7 +695,7 @@ class IconDock                    ( ListDock                               ) :
   ############################################################################
   def RestoreScrollBar              ( self                                 ) :
     ##########################################################################
-    SB   = self . VerticalScrollBar (                                        )
+    SB   = self . verticalScrollBar (                                        )
     ##########################################################################
     if                              ( SB in self . EmptySet                ) :
       return
