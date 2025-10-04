@@ -345,6 +345,9 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
   ############################################################################
   def AcceptToolTip     ( self , item , tooltip                            ) :
     ##########################################################################
+    if                  ( item in self . EmptySet                          ) :
+      return
+    ##########################################################################
     try                                                                      :
       item . setToolTip ( tooltip                                            )
     except                                                                   :
