@@ -907,6 +907,7 @@ class IconDock                    ( ListDock                               ) :
     self   . SpinStartId . setRange     ( 0 , self . Total                   )
     self   . SpinStartId . setValue     ( self . StartId                     )
     self   . SpinStartId . setAlignment ( Qt . AlignRight                    )
+    self   . SpinStartId . setMinimumWidth ( 200                             )
     mm     . addWidget                  ( 9999992 , self . SpinStartId       )
     ##########################################################################
     self   . SpinAmount  = SpinBox      ( None , self . PlanFunc             )
@@ -914,6 +915,7 @@ class IconDock                    ( ListDock                               ) :
     self   . SpinAmount  . setRange     ( 0 , self . Total                   )
     self   . SpinAmount  . setValue     ( AMT                                )
     self   . SpinAmount  . setAlignment ( Qt . AlignRight                    )
+    self   . SpinAmount  . setMinimumWidth ( 200                             )
     mm     . addWidget                  ( 9999993 , self . SpinAmount        )
     ##########################################################################
     if                                  ( HasFull                          ) :
