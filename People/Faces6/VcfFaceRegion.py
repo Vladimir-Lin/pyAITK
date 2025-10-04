@@ -804,7 +804,8 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       ########################################################################
       LMS  = LMANS                        [ "Landmarks"                      ]
       ########################################################################
-      self . NoseBridge = LMS             [ "Nose" ] [ "Angle"               ]
+      ## self . NoseBridge = LMS             [ "Nose" ] [ "Angle"               ]
+      self . NoseBridge = LMS             [ "Face" ] [ "Angle"               ]
       ZERO = int                          ( self . RotateAngle ( ) * 100     )
       if                                  ( 0 == ZERO                      ) :
         self . NoseBridge = None

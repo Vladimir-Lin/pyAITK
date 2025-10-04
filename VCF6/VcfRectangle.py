@@ -1274,6 +1274,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     ROLL   . setSingleStep        ( step                                     )
     ROLL   . setMinimum           ( -1080.0                                  )
     ROLL   . setMaximum           (  1080.0                                  )
+    ROLL   . setMinimumWidth      ( 200                                      )
     ROLL   . setValue             ( angle                                    )
     ##########################################################################
     mm     . addSeparatorFromMenu ( ROM                                      )
