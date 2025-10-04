@@ -343,8 +343,13 @@ class ListWidget                 ( QListWidget , VirtualGui                ) :
     ##########################################################################
     return
   ############################################################################
-  def AcceptToolTip           ( self , item            , tooltip           ) :
-    item . setToolTip         ( tooltip                                      )
+  def AcceptToolTip     ( self , item , tooltip                            ) :
+    ##########################################################################
+    try                                                                      :
+      item . setToolTip ( tooltip                                            )
+    except                                                                   :
+      pass
+    ##########################################################################
     return
   ############################################################################
   def assignToolTip                   ( self , item , tooltip              ) :
