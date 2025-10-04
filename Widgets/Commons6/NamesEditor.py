@@ -133,7 +133,7 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     LABELs   . append              ( ""                                      )
     self     . setCentralLabels    ( LABELs                                  )
     ##########################################################################
-    self     . setColumnWidth      ( 1         , 320                         )
+    self     . setColumnWidth      ( 1         , 400                         )
     self     . setColumnWidth      ( 2         , 160                         )
     self     . setColumnWidth      ( 3         , 100                         )
     self     . setColumnWidth      ( 4         , 100                         )
