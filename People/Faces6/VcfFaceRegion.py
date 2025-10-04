@@ -81,6 +81,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . addMap    ( "LeftEye"      ,       27                   )
     self . Painter . addMap    ( "OuterMouth"   ,       28                   )
     self . Painter . addMap    ( "InnerMouth"   ,       29                   )
+    self . Painter . addMap    ( "FaceRotation" ,       30                   )
     ##########################################################################
     self . Painter . addPen    (        0 , QColor (  64 ,  64 ,  64 , 128 ) )
     self . Painter . addPen    (       11 , QColor (   0 ,   0 , 255 , 255 ) )
@@ -95,6 +96,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . addPen    (       27 , QColor ( 255 , 255 ,   0 , 255 ) )
     self . Painter . addPen    (       28 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addPen    (       29 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addPen    (       30 , QColor ( 255 , 128 ,  64 , 255 ) )
     ##########################################################################
     self . Painter . addBrush  (        0 , QColor ( 255 , 255 , 255 ,  64 ) )
     self . Painter . addBrush  (       21 , QColor (   0 ,   0 ,   0 ,   0 ) )
@@ -106,6 +108,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . addBrush  (       27 , QColor (   0 ,   0 ,   0 ,   0 ) )
     self . Painter . addBrush  (       28 , QColor (   0 ,   0 ,   0 ,   0 ) )
     self . Painter . addBrush  (       29 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . addBrush  (       30 , QColor (   0 ,   0 ,   0 ,   0 ) )
     ##########################################################################
     for Id in [ 11 , 12 , 13 , 21 , 22 , 23 , 24 , 25 , 26 , 27 , 28 , 29  ] :
       ########################################################################
@@ -854,6 +857,11 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       ########################################################################
       F    = RECG . LandmarkToNpArray     ( LMS , "Mouth" , "Inner"          )
       self . CvPointToPath                ( 29 , True  , F                   )
+      ########################################################################
+      ## 畫出臉部旋轉軸
+      ########################################################################
+      F    = LMS [ "Face" ]               [ "Axis"                           ]
+      self . CvPointToPath                ( 30 , False , F                   )
     ##########################################################################
     self   . Gui . GoRelax . emit         (                                  )
     self   . CallGeometryChange           (                                  )
