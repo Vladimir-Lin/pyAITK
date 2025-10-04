@@ -96,7 +96,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . addPen    (       27 , QColor ( 255 , 255 ,   0 , 255 ) )
     self . Painter . addPen    (       28 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addPen    (       29 , QColor ( 128 ,  64 , 255 , 255 ) )
-    self . Painter . addPen    (       30 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . addPen    (       30 , QColor (  48 ,  96 , 255 , 255 ) )
     ##########################################################################
     self . Painter . addBrush  (        0 , QColor ( 255 , 255 , 255 ,  64 ) )
     self . Painter . addBrush  (       21 , QColor (   0 ,   0 ,   0 ,   0 ) )
@@ -230,6 +230,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . drawPainterPath ( p , "LeftEye"                         )
     self . Painter . drawPainterPath ( p , "OuterMouth"                      )
     self . Painter . drawPainterPath ( p , "InnerMouth"                      )
+    self . Painter . drawPainterPath ( p , "FaceRotation"                    )
     ##########################################################################
     if                               ( self . MESHs   [ "Mesh"   ]         ) :
       ########################################################################
