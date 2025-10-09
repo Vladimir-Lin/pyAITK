@@ -1073,22 +1073,30 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
   ############################################################################
   def RefreshItem                ( self , item , JSON                      ) :
     ##########################################################################
-    TRX  = self . Translations   [ "NamesEditor"                             ]
+    if                           ( item in self . EmptySet                 ) :
+      return
     ##########################################################################
-    L    = JSON                  [ 2                                         ]
-    R    = JSON                  [ 4                                         ]
-    REL  = TRX                   [ "Relevance" ] [ str ( R )                 ]
-    LANG = TRX                   [ "Languages" ] [ str ( L )                 ]
+    TRX    = self . Translations [ "NamesEditor"                             ]
     ##########################################################################
-    item . setText               ( 2 , str ( LANG      )                     )
-    item . setData               ( 2 , Qt . UserRole , int ( JSON [ 2 ] )    )
+    L      = JSON                [ 2                                         ]
+    R      = JSON                [ 4                                         ]
+    REL    = TRX                 [ "Relevance" ] [ str ( R )                 ]
+    LANG   = TRX                 [ "Languages" ] [ str ( L )                 ]
     ##########################################################################
-    item . setText               ( 3 , str ( REL       )                     )
-    item . setData               ( 3 , Qt . UserRole , int ( JSON [ 4 ] )    )
-    ##########################################################################
-    item . setText               ( 4 , str ( JSON [  3 ] )                   )
-    item . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    item . setData               ( 4 , Qt . UserRole , int ( JSON [ 3 ] )    )
+    try                                                                      :
+      ########################################################################
+      item . setText             ( 2 , str ( LANG      )                     )
+      item . setData             ( 2 , Qt . UserRole , int ( JSON [ 2 ] )    )
+      ########################################################################
+      item . setText             ( 3 , str ( REL       )                     )
+      item . setData             ( 3 , Qt . UserRole , int ( JSON [ 4 ] )    )
+      ########################################################################
+      item . setText             ( 4 , str ( JSON [  3 ] )                   )
+      item . setTextAlignment    ( 4 , Qt.AlignRight                         )
+      item . setData             ( 4 , Qt . UserRole , int ( JSON [ 3 ] )    )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
