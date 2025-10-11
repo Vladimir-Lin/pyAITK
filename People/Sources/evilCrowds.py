@@ -44,7 +44,8 @@ class evilCrowds         ( PeopleSources                                   ) :
                                   "https://www.evilangelfilms.com/actor/"  , \
                                   "https://evilangel.empirestores.co/porn-videos/" , \
                                   "https://store.evilangel.com/"           , \
-                                  "https://store.evilangelvideo.com/"        ]
+                                  "https://store.evilangelvideo.com/"      , \
+                                  "https://evilangel.empirestores.co/"       ]
     ##########################################################################
     self   . Relation . set     ( "first" , uuid                             )
     ##########################################################################
