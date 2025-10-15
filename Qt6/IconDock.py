@@ -301,67 +301,95 @@ class IconDock                    ( ListDock                               ) :
     ##########################################################################
     return   self . font (                                                   )
   ############################################################################
-  def AssignIcon   ( self , item , icon                                    ) :
+  def AssignIcon     ( self , item , icon                                  ) :
     ##########################################################################
-    if             ( item in self . EmptySet                               ) :
+    if               ( item in self . EmptySet                             ) :
       return
     ##########################################################################
-    if             ( icon in self . EmptySet                               ) :
+    if               ( icon in self . EmptySet                             ) :
       return
     ##########################################################################
-    item . setIcon (               icon                                      )
+    try                                                                      :
+      ########################################################################
+      item . setIcon (               icon                                    )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
-  def AssignToolTip   ( self , item , text                                 ) :
+  def AssignToolTip     ( self , item , text                               ) :
     ##########################################################################
-    if                ( item in self . EmptySet                            ) :
+    if                  ( item in self . EmptySet                          ) :
       return
     ##########################################################################
-    item . setToolTip (               text                                   )
+    try                                                                      :
+      item . setToolTip (               text                                 )
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
-  def PrepareItemContent              ( self , item , UUID , NAME          ) :
+  def PrepareItemContent        ( self , item , UUID , NAME                ) :
     ##########################################################################
-    FT     = self . iconFont          (                                      )
-    if                                ( self . UsingName                   ) :
-      item . setText                  ( NAME                                 )
-    item   . setToolTip               ( str ( UUID )                         )
-    item   . setTextAlignment         ( Qt   . AlignCenter                   )
-    item   . setData                  ( Qt   . UserRole , str ( UUID )       )
-    item   . setIcon                  ( self . defaultIcon ( )               )
-    item   . setFont                  ( FT                                   )
-    ##########################################################################
-    JSOX   = self . itemJson          ( item                                 )
-    ##########################################################################
-    JSOX [ "Uuid" ] = UUID
-    JSOX [ "Name" ] = NAME
-    ##########################################################################
-    self . setItemJson                ( item , JSOX                          )
+    try                                                                      :
+      ########################################################################
+      FT     = self . iconFont  (                                            )
+      ########################################################################
+      if                        ( self . UsingName                         ) :
+        item . setText          ( NAME                                       )
+      ########################################################################
+      item   . setToolTip       ( str ( UUID )                               )
+      item   . setTextAlignment ( Qt   . AlignCenter                         )
+      item   . setData          ( Qt   . UserRole , str ( UUID )             )
+      item   . setIcon          ( self . defaultIcon ( )                     )
+      item   . setFont          ( FT                                         )
+      ########################################################################
+      JSOX   = self . itemJson  ( item                                       )
+      ########################################################################
+      JSOX [ "Uuid" ] = UUID
+      JSOX [ "Name" ] = NAME
+      ########################################################################
+      self . setItemJson        ( item , JSOX                                )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return item
   ############################################################################
-  def PrepareItem                     ( self ,        UUID , NAME          ) :
+  def PrepareItem                    ( self ,        UUID , NAME           ) :
     ##########################################################################
-    item = QListWidgetItem            (                                      )
-    self . setItemJson                ( item , { }                           )
+    item   = QListWidgetItem         (                                       )
     ##########################################################################
-    return self . PrepareItemContent  ( item , UUID , NAME                   )
+    try                                                                      :
+      ########################################################################
+      self . setItemJson             ( item , { }                            )
+      ########################################################################
+    except                                                                   :
+      pass
+    ##########################################################################
+    return self . PrepareItemContent ( item , UUID , NAME                    )
   ############################################################################
-  def PrepareEmptyItem                ( self                               ) :
+  def PrepareEmptyItem        ( self                                       ) :
     ##########################################################################
-    FT   = self . iconFont            (                                      )
-    IT   = QListWidgetItem            (                                      )
-    if                                ( self . UsingName                   ) :
-      IT . setText                    ( ""                                   )
-    IT   . setTextAlignment           ( Qt   . AlignCenter                   )
-    IT   . setData                    ( Qt   . UserRole , str ( 0 )          )
-    IT   . setIcon                    ( self . defaultIcon ( )               )
-    IT   . setFont                    ( FT                                   )
+    FT     = self . iconFont  (                                              )
+    IT     = QListWidgetItem  (                                              )
     ##########################################################################
-    JSOX =                            { "Uuid" : 0 , "Name" : ""             }
-    self . setItemJson                ( IT , JSOX                            )
+    try                                                                      :
+      ########################################################################
+      if                      ( self . UsingName                           ) :
+        IT . setText          ( ""                                           )
+      ########################################################################
+      IT   . setTextAlignment ( Qt   . AlignCenter                           )
+      IT   . setData          ( Qt   . UserRole , str ( 0 )                  )
+      IT   . setIcon          ( self . defaultIcon ( )                       )
+      IT   . setFont          ( FT                                           )
+      ########################################################################
+      JSOX =                  { "Uuid" : 0 , "Name" : ""                     }
+      self . setItemJson      ( IT , JSOX                                    )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return IT
   ############################################################################
