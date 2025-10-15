@@ -31,7 +31,7 @@ from   AITK    . Pictures . Picture6                        import Picture      
 from   AITK    . Pictures . Gallery                         import Gallery          as GalleryItem
 ##############################################################################
 from   AITK    . People   . Faces6       . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
-## from   AITK    . People   . Measurements . VcfMeasureRegion import VcfMeasureRegion as VcfMeasureRegion
+from   AITK    . People   . Measurements . VcfMeasureRegion import VcfMeasureRegion as VcfMeasureRegion
 from   AITK    . People   . Widgets6     . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 from   AITK    . People   . Widgets6     . PeopleDetails    import PeopleDetails    as PeopleDetails
 ##############################################################################
@@ -44,6 +44,7 @@ class PictureEditor               ( VcfWidget                              ) :
   Leave                = Signal   ( QWidget                                  )
   emitGeometryChange   = Signal   ( QGraphicsItem                            )
   emitAssignPicture    = Signal   ( QGraphicsItem                            )
+  emitLocalPicture     = Signal   ( QGraphicsItem                            )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -58,6 +59,7 @@ class PictureEditor               ( VcfWidget                              ) :
     self . JsonCallback       . connect ( self . JsonAccepter                )
     self . emitGeometryChange . connect ( self . doGeometryChange            )
     self . emitAssignPicture  . connect ( self . keepAssignPicture           )
+    self . emitLocalPicture   . connect ( self . keepLocalPicture            )
     ##########################################################################
     return
   ############################################################################
@@ -107,16 +109,16 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut               ( self                                        ) :
+  def FocusOut          ( self                                             ) :
     ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
+    if                  ( not self . isPrepared ( )                        ) :
       return False
     ##########################################################################
     for item in self . vcfItems                                              :
       ########################################################################
-      if                     ( item . hasFocus (                         ) ) :
+      if                ( item . hasFocus (                              ) ) :
         ######################################################################
-        item . FocusOut      (                                               )
+        item . FocusOut (                                                    )
     ##########################################################################
     return True
   ############################################################################
@@ -470,37 +472,47 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def assignFilename                 ( self , FILENAME                     ) :
-    ##########################################################################
-    PIC  = PictureItem               (                                       )
-    OK   = PIC . Load                ( FILENAME                              )
-    ##########################################################################
-    if                               ( not OK                              ) :
-      return
+  def keepLocalPicture               ( self , VRIT                         ) :
     ##########################################################################
     self . PerfectView               (                                       )
-    ##########################################################################
-    VRIT = VcfPeoplePicture          ( self , None , self . PlanFunc         )
-    VRIT . setOptions                ( self . Options , False                )
-    VRIT . UiConf = self . UiConf
-    self . assignItemProperties      ( VRIT                                  )
-    VRIT . setMenuCaller             ( self . MenuCallerEmitter              )
-    VRIT . setZValue                 ( 10000                                 )
-    VRIT . PICOP  = PIC
-    VRIT . Image  = PIC . toQImage   (                                       )
-    VRIT . asImageRect               (                                       )
-    VRIT . PrepareForActions         (                                       )
-    ##########################################################################
-    VRIT . logFunc = self . addLog
-    ##########################################################################
     FS   = VRIT . ImageSize          (                                       )
-    ##########################################################################
     VRIT . setPrepared               ( True                                  )
     self . addItem                   ( VRIT                                  )
     self . Scene . addItem           ( VRIT                                  )
     self . setPrepared               ( True                                  )
     self . DoAdjustments             ( FS                                    )
     self . emitGeometryChange . emit ( VRIT                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadImageFromFile             ( self , FILENAME                      ) :
+    ##########################################################################
+    PIC  = PictureItem              (                                        )
+    OK   = PIC . Load               ( FILENAME                               )
+    ##########################################################################
+    if                              ( not OK                               ) :
+      return
+    ##########################################################################
+    VRIT = VcfPeoplePicture         ( self , None , self . PlanFunc          )
+    VRIT . setOptions               ( self . Options , False                 )
+    VRIT . UiConf  = self . UiConf
+    VRIT . logFunc = self . addLog
+    self . assignItemProperties     ( VRIT                                   )
+    VRIT . setMenuCaller            ( self . MenuCallerEmitter               )
+    VRIT . setZValue                ( 10000                                  )
+    VRIT . PICOP   = PIC
+    VRIT . Image   = PIC . toQImage (                                        )
+    VRIT . asImageRect              (                                        )
+    VRIT . PrepareForActions        (                                        )
+    ##########################################################################
+    self . emitLocalPicture . emit  ( VRIT                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def assignFilename ( self , FILENAME                                     ) :
+    ##########################################################################
+    ARGs =           ( FILENAME ,                                            )
+    self . Go        ( self . LoadImageFromFile , ARGs                       )
     ##########################################################################
     return
 ##############################################################################

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## VcfFaceRegion
+## VcfMeasureRegion
 ##############################################################################
 import os
 import sys
@@ -39,7 +39,7 @@ from   AITK    . People . Faces . Face           import Face         as FaceItem
 from   AITK    . People . Body  . Tit            import Tit          as TitItem
 from   AITK    . People . Body  . Body           import Body         as BodyItem
 ##############################################################################
-class VcfFaceRegion                 ( VcfCanvas                            ) :
+class VcfMeasureRegion              ( VcfCanvas                            ) :
   ############################################################################
   def __init__                      ( self                                 , \
                                       parent = None                        , \
