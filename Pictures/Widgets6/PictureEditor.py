@@ -432,29 +432,39 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GoLoadPicture                 ( self , VRIT , Uuid                   ) :
+  def GoLoadPicture                   ( self , VRIT , Uuid                 ) :
     ##########################################################################
-    VRIT . LoadImage                ( Uuid                                   )
-    self . emitAssignPicture . emit ( VRIT                                   )
+    VRIT   . LoadImage                ( Uuid                                 )
+    ##########################################################################
+    try                                                                      :
+      self . emitAssignPicture . emit ( VRIT                                 )
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
-  def keepAssignPicture              ( self , VRIT                         ) :
+  def keepAssignPicture                ( self , VRIT                       ) :
     ##########################################################################
-    self . Go                        ( VRIT . FetchPictureDetections         )
-    VRIT . asImageRect               (                                       )
-    VRIT . PrepareForActions         (                                       )
+    self   . Go                        ( VRIT . FetchPictureDetections       )
+    VRIT   . asImageRect               (                                     )
+    VRIT   . PrepareForActions         (                                     )
     ##########################################################################
-    VRIT . logFunc = self . addLog
+    VRIT   . logFunc = self . addLog
     ##########################################################################
-    FS   = VRIT . ImageSize          (                                       )
-    VRIT . setPrepared               ( True                                  )
-    self . addItem                   ( VRIT                                  )
-    self . Scene . addItem           ( VRIT                                  )
-    self . setPrepared               ( True                                  )
-    self . DoAdjustments             ( FS                                    )
-    self . emitGeometryChange . emit ( VRIT                                  )
-    self . GoRelax            . emit (                                       )
+    FS     = VRIT . ImageSize          (                                     )
+    VRIT   . setPrepared               ( True                                )
+    self   . addItem                   ( VRIT                                )
+    self   . Scene . addItem           ( VRIT                                )
+    self   . setPrepared               ( True                                )
+    self   . DoAdjustments             ( FS                                  )
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      self . emitGeometryChange . emit ( VRIT                                )
+      self . GoRelax            . emit (                                     )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
@@ -472,40 +482,49 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def keepLocalPicture               ( self , VRIT                         ) :
+  def keepLocalPicture                 ( self , VRIT                       ) :
     ##########################################################################
-    self . PerfectView               (                                       )
-    FS   = VRIT . ImageSize          (                                       )
-    VRIT . setPrepared               ( True                                  )
-    self . addItem                   ( VRIT                                  )
-    self . Scene . addItem           ( VRIT                                  )
-    self . setPrepared               ( True                                  )
-    self . DoAdjustments             ( FS                                    )
-    self . emitGeometryChange . emit ( VRIT                                  )
+    self   . PerfectView               (                                     )
+    FS     = VRIT . ImageSize          (                                     )
+    VRIT   . setPrepared               ( True                                )
+    self   . addItem                   ( VRIT                                )
+    self   . Scene . addItem           ( VRIT                                )
+    self   . setPrepared               ( True                                )
+    self   . DoAdjustments             ( FS                                  )
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      self . emitGeometryChange . emit ( VRIT                                )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
-  def LoadImageFromFile             ( self , FILENAME                      ) :
+  def LoadImageFromFile               ( self , FILENAME                    ) :
     ##########################################################################
-    PIC  = PictureItem              (                                        )
-    OK   = PIC . Load               ( FILENAME                               )
+    PIC    = PictureItem              (                                      )
+    OK     = PIC . Load               ( FILENAME                             )
     ##########################################################################
-    if                              ( not OK                               ) :
+    if                                ( not OK                             ) :
       return
     ##########################################################################
-    VRIT = VcfPeoplePicture         ( self , None , self . PlanFunc          )
-    VRIT . setOptions               ( self . Options , False                 )
-    VRIT . UiConf  = self . UiConf
-    VRIT . logFunc = self . addLog
-    self . assignItemProperties     ( VRIT                                   )
-    VRIT . setMenuCaller            ( self . MenuCallerEmitter               )
-    VRIT . setZValue                ( 10000                                  )
-    VRIT . PICOP   = PIC
-    VRIT . Image   = PIC . toQImage (                                        )
-    VRIT . asImageRect              (                                        )
-    VRIT . PrepareForActions        (                                        )
+    VRIT   = VcfPeoplePicture         ( self , None , self . PlanFunc        )
+    VRIT   . setOptions               ( self . Options , False               )
+    VRIT   . UiConf  = self . UiConf
+    VRIT   . logFunc = self . addLog
+    self   . assignItemProperties     ( VRIT                                 )
+    VRIT   . setMenuCaller            ( self . MenuCallerEmitter             )
+    VRIT   . setZValue                ( 10000                                )
+    VRIT   . PICOP   = PIC
+    VRIT   . Image   = PIC . toQImage (                                      )
+    VRIT   . asImageRect              (                                      )
+    VRIT   . PrepareForActions        (                                      )
     ##########################################################################
-    self . emitLocalPicture . emit  ( VRIT                                   )
+    try                                                                      :
+      self . emitLocalPicture . emit  ( VRIT                                 )
+    except                                                                   :
+      pass
     ##########################################################################
     return
   ############################################################################
