@@ -590,6 +590,7 @@ class PeopleView                  ( IconDock                               ) :
                                         GALs                               , \
                                         SGPs                               , \
                                         VIDs                               , \
+                                        BDS                                , \
                                         UMSG                                 )
     ##########################################################################
     else                                                                     :
