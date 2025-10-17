@@ -485,7 +485,12 @@ class PictureEditor               ( VcfWidget                              ) :
   def keepLocalPicture                 ( self , VRIT                       ) :
     ##########################################################################
     self   . PerfectView               (                                     )
+    ##########################################################################
+    VRIT   . asImageRect               (                                     )
+    VRIT   . PrepareForActions         (                                     )
+    ##########################################################################
     FS     = VRIT . ImageSize          (                                     )
+    ##########################################################################
     VRIT   . setPrepared               ( True                                )
     self   . addItem                   ( VRIT                                )
     self   . Scene . addItem           ( VRIT                                )
@@ -495,6 +500,7 @@ class PictureEditor               ( VcfWidget                              ) :
     try                                                                      :
       ########################################################################
       self . emitGeometryChange . emit ( VRIT                                )
+      self . GoRelax            . emit (                                     )
       ########################################################################
     except                                                                   :
       pass
@@ -507,6 +513,7 @@ class PictureEditor               ( VcfWidget                              ) :
     OK     = PIC . Load               ( FILENAME                             )
     ##########################################################################
     if                                ( not OK                             ) :
+      self . GoRelax . emit           (                                      )
       return
     ##########################################################################
     VRIT   = VcfPeoplePicture         ( self , None , self . PlanFunc        )
@@ -518,8 +525,6 @@ class PictureEditor               ( VcfWidget                              ) :
     VRIT   . setZValue                ( 10000                                )
     VRIT   . PICOP   = PIC
     VRIT   . Image   = PIC . toQImage (                                      )
-    VRIT   . asImageRect              (                                      )
-    VRIT   . PrepareForActions        (                                      )
     ##########################################################################
     try                                                                      :
       self . emitLocalPicture . emit  ( VRIT                                 )
@@ -528,10 +533,11 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def assignFilename ( self , FILENAME                                     ) :
+  def assignFilename     ( self , FILENAME                                 ) :
     ##########################################################################
-    ARGs =           ( FILENAME ,                                            )
-    self . Go        ( self . LoadImageFromFile , ARGs                       )
+    self . OnBusy . emit (                                                   )
+    ARGs =               (        FILENAME ,                                 )
+    self . Go            ( self . LoadImageFromFile , ARGs                   )
     ##########################################################################
     return
 ##############################################################################

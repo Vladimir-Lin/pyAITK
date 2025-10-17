@@ -621,7 +621,6 @@ class PeopleView                  ( IconDock                               ) :
       return
     ##########################################################################
     PEOTAB       = self . Tables       [ "People"                            ]
-    PRDTAB       = self . Tables       [ "Periods"                           ]
     PICTAB       = self . Tables       [ "Relation"                          ]
     ## PICTAB       = self . Tables       [ "RelationPictures"                  ]
     GALTAB       = self . Tables       [ "Relation"                          ]
@@ -633,6 +632,11 @@ class PeopleView                  ( IconDock                               ) :
     VIDTAB       = self . Tables       [ "Relation"                          ]
     ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
     REL          = Relation            (                                     )
+    ##########################################################################
+    PRDTAB       = "`cios`.`periods`"
+    ##########################################################################
+    if                                 ( "Periods" in self . Tables        ) :
+      PRDTAB     = self . Tables       [ "Periods"                           ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
