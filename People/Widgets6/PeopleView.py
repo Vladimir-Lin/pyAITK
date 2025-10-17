@@ -545,6 +545,7 @@ class PeopleView                  ( IconDock                               ) :
       return
     ##########################################################################
     FMT    = self . getMenuItem       ( "PeopleToolTip"                      )
+    BMT    = self . getMenuItem       ( "PeopleToolTipBirthday"              )
     USAGE  = self . Translations      [ self . ClassTag ] [ "Usage"          ]
     STATEs = self . Translations      [ self . ClassTag ] [ "States"         ]
     ##########################################################################
@@ -555,6 +556,7 @@ class PeopleView                  ( IconDock                               ) :
     GALs   = self . PeopleOPTs        [ UUID ] [ "Galleries"                 ]
     SGPs   = self . PeopleOPTs        [ UUID ] [ "Subgroups"                 ]
     VIDs   = self . PeopleOPTs        [ UUID ] [ "Albums"                    ]
+    BDT    = self . PeopleOPTs        [ UUID ] [ "Birthday"                  ]
     ##########################################################################
     if                                ( UUID in self . Favourites          ) :
       ########################################################################
@@ -576,7 +578,23 @@ class PeopleView                  ( IconDock                               ) :
       ########################################################################
       UMSG = USAGE                    [ f"{USD}"                             ]
     ##########################################################################
-    text   = FMT . format             ( UUID                               , \
+    if                                ( BDT > 0                            ) :
+      ########################################################################
+      NOW  = StarDate                 (                                      )
+      NOW  . Stardate = BDT
+      BDS  = NOW . toDateString       ( "Asia/Taipei" , "%Y/%m/%d"           )
+      ########################################################################
+      text = BMT . format             ( UUID                               , \
+                                        FAV                                , \
+                                        PICs                               , \
+                                        GALs                               , \
+                                        SGPs                               , \
+                                        VIDs                               , \
+                                        UMSG                                 )
+    ##########################################################################
+    else                                                                     :
+      ########################################################################
+      text = FMT . format             ( UUID                               , \
                                         FAV                                , \
                                         PICs                               , \
                                         GALs                               , \
@@ -602,6 +620,7 @@ class PeopleView                  ( IconDock                               ) :
       return
     ##########################################################################
     PEOTAB       = self . Tables       [ "People"                            ]
+    PRDTAB       = self . Tables       [ "Periods"                           ]
     PICTAB       = self . Tables       [ "Relation"                          ]
     ## PICTAB       = self . Tables       [ "RelationPictures"                  ]
     GALTAB       = self . Tables       [ "Relation"                          ]
@@ -626,7 +645,8 @@ class PeopleView                  ( IconDock                               ) :
                                          "Pictures"  : 0                   , \
                                          "Galleries" : 0                   , \
                                          "Subgroups" : 0                   , \
-                                         "Albums"    : 0                     }
+                                         "Albums"    : 0                   , \
+                                         "Birthday"  : 0                     }
         ######################################################################
         if                             ( U in self . PeopleOPTs            ) :
           ####################################################################
@@ -650,7 +670,7 @@ class PeopleView                  ( IconDock                               ) :
             USD  = int                 ( RR [ 0                            ] )
             SSS  = int                 ( RR [ 1                            ] )
             ##################################################################
-            self . PeopleOPTs [ U ] [ "Used"   ] = USD
+            self . PeopleOPTs [ U ] [ "Used"  ] = USD
             self . PeopleOPTs [ U ] [ "State" ] = SSS
         ######################################################################
         REL      . set                 ( "first" , U                         )
@@ -678,6 +698,24 @@ class PeopleView                  ( IconDock                               ) :
         SGPs     = REL . CountFirst    ( DB , SGPTAB                         )
         ######################################################################
         self     . PeopleOPTs [ U ] [ "Subgroups" ] = SGPs
+        ######################################################################
+        BDT      = 0
+        ######################################################################
+        QQ       = f"""select `start`,`end` from {PRDTAB}
+                       where ( `realm` = {U} )
+                         and ( `role` = 7 )
+                         and ( `item` = 1 ) ;"""
+        DB       . Query               ( " " . join ( QQ .split (        ) ) )
+        RR       = DB . FetchOne       (                                     )
+        ######################################################################
+        if                             ( RR not in self . EmptySet         ) :
+          if                           ( 2 == len ( RR )                   ) :
+            ##################################################################
+            AA   = int                 ( RR [ 0 ]                            )
+            BB   = int                 ( RR [ 1 ]                            )
+            BDT  = int                 ( int ( AA + BB ) / 2                 )
+        ######################################################################
+        self     . PeopleOPTs [ U ] [ "Birthday" ] = BDT
         ######################################################################
         self     . GenerateItemToolTip ( U                                   )
         ######################################################################
