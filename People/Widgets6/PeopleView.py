@@ -75,6 +75,7 @@ class PeopleView                  ( IconDock                               ) :
     self . GType              = 7
     self . SortOrder          = "asc"
     self . SortByName         = False
+    self . TimeZone           = "Asia/Taipei"
     self . ExtraINFOs         = True
     self . RefreshOpts        = True
     self . Watermarking       = False
@@ -582,7 +583,7 @@ class PeopleView                  ( IconDock                               ) :
       ########################################################################
       NOW  = StarDate                 (                                      )
       NOW  . Stardate = BDT
-      BDS  = NOW . toDateString       ( "Asia/Taipei" , "%Y/%m/%d"           )
+      BDS  = NOW . toDateString       ( self . TimeZone , "%Y/%m/%d"         )
       ########################################################################
       text = BMT . format             ( UUID                               , \
                                         FAV                                , \

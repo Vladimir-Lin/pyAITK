@@ -79,6 +79,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . GType              = 76
     self . SortOrder          = "asc"
     self . ShowIdentifier     = False
+    self . TimeZone           = "Asia/Taipei"
     ##########################################################################
     self . FetchTableKey      = "VideoAlbums"
     self . SortByName         = False
@@ -633,6 +634,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     VAKEY  = "VideoAlbumsView"
     FMT    = self . getMenuItem       ( "AlbumToolTip"                       )
+    RMT    = self . getMenuItem       ( "AlbumToolTipRelease"                )
     USAGE  = self . Translations      [ VAKEY ] [ "Usage"                    ]
     STATEs = self . Translations      [ VAKEY ] [ "States"                   ]
     ##########################################################################
@@ -645,6 +647,7 @@ class VideoAlbumsView             ( IconDock                               ) :
     VIDs   = self . AlbumOPTs         [ UUID ] [ "Videos"                    ]
     URLs   = self . AlbumOPTs         [ UUID ] [ "URLs"                      ]
     IDz    = self . AlbumOPTs         [ UUID ] [ "Identifiers"               ]
+    RDT    = self . AlbumOPTs         [ UUID ] [ "Release"                   ]
     ##########################################################################
     UMSG   = ""
     IDKz   = self . getMenuItem       ( "NoIdentifier"                       )
@@ -657,7 +660,25 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       UMSG = USAGE                    [ f"{USD}"                             ]
     ##########################################################################
-    text   = FMT . format             ( UUID                               , \
+    if                                ( RDT > 0                            ) :
+      ########################################################################
+      NOW  = StarDate                 (                                      )
+      NOW  . Stardate = RDT
+      BDS  = NOW . toDateString       ( self . TimeZone , "%Y/%m/%d"         )
+      ########################################################################
+      text = RMT . format             ( UUID                               , \
+                                        VIDs                               , \
+                                        PEOs                               , \
+                                        PICs                               , \
+                                        GALs                               , \
+                                        SGPs                               , \
+                                        URLs                               , \
+                                        BDS                                , \
+                                        IDKz                               , \
+                                        UMSG                                 )
+      ########################################################################
+    else                                                                     :
+      text = FMT . format             ( UUID                               , \
                                         VIDs                               , \
                                         PEOs                               , \
                                         PICs                               , \
@@ -706,6 +727,11 @@ class VideoAlbumsView             ( IconDock                               ) :
     ## VIDTAB       = self . Tables       [ "RelationVideos"                    ]
     ## VIDTAB       = self . Tables       [ "RelationPeople"                    ]
     VIDTAB       = self . Tables       [ "Relation"                          ]
+    PRDTAB       = "`cios`.`periods`"
+    ##########################################################################
+    if                                 ( "Periods" in self . Tables        ) :
+      PRDTAB     = self . Tables       [ "Periods"                           ]
+    ##########################################################################
     REL          = Relation            (                                     )
     ALBUM        = AlbumItem           (                                     )
     ALBUM        . Settings = self . Settings
@@ -723,7 +749,8 @@ class VideoAlbumsView             ( IconDock                               ) :
                                          "Subgroups" : 0                   , \
                                          "People"    : 0                   , \
                                          "Videos"    : 0                   , \
-                                         "URLs"      : 0                     }
+                                         "URLs"      : 0                   , \
+                                         "Release"   : 0                     }
       ########################################################################
       if                               ( U in self . AlbumOPTs             ) :
         ######################################################################
@@ -800,6 +827,24 @@ class VideoAlbumsView             ( IconDock                               ) :
       ALBUM      . Uuid = U
       IDz        = ALBUM . GetIdentifiers ( DB                               )
       self       . AlbumOPTs [ U ] [ "Identifiers" ] = IDz
+      ########################################################################
+      RDT        = 0
+      ########################################################################
+      QQ         = f"""select `start`,`end` from {PRDTAB}
+                       where ( `realm` = {U} )
+                         and ( `role` = 76 )
+                         and ( `item` = 53 ) ;"""
+      DB         . Query               ( " " . join ( QQ .split (        ) ) )
+      RR         = DB . FetchOne       (                                     )
+      ########################################################################
+      if                               ( RR not in self . EmptySet         ) :
+        if                             ( 2 == len ( RR )                   ) :
+          ####################################################################
+          AA     = int                 ( RR [ 0 ]                            )
+          BB     = int                 ( RR [ 1 ]                            )
+          RDT    = int                 ( int ( AA + BB ) / 2                 )
+      ########################################################################
+      self       . AlbumOPTs [ U ] [ "Release" ] = RDT
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
