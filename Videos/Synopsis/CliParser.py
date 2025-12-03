@@ -62,6 +62,7 @@ class CliParser  (                                                         ) :
     self . Translations = {                                                  }
     self . Tables       = {                                                  }
     self . DbConf       = {                                                  }
+    self . Variables    = {                                                  }
     self . Logger       = None
     self . Execution    = None
     self . GetClipboard = None
