@@ -787,18 +787,21 @@ class VideoAlbumsView             ( IconDock                               ) :
       REL        . setT2               ( "Picture"                           )
       PICs       = REL . CountSecond   ( DB , PICTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "Pictures"  ] = PICs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Pictures"  ] = PICs
       ########################################################################
       REL        . setT2               ( "Gallery"                           )
       GALs       = REL . CountSecond   ( DB , GALTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "Galleries" ] = GALs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Galleries" ] = GALs
       ########################################################################
       REL        . setT2               ( "WebPage"                           )
       REL        . setRelation         ( "Equivalent"                        )
       URLs       = REL . CountSecond   ( DB , URLTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "URLs" ] = URLs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "URLs" ] = URLs
       ########################################################################
       REL        . setRelation         ( "Subordination"                     )
       ########################################################################
@@ -809,7 +812,8 @@ class VideoAlbumsView             ( IconDock                               ) :
                          and ( `first` = {U} ) ;"""
       VIDs       = DB . GetOne         ( QQ , 0                              )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "Videos"    ] = VIDs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Videos"    ] = VIDs
       ########################################################################
       REL        . set                 ( "second" , U                        )
       REL        . setT2               ( "Album"                             )
@@ -817,16 +821,19 @@ class VideoAlbumsView             ( IconDock                               ) :
       REL        . setT1               ( "Subgroup"                          )
       SGPs       = REL . CountFirst    ( DB , SGPTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "Subgroups" ] = SGPs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Subgroups" ] = SGPs
       ########################################################################
       REL        . setT1               ( "People"                            )
       PEOs       = REL . CountFirst    ( DB , PEOTAB                         )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "People"    ] = PEOs
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "People"    ] = PEOs
       ########################################################################
       ALBUM      . Uuid = U
       IDz        = ALBUM . GetIdentifiers ( DB                               )
-      self       . AlbumOPTs [ U ] [ "Identifiers" ] = IDz
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Identifiers" ] = IDz
       ########################################################################
       RDT        = 0
       ########################################################################
@@ -844,7 +851,8 @@ class VideoAlbumsView             ( IconDock                               ) :
           BB     = int                 ( RR [ 1 ]                            )
           RDT    = int                 ( int ( AA + BB ) / 2                 )
       ########################################################################
-      self       . AlbumOPTs [ U ] [ "Release" ] = RDT
+      if                               ( U in self . AlbumOPTs             ) :
+        self     . AlbumOPTs [ U ] [ "Release" ] = RDT
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
