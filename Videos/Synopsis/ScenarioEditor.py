@@ -1033,11 +1033,12 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def ExportASS                  ( self                                    ) :
+  def ExportASS                        ( self                              ) :
     ##########################################################################
-    Title   = self . getMenuItem ( "ExportASS"                               )
-    Filters = self . getMenuItem ( "AssFilters"                              )
-    ASSFILE = "subtitle.ass"
+    ROOT    = self . GetFilmRootFolder (                                     )
+    Title   = self . getMenuItem       ( "ExportASS"                         )
+    Filters = self . getMenuItem       ( "AssFilters"                        )
+    ASSFILE = f"{ROOT}/subtitle.ass"
     ##########################################################################
     ( ASS , filter ) = QFileDialog . getSaveFileName                         (
                          self                                              , \
@@ -1045,11 +1046,14 @@ class ScenarioEditor             ( TreeDock                                ) :
                          ASSFILE                                           , \
                          Filters                                             )
     ##########################################################################
-    if                           ( len ( ASS ) <= 0                        ) :
-      self  . Notify             ( 1                                         )
+    if                                 ( len ( ASS ) <= 0                  ) :
+      self  . Notify                   ( 1                                   )
       return
     ##########################################################################
-    self    . Go                 ( self . DoExportASS , ( ASS , )            )
+    FDIR    = os . path . dirname      ( ASSFILE                             )
+    self    . UpdateFilmRootFolder     ( FDIR                                )
+    ##########################################################################
+    self    . Go                       ( self . DoExportASS , ( ASS , )      )
     ##########################################################################
     return
   ############################################################################
