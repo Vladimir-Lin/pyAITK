@@ -1643,6 +1643,138 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
+  def FindReplaceMenu                ( self , mm                           ) :
+    ##########################################################################
+    msg  = self . getMenuItem        ( "FindReplace"                         )
+    LOM  = mm   . addMenu            ( msg                                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "SearchText"                          )
+    icon = QIcon                     ( ":/images/descriptive-search.png"     )
+    mm   . addActionFromMenuWithIcon ( LOM , 77315001 , icon , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "ReplaceText"                         )
+    icon = QIcon                     ( ":/images/descriptive-replace.png"    )
+    mm   . addActionFromMenuWithIcon ( LOM , 77315002 , icon , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "ReplacePartial"                      )
+    icon = QIcon                     ( ":/images/descriptive-replace-partial.png" )
+    mm   . addActionFromMenuWithIcon ( LOM , 77315003 , icon , msg           )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFindReplaceMenu          ( self , at                              ) :
+    ##########################################################################
+    if                            ( 77315001 == at                         ) :
+      self . SearchItemByText     (                                          )
+      return True
+    ##########################################################################
+    if                            ( 77315002 == at                         ) :
+      self . ReplaceItemByText    (                                          )
+      return True
+    ##########################################################################
+    if                            ( 77315003 == at                         ) :
+      self . ReplacePartialByText (                                          )
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
+  def TimeSyncMenu                   ( self , mm                           ) :
+    ##########################################################################
+    msg  = self . getMenuItem        ( "TimeSync"                            )
+    LOM  = mm   . addMenu            ( msg                                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "UsePtsForAdd"                        )
+    icon = QIcon                     ( ":/images/descriptive-add-by-video.png" )
+    mm   . addActionFromMenuWithIcon ( LOM                                 , \
+                                       76294001                            , \
+                                       icon                                , \
+                                       msg                                 , \
+                                       True                                , \
+                                       self . UsePtsForAdd                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "UsePtsForItem"                       )
+    icon = QIcon                     ( ":/images/descriptive-change-spot-time.png" )
+    mm   . addActionFromMenuWithIcon ( LOM                                 , \
+                                       76294002                            , \
+                                       icon                                , \
+                                       msg                                 , \
+                                       True                                , \
+                                       self . UsePtsForItem                  )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "TrackPtsForItem"                     )
+    icon = QIcon                     ( ":/images/descriptive-item-by-video-time.png" )
+    mm   . addActionFromMenuWithIcon ( LOM                                 , \
+                                       76294003                            , \
+                                       icon                                , \
+                                       msg                                 , \
+                                       True                                , \
+                                       self . TrackPtsForItem                )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "SyncPlayerTime"                      )
+    icon = QIcon                     ( ":/images/descriptive-video-by-time.png" )
+    mm   . addActionFromMenuWithIcon ( LOM                                 , \
+                                       76294004                            , \
+                                       icon                                , \
+                                       msg                                 , \
+                                       True                                , \
+                                       self . SyncPlayerTime                 )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunTimeSyncMenu           ( self , at                                ) :
+    ##########################################################################
+    if                          ( 76294001 == at                           ) :
+      self . SwitchPtsForAdd    (                                            )
+      return True
+    ##########################################################################
+    if                          ( 76294002 == at                           ) :
+      self . SwitchPtsForItem   (                                            )
+      return True
+    ##########################################################################
+    if                          ( 76294003 == at                           ) :
+      self . SwitchTrackPtsItem (                                            )
+      return True
+    ##########################################################################
+    if                          ( 76294004 == at                           ) :
+      self . SwitchSyncPlayer   (                                            )
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
+  def SubtitleMenu                   ( self , mm                           ) :
+    ##########################################################################
+    msg  = self . getMenuItem        ( "SubtitleCaption"                     )
+    LOM  = mm   . addMenu            ( msg                                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "ExportASS"                           )
+    icon = QIcon                     ( ":/images/descriptive-export.png"     )
+    mm   . addActionFromMenuWithIcon ( LOM , 75413501 , icon , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "ImportMetadata"                      )
+    icon = QIcon                     ( ":/images/descriptive-import.png"     )
+    mm   . addActionFromMenuWithIcon ( LOM , 75413502 , icon , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "AdjustCapLength"                     )
+    mm   . addActionFromMenu         ( LOM , 75413503        , msg           )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunSubtitleMenu        ( self , at                                   ) :
+    ##########################################################################
+    if                       ( 75413501 == at                              ) :
+      self . ExportASS       (                                               )
+      return True
+    ##########################################################################
+    if                       ( 75413502 == at                              ) :
+      self . ImportMetadata  (                                               )
+      return True
+    ##########################################################################
+    if                       ( 75413503 == at                              ) :
+      self . AdjustCapLength (                                               )
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def Menu                              ( self , pos                       ) :
     ##########################################################################
     if                                  ( not self . isPrepared (        ) ) :
@@ -1673,8 +1805,6 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     icon   = QIcon                      ( ":/images/descriptive-segments.png" )
     mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
-    mm     . addSeparator               (                                    )
-    ##########################################################################
     if                                  ( self . PlayerConnected           ) :
       ########################################################################
       msg  = self . getMenuItem         ( "DisconnectPlayer"                 )
@@ -1687,63 +1817,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       icon = QIcon                      ( ":/images/descriptive-player-connect.png" )
       mm   . addActionWithIcon          ( 3001 , icon , msg                  )
     ##########################################################################
-    msg    = self . getMenuItem         ( "ExportASS"                        )
-    icon   = QIcon                      ( ":/images/descriptive-export.png"  )
-    mm     . addActionWithIcon          ( 3501 , icon , msg                  )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "ImportMetadata"                   )
-    icon   = QIcon                      ( ":/images/descriptive-import.png"  )
-    mm     . addActionWithIcon          ( 3502 , icon , msg                  )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "UsePtsForAdd"                     )
-    icon   = QIcon                      ( ":/images/descriptive-add-by-video.png" )
-    mm     . addActionWithIcon          ( 4001                             , \
-                                          icon                             , \
-                                          msg                              , \
-                                          True                             , \
-                                          self . UsePtsForAdd                )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "UsePtsForItem"                    )
-    icon   = QIcon                      ( ":/images/descriptive-change-spot-time.png" )
-    mm     . addActionWithIcon          ( 4002                             , \
-                                          icon                             , \
-                                          msg                              , \
-                                          True                             , \
-                                          self . UsePtsForItem               )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "TrackPtsForItem"                  )
-    icon   = QIcon                      ( ":/images/descriptive-item-by-video-time.png" )
-    mm     . addActionWithIcon          ( 4003                             , \
-                                          icon                             , \
-                                          msg                              , \
-                                          True                             , \
-                                          self . TrackPtsForItem             )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "SyncPlayerTime"                   )
-    icon   = QIcon                      ( ":/images/descriptive-video-by-time.png" )
-    mm     . addActionWithIcon          ( 4004                             , \
-                                          icon                             , \
-                                          msg                              , \
-                                          True                             , \
-                                          self . SyncPlayerTime              )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "SearchText"                       )
-    icon   = QIcon                      ( ":/images/descriptive-search.png"  )
-    mm     . addActionWithIcon          ( 5001 , icon , msg                  )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "ReplaceText"                       )
-    icon   = QIcon                      ( ":/images/descriptive-replace.png" )
-    mm     . addActionWithIcon          ( 5002 , icon , msg                  )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "ReplacePartial"                   )
-    icon   = QIcon                      ( ":/images/descriptive-replace-partial.png" )
-    mm     . addActionWithIcon          ( 5003 , icon , msg                  )
-    ##########################################################################
-    msg    = self . getMenuItem         ( "AdjustCapLength"                  )
-    mm     . addAction                  ( 5004        , msg                  )
-    ##########################################################################
     mm     . addSeparator               (                                    )
     ##########################################################################
+    self   . SubtitleMenu               ( mm                                 )
+    self   . TimeSyncMenu               ( mm                                 )
+    self   . FindReplaceMenu            ( mm                                 )
     self   . MarkerMenu                 ( mm , atItem                        )
     self   . TranslateMenu              ( mm , atItem                        )
     self   . TranslationsMenu           ( mm , atItem                        )
@@ -1808,6 +1886,18 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     if                                  ( OKAY                             ) :
       return True
     ##########################################################################
+    OKAY   = self . RunFindReplaceMenu  ( at                                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunTimeSyncMenu     ( at                                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunSubtitleMenu     ( at                                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
     if                                  ( 1001 == at                       ) :
       ########################################################################
       self . reload                     (                                    )
@@ -1846,46 +1936,6 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       self . CurrentPTS        = -1
       self . PlayerConnected   = False
       ########################################################################
-      return True
-    ##########################################################################
-    if                                  ( 3501 == at                       ) :
-      self . ExportASS                  (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 3502 == at                       ) :
-      self . ImportMetadata             (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 4001 == at                       ) :
-      self . SwitchPtsForAdd            (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 4002 == at                       ) :
-      self . SwitchPtsForItem           (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 4003 == at                       ) :
-      self . SwitchTrackPtsItem         (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 4004 == at                       ) :
-      self . SwitchSyncPlayer           (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 5001 == at                       ) :
-      self . SearchItemByText           (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 5002 == at                       ) :
-      self . ReplaceItemByText          (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 5003 == at                       ) :
-      self . ReplacePartialByText       (                                    )
-      return True
-    ##########################################################################
-    if                                  ( 5004 == at                       ) :
-      self . AdjustCapLength            (                                    )
       return True
     ##########################################################################
     return True
