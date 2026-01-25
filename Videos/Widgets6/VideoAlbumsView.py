@@ -2292,8 +2292,12 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage                     ( self                       ) :
-    return self . subgroupUpdateLocalityUsage (                              )
+  def UpdateLocalityUsage                            ( self                ) :
+    ##########################################################################
+    OKAY = self        . subgroupUpdateLocalityUsage (                       )
+    self . emitRestart . emit                        (                       )
+    ##########################################################################
+    return OKAY
   ############################################################################
   def ReloadLocality                     ( self , DB                       ) :
     return self . subgroupReloadLocality (        DB                         )
@@ -3508,9 +3512,6 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
     if                                 ( OKAY                              ) :
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
       return True
     ##########################################################################
     OKAY   = self . RunScrollBarMenu   ( at                                  )

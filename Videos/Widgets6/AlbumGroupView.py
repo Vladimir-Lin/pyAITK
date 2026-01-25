@@ -744,10 +744,10 @@ class AlbumGroupView         ( IconDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage             ( self                               ) :
+  def UpdateLocalityUsage                           ( self                 ) :
     ##########################################################################
-    OKAY = catalogUpdateLocalityUsage (                                      )
-    self . emitRestart . emit         (                                      )
+    OKAY = self        . catalogUpdateLocalityUsage (                        )
+    self . emitRestart . emit                       (                        )
     ##########################################################################
     return OKAY
   ############################################################################
