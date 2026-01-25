@@ -21,6 +21,7 @@ from   AITK    . Qt6                   import *
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
+from   AITK    . Videos     . Film     import Film        as FilmItem
 from           . Fragment              import Fragment    as FragmentItem
 from           . Scenario              import Scenario    as ScenarioItem
 from           . Descriptive           import Descriptive as DescriptiveItem
@@ -54,6 +55,8 @@ class ScenarioEditor             ( TreeDock                                ) :
     self . JsonAt             = 10
     self . SortOrder          = "asc"
     self . UsedOptions        = [ 1 , 2 , 3                                  ]
+    self . GetFilmRootFolder  = None
+    self . UpdateFilmRootFolder = None
     ##########################################################################
     self . Grouping           = "Subordination"
     ##########################################################################
@@ -133,6 +136,11 @@ class ScenarioEditor             ( TreeDock                                ) :
     self . AppendSideActionWithIcon ( "ScenarioCrowds"                     , \
                                       ":/images/buddy.png"                 , \
                                       self . GotoItemCrowds                  )
+    self . AppendSideActionWithIcon ( "ExportMetadata"                     , \
+                                      ":/images/correctness.png"           , \
+                                      self . ExportMetadata                , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "ExportASS"                          , \
                                       ":/images/saveall.png"               , \
                                       self . ExportASS                     , \
@@ -1045,6 +1053,207 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
+  def DoExportMeta               ( self , FILM , METAFILE                  ) :
+    ##########################################################################
+    FFPROBE    = self . Settings [ "FFprobe"                                 ]
+    ##########################################################################
+    FI         = FilmItem        (                                           )
+    FJ         = FI . Probe      ( FILM , FFPROBE                            )
+    ##########################################################################
+    if                           ( "format"  not in FJ                     ) :
+      self     . Notify          ( 1                                         )
+      return
+    ##########################################################################
+    if                           ( "streams" not in FJ                     ) :
+      self     . Notify          ( 1                                         )
+      return
+    ##########################################################################
+    ROWS       =                 [ ";FFMETADATA1"                          , \
+                                   "composer=Foxman"                       , \
+                                   "encoder=CIOS Media Authoring Tool"       ]
+    ##########################################################################
+    FMJ        = FJ              [ "format"                                  ]
+    TMJ        = FMJ             [ "tags"                                    ]
+    MBRAND     = "isom"
+    MVER       = "512"
+    CBRAND     = "isomiso2avc1mp41"
+    FTITLE     = ""
+    FALBUM     = ""
+    GNAME      = ""
+    ##########################################################################
+    if                          ( "major_brand"       in TMJ               ) :
+      MBRAND   = TMJ            [ "major_brand"                              ]
+    if                          ( "minor_version"     in TMJ               ) :
+      MVER     = TMJ            [ "minor_version"                            ]
+    if                          ( "compatible_brands" in TMJ               ) :
+      CBRAND   = TMJ            [ "compatible_brands"                        ]
+    if                          ( "title"             in TMJ               ) :
+      FTITLE   = TMJ            [ "title"                                    ]
+    if                          ( "album"             in TMJ               ) :
+      FALBUM   = TMJ            [ "album"                                    ]
+    if                          ( "grouping"          in TMJ               ) :
+      GNAME    = TMJ            [ "grouping"                                 ]
+    ##########################################################################
+    ROWS       . append         ( f"major_brand={MBRAND}"                    )
+    ROWS       . append         ( f"minor_version={MVER}"                    )
+    ROWS       . append         ( f"compatible_brands={CBRAND}"              )
+    ROWS       . append         ( f"title={FTITLE}"                          )
+    ROWS       . append         ( f"album={FALBUM}"                          )
+    ROWS       . append         ( f"grouping={GNAME}"                        )
+    ##########################################################################
+    TBS        = ""
+    DTS        = ""
+    ##########################################################################
+    for ST in FJ                [ "streams"                                ] :
+      ########################################################################
+      if                        ( "codec_type" in ST                       ) :
+        if                      ( "video" == ST [ "codec_type" ]           ) :
+          ####################################################################
+          if                    ( "time_base" in ST                        ) :
+            ##################################################################
+            TBS = ST            [ "time_base"                                ]
+            DTS = ST            [ "duration_ts"                              ]
+    ##########################################################################
+    if                          ( "/" not in TBS                           ) :
+      self     . Notify         ( 1                                          )
+      return
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      DFV      = TBS . split    ( "/"                                        )
+      ########################################################################
+      if                        ( 2 != len ( DFV )                         ) :
+        self   . Notify         ( 1                                          )
+        return
+      ########################################################################
+      DU       = int            ( DFV [ 0 ]                                  )
+      DU       = int            ( DU * 1000000                               )
+      DD       = int            ( DFV [ 1 ]                                  )
+      DTV      = int            ( DTS                                        )
+      ########################################################################
+    except                                                                   :
+      self     . Notify         ( 1                                          )
+      return
+    ##########################################################################
+    CHAPTERs   =                          [                                  ]
+    LOC        = self . getLocality       (                                  )
+    TOTAL      = self . topLevelItemCount (                                  )
+    ##########################################################################
+    for id in range                       ( 0 , TOTAL                      ) :
+      ########################################################################
+      item     = self . topLevelItem      ( id                               )
+      BTS      = item . data              ( 7             , Qt . UserRole    )
+      JSOZ     = item . data              ( self . JsonAt , Qt . UserRole    )
+      DESC     = DescriptiveItem          (                                  )
+      DESC     . setJson                  ( JSOZ [ "Description" ]           )
+      DESC     . Locality = LOC
+      BT       = int                      ( BTS                              )
+      ########################################################################
+      for T in DESC . TIMESTAMPs                                             :
+        ######################################################################
+        OK , JJ = DESC . itemJson         ( T                                )
+        ######################################################################
+        if                                ( not OK                         ) :
+          continue
+        ######################################################################
+        JOPTs  = JJ                       [ "Options"                        ]
+        HC     =                          ( "Chapter"   in JOPTs             )
+        HP     =                          ( "Paragraph" in JOPTs             )
+        ######################################################################
+        if                                ( ( not HC  ) and ( not HP  )    ) :
+          continue
+        ######################################################################
+        HVC    = JOPTs                    [ "Chapter"                        ]
+        HVP    = JOPTs                    [ "Paragraph"                      ]
+        ######################################################################
+        if                                ( ( not HVC ) and ( not HVP )    ) :
+          continue
+        ######################################################################
+        ST     = int                      ( T  + BT                          )
+        PTS    = int                      ( int ( ST * DD ) / DU             )
+        NAME   = JJ                       [ "Name"                           ]
+        ######################################################################
+        if                                ( HVP                            ) :
+          NAME = f"* {NAME}"
+        ######################################################################
+        MJS    =                          { "Name" : NAME                  , \
+                                            "Time" : ST                    , \
+                                            "PTS"  : PTS                     }
+        ######################################################################
+        CHAPTERs . append                 ( MJS                              )
+    ##########################################################################
+    CNT        = len            ( CHAPTERs                                   )
+    ATX        = 0
+    ATC        = 1
+    ##########################################################################
+    while                       ( ATC <= CNT                               ) :
+      ########################################################################
+      NAME     = CHAPTERs       [ ATX ] [ "Name"                             ]
+      STS      = CHAPTERs       [ ATX ] [ "PTS"                              ]
+      ########################################################################
+      if                        ( ATC == CNT                               ) :
+        ######################################################################
+        LTS    = DTV
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        LTS    = CHAPTERs       [ ATC ] [ "PTS"                              ]
+      ########################################################################
+      ROWS     . append         ( "[CHAPTER]"                                )
+      ROWS     . append         ( f"TIMEBASE={TBS}"                          )
+      ROWS     . append         ( f"START={STS}"                             )
+      ROWS     . append         ( f"END={LTS}"                               )
+      ROWS     . append         ( f"title={NAME}"                            )
+      ########################################################################
+      ATX      = int            ( ATX + 1                                    )
+      ATC      = int            ( ATC + 1                                    )
+    ##########################################################################
+    TEXT       = "\n" . join    ( ROWS                                       )
+    ##########################################################################
+    with open                   ( METAFILE , "w" , encoding="utf-8" ) as f   :
+      f        . write          ( TEXT                                       )
+    ##########################################################################
+    self       . Notify         ( 5                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportMetadata                ( self                                 ) :
+    ##########################################################################
+    ROOT     = self . GetFilmRootFolder (                                    )
+    Title    = self . Translations  [ "Main::PickFilm"                       ]
+    Filters  = self . Translations  [ "Main::MP4Filters"                     ]
+    ##########################################################################
+    ( FILM , filter ) = QFileDialog . getOpenFileName                        (
+                           self                                            , \
+                           Title                                           , \
+                           ROOT                                            , \
+                           Filters                                           )
+    ##########################################################################
+    if                              ( len ( FILM ) <= 0                    ) :
+      return
+    ##########################################################################
+    FDIR     = os . path . dirname  ( FILM                                   )
+    self     . UpdateFilmRootFolder ( FDIR                                   )
+    ##########################################################################
+    Title    = self . getMenuItem   ( "ExportMetadata"                       )
+    Filters  = self . getMenuItem   ( "MetaFilters"                          )
+    METAFILE = f"{FDIR}/metadata.txt"
+    ##########################################################################
+    ( META , filter ) = QFileDialog . getSaveFileName                        (
+                          self                                             , \
+                          Title                                            , \
+                          METAFILE                                         , \
+                          Filters                                            )
+    ##########################################################################
+    if                              ( len ( META ) <= 0                    ) :
+      self  . Notify                ( 1                                      )
+      return
+    ##########################################################################
+    ARGs    =                       ( FILM , META ,                          )
+    self    . Go                    ( self . DoExportMeta , ARGs             )
+    ##########################################################################
+    return
+  ############################################################################
   def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
@@ -1549,9 +1758,13 @@ class ScenarioEditor             ( TreeDock                                ) :
     mm     = self . AmountIndexMenu    ( mm , True                           )
     mm     . addSeparator              (                                     )
     ##########################################################################
+    msg    = self . getMenuItem        ( "ExportMetadata"                    )
+    icon   = QIcon                     ( ":/images/correctness.png"          )
+    mm     . addActionWithIcon         ( 3501 , icon , msg                   )
+    ##########################################################################
     msg    = self . getMenuItem        ( "ExportASS"                         )
     icon   = QIcon                     ( ":/images/saveall.png"              )
-    mm     . addActionWithIcon         ( 3501 , icon , msg                   )
+    mm     . addActionWithIcon         ( 3502 , icon , msg                   )
     ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1102                           )
@@ -1630,6 +1843,10 @@ class ScenarioEditor             ( TreeDock                                ) :
       return True
     ##########################################################################
     if                                 ( 3501 == at                        ) :
+      self . ExportMetadata            (                                     )
+      return True
+    ##########################################################################
+    if                                 ( 3502 == at                        ) :
       self . ExportASS                 (                                     )
       return True
     ##########################################################################
