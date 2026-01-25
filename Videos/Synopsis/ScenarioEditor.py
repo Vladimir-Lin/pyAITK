@@ -1050,7 +1050,7 @@ class ScenarioEditor             ( TreeDock                                ) :
       self  . Notify                   ( 1                                   )
       return
     ##########################################################################
-    FDIR    = os . path . dirname      ( ASSFILE                             )
+    FDIR    = os . path . dirname      ( ASS                                 )
     self    . UpdateFilmRootFolder     ( FDIR                                )
     ##########################################################################
     self    . Go                       ( self . DoExportASS , ( ASS , )      )
