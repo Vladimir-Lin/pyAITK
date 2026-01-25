@@ -371,6 +371,8 @@ class Film               ( Columns                                         ) :
   def Probe                     ( self , Filename , FFPROBE = "ffprobe"    ) :
     ##########################################################################
     ARGs =                      [ FFPROBE                                  , \
+                                  "-v"                                     , \
+                                  "quiet"                                  , \
                                   "-show_format"                           , \
                                   "-show_streams"                          , \
                                   "-of"                                    , \
@@ -445,6 +447,8 @@ class Film               ( Columns                                         ) :
   def DistillingFrames          ( self , FFPROBE , FILM                    ) :
     ##########################################################################
     ARGs =                      [ FFPROBE                                  , \
+                                  "-v"                                     , \
+                                  "quiet"                                  , \
                                   "-show_frames"                           , \
                                   "-print_format"                          , \
                                   "json"                                   , \
