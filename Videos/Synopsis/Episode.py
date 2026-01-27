@@ -36,6 +36,8 @@ from   AITK . Videos     . Utilities import GetImagesInCurrentDirectory     as G
 from   AITK . Videos     . Utilities import GetAssInCurrentDirectory        as GetAssInCurrentDirectory
 from   AITK . Videos     . Utilities import GetSubfoldersInCurrentDirectory as GetSubfoldersInCurrentDirectory
 ##############################################################################
+VIDEOROOT = os . path . abspath ( os . path . dirname ( os . path . dirname ( os . path . abspath ( __file__ ) ) + "/../" ) )
+##############################################################################
 class Episode    (                                                         ) :
   ############################################################################
   def __init__   ( self                                                    ) :
@@ -302,6 +304,7 @@ class Episode    (                                                         ) :
     self   . ScanAlbumFeatures     (                                         )
     self   . ScanAlbumDocuments    (                                         )
     self   . ScanAlbumTranslations (                                         )
+    self   . ScanSubtitleBatch     (                                         )
     ##########################################################################
     ##########################################################################
     ##########################################################################
@@ -311,6 +314,23 @@ class Episode    (                                                         ) :
     self   . SaveToFile            (                                         )
     ##########################################################################
     self   . logMessage            ( "EstablishCompleted"                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def ScanSubtitleBatch ( self                                             ) :
+    ##########################################################################
+    global VIDEOROOT
+    ##########################################################################
+    FPATH = self . DIR
+    SFILE = f"{VIDEOROOT}/Subtitles.bat"
+    BFILE = f"{FPATH}/scripts/Subtitles.bat"
+    OFILE = f"{FPATH}/scripts/Subtitles-Original.bat"
+    ##########################################################################
+    if                  ( not os . path . exists ( OFILE                 ) ) :
+      shutil . copy2    ( SFILE , BFILE                                      )
+    ##########################################################################
+    if                  ( not os . path . exists ( OFILE                 ) ) :
+      shutil . copy2    ( SFILE , OFILE                                      )
     ##########################################################################
     return
   ############################################################################

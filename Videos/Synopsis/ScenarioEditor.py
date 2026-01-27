@@ -1547,6 +1547,7 @@ class ScenarioEditor             ( TreeDock                                ) :
   ############################################################################
   def OpenItemDescriptive          ( self , item                           ) :
     ##########################################################################
+    LOC  = self . getLocality      (                                         )
     uuid = item . data             ( 0             , Qt . UserRole           )
     dlen = item . data             ( 6             , Qt . UserRole           )
     slen = item . data             ( 7             , Qt . UserRole           )
@@ -1561,6 +1562,7 @@ class ScenarioEditor             ( TreeDock                                ) :
                                      "Name"        : head                  , \
                                      "BaseTime"    : int  ( slen         ) , \
                                      "Duration"    : int  ( dlen         ) , \
+                                     "Locality"    : LOC                   , \
                                      "Description" : jsoz [ "Description"  ] }
     ##########################################################################
     self . emitDescriptives . emit ( self                                  , \
