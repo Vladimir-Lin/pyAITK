@@ -61,7 +61,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . DefaultTitle       = ""
     self . TimeGap            = 5000
     self . sourceLocality     = 1001
-    self . ConvertAllCC       = False
+    self . ConvertAllCC       = True
     self . SortOrder          = "asc"
     self . BaseTimeEditor     = None
     self . ConnectedFilmJson  = {                                            }
