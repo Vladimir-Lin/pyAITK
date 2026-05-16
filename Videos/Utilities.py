@@ -196,7 +196,7 @@ def FullScanFilmsInDirectory                  ( ROOT , DIR                 ) :
     ##########################################################################
     FILEs   . append                          ( f"{DIR}/{W}"                 )
   ############################################################################
-  for D in DIRs . sort                        (                            ) :
+  for D in sorted                             ( DIRs                       ) :
     ##########################################################################
     WFS     = FullScanFilmsInDirectory        ( ROOT , f"{DIR}/{D}"          )
     ##########################################################################
@@ -475,7 +475,7 @@ def FullScanFolderM3U                          ( DIR                       ) :
   DIRs       = GetSubfoldersInCurrentDirectory (                             )
   FILEs      = GetFilmsInCurrentDirectory      (                             )
   ############################################################################
-  for D in DIRs . sort                         (                           ) :
+  for D in sorted                              ( DIRs                      ) :
     ##########################################################################
     WFS      = FullScanFilmsInDirectory        ( DIR , D                     )
     ##########################################################################
