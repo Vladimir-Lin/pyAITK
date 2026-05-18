@@ -134,9 +134,9 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     self     . setCentralLabels    ( LABELs                                  )
     ##########################################################################
     self     . setColumnWidth      ( 1         , 400                         )
-    self     . setColumnWidth      ( 2         , 160                         )
+    self     . setColumnWidth      ( 2         , 140                         )
     self     . setColumnWidth      ( 3         , 100                         )
-    self     . setColumnWidth      ( 4         , 100                         )
+    self     . setColumnWidth      ( 4         ,  80                         )
     self     . setColumnWidth      ( 6         ,  60                         )
     self     . setColumnWidth      ( 7         ,  60                         )
     self     . setColumnWidth      ( TOTAL     , 3                           )
@@ -713,30 +713,36 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     ##########################################################################
     return True
   ############################################################################
-  def UpdateUuidName         ( self , item , pid , name                    ) :
+  def UpdateUuidName          ( self , item , pid , name                   ) :
     ##########################################################################
-    if                       ( self . get ( "uuid" ) <= 0                  ) :
+    if                        ( self . get ( "uuid" ) <= 0                 ) :
       return
     ##########################################################################
-    DB    = self . ConnectDB (                                               )
-    if                       ( self . NotOkay ( DB )                       ) :
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      ########################################################################
+      self . setVacancy       (                                              )
+      self . GoRelax . emit   (                                              )
+      self . Notify           ( 2                                            )
+      ########################################################################
       return
     ##########################################################################
-    TABLE = self . Tables    [ "Names"                                       ]
+    TABLE  = self . Tables    [ "Names"                                      ]
     ##########################################################################
-    self  . set              ( "id"   , pid                                  )
-    self  . set              ( "name" , name                                 )
+    self   . set              ( "id"   , pid                                 )
+    self   . set              ( "name" , name                                )
     ##########################################################################
-    self  . OnBusy . emit    (                                               )
-    self  . setBustle        (                                               )
-    DB    . LockWrites       ( [ TABLE ]                                     )
-    self  . UpdateNameById   ( DB , TABLE                                    )
-    DB    . UnlockTables     (                                               )
+    DB     . LockWrites       ( [ TABLE                                    ] )
+    self   . UpdateNameById   ( DB , TABLE                                   )
+    DB     . UnlockTables     (                                              )
     ##########################################################################
-    DB    . Close            (                                               )
-    self  . setVacancy       (                                               )
-    self  . GoRelax . emit   (                                               )
-    self  . Notify           ( 5                                             )
+    DB     . Close            (                                              )
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -757,8 +763,16 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
     DB     = self . ConnectDB       (                                        )
     if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
+      self . Notify                 ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -772,7 +786,8 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
-    ##########################################################################
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
     self   . emitRefreshItem . emit ( item , CRX                             )
     self   . Notify                 ( 5                                      )
     ##########################################################################
@@ -783,8 +798,16 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
     DB     = self . ConnectDB       (                                        )
     if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
+      self . Notify                 ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -798,7 +821,8 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
-    ##########################################################################
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
     self   . emitRefreshItem . emit ( item , CRX                             )
     self   . Notify                 ( 5                                      )
     ##########################################################################
@@ -809,8 +833,16 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
     DB     = self . ConnectDB       (                                        )
     if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
+      self . Notify                 ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -824,51 +856,72 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
-    ##########################################################################
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
     self   . emitRefreshItem . emit ( item , CRX                             )
     self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
-  def UpdateByFlags                 ( self , item , pid , flags            ) :
+  def UpdateByFlags           ( self , item , pid , flags                  ) :
     ##########################################################################
-    if                              ( self . get ( "uuid" ) <= 0           ) :
+    if                        ( self . get ( "uuid" ) <= 0                 ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB       (                                        )
-    if                              ( self . NotOkay ( DB )                ) :
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      ########################################################################
+      self . setVacancy       (                                              )
+      self . GoRelax . emit   (                                              )
+      self . Notify           ( 2                                            )
+      ########################################################################
       return
     ##########################################################################
-    TABLE  = self . Tables          [ "Names"                                ]
-    self   . set                    ( "id"    , pid                          )
-    self   . set                    ( "flags" , flags                        )
+    TABLE  = self . Tables    [ "Names"                                      ]
+    self   . set              ( "id"    , pid                                )
+    self   . set              ( "flags" , flags                              )
     ##########################################################################
-    DB     . LockWrites             ( [ TABLE ]                              )
-    self   . UpdateFlagsById        ( DB , TABLE                             )
-    DB     . UnlockTables           (                                        )
+    DB     . LockWrites       ( [ TABLE                                    ] )
+    self   . UpdateFlagsById  ( DB , TABLE                                   )
+    DB     . UnlockTables     (                                              )
     ##########################################################################
-    DB     . Close                  (                                        )
-    self   . Notify                 ( 5                                      )
+    DB     . Close            (                                              )
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
-  def RemoveItems                   ( self , Listings                      ) :
+  def RemoveItems             ( self , Listings                            ) :
     ##########################################################################
-    if                              ( self . get ( "uuid" ) <= 0           ) :
+    if                        ( self . get ( "uuid" ) <= 0                 ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB       (                                        )
-    if                              ( self . NotOkay ( DB )                ) :
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      ########################################################################
+      self . setVacancy       (                                              )
+      self . GoRelax . emit   (                                              )
+      self . Notify           ( 2                                            )
+      ########################################################################
       return
     ##########################################################################
-    TABLE  = self . Tables          [ "Names"                                ]
-    QQ     = self . DeleteIDs       ( TABLE , Listings                       )
-    DB     . LockWrites             ( [ TABLE ]                              )
-    DB     . Query                  ( QQ                                     )
-    DB     . UnlockTables           (                                        )
+    TABLE  = self . Tables    [ "Names"                                      ]
+    QQ     = self . DeleteIDs ( TABLE , Listings                             )
+    DB     . LockWrites       ( [ TABLE                                    ] )
+    DB     . Query            ( QQ                                           )
+    DB     . UnlockTables     (                                              )
     ##########################################################################
-    DB     . Close                  (                                        )
-    self   . Notify                 ( 5                                      )
+    DB     . Close            (                                              )
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -877,39 +930,58 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB       (                                        )
+    self       . OnBusy  . emit     (                                        )
+    self       . setBustle          (                                        )
+    ##########################################################################
+    DB         = self . ConnectDB   (                                        )
     if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self     . setVacancy         (                                        )
+      self     . GoRelax . emit     (                                        )
+      self     . Notify             ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
-    TABLE  = self . Tables          [ "Names"                                ]
+    TABLE      = self . Tables      [ "Names"                                ]
     ##########################################################################
-    self . set                      ( "name"      , ""                       )
-    self . set                      ( "locality"  , self . defaultLocality   )
-    self . set                      ( "relevance" , self . defaultRelevance  )
-    self . set                      ( "priority"  , 0                        )
-    self . set                      ( "flags"     , 0                        )
-    self . set                      ( "utf8"      , 0                        )
-    self . set                      ( "length"    , 0                        )
+    self       . set                ( "name"      , ""                       )
+    self       . set                ( "locality"  , self . defaultLocality   )
+    self       . set                ( "relevance" , self . defaultRelevance  )
+    self       . set                ( "priority"  , 0                        )
+    self       . set                ( "flags"     , 0                        )
+    self       . set                ( "utf8"      , 0                        )
+    self       . set                ( "length"    , 0                        )
     ##########################################################################
-    DONE = False
+    DONE       = False
     ##########################################################################
-    self . Append                   ( DB , TABLE                             )
-    IDX  = self . GetPosition       ( DB , TABLE                             )
-    if                              ( IDX >= 0                             ) :
-      self . Id = IDX
-      if                            ( self . ObtainsById ( DB , TABLE )    ) :
-        DONE = True
+    try                                                                      :
+      ########################################################################
+      self     . Append             ( DB , TABLE                             )
+      IDX      = self . GetPosition ( DB , TABLE                             )
+      ########################################################################
+      if                            ( IDX >= 0                             ) :
+        ######################################################################
+        self   . Id = IDX
+        ######################################################################
+        if                          ( self . ObtainsById ( DB , TABLE )    ) :
+          DONE = True
+      ########################################################################
+    except                                                                   :
+      ########################################################################
+        DONE   = False
     ##########################################################################
-    DB     . Close                  (                                        )
+    DB         . Close              (                                        )
+    self       . setVacancy         (                                        )
+    self       . GoRelax . emit     (                                        )
     ##########################################################################
     if                              ( DONE                                 ) :
       ########################################################################
-      JSON = self . toList          (                                        )
-      self . emitNewItem . emit     ( JSON                                   )
-      self . Notify                 ( 5                                      )
+      JSON     = self . toList      (                                        )
+      self     . emitNewItem . emit ( JSON                                   )
+      self     . Notify             ( 5                                      )
       ########################################################################
     else                                                                     :
-      self . Notify                 ( 2                                      )
+      self     . Notify             ( 2                                      )
     ##########################################################################
     return
   ############################################################################
@@ -918,8 +990,16 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                            ( self . get ( "uuid" ) <= 0             ) :
       return
     ##########################################################################
+    self     . OnBusy  . emit     (                                          )
+    self     . setBustle          (                                          )
+    ##########################################################################
     DB       = self . ConnectDB   (                                          )
     if                            ( self . NotOkay ( DB )                  ) :
+      ########################################################################
+      self   . setVacancy         (                                          )
+      self   . GoRelax . emit     (                                          )
+      self   . Notify             ( 2                                        )
+      ########################################################################
       return
     ##########################################################################
     LANG     = self . defaultLocality
@@ -945,6 +1025,8 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
         self . Id = IDX
     ##########################################################################
     DB       . Close              (                                          )
+    self     . setVacancy         (                                          )
+    self     . GoRelax . emit     (                                          )
     ##########################################################################
     self     . loading            (                                          )
     ##########################################################################
@@ -1026,8 +1108,16 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     if                             ( self . get ( "uuid" ) <= 0            ) :
       return
     ##########################################################################
+    self     . OnBusy  . emit      (                                         )
+    self     . setBustle           (                                         )
+    ##########################################################################
     DB       = self . ConnectDB    (                                         )
     if                             ( self . NotOkay ( DB )                 ) :
+      ########################################################################
+      self   . setVacancy          (                                         )
+      self   . GoRelax . emit      (                                         )
+      self   . Notify              ( 2                                       )
+      ########################################################################
       return
     ##########################################################################
     for LC in                      [ 1002 , 1003 , 1006                    ] :
@@ -1049,9 +1139,10 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
         ######################################################################
         self . Id = IDX
     ##########################################################################
-    DB       . Close               (                                          )
-    ##########################################################################
-    self     . loading            (                                          )
+    DB       . Close               (                                         )
+    self     . setVacancy          (                                         )
+    self     . GoRelax . emit      (                                         )
+    self     . loading             (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -1189,14 +1280,23 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
       self . emitNamesShow . emit   (                                        )
       return
     ##########################################################################
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
     DB     = self . ConnectDB       (                                        )
     if                              ( DB == None                           ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
       self . emitNamesShow . emit   (                                        )
+      ########################################################################
       return
     ##########################################################################
     ALL    = self . FetchEverything ( DB , self . Tables [ "Names" ]         )
     ##########################################################################
     DB     . Close                  (                                        )
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
     ##########################################################################
     if                              ( len ( ALL ) <= 0                     ) :
       self . emitNamesShow . emit   (                                        )

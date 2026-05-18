@@ -88,6 +88,16 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . Watermarking       = True
     self . ReportDetails      = False
     self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9          ]
+    self . IconOptions        = [     2 , 3 , 4 , 5 , 6 , 7 , 8 , 9          ]
+    self . UsedIcons          = {  2 : "help.png"                          , \
+                                   3 : "flowend.png"                       , \
+                                   4 : "geography.png"                     , \
+                                   5 : "astrophysics.png"                  , \
+                                   6 : "apprentice.png"                    , \
+                                   7 : "stars.png"                         , \
+                                   8 : "Books.png"                         , \
+                                   9 : "box.png"                           , \
+                                  10 : ""                                    }
     self . AlbumOPTs          = {                                            }
     ##########################################################################
     self . SearchLine         = None
@@ -317,7 +327,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       USED    = GOPTs                 [ "Used"                               ]
       ########################################################################
-      if                              ( USED in [ 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9 ] ) :
+      if                              ( USED in self . IconOptions         ) :
         DINFO = True
     ##########################################################################
     if                                ( not self . Watermarking            ) :
@@ -337,72 +347,10 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       p       . drawImage             ( PTS , IMG                            )
       ########################################################################
-      if                              ( 2 == USED                          ) :
+      if                              ( USED in self . UsedIcons           ) :
         ######################################################################
-        WIMG  = QImage                ( ":/images/help.png"                  )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 3 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/flowend.png"               )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 4 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/geography.png"             )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 5 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/astrophysics.png"          )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 6 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/apprentice.png"            )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 7 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/stars.png"                 )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 8 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/Books.png"                 )
-        WIMG  = WIMG . scaled         ( TIW , TIH                            )
-        ######################################################################
-        PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
-                                        ISIZE . height ( ) - TIH             )
-        p     . drawImage             ( PTS , WIMG                           )
-      ########################################################################
-      elif                            ( 9 == USED                          ) :
-        ######################################################################
-        WIMG  = QImage                ( ":/images/box.png"                   )
+        INAME = self . UsedIcons      [ USED                                 ]
+        WIMG  = QImage                ( f":/images/{INAME}"                  )
         WIMG  = WIMG . scaled         ( TIW , TIH                            )
         ######################################################################
         PTS   = QPoint                ( ISIZE . width  ( ) - TIW           , \
@@ -2615,7 +2563,6 @@ class VideoAlbumsView             ( IconDock                               ) :
       return False
     ##########################################################################
     return self . OpenFragmentItem ( atItem                                  )
-  ############################################################################
   ############################################################################
   def OpenDateEventsItem              ( self , item                        ) :
     ##########################################################################

@@ -59,7 +59,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . FragmentUuid       = 0
     self . ScenarioUuid       = 0
     self . DefaultTitle       = ""
-    self . TimeGap            = 5000
+    self . TimeGap            = 100000
     self . sourceLocality     = 1001
     self . ConvertAllCC       = True
     self . SortOrder          = "asc"
@@ -84,9 +84,9 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount              ( 7                                   )
-    self . setColumnWidth              ( 0 , 120                             )
+    self . setColumnWidth              ( 0 , 160                             )
     self . setColumnWidth              ( 1 , 120                             )
-    self . setColumnHidden             ( 1 , True                            )
+    ## self . setColumnHidden             ( 1 , True                            )
     self . setColumnWidth              ( 2 , 600                             )
     ## self . setColumnHidden             ( 3 , True                            )
     self . setColumnHidden             ( 4 , True                            )
@@ -118,7 +118,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 960 , 200 )                       )
+    return self . SizeSuggestion ( QSize ( 1000 , 160 )                      )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
@@ -820,15 +820,20 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     if                                 ( self . ScenarioUuid <= 0          ) :
       ########################################################################
-      self . Notify                    ( 1                                   )
+      self . Notify                    ( 2                                   )
       ########################################################################
       return
+    ##########################################################################
+    self   . OnBusy  . emit            (                                     )
+    self   . setBustle                 (                                     )
     ##########################################################################
     DB     = self . ConnectDB          (                                     )
     ##########################################################################
     if                                 ( self . NotOkay ( DB )             ) :
       ########################################################################
-      self . Notify                    ( 1                                   )
+      self . setVacancy                (                                     )
+      self . GoRelax . emit            (                                     )
+      self . Notify                    ( 2                                   )
       ########################################################################
       return
     ##########################################################################
@@ -848,6 +853,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     DB     . UnlockTables              (                                     )
     DB     . Close                     (                                     )
+    self   . setVacancy                (                                     )
+    self   . GoRelax . emit            (                                     )
     self   . Notify                    ( 5                                   )
     self   . emitUpdated . emit        (                                     )
     ##########################################################################
