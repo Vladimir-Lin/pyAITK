@@ -672,12 +672,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     USAGE        = self . Translations [ VAKEY ] [ "Usage"                   ]
     STATEs       = self . Translations [ VAKEY ] [ "States"                  ]
     ##########################################################################
+    self         . OnBusy  . emit      (                                     )
+    self         . setBustle           (                                     )
+    ##########################################################################
     DB           = self . ConnectDB    (                                     )
     if                                 ( self . NotOkay ( DB )             ) :
+      ########################################################################
+      self       . setVacancy          (                                     )
+      self       . GoRelax . emit      (                                     )
+      self       . Notify              ( 2                                   )
+      ########################################################################
       return
     ##########################################################################
     self         . PushRunnings        (                                     )
-    self         . OnBusy . emit       (                                     )
     self         . FetchingINFO = True
     ##########################################################################
     ALMTAB       = self . Tables       [ "Albums"                            ]
@@ -822,9 +829,10 @@ class VideoAlbumsView             ( IconDock                               ) :
       ########################################################################
       self       . GenerateItemToolTip ( U                                   )
     ##########################################################################
-    self         . GoRelax . emit      (                                     )
     self         . FetchingINFO = False
     DB           . Close               (                                     )
+    self         . setVacancy          (                                     )
+    self         . GoRelax . emit      (                                     )
     ##########################################################################
     if                                 ( self . StayAlive                  ) :
       ########################################################################
@@ -1020,23 +1028,27 @@ class VideoAlbumsView             ( IconDock                               ) :
       QQ   = self . Relation . Delete ( RELTAB                               )
       SQLs . append                   ( QQ                                   )
     ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
     self   . OnBusy  . emit           (                                      )
     self   . setBustle                (                                      )
+    ##########################################################################
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
+      ########################################################################
+      self . setVacancy               (                                      )
+      self . GoRelax . emit           (                                      )
+      self . Notify                   ( 2                                    )
+      ########################################################################
+      return
+    ##########################################################################
     DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
     TITLE  = "RemoveVideoItems"
     self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
     ##########################################################################
     DB     . UnlockTables             (                                      )
+    DB     . Close                    (                                      )
     self   . setVacancy               (                                      )
     self   . GoRelax . emit           (                                      )
-    ##########################################################################
-    DB     . Close                    (                                      )
-    ##########################################################################
     self   . loading                  (                                      )
     ##########################################################################
     return
@@ -1072,12 +1084,17 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                         ( len ( UUIDs ) <= 0                        ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
     self   . OnBusy  . emit    (                                             )
     self   . setBustle         (                                             )
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      ########################################################################
+      self . setVacancy        (                                             )
+      self . GoRelax . emit    (                                             )
+      self . Notify            ( 2                                           )
+      ########################################################################
+      return
     ##########################################################################
     RELTAB = self . Tables     [ "RelationVideos"                            ]
     ##########################################################################
@@ -1095,10 +1112,9 @@ class VideoAlbumsView             ( IconDock                               ) :
       REL  . Join              ( DB       , RELTAB                           )
     ##########################################################################
     DB     . UnlockTables      (                                             )
+    DB     . Close             (                                             )
     self   . setVacancy        (                                             )
     self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
     self   . Notify            ( 5                                           )
     ##########################################################################
     return
@@ -1811,30 +1827,36 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def GenerateVideoAlbum           ( self , uuid , name , path             ) :
+  def GenerateVideoAlbum            ( self , uuid , name , path            ) :
     ##########################################################################
-    CONFs = self . Settings        [ "Albums"                                ]
-    DIR   = CONFs                  [ "Template"                              ]
+    CONFs  = self . Settings        [ "Albums"                               ]
+    DIR    = CONFs                  [ "Template"                             ]
     ##########################################################################
-    ALBUM = AlbumItem              (                                         )
-    ALBUM . Uuid     = uuid
-    ALBUM . Settings = self . Settings
-    ALBUM . Tables   = self . Tables
+    ALBUM  = AlbumItem              (                                        )
+    ALBUM  . Uuid     = uuid
+    ALBUM  . Settings = self . Settings
+    ALBUM  . Tables   = self . Tables
     ##########################################################################
-    self  . BuildAlbum             ( DIR , path                              )
+    self   . BuildAlbum             ( DIR , path                             )
     ##########################################################################
-    DB    = self . ConnectDB       ( UsePure = True                          )
-    if                             ( self . NotOkay ( DB )                 ) :
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
+    DB     = self . ConnectDB       ( UsePure = True                         )
+    if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
+      self . Notify                 ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
-    self  . OnBusy  . emit         (                                         )
+    self   . UpdateAlbumInformation ( DB , uuid , name , path                )
     ##########################################################################
-    self  . UpdateAlbumInformation ( DB , uuid , name , path                 )
-    ##########################################################################
-    self  . GoRelax . emit         (                                         )
-    DB    . Close                  (                                         )
-    ##########################################################################
-    self  . Notify                 ( 5                                       )
+    DB     . Close                  (                                        )
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -1855,28 +1877,34 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateVideoAlbum             ( self , uuid , name , path             ) :
+  def UpdateVideoAlbum              ( self , uuid , name , path            ) :
     ##########################################################################
-    CONFs = self . Settings        [ "Albums"                                ]
-    DIR   = CONFs                  [ "Template"                              ]
+    CONFs  = self . Settings        [ "Albums"                               ]
+    DIR    = CONFs                  [ "Template"                             ]
     ##########################################################################
-    ALBUM = AlbumItem              (                                         )
-    ALBUM . Uuid     = uuid
-    ALBUM . Settings = self . Settings
-    ALBUM . Tables   = self . Tables
+    ALBUM  = AlbumItem              (                                        )
+    ALBUM  . Uuid     = uuid
+    ALBUM  . Settings = self . Settings
+    ALBUM  . Tables   = self . Tables
     ##########################################################################
-    DB    = self . ConnectDB       ( UsePure = True                          )
-    if                             ( self . NotOkay ( DB )                 ) :
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
+    DB     = self . ConnectDB       ( UsePure = True                         )
+    if                              ( self . NotOkay ( DB )                ) :
+      ########################################################################
+      self . setVacancy             (                                        )
+      self . GoRelax . emit         (                                        )
+      self . Notify                 ( 2                                      )
+      ########################################################################
       return
     ##########################################################################
-    self  . OnBusy  . emit         (                                         )
+    self   . UpdateAlbumInformation ( DB , uuid , name , path                )
     ##########################################################################
-    self  . UpdateAlbumInformation ( DB , uuid , name , path                 )
-    ##########################################################################
-    self  . GoRelax . emit         (                                         )
-    DB    . Close                  (                                         )
-    ##########################################################################
-    self  . Notify                 ( 5                                       )
+    DB     . Close                  (                                        )
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -1908,14 +1936,21 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                                ( len ( name ) <= 0                  ) :
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
+      ########################################################################
+      self  . setVacancy              (                                      )
+      self  . GoRelax . emit          (                                      )
+      self  . Notify                  ( 2                                    )
+      ########################################################################
       return
     ##########################################################################
     FMT     = self . Translations     [ "UI::SearchKey"                      ]
     MSG     = FMT . format            ( name                                 )
     self    . ShowStatus              ( MSG                                  )
-    self    . OnBusy  . emit          (                                      )
     ##########################################################################
     ALMTAB  = self . Tables           [ "Albums"                             ]
     IDFTAB  = self . Tables           [ "Identifiers"                        ]
@@ -1971,10 +2006,11 @@ class VideoAlbumsView             ( IconDock                               ) :
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
     ##########################################################################
-    self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     ##########################################################################
     DB      . Close                   (                                      )
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     ##########################################################################
     if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
       ########################################################################
@@ -2050,14 +2086,20 @@ class VideoAlbumsView             ( IconDock                               ) :
       self  . Notify                  ( 1                                    )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
-      self  . Notify                  ( 1                                    )
+      ########################################################################
+      self  . setVacancy              (                                      )
+      self  . GoRelax . emit          (                                      )
+      self  . Notify                  ( 2                                    )
+      ########################################################################
       return
     ##########################################################################
     MSG     = self . getMenuItem      ( "UpdateIdentifier"                   )
     self    . ShowStatus              ( MSG                                  )
-    self    . OnBusy  . emit          (                                      )
     ##########################################################################
     IDFTAB  = self . Tables           [ "Identifiers"                        ]
     IDF     = IdentifierItem          (                                      )
@@ -2067,9 +2109,10 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     IDF     . Assure                  ( DB , IDFTAB                          )
     ##########################################################################
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
+    self    . ShowStatus              ( ""                                   )
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     self    . Notify                  ( 5                                    )
     ##########################################################################
     return
@@ -2158,8 +2201,16 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def AppendItemName                     ( self , item , name              ) :
     ##########################################################################
+    self     . OnBusy  . emit            (                                   )
+    self     . setBustle                 (                                   )
+    ##########################################################################
     DB       = self . ConnectDB          ( UsePure = True                    )
     if                                   ( self . NotOkay ( DB )           ) :
+      ########################################################################
+      self   . setVacancy                (                                   )
+      self   . GoRelax . emit            (                                   )
+      self   . Notify                    ( 2                                 )
+      ########################################################################
       return
     ##########################################################################
     uuid     = item . data               ( Qt . UserRole                     )
@@ -2223,6 +2274,9 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     DB       . UnlockTables              (                                   )
     DB       . Close                     (                                   )
+    self     . setVacancy                (                                   )
+    self     . GoRelax . emit            (                                   )
+    self     . Notify                    ( 5                                 )
     ##########################################################################
     self     . PrepareItemContent        ( item , uuid , name                )
     self     . assignToolTip             ( item , str ( uuid )               )
@@ -2237,8 +2291,16 @@ class VideoAlbumsView             ( IconDock                               ) :
   ############################################################################
   def DoFetchOpenWebPages        ( self , uuid , related                   ) :
     ##########################################################################
+    self   . OnBusy  . emit      (                                           )
+    self   . setBustle           (                                           )
+    ##########################################################################
     DB     = self . ConnectDB    (                                           )
     if                           ( self . NotOkay ( DB )                   ) :
+      ########################################################################
+      self . setVacancy          (                                           )
+      self . GoRelax . emit      (                                           )
+      self . Notify              ( 2                                         )
+      ########################################################################
       return False
     ##########################################################################
     RELTAB = "`cios`.`relations`"
@@ -2255,6 +2317,9 @@ class VideoAlbumsView             ( IconDock                               ) :
       self . OpenUrlsByUuids     ( DB , WEBTAB , UUIDs                       )
     ##########################################################################
     DB     . Close               (                                           )
+    self   . setVacancy          (                                           )
+    self   . GoRelax . emit      (                                           )
+    self   . Notify              ( 5                                         )
     ##########################################################################
     return
   ############################################################################
@@ -2273,8 +2338,16 @@ class VideoAlbumsView             ( IconDock                               ) :
     if                           ( len ( UUIDs ) <= 0                      ) :
       return
     ##########################################################################
+    self   . OnBusy  . emit      (                                           )
+    self   . setBustle           (                                           )
+    ##########################################################################
     DB     = self . ConnectDB    (                                           )
     if                           ( self . NotOkay ( DB )                   ) :
+      ########################################################################
+      self . setVacancy          (                                           )
+      self . GoRelax . emit      (                                           )
+      self . Notify              ( 2                                         )
+      ########################################################################
       return
     ##########################################################################
     ALMTAB = self . Tables       [ "Albums"                                  ]
@@ -2293,6 +2366,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     ##########################################################################
     DB     . UnlockTables        (                                           )
     DB     . Close               (                                           )
+    self   . setVacancy          (                                           )
+    self   . GoRelax . emit      (                                           )
     self   . Notify              ( 5                                         )
     ##########################################################################
     return
