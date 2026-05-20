@@ -8,6 +8,7 @@ from . ProgressManager       import ProgressManager       as ProgressManager
 from . ProgressIndicator     import ProgressIndicator     as ProgressIndicator
 from . SmartNote             import SmartNote             as SmartNote
 from . LogHistory            import LogHistory            as LogHistory
+from . ExecutionLogger       import ExecutionLogger       as ExecutionLogger
 from . VariantTables         import VariantTables         as VariantTables
 from . ClipboardView         import ClipboardView         as ClipboardView
 from . TimeZoneListings      import TimeZoneListings      as TimeZoneListings
