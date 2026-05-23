@@ -31,9 +31,9 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
   emitAddText    = Signal ( str                                              )
   emitWindowIcon = Signal ( bool                                             )
   ############################################################################
-  def __init__            ( self , parent = None , plan = None             ) :
+  def __init__                       ( self , parent = None , plan = None  ) :
     ##########################################################################
-    super ( ) . __init__  ( parent , plan                                    )
+    super ( ) . __init__             ( parent , plan                         )
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -42,18 +42,19 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
                                 Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea
     ##########################################################################
-    self . setFunction    ( self . FunctionDocking , True                    )
-    self . setFunction    ( self . HavingMenu      , True                    )
+    self . setFunction               ( self . FunctionDocking , True         )
+    self . setFunction               ( self . HavingMenu      , True         )
     ##########################################################################
-    self . emitAddText    . connect ( self . appendPlainText                 )
-    self . emitWindowIcon . connect ( self . assignWindowIcon                )
+    self . emitAddText    . connect  ( self . appendPlainText                )
+    self . emitWindowIcon . connect  ( self . assignWindowIcon               )
     ##########################################################################
-    self . setReadOnly    ( True                                             )
+    self . setReadOnly               ( True                                  )
     self . TZ          = "Asia/Taipei"
     self . receiveLog  = True
+    self . AtMenu      = False
     self . defaultFont = self . font (                                       )
     ##########################################################################
-    self . setPrepared    ( True                                             )
+    self . setPrepared               ( True                                  )
     ##########################################################################
     return
   ############################################################################
@@ -73,27 +74,64 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
     ##########################################################################
     return False
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    self . AppendSideActionWithIcon ( "DefaultFont"                        , \
+                                      ":/images/font.png"                  , \
+                                      self . AssignDefaultFont             , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self        ,                    Enabled           ) :
+    ##########################################################################
+    self . LinkAction ( "Delete"    , self . clear     , Enabled             )
+    self . LinkAction ( "Copy"      , self . copy      , Enabled             )
+    self . LinkAction ( "SelectAll" , self . selectAll , Enabled             )
+    self . LinkAction ( "ZoomIn"    , self . ZoomIn    , Enabled             )
+    self . LinkAction ( "ZoomOut"   , self . ZoomOut                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"   , self . windowTitle ( )               )
-    ##########################################################################
-    self . LinkAction     ( "Delete"    , self . clear                       )
-    self . LinkAction     ( "Copy"      , self . copy                        )
-    self . LinkAction     ( "SelectAll" , self . selectAll                   )
-    self . LinkAction     ( "ZoomIn"    , self . ZoomIn                      )
-    self . LinkAction     ( "ZoomOut"   , self . ZoomOut                     )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
     ##########################################################################
     return True
   ############################################################################
   def FocusOut ( self                                                      ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return False
+    if                         ( not self . isPrepared ( )                 ) :
+      return True
+    ##########################################################################
+    if                         ( not self . AtMenu                         ) :
+      ########################################################################
+      self . AttachActions     ( False                                       )
+      self . detachActionsTool (                                             )
     ##########################################################################
     return False
+  ############################################################################
+  def Shutdown               ( self                                        ) :
+    ##########################################################################
+    self . StayAlive   = False
+    self . LoopRunning = False
+    ##########################################################################
+    if                       ( self . isThreadRunning (                  ) ) :
+      return False
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    ## self . detachActionsTool (                                               )
+    self . LinkVoice         ( None                                          )
+    ##########################################################################
+    ## self . Leave . emit      ( self                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def startup                        ( self                                ) :
     ##########################################################################
@@ -135,6 +173,12 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
   def ZoomOut      ( self                                                  ) :
     ##########################################################################
     self . zoomOut ( 1                                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignDefaultFont ( self                                             ) :
+    ##########################################################################
+    self . setFont      ( self . defaultFont                                 )
     ##########################################################################
     return
   ############################################################################
@@ -203,8 +247,12 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
                                   TRX [ "UI::ReceiveLog" ]                 , \
                                   True                                     , \
                                   self . receiveLog                          )
-    mm     . addAction          ( 1102 , TRX [ "UI::DefaultFont"           ] )
-    mm     . addAction          ( 1103 , TRX [ "UI::ClearAll"              ] )
+    msg    = self . getMenuItem ( "DefaultFont"                              )
+    icon   = QIcon              ( ":/images/font.png"                        )
+    mm     . addActionWithIcon  ( 1102 , icon , msg                          )
+    msg    = self . getMenuItem ( "ClearAll"                                 )
+    icon   = QIcon              ( ":/images/undecided.png"                   )
+    mm     . addActionWithIcon  ( 1103 , icon , msg                          )
     mm     . addSeparator       (                                            )
     ##########################################################################
     mm     = self . TextingMenu ( mm                                         )
@@ -214,9 +262,13 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
     ##########################################################################
     self   . DockingMenu        ( mm                                         )
     ##########################################################################
+    self   . AtMenu = True
+    ##########################################################################
     mm     . setFont            ( self    . font ( )                         )
     aa     = mm . exec_         ( QCursor . pos  ( )                         )
     at     = mm . at            ( aa                                         )
+    ##########################################################################
+    self   . AtMenu = False
     ##########################################################################
     if                          ( self . RunTextingMenu ( at      )        ) :
       return True
@@ -235,7 +287,7 @@ class ExecutionLogger     ( PlainTextEdit                                  ) :
     ##########################################################################
     if                          ( 1102 == at                               ) :
       ########################################################################
-      self . setFont            ( self . defaultFont                         )
+      self . AssignDefaultFont  (                                            )
       ########################################################################
       return True
     ##########################################################################

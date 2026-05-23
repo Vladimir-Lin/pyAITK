@@ -73,9 +73,9 @@ class CommandInterface    ( TextEdit                                       ) :
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    self . AppendSideActionWithIcon ( "ClearAll"                           , \
-                                      ":/images/undecided.png"             , \
-                                      self . clear                         , \
+    self . AppendSideActionWithIcon ( "DefaultFont"                        , \
+                                      ":/images/font.png"                  , \
+                                      self . AssignDefaultFont             , \
                                       True                                 , \
                                       False                                  )
     self . AppendSideActionWithIcon ( "NamesFromClipboard"                 , \
@@ -111,6 +111,7 @@ class CommandInterface    ( TextEdit                                       ) :
     self . LinkAction ( "Load"      , self . Load      , Enabled             )
     self . LinkAction ( "Save"      , self . Save      , Enabled             )
     self . LinkAction ( "SaveAs"    , self . SaveAs    , Enabled             )
+    self . LinkAction ( "Delete"    , self . clear     , Enabled             )
     self . LinkAction ( "Undo"      , self . undo      , Enabled             )
     self . LinkAction ( "Redo"      , self . redo      , Enabled             )
     self . LinkAction ( "Cut"       , self . cut       , Enabled             )
@@ -150,7 +151,7 @@ class CommandInterface    ( TextEdit                                       ) :
     self . StayAlive   = False
     ##########################################################################
     self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
+    ## self . detachActionsTool (                                               )
     ##########################################################################
     return True
   ############################################################################
@@ -413,6 +414,12 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     return
   ############################################################################
+  def AssignDefaultFont ( self                                             ) :
+    ##########################################################################
+    self . setFont      ( self . defaultFont                                 )
+    ##########################################################################
+    return
+  ############################################################################
   def LocalityMenu            ( self , mm                                  ) :
     ##########################################################################
     TRX   = self . Translations
@@ -621,7 +628,7 @@ class CommandInterface    ( TextEdit                                       ) :
     ##########################################################################
     if                                 ( 4002 == at                        ) :
       ########################################################################
-      self . setFont                   ( self . defaultFont                  )
+      self . AssignDefaultFont         (                                     )
       ########################################################################
       return True
     ##########################################################################
