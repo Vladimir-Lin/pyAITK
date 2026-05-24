@@ -87,17 +87,19 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . RefreshOpts        = True
     self . Watermarking       = True
     self . ReportDetails      = False
-    self . UsedOptions        = [ 1 , 2 , 3 , 4 , 5 , 6 , 7 , 8 , 9          ]
-    self . IconOptions        = [     2 , 3 , 4 , 5 , 6 , 7 , 8 , 9          ]
+    self . UsedOptions        = [ 1,2,3,4,5,6,7,8,9,10,11                    ]
+    self . IconOptions        = [   2,3,4,5,6,7,8,9,10,11                    ]
     self . UsedIcons          = {  2 : "help.png"                          , \
                                    3 : "flowend.png"                       , \
                                    4 : "geography.png"                     , \
                                    5 : "astrophysics.png"                  , \
                                    6 : "apprentice.png"                    , \
                                    7 : "stars.png"                         , \
-                                   8 : "Books.png"                         , \
-                                   9 : "box.png"                           , \
-                                  10 : ""                                    }
+                                   8 : "descriptive-chapters.png"          , \
+                                   9 : "descriptive-subtitles.png"         , \
+                                  10 : "box.png"                           , \
+                                  11 : "blank.png"                         , \
+                                  12 : ""                                    }
     self . AlbumOPTs          = {                                            }
     ##########################################################################
     self . SearchLine         = None
