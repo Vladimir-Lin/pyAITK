@@ -192,6 +192,17 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . ReplacePartialByText          , \
                                       True                                 , \
                                       False                                  )
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon ( "AssignFinish"                       , \
+                                      ":/images/end.png"                   , \
+                                      self . AssignFinish                  , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "ChineseTS"                          , \
+                                      ":/images/language.png"              , \
+                                      self . DoTSCTranslations             , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     return
   ############################################################################
@@ -833,7 +844,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       ########################################################################
       self . setVacancy                (                                     )
       self . GoRelax . emit            (                                     )
-      self . Notify                    ( 2                                   )
+      self . Notify                    ( 1                                   )
       ########################################################################
       return
     ##########################################################################
@@ -1276,6 +1287,31 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def AssignFinish                 ( self                                  ) :
+    ##########################################################################
+    item    = self . currentItem   (                                         )
+    ##########################################################################
+    if                             ( item in self . EmptySet               ) :
+      ########################################################################
+      return
+    ##########################################################################
+    slen     = item . data         ( 0 , Qt . UserRole                       )
+    vlen     = int                 ( slen                                    )
+    FS       = self . Translations [ self . ClassTag ] [ "Finish"            ]
+    ##########################################################################
+    for L in                       [ 1001 , 1002 , 1003 , 1006             ] :
+      ########################################################################
+      msg    = FS                  [ f"{L}"                                  ]
+      self   . DESCRIBE . setLocalityContext ( vlen , L , msg                )
+      ########################################################################
+      if                           ( L == self . Locality                  ) :
+        ######################################################################
+        item . setText             ( 2 , msg                                 )
+    ##########################################################################
+    self   . Notify                ( 5                                       )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -1419,30 +1455,39 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def TranslationsMenu            ( self , mm , item                       ) :
+  def TranslationsMenu                   ( self , mm , item                ) :
     ##########################################################################
-    if                            ( item in self . EmptySet                ) :
+    if                                   ( item in self . EmptySet         ) :
       return mm
     ##########################################################################
-    TRX    = self . Translations  [ "Translations"                           ]
-    msg    = self . Translations  [ "UI::Translations"                       ]
-    KEYs   = TRX  . keys          (                                          )
+    TRX      = self . Translations       [ "Translations"                    ]
+    msg      = self . Translations       [ "UI::Translations"                ]
+    KEYs     = TRX  . keys               (                                   )
     ##########################################################################
-    LOT    = mm   . addMenu       ( msg                                      )
+    LOT      = mm   . addMenu            ( msg                               )
     ##########################################################################
-    MSG    = self . getMenuItem   ( "ConvertAllCC"                           )
-    mm     . addActionFromMenu    ( LOT                                    , \
-                                    7000                                   , \
-                                    MSG                                    , \
-                                    True                                   , \
-                                    self . ConvertAllCC                      )
+    MSG      = self . getMenuItem        ( "ConvertAllCC"                    )
+    mm       . addActionFromMenu         ( LOT                             , \
+                                           7000                            , \
+                                           MSG                             , \
+                                           True                            , \
+                                           self . ConvertAllCC               )
     ##########################################################################
-    mm     . addSeparatorFromMenu ( LOT                                      )
+    mm       . addSeparatorFromMenu      ( LOT                               )
     ##########################################################################
     for K in KEYs                                                            :
-       msg = TRX                  [ K                                        ]
-       V   = int                  ( K                                        )
-       mm  . addActionFromMenu    ( LOT , V , msg                            )
+      ########################################################################
+      msg    = TRX                       [ K                                 ]
+      V      = int                       ( K                                 )
+      ########################################################################
+      if                                 ( 7001 == V                       ) :
+        ######################################################################
+        icon = QIcon                     ( ":/images/language.png"           )
+        mm   . addActionFromMenuWithIcon ( LOT , V , icon , msg              )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        mm   . addActionFromMenu         ( LOT , V        , msg              )
     ##########################################################################
     return mm
   ############################################################################
@@ -1469,6 +1514,16 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self   . DESCRIBE . setContext ( pid , target                            )
     ##########################################################################
     return   True
+  ############################################################################
+  def DoTSCTranslations       ( self                                       ) :
+    ##########################################################################
+    item = self . currentItem (                                              )
+    if                        ( item in self . EmptySet                    ) :
+      return
+    ##########################################################################
+    self . HandleTranslations ( item , 7001                                  )
+    ##########################################################################
+    return
   ############################################################################
   def HandleTranslations             ( self , item , ID                    ) :
     ##########################################################################
@@ -1829,9 +1884,15 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     mm     . addSeparator               (                                    )
     ##########################################################################
+    if                                  ( atItem not in self . EmptySet    ) :
+      ########################################################################
+      msg  = self . getMenuItem         ( "AssignFinish"                     )
+      icon = QIcon                      ( ":/images/end.png"                 )
+      mm   . addActionWithIcon          ( 2001 , icon , msg                  )
+    ##########################################################################
     msg    = self . getMenuItem         ( "OpenSegments"                     )
     icon   = QIcon                      ( ":/images/descriptive-segments.png" )
-    mm     . addActionWithIcon          ( 2001 , icon , msg                  )
+    mm     . addActionWithIcon          ( 2002 , icon , msg                  )
     ##########################################################################
     if                                  ( self . PlayerConnected           ) :
       ########################################################################
@@ -1949,6 +2010,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return True
     ##########################################################################
     if                                  ( 2001 == at                       ) :
+      self . AssignFinish               (                                    )
+      return True
+    ##########################################################################
+    if                                  ( 2002 == at                       ) :
       self . GotoSegments               (                                    )
       return True
     ##########################################################################

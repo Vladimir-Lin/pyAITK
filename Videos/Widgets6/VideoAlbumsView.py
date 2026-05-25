@@ -98,7 +98,7 @@ class VideoAlbumsView             ( IconDock                               ) :
                                    8 : "tasks.png"                         , \
                                    9 : "descriptive-subtitles.png"         , \
                                   10 : "box.png"                           , \
-                                  11 : "classmodel.png"                    , \
+                                  11 : "graphics.png"                      , \
                                   12 : "blank.png"                         , \
                                   12 : ""                                    }
     self . AlbumOPTs          = {                                            }
