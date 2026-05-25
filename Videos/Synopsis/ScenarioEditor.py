@@ -1732,7 +1732,12 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     for L in LANGs                                                           :
       ########################################################################
-      NAMEs [ L ] = self . GetName    ( DB , NAMTAB , uuid                   )
+      NAMEs [ L ] = self . GetNameByLocality                               ( \
+                                        DB                                 , \
+                                        NAMTAB                             , \
+                                        uuid                               , \
+                                        L                                  , \
+                                        "Default"                            )
       ########################################################################
       if                              ( 0 == len ( NAMEs [ L ] )           ) :
         RCODE   = 1
