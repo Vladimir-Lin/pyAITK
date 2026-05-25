@@ -1202,8 +1202,14 @@ class ScenarioEditor             ( TreeDock                                ) :
         if                                ( ( not HC  ) and ( not HP  )    ) :
           continue
         ######################################################################
-        HVC    = JOPTs                    [ "Chapter"                        ]
-        HVP    = JOPTs                    [ "Paragraph"                      ]
+        HVC    = False
+        HVP    = False
+        ######################################################################
+        if                                ( HC                             ) :
+          HVC  = JOPTs                    [ "Chapter"                        ]
+        ######################################################################
+        if                                ( HP                             ) :
+          HVP  = JOPTs                    [ "Paragraph"                      ]
         ######################################################################
         if                                ( ( not HVC ) and ( not HVP )    ) :
           continue
