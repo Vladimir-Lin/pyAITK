@@ -1772,6 +1772,7 @@ class ScenarioEditor             ( TreeDock                                ) :
         DESC  . setLocalityContext     ( 0     , L , NAMEs [ L             ] )
         DESC  . setOption              ( 0     , "Chapter"  , True           )
         DESC  . setOption              ( 0     , "Subtitle" , True           )
+        DESC  . setOption              ( 0     , "Duration" , 5000000        )
         DESC  . setLocalityContext     ( ztime , L , FS    [ f"{L}"        ] )
       ########################################################################
       DJSON   = DESC  . toJson         (                                     )
