@@ -2155,7 +2155,7 @@ class VideoAlbumsView             ( IconDock                               ) :
       if                               ( IKEY in self . AlbumOPTs [ uuid ] ) :
         ######################################################################
         KT = self . AlbumOPTs [ uuid ] [ "Identifiers"                       ]
-        L  . setText                   ( KT                                  )
+        L  . setText                   ( " , " . join ( KT )                 )
     ##########################################################################
     p      = self      . GetPlan       (                                     )
     p      . statusBar . addPermanentWidget ( L                              )
