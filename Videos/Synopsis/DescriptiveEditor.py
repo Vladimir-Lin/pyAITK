@@ -203,6 +203,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       self . DoTSCTranslations             , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "AdjustCapLength"                    , \
+                                      ":/images/sort.png"                  , \
+                                      self . AdjustCapLength               , \
+                                      True                                 , \
+                                      False                                  )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "CloneFromSource"                    , \
@@ -1529,13 +1534,17 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return   True
   ############################################################################
-  def DoTSCTranslations       ( self                                       ) :
+  def DoTSCTranslations         ( self                                     ) :
     ##########################################################################
-    item = self . currentItem (                                              )
-    if                        ( item in self . EmptySet                    ) :
-      return
+    item = None
     ##########################################################################
-    self . HandleTranslations ( item , 7001                                  )
+    if                          ( not self . ConvertAllCC                  ) :
+      ########################################################################
+      item = self . currentItem (                                            )
+      if                        ( item in self . EmptySet                  ) :
+        return
+    ##########################################################################
+    self . HandleTranslations   ( item , 7001                                )
     ##########################################################################
     return
   ############################################################################
@@ -1852,7 +1861,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     mm   . addActionFromMenuWithIcon ( LOM , 75413502 , icon , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "AdjustCapLength"                     )
-    mm   . addActionFromMenu         ( LOM , 75413503        , msg           )
+    icon = QIcon                     ( ":/images/sort.png"                   )
+    mm   . addActionFromMenuWithIcon ( LOM , 75413503 , icon , msg           )
     ##########################################################################
     return mm
   ############################################################################
