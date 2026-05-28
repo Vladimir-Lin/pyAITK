@@ -2117,6 +2117,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
     self    . Notify                  ( 5                                    )
+    self    . Go                      ( self . FetchExtraInformations      , \
+                                        ( [ UUID ] , )                       )
     ##########################################################################
     return
   ############################################################################
