@@ -59,6 +59,7 @@ class OrganizationListings     ( TreeDock                                  ) :
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
+    self . ReportDetails      = False
     self . UUIDs              = [                                            ]
     ##########################################################################
     self . Grouping           = "Original"
@@ -155,6 +156,9 @@ class OrganizationListings     ( TreeDock                                  ) :
     return
   ############################################################################
   def TellStory               ( self , Enabled                             ) :
+    ##########################################################################
+    if                        ( not self . ReportDetails                   ) :
+      return
     ##########################################################################
     GG   = self . Grouping
     TT   = self . windowTitle (                                              )
@@ -1377,6 +1381,13 @@ class OrganizationListings     ( TreeDock                                  ) :
     ICON = QIcon                     ( ":/images/search.png"                 )
     mm   . addActionFromMenuWithIcon ( LOM , 25351401 , ICON , msg           )
     ##########################################################################
+    msg  = self . getMenuItem        ( "ReportDetails"                       )
+    mm   . addActionFromMenu         ( LOM                                 , \
+                                       25351501                            , \
+                                       msg                                 , \
+                                       True                                , \
+                                       self . ReportDetails                  )
+    ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
@@ -1420,6 +1431,12 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     if                                 ( at == 25351401                    ) :
       self . Search                    (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 25351501                    ) :
+      ########################################################################
+      self . ReportDetails = not self . ReportDetails
+      ########################################################################
       return True
     ##########################################################################
     return False
