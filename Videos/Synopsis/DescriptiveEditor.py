@@ -204,6 +204,18 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       True                                 , \
                                       False                                  )
     ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon ( "CloneFromSource"                    , \
+                                      ":/images/export.png"                , \
+                                      self . CloneFromSource               , \
+                                      True                                 , \
+                                      False                                  )
+    self . AppendSideActionWithIcon ( "CopyFromSource"                     , \
+                                      ":/images/copy.png"                  , \
+                                      self . CopyFromSource                , \
+                                      True                                 , \
+                                      False                                  )
+    ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
@@ -1379,10 +1391,12 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     LOM   = mm    . addMenu      ( MENUZ [ "Language" ]                      )
     ##########################################################################
     MSG   = self . getMenuItem   ( "CloneFromSource"                         )
-    mm    . addActionFromMenu    ( LOM , BASE          , MSG                 )
+    icon  = QIcon                ( ":/images/export.png"                     )
+    mm    . addActionFromMenuWithIcon ( LOM , BASE          , icon , MSG     )
     ##########################################################################
     MSG   = self . getMenuItem   ( "CopyFromSource"                          )
-    mm    . addActionFromMenu    ( LOM , BASE + 999999 , MSG                 )
+    icon  = QIcon                ( ":/images/copy.png"                       )
+    mm    . addActionFromMenuWithIcon ( LOM , BASE + 999999 , icon , MSG     )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################

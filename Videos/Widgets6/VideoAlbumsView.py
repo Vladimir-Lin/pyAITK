@@ -2148,6 +2148,15 @@ class VideoAlbumsView             ( IconDock                               ) :
     L      = LineEdit                  ( None , self . PlanFunc              )
     L      . setMinimumWidth           ( 120                                 )
     L      . setMaximumWidth           ( 120                                 )
+    ##########################################################################
+    if                                 ( uuid in self . AlbumOPTs          ) :
+      ########################################################################
+      IKEY = "Identifiers"
+      if                               ( IKEY in self . AlbumOPTs [ uuid ] ) :
+        ######################################################################
+        KT = self . AlbumOPTs [ uuid ] [ "Identifiers"                       ]
+        L  . setText                   ( KT                                  )
+    ##########################################################################
     p      = self      . GetPlan       (                                     )
     p      . statusBar . addPermanentWidget ( L                              )
     ##########################################################################
