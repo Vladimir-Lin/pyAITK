@@ -1125,25 +1125,60 @@ class ScenarioEditor             ( TreeDock                                ) :
     FALBUM     = ""
     GNAME      = ""
     ##########################################################################
-    if                          ( "major_brand"       in TMJ               ) :
-      MBRAND   = TMJ            [ "major_brand"                              ]
-    if                          ( "minor_version"     in TMJ               ) :
-      MVER     = TMJ            [ "minor_version"                            ]
-    if                          ( "compatible_brands" in TMJ               ) :
-      CBRAND   = TMJ            [ "compatible_brands"                        ]
-    if                          ( "title"             in TMJ               ) :
-      FTITLE   = TMJ            [ "title"                                    ]
-    if                          ( "album"             in TMJ               ) :
-      FALBUM   = TMJ            [ "album"                                    ]
-    if                          ( "grouping"          in TMJ               ) :
-      GNAME    = TMJ            [ "grouping"                                 ]
+    if                           ( "major_brand"       in TMJ              ) :
+      MBRAND   = TMJ             [ "major_brand"                             ]
+    if                           ( "minor_version"     in TMJ              ) :
+      MVER     = TMJ             [ "minor_version"                           ]
+    if                           ( "compatible_brands" in TMJ              ) :
+      CBRAND   = TMJ             [ "compatible_brands"                       ]
+    if                           ( "title"             in TMJ              ) :
+      FTITLE   = TMJ             [ "title"                                   ]
+    if                           ( "album"             in TMJ              ) :
+      FALBUM   = TMJ             [ "album"                                   ]
+    if                           ( "grouping"          in TMJ              ) :
+      GNAME    = TMJ             [ "grouping"                                ]
     ##########################################################################
-    ROWS       . append         ( f"major_brand={MBRAND}"                    )
-    ROWS       . append         ( f"minor_version={MVER}"                    )
-    ROWS       . append         ( f"compatible_brands={CBRAND}"              )
-    ROWS       . append         ( f"title={FTITLE}"                          )
-    ROWS       . append         ( f"album={FALBUM}"                          )
-    ROWS       . append         ( f"grouping={GNAME}"                        )
+    THEAD      = METAFILE
+    THEAD      = THEAD . replace ( "metadata.txt" , "head.txt"               )
+    THFILE     = Path            ( THEAD                                     )
+    ##########################################################################
+    if                           ( THFILE . is_file (                    ) ) :
+      ########################################################################
+      LINEs    =                 [                                           ]
+      ########################################################################
+      with open                  ( THFILE , "r"                       ) as F :
+        LINEs  = F . readlines   (                                           )
+      ########################################################################
+      if                         ( len ( LINEs ) >= 3                      ) :
+        ######################################################################
+        HT     =                 [                                           ]
+        ######################################################################
+        for L in LINEs                                                       :
+          ####################################################################
+          S    = L . replace     ( "\n" , ""                                 )
+          S    = S . replace     ( "\r" , ""                                 )
+          S    = S . replace     ( "\t" , ""                                 )
+          ####################################################################
+          HT   . append          ( S                                         )
+        ######################################################################
+        if                       ( len ( FTITLE ) <= 0                     ) :
+          ####################################################################
+          FTITLE = HT            [ 0                                         ]
+        ######################################################################
+        if                       ( len ( FALBUM ) <= 0                     ) :
+          ####################################################################
+          FALBUM = HT            [ 1                                         ]
+        ######################################################################
+        if                       ( len ( GNAME  ) <= 0                     ) :
+          ####################################################################
+          GNAME  = HT            [ 2                                         ]
+    ##########################################################################
+    ROWS       . append          ( f"major_brand={MBRAND}"                   )
+    ROWS       . append          ( f"minor_version={MVER}"                   )
+    ROWS       . append          ( f"compatible_brands={CBRAND}"             )
+    ROWS       . append          ( f"title={FTITLE}"                         )
+    ROWS       . append          ( f"album={FALBUM}"                         )
+    ROWS       . append          ( f"grouping={GNAME}"                       )
     ##########################################################################
     TBS        = ""
     DTS        = ""
