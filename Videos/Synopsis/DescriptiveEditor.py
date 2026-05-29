@@ -38,6 +38,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitUpdated         = Signal (                                             )
   emitUpdatePTS       = Signal (                                             )
   emitUpdatePtsItem   = Signal (                                             )
+  emitItemChanged     = Signal (                                             )
   emitItemsSaved      = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitGoItem          = Signal ( int                                         )
@@ -110,6 +111,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . emitGoItem        . connect ( self . redoItem                     )
     self . emitUpdatePTS     . connect ( self . FilmUpdatePTS                )
     self . emitUpdatePtsItem . connect ( self . PtsUpdateItem                )
+    self . emitItemChanged   . connect ( self . ItemChanged                  )
     self . emitItemsSaved    . connect ( self . ItemsSaved                   )
     ##########################################################################
     self . setFunction                 ( self . FunctionDocking , True       )
@@ -1183,6 +1185,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       OPS    = self . DESCRIBE . OptionString ( pid                          )
       it     . setText                        ( 3 , OPS                      )
     ##########################################################################
+    self     . emitItemChanged . emit         (                              )
+    ##########################################################################
     return
   ############################################################################
   def SwitchParagraphs                        ( self                       ) :
@@ -1209,6 +1213,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       OPS    = self . DESCRIBE . OptionString ( pid                          )
       it     . setText                        ( 3 , OPS                      )
     ##########################################################################
+    self     . emitItemChanged . emit         (                              )
+    ##########################################################################
     return
   ############################################################################
   def SwitchSubtitles                       ( self                         ) :
@@ -1225,6 +1231,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       ########################################################################
       OPS  = self . DESCRIBE . OptionString ( pid                            )
       it   . setText                        ( 3 , OPS                        )
+    ##########################################################################
+    self   . emitItemChanged . emit         (                                )
     ##########################################################################
     return
   ############################################################################
@@ -1344,7 +1352,8 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       if                                    ( MSG == ST                    ) :
         self . DESCRIBE . setContext        ( T , TT                         )
     ##########################################################################
-    self     . emitReload   . emit          (                                )
+    self     . emitItemChanged . emit       (                                )
+    self     . emitReload      . emit       (                                )
     ##########################################################################
     return
   ############################################################################
@@ -1362,39 +1371,42 @@ class DescriptiveEditor        ( TreeDock                                  ) :
         M    = MSG . replace                ( ST , TT                        )
         self . DESCRIBE . setContext        ( T  , M                         )
     ##########################################################################
-    self     . emitReload   . emit          (                                )
+    self     . emitItemChanged . emit       (                                )
+    self     . emitReload      . emit       (                                )
     ##########################################################################
     return
   ############################################################################
-  def AdjustCapLength                     ( self                           ) :
+  def AdjustCapLength                          ( self                      ) :
     ##########################################################################
-    self . DESCRIBE   . AutoAdjustLengths (                                  )
-    self . emitReload . emit              (                                  )
+    self . DESCRIBE        . AutoAdjustLengths (                             )
+    self . emitItemChanged . emit              (                             )
+    self . emitReload      . emit              (                             )
     ##########################################################################
     return
   ############################################################################
-  def AssignFinish                 ( self                                  ) :
+  def AssignFinish                    ( self                               ) :
     ##########################################################################
-    item    = self . currentItem   (                                         )
+    item    = self . currentItem      (                                      )
     ##########################################################################
-    if                             ( item in self . EmptySet               ) :
+    if                                ( item in self . EmptySet            ) :
       ########################################################################
       return
     ##########################################################################
-    slen     = item . data         ( 0 , Qt . UserRole                       )
-    vlen     = int                 ( slen                                    )
-    FS       = self . Translations [ self . ClassTag ] [ "Finish"            ]
+    slen     = item . data            ( 0 , Qt . UserRole                    )
+    vlen     = int                    ( slen                                 )
+    FS       = self . Translations    [ self . ClassTag ] [ "Finish"         ]
     ##########################################################################
-    for L in                       [ 1001 , 1002 , 1003 , 1006             ] :
+    for L in                          [ 1001 , 1002 , 1003 , 1006          ] :
       ########################################################################
-      msg    = FS                  [ f"{L}"                                  ]
+      msg    = FS                     [ f"{L}"                               ]
       self   . DESCRIBE . setLocalityContext ( vlen , L , msg                )
       ########################################################################
-      if                           ( L == self . Locality                  ) :
+      if                              ( L == self . Locality               ) :
         ######################################################################
-        item . setText             ( 2 , msg                                 )
+        item . setText                ( 2 , msg                              )
     ##########################################################################
-    self   . Notify                ( 5                                       )
+    self     . emitItemChanged . emit (                                      )
+    self     . Notify                 ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -1617,42 +1629,44 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def HandleTranslations             ( self , item , ID                    ) :
+  def HandleTranslations              ( self , item , ID                   ) :
     ##########################################################################
-    if                               ( 7000 == ID                          ) :
+    if                                ( 7000 == ID                         ) :
       ########################################################################
       self   . ConvertAllCC = not self . ConvertAllCC
       ########################################################################
       return
     ##########################################################################
-    if                               ( ( ID < 7001 ) or ( ID > 7008 )      ) :
+    if                                ( ( ID < 7001 ) or ( ID > 7008 )     ) :
       return False
     ##########################################################################
-    CODE     = self . ConvertCCCcode ( int ( ID - 7000  )                    )
+    CODE     = self . ConvertCCCcode  ( int ( ID - 7000  )                   )
     ##########################################################################
-    if                               ( len ( CODE ) <= 0                   ) :
+    if                                ( len ( CODE ) <= 0                  ) :
       return False
     ##########################################################################
-    if                               ( self . ConvertAllCC                 ) :
+    if                                ( self . ConvertAllCC                ) :
       ########################################################################
-      for ait in range               ( 0 , self . topLevelItemCount (    ) ) :
+      for ait in range                ( 0 , self . topLevelItemCount (   ) ) :
         ######################################################################
-        ITX  = self . topLevelItem   ( ait                                   )
-        self . ConvertItemCC         ( ITX , CODE                            )
+        ITX  = self . topLevelItem    ( ait                                  )
+        self . ConvertItemCC          ( ITX , CODE                           )
       ########################################################################
-      self   . Notify                ( 5                                     )
+      self   . Notify                 ( 5                                    )
       ########################################################################
     else                                                                     :
       ########################################################################
-      OKAY   = self . ConvertItemCC  ( item , CODE                           )
+      OKAY   = self . ConvertItemCC   ( item , CODE                          )
       ########################################################################
-      if                             ( OKAY                                ) :
+      if                              ( OKAY                               ) :
         ######################################################################
-        self . Notify                ( 1                                     )
+        self . Notify                 ( 1                                    )
         ######################################################################
       else                                                                   :
         ######################################################################
-        self . Notify                ( 5                                     )
+        self . Notify                 ( 5                                    )
+    ##########################################################################
+    self     . emitItemChanged . emit (                                      )
     ##########################################################################
     return True
   ############################################################################
