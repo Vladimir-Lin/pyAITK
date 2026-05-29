@@ -237,6 +237,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItem       , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
@@ -662,7 +663,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def InsertItem                        ( self                             ) :
+  def InsertItem                        ( self , TEXT = ""                 ) :
     ##########################################################################
     IDX    = -1
     CIT    = self . currentItem         (                                    )
@@ -683,7 +684,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       vlen = int                        ( int ( slen ) + self . TimeGap      )
       IDX  = int                        ( IDX + 1                            )
     ##########################################################################
-    self   . DESCRIBE . addItem         ( vlen , ""                          )
+    self   . DESCRIBE . addItem         ( vlen , TEXT                        )
     ##########################################################################
     if                                  ( IDX < 0                          ) :
       ########################################################################
@@ -691,6 +692,17 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     self   . reload                     (                                    )
     self   . Go                         ( self . WaitFocusIn , ( IDX , )     )
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteItem                         ( self                             ) :
+    ##########################################################################
+    TEXT = qApp . clipboard  ( ) . text (                                    )
+    ##########################################################################
+    if                                  ( len ( TEXT ) <= 0                ) :
+      return
+    ##########################################################################
+    self . InsertItem                   ( TEXT                               )
     ##########################################################################
     return
   ############################################################################
