@@ -149,6 +149,11 @@ class ScenarioEditor             ( TreeDock                                ) :
                                       True                                 , \
                                       False                                  )
     self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon ( "ShowAllColumns"                     , \
+                                      ":/images/task.png"                  , \
+                                      self . ShowAllColumns                , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendSideActionWithIcon ( "CreateBrief"                        , \
                                       ":/images/descriptive-chapters.png"  , \
                                       self . CreateBriefScenario           , \
@@ -1875,14 +1880,23 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def ColumnsMenu                   ( self , mm                           ) :
+  def ShowAllColumns         ( self                                        ) :
+    ##########################################################################
+    for i in range           ( 2 , self . columnCount (                  ) ) :
+      ########################################################################
+      self . setColumnHidden ( i , False                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ColumnsMenu                   ( self , mm                            ) :
     ##########################################################################
     TRX     = self . Translations
     head    = self . headerItem     (                                        )
     COL     = mm   . addMenu        ( TRX [ "UI::Columns" ]                  )
     ##########################################################################
     msg     = self . getMenuItem    ( "ShowAllColumns"                       )
-    mm      . addActionFromMenu     ( COL , 9501 , msg                       )
+    icon    = QIcon                 ( ":/images/task.png"                    )
+    mm      . addActionFromMenuWithIcon ( COL , 9501 , icon , msg            )
     ##########################################################################
     mm      . addSeparatorFromMenu  ( COL                                    )
     ##########################################################################
@@ -1901,9 +1915,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     if                               ( 9501 == at                          ) :
       ########################################################################
-      for i in range                 ( 2 , self . columnCount (          ) ) :
-        ######################################################################
-        self . setColumnHidden       ( i , False                             )
+      self   . ShowAllColumns        (                                       )
       ########################################################################
       return
     ##########################################################################

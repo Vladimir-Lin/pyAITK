@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SegmentEditor
-## 影片時段描述
+## SceneRolesEditor
+## 影片人物對映
 ##############################################################################
 import os
 import sys
@@ -27,7 +27,7 @@ from           . Descriptive           import Descriptive as DescriptiveItem
 from           . Descriptive           import Segment     as SegmentItem
 from           . Descriptive           import Anchor      as AnchorItem
 ##############################################################################
-class SegmentEditor      ( TreeDock                                        ) :
+class SceneRolesEditor   ( TreeDock                                        ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
@@ -40,7 +40,7 @@ class SegmentEditor      ( TreeDock                                        ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
-    self . ClassTag           = "SegmentEditor"
+    self . ClassTag           = "SceneRolesEditor"
     self . FetchTableKey      = self . ClassTag
     self . GType              = 212
     self . PlayerWidget       = None
