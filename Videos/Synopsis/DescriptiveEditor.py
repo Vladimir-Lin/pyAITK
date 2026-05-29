@@ -38,6 +38,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitUpdated         = Signal (                                             )
   emitUpdatePTS       = Signal (                                             )
   emitUpdatePtsItem   = Signal (                                             )
+  emitItemsSaved      = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitGoItem          = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
@@ -72,6 +73,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . TrackPtsForItem    = False
     self . SyncPlayerTime     = False
     self . ScrollAt           = -1
+    self . DescriptiveTitle   = ""
+    self . WaitingForSave     = ""
+    self . SaveButton         = None
+    self . WantSave           = False
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -105,6 +110,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . emitGoItem        . connect ( self . redoItem                     )
     self . emitUpdatePTS     . connect ( self . FilmUpdatePTS                )
     self . emitUpdatePtsItem . connect ( self . PtsUpdateItem                )
+    self . emitItemsSaved    . connect ( self . ItemsSaved                   )
     ##########################################################################
     self . setFunction                 ( self . FunctionDocking , True       )
     self . setFunction                 ( self . HavingMenu      , True       )
@@ -229,33 +235,47 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    self . LinkAction ( "Save"       , self . SaveToDatabase  , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
+    E    = Enabled
+    ##########################################################################
+    if                ( E                                            ) :
+      ########################################################################
+      E  = self . WantSave
+    ##########################################################################
+    self . LinkAction ( "Save"       , self . SaveToDatabase  , E            )
+    ##########################################################################
     return
   ############################################################################
-  def FocusIn                     ( self                                   ) :
-    return self . defaultFocusIn  (                                          )
+  def FocusIn ( self                                                       ) :
+    ##########################################################################
+    if        ( self . SaveButton not in self . EmptySet                   ) :
+      ########################################################################
+      self . SaveButton . setEnabled ( self . WantSave                       )
+    ##########################################################################
+    return self . defaultFocusIn     (                                       )
   ############################################################################
   def FocusOut                    ( self                                   ) :
     return self . defaultFocusOut (                                          )
   ############################################################################
-  def Shutdown               ( self                                        ) :
+  def Shutdown                     ( self                                  ) :
     ##########################################################################
     self . StayAlive   = False
     self . LoopRunning = False
     ##########################################################################
-    if                       ( self . isThreadRunning (                  ) ) :
+    self . SaveButton . setEnabled ( True                                    )
+    ##########################################################################
+    if                             ( self . isThreadRunning (            ) ) :
       return False
     ##########################################################################
-    self . AttachActions     ( False                                         )
-    self . detachActionsTool (                                               )
-    self . LinkVoice         ( None                                          )
+    self . AttachActions           ( False                                   )
+    self . detachActionsTool       (                                         )
+    self . LinkVoice               ( None                                    )
     ##########################################################################
-    self . Leave . emit      ( self                                          )
+    self . Leave . emit            ( self                                    )
     ##########################################################################
     return True
   ############################################################################
@@ -553,6 +573,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       ########################################################################
       self . DefaultTitle = JSON            [ "Name"                         ]
     ##########################################################################
+    self   . PrepareChanged                 (                                )
     self   . reload                         (                                )
     ##########################################################################
     return
@@ -708,6 +729,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
         rlen = self . DESCRIBE . realTime  ( dlen                            )
         self . DESCRIBE . Replace          ( vlen , rlen                     )
         item . setText                     ( column , msg                    )
+        self . ItemChanged                 (                                 )
         self . emitReload   . emit         (                                 )
         self . Go                          ( self . WaitReloaded , ( rlen, ) )
       ########################################################################
@@ -724,6 +746,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
         self . DESCRIBE . setOption        ( vlen , "Duration" , dlen        )
         item . setText                     ( column , msg                    )
         item . setData                     ( column , Qt . UserRole , DTS    )
+        self . ItemChanged                 (                                 )
         self . Notify                      ( 5                               )
       ########################################################################
     elif                                   ( 2 == column                   ) :
@@ -732,7 +755,52 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       vlen   = int                         ( slen                            )
       item   . setText                     ( column , msg                    )
       self   . DESCRIBE . setContext       ( vlen , msg                      )
+      self   . ItemChanged                 (                                 )
       self   . Notify                      ( 5                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareChanged               ( self                                  ) :
+    ##########################################################################
+    self . DescriptiveTitle = self . windowTitle (                           )
+    DT                      = self . DescriptiveTitle
+    self . WaitingForSave   = f"* {DT}"
+    ##########################################################################
+    p    = self . GetPlan          (                                         )
+    ##########################################################################
+    if                             ( p in self . EmptySet                  ) :
+      return
+    ##########################################################################
+    self . SaveButton = p . Action ( "Save"                                  )
+    ##########################################################################
+    if                             ( self . SaveButton in self . EmptySet  ) :
+      return
+    ##########################################################################
+    self . SaveButton . setEnabled ( False                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def ItemChanged                  ( self                                  ) :
+    ##########################################################################
+    self . WantSave = True
+    self . setWindowTitle          ( self . WaitingForSave                   )
+    ##########################################################################
+    if                             ( self . SaveButton in self . EmptySet  ) :
+      return
+    ##########################################################################
+    self . SaveButton . setEnabled ( True                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def ItemsSaved                   ( self                                  ) :
+    ##########################################################################
+    self . WantSave = False
+    self . setWindowTitle          ( self . DescriptiveTitle                 )
+    ##########################################################################
+    if                             ( self . SaveButton in self . EmptySet  ) :
+      return
+    ##########################################################################
+    self . SaveButton . setEnabled ( False                                   )
     ##########################################################################
     return
   ############################################################################
@@ -882,9 +950,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     DB     . UnlockTables              (                                     )
     DB     . Close                     (                                     )
     self   . setVacancy                (                                     )
-    self   . GoRelax . emit            (                                     )
+    self   . GoRelax        . emit     (                                     )
     self   . Notify                    ( 5                                   )
-    self   . emitUpdated . emit        (                                     )
+    self   . emitItemsSaved . emit     (                                     )
+    self   . emitUpdated    . emit     (                                     )
     ##########################################################################
     return
   ############################################################################
