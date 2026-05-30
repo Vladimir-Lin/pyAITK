@@ -10,18 +10,13 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
-##############################################################################
-from   AITK    . Essentials . Relation import Relation
-from   AITK    . Calendars  . StarDate import StarDate
-from   AITK    . Calendars  . Periode  import Periode
-from           . FilmActions           import FilmActions
+from   PySide6             import QtCore
+from   PySide6             import QtGui
+from   PySide6             import QtWidgets
+from   PySide6 . QtCore    import *
+from   PySide6 . QtGui     import *
+from   PySide6 . QtWidgets import *
+from   AITK    . Qt6       import *
 ##############################################################################
 class PostureActionsEditor ( TreeDock                                      ) :
   ############################################################################
@@ -37,6 +32,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
     ##########################################################################
     self . ClassTag           = "PostureActionsEditor"
     self . JSON               = { "Keys" : [ ] , "Translations" : { }        }
+    self . KEYs               = [                                            ]
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -46,13 +42,11 @@ class PostureActionsEditor ( TreeDock                                      ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 4                                       )
-    self . setColumnWidth          ( 0 , 160                                 )
-    self . setColumnWidth          ( 1 , 120                                 )
-    self . setColumnWidth          ( 2 , 600                                 )
+    self . setColumnWidth          ( 0 , 200                                 )
+    self . setColumnWidth          ( 1 , 560                                 )
+    self . setColumnWidth          ( 2 , 160                                 )
+    self . setColumnWidth          ( 3 ,   3                                 )
     self . setColumnHidden         ( 3 , True                                )
-    ## self . setColumnHidden         ( 4 , True                                )
-    ## self . setColumnHidden         ( 5 , True                                )
-    ## self . setColumnHidden         ( 6 , True                                )
     ##########################################################################
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -70,7 +64,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
     ##########################################################################
     self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     self . setMinimumSize          ( 80 , 80                                 )
     ##########################################################################
@@ -81,22 +75,15 @@ class PostureActionsEditor ( TreeDock                                      ) :
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    ## self . AppendSideActionWithIcon ( "OpenDescriptives"                   , \
-    ##                                   ":/images/addcolumn.png"             , \
-    ##                                   self . GotoItemDescriptive             )
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self      ,                      Enabled           ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
-    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . LinkAction ( "Refresh" , self . restart     , Enabled             )
+    self . LinkAction ( "Insert"  , self . InsertItem  , Enabled             )
+    self . LinkAction ( "Delete"  , self . DeleteItems , Enabled             )
+    self . LinkAction ( "Rename"  , self . RenameItem  , Enabled             )
     ##########################################################################
     return
   ############################################################################
@@ -122,12 +109,6 @@ class PostureActionsEditor ( TreeDock                                      ) :
     ##########################################################################
     return True
   ############################################################################
-  def AssignPlayer ( self , widget                                         ) :
-    ##########################################################################
-    self . PlayerWidget = widget
-    ##########################################################################
-    return
-  ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
     self . defaultSingleClicked (        item , column                       )
@@ -144,15 +125,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
     ##########################################################################
     return IT
   ############################################################################
-  def RefreshToolTip          ( self , Total                               ) :
-    ##########################################################################
-    ## FMT  = self . getMenuItem ( "DisplayTotal"                               )
-    ## MSG  = FMT  . format      ( Total , self . Total                         )
-    ## self . setToolTip         ( MSG                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def refresh                     ( self , LISTs                           ) :
+  def refresh                     ( self                                   ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
@@ -162,6 +135,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
     BT     = 0
     MOD    = len                  ( self . TreeBrushes                       )
     ##########################################################################
+    """
     for JSON in LISTs                                                        :
       ########################################################################
       POS  = int                  ( POS + 1                                  )
@@ -175,8 +149,8 @@ class PostureActionsEditor ( TreeDock                                      ) :
       ## DURT = int                  ( JSON [ "Duration"                      ] )
       ## BT   = int                  ( BT + DURT                                )
       CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
+    """
     ##########################################################################
-    self   . RefreshToolTip       ( len ( LISTs )                            )
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
@@ -185,18 +159,29 @@ class PostureActionsEditor ( TreeDock                                      ) :
   def loading                   ( self                                     ) :
     ##########################################################################
     ##########################################################################
-    ## self . emitAllNames  . emit ( L                                          )
+    self . emitAllNames  . emit (                                            )
     self . Notify               ( 5                                          )
     ##########################################################################
     return
   ############################################################################
-  def startSegment   ( self , Uuid , JSON                                  ) :
+  def reload                   ( self                                      ) :
     ##########################################################################
-    if               ( not self . isPrepared ( )                           ) :
-      self . Prepare (                                                       )
+    self . emitAllNames . emit (                                             )
     ##########################################################################
-    ## self   . Go      ( self . loading                                        )
-    self   . show    (                                                       )
+    return
+  ############################################################################
+  def idle                           ( self                                ) :
+    ##########################################################################
+    KEYs   =                         [                                       ]
+    ##########################################################################
+    for K in self . Languages . keys (                                     ) :
+      KEYs . append                  ( int ( K )                             )
+    ##########################################################################
+    KEYs   . sort                    (                                       )
+    self   . KEYs = KEYs
+    ##########################################################################
+    if                               ( not self . isPrepared ( )           ) :
+      self . Prepare                 (                                       )
     ##########################################################################
     return
   ############################################################################
@@ -225,7 +210,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
   ############################################################################
   def RenameItem        ( self                                             ) :
     ##########################################################################
-    self . goRenameItem ( 0                                                  )
+    self . goRenameItem ( 1                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -253,38 +238,20 @@ class PostureActionsEditor ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard        ( self                                        ) :
-    ##########################################################################
-    self . DoCopyToClipboard (                                               )
-    ##########################################################################
-    return
-  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 9                              )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     self . LoopRunning = False
     ##########################################################################
     return
-  ############################################################################
-  def CommandParser ( self , language , message , timestamp                ) :
-    ##########################################################################
-    TRX = self . Translations
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    return          { "Match" : False                                        }
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9013 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )

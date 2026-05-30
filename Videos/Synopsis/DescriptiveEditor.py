@@ -80,6 +80,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . SaveButton         = None
     self . WantSave           = False
     self . FilmRoles          = None
+    self . PostureEditor      = None
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
