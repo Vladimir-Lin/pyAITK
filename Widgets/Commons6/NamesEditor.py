@@ -82,14 +82,17 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self      ,                          Enabled       ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh" , self . startup         , Enabled         )
-    self . LinkAction ( "Insert"  , self . InsertItem      , Enabled         )
-    self . LinkAction ( "Delete"  , self . DeleteItems     , Enabled         )
-    self . LinkAction ( "Copy"    , self . CopyToClipboard , Enabled         )
-    self . LinkAction ( "Paste"   , self . PasteItems      , Enabled         )
-    self . LinkAction ( "Rename"  , self . RenameItem      , Enabled         )
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
   ############################################################################
