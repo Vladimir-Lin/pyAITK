@@ -53,18 +53,31 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 800 , 360 )                       )
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    self . AppendSideActionWithIcon ( "AddItem"                            , \
-                                      ":/images/plus.png"                  , \
-                                      self . InsertItem                    , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendSideActionWithIcon ( "QuickAdd"                           , \
-                                      ":/images/quick-add.png"             , \
-                                      self . QuickAppending                , \
-                                      True                                 , \
-                                      False                                  )
+    self . AppendSideActionWithIcon        ( "CopyAllToClipboard"          , \
+                                             ":/images/copy.png"           , \
+                                             self . CopyAllToClipboard     , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "CopyAllFromClipboard"        , \
+                                             ":/images/importdatabase.png" , \
+                                             self . CopyAllFromClipboard   , \
+                                             True                          , \
+                                             False                           )
+    ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
+    self . AppendSideActionWithIcon        ( "AddItem"                     , \
+                                             ":/images/plus.png"           , \
+                                             self . InsertItem             , \
+                                             True                          , \
+                                             False                           )
+    self . AppendSideActionWithIcon        ( "QuickAdd"                    , \
+                                             ":/images/quick-add.png"      , \
+                                             self . QuickAppending         , \
+                                             True                          , \
+                                             False                           )
     ##########################################################################
     return
   ############################################################################
@@ -597,110 +610,132 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     ##########################################################################
     return True
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                            ( self , pos                         ) :
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction        ( self . HavingMenu                    )
+    if                                ( not doMenu                         ) :
       return False
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    mm     = MenuManager           ( self                                    )
+    items  = self . selectedItems     (                                      )
+    mm     = MenuManager              ( self                                 )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    mm     . addSeparator          (                                         )
+    self   . AppendRefreshAction      ( mm , 1001                            )
+    mm     . addSeparator             (                                      )
     ##########################################################################
-    self   . AppendInsertAction    ( mm , 1101                               )
+    self   . AppendInsertAction       ( mm , 1101                            )
     ##########################################################################
-    msg    = self . getMenuItem    ( "QuickAdd"                              )
-    icon   = QIcon                 ( ":/images/add.png"                      )
-    mm     . addActionWithIcon     ( 2001 , icon , msg                       )
+    msg    = self . getMenuItem       ( "QuickAdd"                           )
+    icon   = QIcon                    ( ":/images/add.png"                   )
+    mm     . addActionWithIcon        ( 2001 , icon , msg                    )
     ##########################################################################
-    if                             ( len ( items ) > 0                     ) :
-      self . AppendDeleteAction    ( mm , 1102                               )
-      if ( self . canSpeak ( ) ) and ( len ( items ) == 1 )                  :
-        mm . addAction             ( 1501 ,  TRX [ "UI::Talk"  ]             )
+    if                                ( len ( items ) > 0                  ) :
+      self . AppendDeleteAction       ( mm , 1102                            )
+      if ( self . canSpeak ( ) ) and  ( len ( items ) == 1 )                 :
+        mm . addAction                ( 1501 ,  TRX [ "UI::Talk"  ]          )
     ##########################################################################
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 1801                                  , \
-                                     TRX [ "UI::AutoCompact" ]             , \
-                                     True                                  , \
-                                     self . ShowCompact                      )
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator             (                                      )
+    mm     . addAction                ( 1801                               , \
+                                        TRX [ "UI::AutoCompact" ]          , \
+                                        True                               , \
+                                        self . ShowCompact                   )
+    mm     . addSeparator             (                                      )
     self   . AppendTranslateAllAction ( mm , 3001                            )
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator             (                                      )
     ##########################################################################
-    mm     = self . ColumnsMenu      ( mm                                    )
-    if                               ( len ( items ) == 1                  ) :
-      mm   = self . TranslateMenu    ( mm                                    )
-      mm   = self . TranslationsMenu ( mm                                    )
-    mm     = self . LocalityMenu     ( mm                                    )
-    mm     = self . RelevanceMenu    ( mm                                    )
-    self   . DockingMenu             ( mm                                    )
+    msg    = self . getMenuItem       ( "CopyAllToClipboard"                 )
+    icon   = QIcon                    ( ":/images/copy.png"                  )
+    mm     . addActionWithIcon        ( 4001 , icon , msg                    )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    msg    = self . getMenuItem       ( "CopyAllFromClipboard"               )
+    icon   = QIcon                    ( ":/images/importdatabase.png"        )
+    mm     . addActionWithIcon        ( 4002 , icon , msg                    )
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    mm     . addSeparator             (                                      )
+    ##########################################################################
+    mm     = self . ColumnsMenu       ( mm                                   )
+    ##########################################################################
+    if                                ( len ( items ) == 1                 ) :
+      mm   = self . TranslateMenu     ( mm                                   )
+      mm   = self . TranslationsMenu  ( mm                                   )
+    ##########################################################################
+    mm     = self . LocalityMenu      ( mm                                   )
+    mm     = self . RelevanceMenu     ( mm                                   )
+    self   . DockingMenu              ( mm                                   )
+    ##########################################################################
+    mm     . setFont                  ( self    . menuFont ( )               )
+    aa     = mm . exec_               ( QCursor . pos      ( )               )
+    at     = mm . at                  ( aa                                   )
+    ##########################################################################
+    if                                ( self . RunDocking   ( mm , aa )    ) :
       return True
     ##########################################################################
-    if                             ( self . RunTranslate ( mm , aa )       ) :
+    if                                ( self . RunTranslate ( mm , aa )    ) :
       return True
     ##########################################################################
     if ( ( at >= 10000000 ) and ( at < 11000000 ) )                          :
       self . defaultLocality  = at - 10000000
       return True
     ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
+    if                                ( 1 == len ( items )                 ) :
       if ( self . HandleTranslations ( items [ 0 ] , at )                  ) :
         return True
     ##########################################################################
-    if                             ( at >= 9000                            ) :
+    if                                ( at >= 9000                         ) :
+      ########################################################################
       col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
+      hid  = self . isColumnHidden    ( col                                  )
+      self . setColumnHidden          ( col , not hid                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at >= 8000                            ) :
+    if                                ( at >= 8000                         ) :
       self . defaultRelevance = at - 8000
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    if                                ( at == 1001                         ) :
+      self . startup                  (                                      )
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                                ( at == 1101                         ) :
+      self . InsertItem               (                                      )
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . DeleteItems           (                                         )
+    if                                ( at == 1102                         ) :
+      self . DeleteItems              (                                      )
       return True
     ##########################################################################
-    if                             ( at == 1501                            ) :
+    if                                ( at == 1501                         ) :
       ########################################################################
-      item = items                 [ 0                                       ]
-      T    = item . text           ( 1                                       )
-      L    = item . data           ( 2 , Qt . UserRole                       )
-      L    = int                   ( L                                       )
+      item = items                    [ 0                                    ]
+      T    = item . text              ( 1                                    )
+      L    = item . data              ( 2 , Qt . UserRole                    )
+      L    = int                      ( L                                    )
       ########################################################################
-      self . Talk                  ( T , L                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 1801                            ) :
-      self . ShowCompact =         ( not self . ShowCompact                  )
-    ##########################################################################
-    if                             ( 2001 == at                            ) :
-      ########################################################################
-      self . Go                    ( self . QuickAppending                   )
+      self . Talk                     ( T , L                                )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                                ( at == 1801                         ) :
+      self . ShowCompact =            ( not self . ShowCompact               )
+    ##########################################################################
+    if                                ( 2001 == at                         ) :
+      ########################################################################
+      self . Go                       ( self . QuickAppending                )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 3001                         ) :
+      self . Go                       ( self . TranslateAll                  )
+      return True
+    ##########################################################################
+    if                                ( at == 4001                         ) :
+      self . CopyAllToClipboard       (                                      )
+      return True
+    ##########################################################################
+    if                                ( at == 4002                         ) :
+      self . CopyAllFromClipboard     (                                      )
       return True
     ##########################################################################
     return True
@@ -1146,6 +1181,50 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     ##########################################################################
     return
   ############################################################################
+  def CopyAllToClipboard                   ( self                          ) :
+    ##########################################################################
+    NAMEz   =                              [                                 ]
+    TOTAL   =  self . topTopLevelItemCount (                                 )
+    ##########################################################################
+    for ait in range                       ( 0 , TOTAL                     ) :
+      ########################################################################
+      item  = self . topLevelItem          ( ait                             )
+      JSON  = self . itemToJson            ( item                            )
+      NAMEz . append                       ( JSON                            )
+    ##########################################################################
+    DJSON   = json . dumps                 ( NAMEz                           )
+    qApp    . clipboard ( ). setText       ( DJSON                           )
+    self    . Notify                       ( 5                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyAllFromClipboard                  ( self                         ) :
+    ##########################################################################
+    TEXT     = qApp . clipboard  ( ) . text (                                )
+    ##########################################################################
+    if                                      ( len ( TEXT ) <= 0            ) :
+      return
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      JS     = json . loads                 ( TEXT                           )
+      ########################################################################
+      if                                    ( not isinstance ( JS , list ) ) :
+        ######################################################################
+        self . Notify                       ( 1                              )
+        ######################################################################
+        return
+      ########################################################################
+    except                                                                   :
+      ########################################################################
+      self   . Notify                       ( 1                              )
+      ########################################################################
+      return
+    ##########################################################################
+    print ( json . dumps ( JS ) )
+    ##########################################################################
+    return
+  ############################################################################
   def itemToJson                       ( self , item                       ) :
     ##########################################################################
     JSON                 =             {                                     }
@@ -1203,7 +1282,7 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     S    = JSON                  [ 8                                         ]
     try                                                                      :
       S  = S . decode            ( "utf-8"                                   )
-    except ( UnicodeDecodeError , AttributeError )                           :
+    except                       ( UnicodeDecodeError , AttributeError     ) :
       pass
     ##########################################################################
     item . setText               ( 0 , str ( JSON [  0 ] )                   )
