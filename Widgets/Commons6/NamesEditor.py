@@ -1168,7 +1168,11 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
       self   . set                 ( "utf8"      , 0                         )
       self   . set                 ( "length"    , 0                         )
       ########################################################################
-      self   . Append              ( DB , TABLE                              )
+      try                                                                    :
+        self . Append              ( DB , TABLE                              )
+      except                                                                 :
+        pass
+      ########################################################################
       IDX    = self . GetPosition  ( DB , TABLE                              )
       ########################################################################
       if                           ( IDX >= 0                              ) :
