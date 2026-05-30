@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SceneActionsEditor
-## 影片行動描述
+## PostureActionsEditor
+## 姿勢行動描述
 ##############################################################################
 import os
 import sys
@@ -23,25 +23,20 @@ from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
 from           . FilmActions           import FilmActions
 ##############################################################################
-class SceneActionsEditor ( TreeDock                                        ) :
+class PostureActionsEditor ( TreeDock                                      ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow = Signal (                                                   )
-  emitAllNames  = Signal ( list                                              )
-  ## emitSegments  = Signal ( QWidget , str , str , dict , QIcon                )
-  emitLog       = Signal ( str                                               )
+  emitNamesShow = Signal   (                                                 )
+  emitAllNames  = Signal   (                                                 )
+  emitLog       = Signal   ( str                                             )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
-    super ( ) . __init__ (        parent        , plan                       )
+    super ( ) . __init__   (        parent        , plan                     )
     ##########################################################################
-    self . ClassTag           = "SceneActionsEditor"
-    self . FetchTableKey      = self . ClassTag
-    self . GType              = 212
-    self . PlayerWidget       = None
-    ##########################################################################
-    self . DESCRIBE           = DescriptiveItem (                            )
+    self . ClassTag           = "PostureActionsEditor"
+    self . JSON               = { "Keys" : [ ] , "Translations" : { }        }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -50,12 +45,11 @@ class SceneActionsEditor ( TreeDock                                        ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 7                                       )
-    ## self . setColumnWidth          ( 0 , 160                                 )
-    ## self . setColumnWidth          ( 1 , 120                                 )
-    ## self . setColumnHidden         ( 1 , True                                )
-    ## self . setColumnWidth          ( 2 , 600                                 )
-    ## self . setColumnHidden         ( 3 , True                                )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnWidth          ( 0 , 160                                 )
+    self . setColumnWidth          ( 1 , 120                                 )
+    self . setColumnWidth          ( 2 , 600                                 )
+    self . setColumnHidden         ( 3 , True                                )
     ## self . setColumnHidden         ( 4 , True                                )
     ## self . setColumnHidden         ( 5 , True                                )
     ## self . setColumnHidden         ( 6 , True                                )
