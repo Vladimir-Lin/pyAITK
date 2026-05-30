@@ -1459,6 +1459,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return
     ##########################################################################
     self . FilmRoles . setJson ( self . DESCRIBE . PEOPLEs                   )
+    self . ShowStatus          ( self . DescriptiveTitle                     )
     ##########################################################################
     return
   ############################################################################
