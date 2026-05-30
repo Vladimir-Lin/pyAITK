@@ -21,11 +21,7 @@ from   AITK    . Qt6                   import *
 from   AITK    . Essentials . Relation import Relation
 from   AITK    . Calendars  . StarDate import StarDate
 from   AITK    . Calendars  . Periode  import Periode
-from           . Fragment              import Fragment    as FragmentItem
-from           . Scenario              import Scenario    as ScenarioItem
-from           . Descriptive           import Descriptive as DescriptiveItem
-from           . Descriptive           import Segment     as SegmentItem
-from           . Descriptive           import Anchor      as AnchorItem
+from           . FilmActions           import FilmActions
 ##############################################################################
 class SceneActionsEditor ( TreeDock                                        ) :
   ############################################################################

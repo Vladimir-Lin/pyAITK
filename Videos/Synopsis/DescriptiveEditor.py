@@ -40,6 +40,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitUpdatePtsItem   = Signal (                                             )
   emitItemChanged     = Signal (                                             )
   emitItemsSaved      = Signal (                                             )
+  emitAskQuit         = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitGoItem          = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
@@ -78,6 +79,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . WaitingForSave     = ""
     self . SaveButton         = None
     self . WantSave           = False
+    self . FilmRoles          = None
     ##########################################################################
     self . SCENE              = ScenarioItem    (                            )
     self . DESCRIBE           = DescriptiveItem (                            )
@@ -113,6 +115,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . emitUpdatePtsItem . connect ( self . PtsUpdateItem                )
     self . emitItemChanged   . connect ( self . ItemChanged                  )
     self . emitItemsSaved    . connect ( self . ItemsSaved                   )
+    self . emitAskQuit       . connect ( self . AskQuit                      )
     ##########################################################################
     self . setFunction                 ( self . FunctionDocking , True       )
     self . setFunction                 ( self . HavingMenu      , True       )
@@ -255,6 +258,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   ############################################################################
   def FocusIn ( self                                                       ) :
     ##########################################################################
+    if        ( self . FilmRoles not in self . EmptySet                    ) :
+      ########################################################################
+      self . FilmRoles . DESC = self
+      self . SyncFilmRoles (                                                 )
+    ##########################################################################
     if        ( self . SaveButton not in self . EmptySet                   ) :
       ########################################################################
       self . SaveButton . setEnabled ( self . WantSave                       )
@@ -262,23 +270,37 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     return self . defaultFocusIn     (                                       )
   ############################################################################
   def FocusOut                    ( self                                   ) :
+    ##########################################################################
+    self        . LeaveFilmRoles  ( False                                    )
+    ##########################################################################
     return self . defaultFocusOut (                                          )
   ############################################################################
-  def Shutdown                     ( self                                  ) :
+  def Shutdown                       ( self                                ) :
     ##########################################################################
-    self . StayAlive   = False
-    self . LoopRunning = False
-    ##########################################################################
-    self . SaveButton . setEnabled ( True                                    )
-    ##########################################################################
-    if                             ( self . isThreadRunning (            ) ) :
+    if                               ( self . WantSave                     ) :
+      ########################################################################
+      self . emitAskQuit . emit      (                                       )
+      ########################################################################
       return False
     ##########################################################################
-    self . AttachActions           ( False                                   )
-    self . detachActionsTool       (                                         )
-    self . LinkVoice               ( None                                    )
+    if ( self . FilmRoles not in self . EmptySet                           ) :
+      ########################################################################
+      self . LeaveFilmRoles          ( True                                  )
+      self . FilmRoles . DESC = None
     ##########################################################################
-    self . Leave . emit            ( self                                    )
+    self   . StayAlive   = False
+    self   . LoopRunning = False
+    ##########################################################################
+    self   . SaveButton . setEnabled ( True                                  )
+    ##########################################################################
+    if                               ( self . isThreadRunning (          ) ) :
+      return False
+    ##########################################################################
+    self   . AttachActions           ( False                                 )
+    self   . detachActionsTool       (                                       )
+    self   . LinkVoice               ( None                                  )
+    ##########################################################################
+    self   . Leave . emit            ( self                                  )
     ##########################################################################
     return True
   ############################################################################
@@ -577,6 +599,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       self . DefaultTitle = JSON            [ "Name"                         ]
     ##########################################################################
     self   . PrepareChanged                 (                                )
+    self   . SyncFilmRoles                  (                                )
     self   . reload                         (                                )
     ##########################################################################
     return
@@ -721,7 +744,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   def nameChanged                          ( self                          ) :
     ##########################################################################
     if                                     ( not self . isItemPicked (   ) ) :
-      return False
+      return
     ##########################################################################
     item     = self . CurrentItem          [ "Item"                          ]
     column   = self . CurrentItem          [ "Column"                        ]
@@ -1419,6 +1442,56 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     self     . emitItemChanged . emit (                                      )
     self     . Notify                 ( 5                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncCrowdsMappings          ( self , JSON                            ) :
+    ##########################################################################
+    self . DESCRIBE . PEOPLEs = JSON
+    ##########################################################################
+    self . emitItemChanged . emit (                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncFilmRoles            ( self                                      ) :
+    ##########################################################################
+    if                         ( self . FilmRoles in self . EmptySet       ) :
+      return
+    ##########################################################################
+    self . FilmRoles . setJson ( self . DESCRIBE . PEOPLEs                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def LeaveFilmRoles           ( self , CLEAN                              ) :
+    ##########################################################################
+    if                         ( self . FilmRoles in self . EmptySet       ) :
+      return
+    ##########################################################################
+    if                         ( not CLEAN                                 ) :
+      return
+    ##########################################################################
+    E    =                     { "Listings" : [ ] , "Crowds" : { }           }
+    self . FilmRoles . setJson ( E                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def AskQuit ( self                                                       ) :
+    ##########################################################################
+    T      = self . getMenuItem ( "QuitDescriptive"                          )
+    M      = self . getMenuItem ( "AskQuit"                                  )
+    A      = QMessageBox . StandardButton . Yes                            | \
+             QMessageBox . StandardButton . No
+    R      = QMessageBox . question ( self                                 , \
+                                      T                                    , \
+                                      M                                    , \
+                                      A                                    , \
+                                      QMessageBox . StandardButton . No      )
+    ##########################################################################
+    if        ( R == QMessageBox.StandardButton.Yes == R                   ) :
+      ########################################################################
+      self . WantSave = False
+      ########################################################################
+      ## self . close (                                                         )
     ##########################################################################
     return
   ############################################################################

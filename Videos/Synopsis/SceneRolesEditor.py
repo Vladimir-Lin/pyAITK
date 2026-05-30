@@ -10,82 +10,46 @@ import requests
 import threading
 import json
 ##############################################################################
-from   PySide6                         import QtCore
-from   PySide6                         import QtGui
-from   PySide6                         import QtWidgets
-from   PySide6 . QtCore                import *
-from   PySide6 . QtGui                 import *
-from   PySide6 . QtWidgets             import *
-from   AITK    . Qt6                   import *
+from   PySide6                    import QtCore
+from   PySide6                    import QtGui
+from   PySide6                    import QtWidgets
+from   PySide6 . QtCore           import *
+from   PySide6 . QtGui            import *
+from   PySide6 . QtWidgets        import *
+from   AITK    . Qt6              import *
 ##############################################################################
-from   AITK    . Calendars  . StarDate import StarDate
+from   AITK    . Documents . JSON import Save as SaveJson
 ##############################################################################
-class SceneRolesEditor           ( TreeDock                                ) :
+class SceneRolesEditor             ( TreeDock                              ) :
   ############################################################################
-  HavingMenu            = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow         = Signal (                                           )
-  emitAllNames          = Signal ( list                                      )
-  emitDescriptives      = Signal ( QWidget , str , str , dict , QIcon        )
-  ShowPeopleGroupRelate = Signal ( str , int , str , str                     )
-  emitPlayer            = Signal ( QWidget                                   )
-  emitLog               = Signal ( str                                       )
+  emitNamesShow = Signal           (                                         )
+  emitAllNames  = Signal           (                                         )
   ############################################################################
-  def __init__                   ( self , parent = None , plan = None      ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__         (        parent        , plan               )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . EditAllNames       = None
-    ##########################################################################
-    self . ClassTag           = "SceneRolesEditor"
-    self . FetchTableKey      = self . ClassTag
-    self . PlayerWidget       = None
-    self . AlbumUuid          = 0
-    self . FragmentUuid       = 0
-    self . GType              = 212
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 28
-    self . JsonAt             = 10
-    self . SortOrder          = "asc"
-    self . UsedOptions        = [ 1 , 2 , 3                                  ]
-    self . GetFilmRootFolder  = None
+    self . ClassTag             = "SceneRolesEditor"
+    self . JSON                 =  { "Listings" : [ ] , "Crowds" : { }       }
+    self . DESC                 = None
+    self . KEYs                 =  [                                         ]
+    self . GetFilmRootFolder    = None
     self . UpdateFilmRootFolder = None
     ##########################################################################
-    self . Grouping           = "Subordination"
+    self . dockingOrientation   = Qt . Vertical
+    self . dockingPlace         = Qt . RightDockWidgetArea
+    self . dockingPlaces        = Qt . TopDockWidgetArea                   | \
+                                  Qt . BottomDockWidgetArea                | \
+                                  Qt . LeftDockWidgetArea                  | \
+                                  Qt . RightDockWidgetArea
     ##########################################################################
-    self . SCENE              = ScenarioItem (                               )
-    ##########################################################################
-    self . dockingOrientation = 0
-    self . dockingPlace       = Qt . BottomDockWidgetArea
-    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
-                                Qt . BottomDockWidgetArea                  | \
-                                Qt . LeftDockWidgetArea                    | \
-                                Qt . RightDockWidgetArea
-    ##########################################################################
-    self . Relation = Relation     (                                         )
-    self . Relation . setT1        ( "vFragment"                             )
-    self . Relation . setT2        ( "Scenario"                              )
-    self . Relation . setRelation  ( "Subordination"                         )
-    ##########################################################################
-    self . setColumnCount          ( 11                                      )
-    self . setColumnWidth          (  0 ,  48                                )
-    self . setColumnWidth          (  1 , 440                                )
-    self . setColumnHidden         (  2 , True                               )
-    self . setColumnWidth          (  2 , 100                                )
-    self . setColumnHidden         (  3 , True                               )
-    self . setColumnWidth          (  3 , 100                                )
-    self . setColumnHidden         (  4 , True                               )
-    self . setColumnWidth          (  4 , 120                                )
-    self . setColumnHidden         (  5 , True                               )
-    self . setColumnWidth          (  5 ,  80                                )
-    self . setColumnWidth          (  6 , 180                                )
-    self . setColumnHidden         (  7 , True                               )
-    self . setColumnHidden         (  8 , True                               )
-    self . setColumnWidth          (  8 , 180                                )
-    self . setColumnWidth          (  9 , 100                                )
-    self . setColumnWidth          ( 10 , 3                                  )
-    self . setColumnHidden         ( 10 , True                               )
+    self . setColumnCount          ( 3                                       )
+    self . setColumnWidth          ( 0 ,  60                                 )
+    self . setColumnWidth          ( 1 , 120                                 )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnWidth          ( 2 ,   3                                 )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -102,67 +66,29 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     self . setMinimumSize          ( 80 , 80                                 )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 600 , 200 )                       )
+    return self . SizeSuggestion ( QSize ( 200 , 600 )                       )
   ############################################################################
-  def setAlbumUuid         ( self , UUID                                   ) :
+  def PrepareForActions ( self                                             ) :
     ##########################################################################
-    self . AlbumUuid = int ( UUID                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def setFragmentUuid         ( self , UUID                                ) :
-    ##########################################################################
-    self . FragmentUuid = int ( UUID                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareForActions             ( self                                 ) :
-    ##########################################################################
-    self . AppendToolNamingAction   (                                        )
-    self . AppendSideActionWithIcon ( "OpenDescriptives"                   , \
-                                      ":/images/descriptions.png"          , \
-                                      self . GotoItemDescriptive             )
-    self . AppendSideActionWithIcon ( "ScenarioCrowds"                     , \
-                                      ":/images/buddy.png"                 , \
-                                      self . GotoItemCrowds                  )
-    self . AppendSideActionWithIcon ( "ExportMetadata"                     , \
-                                      ":/images/correctness.png"           , \
-                                      self . ExportMetadata                , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendSideActionWithIcon ( "ExportASS"                          , \
-                                      ":/images/saveall.png"               , \
-                                      self . ExportASS                     , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendWindowToolSeparatorAction (                                 )
-    self . AppendSideActionWithIcon ( "ShowAllColumns"                     , \
-                                      ":/images/task.png"                  , \
-                                      self . ShowAllColumns                , \
-                                      True                                 , \
-                                      False                                  )
-    self . AppendSideActionWithIcon ( "CreateBrief"                        , \
-                                      ":/images/descriptive-chapters.png"  , \
-                                      self . CreateBriefScenario           , \
-                                      True                                 , \
-                                      False                                  )
     ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . restart         , Enabled      )
+    self . LinkAction ( "Refresh"    , self . reload          , Enabled      )
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteJson       , Enabled      )
+    self . LinkAction ( "Save"       , self . SaveCrowds      , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
@@ -180,9 +106,6 @@ class SceneRolesEditor           ( TreeDock                                ) :
     self . StayAlive   = False
     self . LoopRunning = False
     ##########################################################################
-    if                       ( self . isThreadRunning (                  ) ) :
-      return False
-    ##########################################################################
     self . AttachActions     ( False                                         )
     self . detachActionsTool (                                               )
     self . LinkVoice         ( None                                          )
@@ -191,379 +114,143 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     return True
   ############################################################################
-  def AssignPlayer           ( self , widget                               ) :
-    ##########################################################################
-    self . PlayerWidget = widget
-    ##########################################################################
-    self . emitPlayer . emit (        widget                                 )
-    ##########################################################################
-    return
-  ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
     self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked                  ( self , item , column                 ) :
+  def twiceClicked              ( self , item , column                     ) :
     ##########################################################################
-    if                              ( column in [ 0 ]                      ) :
+    if                          ( column in [ 0 ]                          ) :
       ########################################################################
-      ## 位序
-      return
-    ##########################################################################
-    if                              ( column in [ 1 , 3 , 4 , 5 ]          ) :
-      ########################################################################
-      line = self . setLineEdit     ( item                                 , \
-                                      column                               , \
-                                      "editingFinished"                    , \
-                                      self . nameChanged                     )
-      line . setFocus               ( Qt . TabFocusReason                    )
-      ########################################################################
-      return
-    ##########################################################################
-    if                              ( column in [ 2 ]                      ) :
-      ########################################################################
-      ## 用途
-      ########################################################################
-      LL   = self . Translations    [ self . ClassTag ] [ "Usage"            ]
-      val  = item . data            ( column , Qt . UserRole                 )
-      val  = int                    ( val                                    )
-      cb   = self . setComboBox     ( item                                 , \
-                                      column                               , \
-                                      "activated"                          , \
-                                      self . usageChanged                    )
-      cb   . addJson                ( LL , val                               )
-      cb   . setMaxVisibleItems     ( 10                                     )
-      cb   . showPopup              (                                        )
+      sb   = self . setSpinBox  ( item                                     , \
+                                  column                                   , \
+                                  0                                        , \
+                                  999999999                                , \
+                                  "editingFinished"                        , \
+                                  self . spinChanged                         )
+      sb   . setAlignment       ( Qt . AlignRight                            )
+      sb   . setFocus           ( Qt . TabFocusReason                        )
       ########################################################################
       return
     ##########################################################################
-    if                              ( column in [ 6 ]                      ) :
+    if                          ( column in [ 1 ]                          ) :
       ########################################################################
-      slen = item . data            ( column , Qt . UserRole                 )
-      xlen = self . SCENE . toFTime ( int ( slen                           ) )
-      line = self . setLineEdit     ( item                                 , \
-                                      column                               , \
-                                      "editingFinished"                    , \
-                                      self . nameChanged                     )
-      line . blockSignals           ( True                                   )
-      line . setText                ( xlen                                   )
-      line . blockSignals           ( False                                  )
-      line . setFocus               ( Qt . TabFocusReason                    )
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
       ########################################################################
       return
-    ##########################################################################
-    if                              ( column in [ 8 ]                      ) :
-      ########################################################################
-      slen = item . data            ( column , Qt . UserRole                 )
-      xlen = self . SCENE . toFTime ( int ( slen                           ) )
-      line = self . setLineEdit     ( item                                 , \
-                                      column                               , \
-                                      "editingFinished"                    , \
-                                      self . nameChanged                     )
-      line . blockSignals           ( True                                   )
-      line . setText                ( xlen                                   )
-      line . blockSignals           ( False                                  )
-      line . setFocus               ( Qt . TabFocusReason                    )
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                    ( self , POS , BT , JSON , BRUSH      ) :
+  def PrepareItem             ( self , NID , BRUSH                         ) :
     ##########################################################################
-    USAGE   = self . Translations    [ self . ClassTag ] [ "Usage"           ]
-    UUID    = JSON                   [ "Uuid"                                ]
-    NAME    = JSON                   [ "Name"                                ]
-    STYPE   = JSON                   [ "Type"                                ]
-    SCOPE   = JSON                   [ "Scope"                               ]
-    USED    = int                    ( JSON [ "Used"                       ] )
-    STATEs  = int                    ( JSON [ "States"                     ] )
-    SLEN    = int                    ( JSON [ "Duration"                   ] )
-    CPEO    = int                    ( JSON [ "People"                     ] )
-    ELEN    = int                    ( SLEN + BT                             )
+    LOC  = self . getLocality (                                              )
+    NAME = self . JSON        [ "Crowds" ] [ f"{NID}" ] [ f"{LOC}"           ]
     ##########################################################################
-    DTIME   = self . SCENE . toLTime ( SLEN                                  )
-    STIME   = self . SCENE . toLTime ( BT                                    )
-    ETIME   = self . SCENE . toLTime ( ELEN                                  )
+    IT   = QTreeWidgetItem    (                                              )
+    IT   . setData            ( 0 , Qt . UserRole , str ( NID )              )
+    IT   . setText            ( 0 , str ( NID )                              )
+    IT   . setTextAlignment   ( 0 , Qt . AlignRight                          )
+    IT   . setText            ( 1 , NAME                                     )
     ##########################################################################
-    UNAME   = ""
-    ##########################################################################
-    if                               ( str ( USED ) in USAGE               ) :
+    for COL in range          ( 0 , self . columnCount (                 ) ) :
       ########################################################################
-      UNAME = USAGE                  [ str ( USED )                          ]
-    ##########################################################################
-    IT      = QTreeWidgetItem        (                                       )
-    IT      . setData                ( 0 , Qt . UserRole , str ( UUID )      )
-    IT      . setText                ( 0 , str ( POS )                       )
-    IT      . setTextAlignment       ( 0 , Qt . AlignRight                   )
-    IT      . setText                ( 1 , NAME                              )
-    IT      . setToolTip             ( 1 , str ( UUID )                      )
-    IT      . setData                ( 1 , Qt . UserRole , str ( UUID )      )
-    IT      . setText                ( 2 , UNAME                             )
-    IT      . setData                ( 2 , Qt . UserRole , USED              )
-    IT      . setTextAlignment       ( 2 , Qt . AlignCenter                  )
-    IT      . setText                ( 3 , str ( STYPE )                     )
-    IT      . setTextAlignment       ( 3 , Qt . AlignRight                   )
-    IT      . setData                ( 3 , Qt . UserRole , STYPE             )
-    IT      . setText                ( 4 , SCOPE                             )
-    IT      . setText                ( 5 , str ( STATEs )                    )
-    IT      . setTextAlignment       ( 5 , Qt . AlignRight                   )
-    IT      . setData                ( 5 , Qt . UserRole , STATEs            )
-    IT      . setText                ( 6 , DTIME                             )
-    IT      . setTextAlignment       ( 6 , Qt . AlignRight                   )
-    IT      . setData                ( 6 , Qt . UserRole , str ( SLEN )      )
-    IT      . setText                ( 7 , STIME                             )
-    IT      . setTextAlignment       ( 7 , Qt . AlignRight                   )
-    IT      . setData                ( 7 , Qt . UserRole , str ( BT   )      )
-    IT      . setText                ( 8 , ETIME                             )
-    IT      . setTextAlignment       ( 8 , Qt . AlignRight                   )
-    IT      . setData                ( 8 , Qt . UserRole , str ( ELEN )      )
-    IT      . setText                ( 9 , str ( CPEO )                      )
-    IT      . setData                ( 9 , Qt . UserRole , CPEO              )
-    IT      . setTextAlignment       ( 9 , Qt . AlignRight                   )
-    ##########################################################################
-    IT      . setData                ( self . JsonAt , Qt . UserRole , JSON  )
-    ##########################################################################
-    COLs    =                        [  0 ,  1 ,  2 ,  3 ,  4 ,              \
-                                        5 ,  6 ,  7 ,  8 ,  9 ,              \
-                                       10                                    ]
-    ##########################################################################
-    for COL in COLs                                                          :
-      ########################################################################
-      IT    . setBackground          ( COL , BRUSH                           )
+      IT . setBackground      ( COL , BRUSH                                  )
     ##########################################################################
     return IT
   ############################################################################
-  def ObtainsInformation      ( self , DB                                  ) :
-    ##########################################################################
-    self     . ReloadLocality (        DB                                    )
-    ##########################################################################
-    RELTAB   = self . Tables  [ "Relation"                                   ]
-    SCNTAB   = self . Tables  [ "Scenarios"                                  ]
-    ##########################################################################
-    if                        ( self . isSubordination (                 ) ) :
-      ########################################################################
-      self   . Total = self . SCENE . CountSecondTotal                     ( \
-                                DB                                         , \
-                                self . Relation                            , \
-                                SCNTAB                                     , \
-                                RELTAB                                     , \
-                                self . UsedOptions                           )
-      ########################################################################
-    elif                      ( self . isReverse       (                 ) ) :
-      ########################################################################
-      self   . Total = self . SCENE . CountFirstTotal                      ( \
-                                DB                                         , \
-                                self . Relation                            , \
-                                SCNTAB                                     , \
-                                RELTAB                                     , \
-                                self . UsedOptions                           )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      self   . Total = self . SCENE . CountTotal                           ( \
-                                DB                                         , \
-                                SCNTAB                                     , \
-                                self . UsedOptions                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def LoadScenarios                          ( self , DB                   ) :
-    ##########################################################################
-    SCENARIOs   =                            [                               ]
-    LISTs       =                            [                               ]
-    UUIDs       =                            [                               ]
-    ##########################################################################
-    RELTAB      = self . Tables              [ "Relation"                    ]
-    PEOREL      = self . Tables              [ "RelationPeople"              ]
-    SCNTAB      = self . Tables              [ "Scenarios"                   ]
-    ##########################################################################
-    if                                       ( self . isSubordination (  ) ) :
-      ########################################################################
-      LISTs     = self . SCENE . FetchListsByFirst                         ( \
-                                               DB                          , \
-                                               SCNTAB                      , \
-                                               RELTAB                      , \
-                                               self . Relation             , \
-                                               self . UsedOptions          , \
-                                               self . StartId              , \
-                                               self . Amount               , \
-                                               self . SortOrder              )
-      ########################################################################
-    elif                                     ( self . isReverse       (  ) ) :
-      ########################################################################
-      LISTs     = self . SCENE . FetchListsBySecond                        ( \
-                                               DB                          , \
-                                               SCNTAB                      , \
-                                               RELTAB                      , \
-                                               self . Relation             , \
-                                               self . UsedOptions          , \
-                                               self . StartId              , \
-                                               self . Amount               , \
-                                               self . SortOrder              )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      LISTs     = self . SCENE . FetchLists  ( DB                          , \
-                                               SCNTAB                      , \
-                                               self . UsedOptions          , \
-                                               self . StartId              , \
-                                               self . Amount               , \
-                                               self . SortOrder              )
-    ##########################################################################
-    for L in LISTs                                                           :
-      ########################################################################
-      UUIDs     . append                     ( L [ "Uuid"                  ] )
-    ##########################################################################
-    NAMEs       = self . ObtainsUuidNames    ( DB , UUIDs                    )
-    ##########################################################################
-    for L in LISTs                                                           :
-      ########################################################################
-      UUID      = L                          [ "Uuid"                        ]
-      ########################################################################
-      if                                     ( UUID in NAMEs               ) :
-        ######################################################################
-        L [ "Name" ] = NAMEs                 [ UUID                          ]
-      ########################################################################
-      PCNT      = self . SCENE . CountPeople ( DB , PEOREL , UUID            )
-      L [ "People" ] = PCNT
-      ########################################################################
-      SCENARIOs . append                     ( L                             )
-    ##########################################################################
-    return SCENARIOs
-  ############################################################################
-  def RefreshToolTip          ( self , Total                               ) :
-    ##########################################################################
-    FMT  = self . getMenuItem ( "DisplayTotal"                               )
-    MSG  = FMT  . format      ( Total , self . Total                         )
-    self . setToolTip         ( MSG                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def refresh                     ( self , LISTs                           ) :
+  def refresh                     ( self                                   ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
     CNT    = 0
-    POS    = 0
-    BT     = 0
     MOD    = len                  ( self . TreeBrushes                       )
     ##########################################################################
-    for JSON in LISTs                                                        :
+    for T in self . JSON          [ "Listings" ]                             :
       ########################################################################
-      POS  = int                  ( POS + 1                                  )
-      ########################################################################
-      IT   = self . PrepareItem   ( POS                                    , \
-                                    BT                                     , \
-                                    JSON                                   , \
-                                    self . TreeBrushes [ CNT ]               )
+      IT   = self . PrepareItem   ( T , self . TreeBrushes [ CNT ]           )
       self . addTopLevelItem      ( IT                                       )
-      ########################################################################
-      DURT = int                  ( JSON [ "Duration"                      ] )
-      BT   = int                  ( BT + DURT                                )
       CNT  = int                  ( int ( CNT + 1 ) % MOD                    )
     ##########################################################################
-    self   . RefreshToolTip       ( len ( LISTs )                            )
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
-  def loading                     ( self                                   ) :
+  def reload                   ( self                                      ) :
     ##########################################################################
-    self   . OnBusy  . emit       (                                          )
-    self   . setBustle            (                                          )
-    ##########################################################################
-    DB     = self . ConnectDB     (                                          )
-    ##########################################################################
-    if                            ( self . NotOkay ( DB                  ) ) :
-      ########################################################################
-      self . setVacancy           (                                          )
-      self . GoRelax . emit       (                                          )
-      self . Notify               ( 1                                        )
-      self . emitNamesShow . emit (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    self   . Notify               ( 3                                        )
-    ##########################################################################
-    FMT    = self . Translations  [ "UI::StartLoading"                       ]
-    MSG    = FMT . format         ( self . windowTitle (                   ) )
-    self   . ShowStatus           ( MSG                                      )
-    ##########################################################################
-    self   . ObtainsInformation   ( DB                                       )
-    L      = self . LoadScenarios ( DB                                       )
-    ##########################################################################
-    DB     . Close                (                                          )
-    self   . setVacancy           (                                          )
-    self   . GoRelax . emit       (                                          )
-    self   . ShowStatus           ( ""                                       )
-    ##########################################################################
-    if                            ( len ( L ) <= 0                         ) :
-      ########################################################################
-      self . emitNamesShow . emit (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    self   . emitAllNames  . emit ( L                                        )
-    self   . Notify               ( 5                                        )
+    self . emitAllNames . emit (                                             )
     ##########################################################################
     return
   ############################################################################
-  def dragMime                   ( self                                    ) :
+  def loading                        ( self                                ) :
     ##########################################################################
-    mtype   = "scenario/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
+    KEYs   =                         [                                       ]
     ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
+    for K in self . Languages . keys (                                     ) :
+      KEYs . append                  ( int ( K )                             )
     ##########################################################################
-    self . StartingDrag (                                                    )
+    KEYs   . sort                    (                                       )
+    self   . KEYs = KEYs
     ##########################################################################
     return
+  ############################################################################
+  def setJson         ( self , JS                                          ) :
+    ##########################################################################
+    EXISTs   = True
+    ##########################################################################
+    if                ( "Listings" not in JS                               ) :
+      EXISTs = False
+    ##########################################################################
+    if                ( "Crowds"   not in JS                               ) :
+      EXISTs = False
+    ##########################################################################
+    if                ( EXISTs                                             ) :
+      self   . JSON = JS
+    else                                                                     :
+      self   . JSON = { "Listings" : [ ] , "Crowds" : { }                    }
+    ##########################################################################
+    self . reload     (                                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def getJson ( self                                                       ) :
+    return self . JSON
   ############################################################################
   def allowedMimeTypes     ( self , mime                                   ) :
-    FMTs =                 [ "scenario/uuids"                              , \
-                             "people/uuids"                                  ]
+    FMTs =                 [ "people/uuids"                                  ]
     return self . MimeType ( mime , ";" . join ( FMTs  )                     )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                        ( self                                , \
-                                       source                              , \
-                                       mimeData                            , \
-                                       mousePos                            ) :
+  def dropNew                      ( self                                  , \
+                                     source                                , \
+                                     mimeData                              , \
+                                     mousePos                              ) :
     ##########################################################################
-    RDN      = self . RegularDropNew ( mimeData                              )
-    if                               ( not RDN                             ) :
+    RDN    = self . RegularDropNew ( mimeData                                )
+    if                             ( not RDN                               ) :
       return False
     ##########################################################################
-    mtype    = self   . DropInJSON   [ "Mime"                                ]
-    UUIDs    = self   . DropInJSON   [ "UUIDs"                               ]
-    atItem   = self   . itemAt       ( mousePos                              )
-    title    = source . windowTitle  (                                       )
-    CNT      = len                   ( UUIDs                                 )
+    mtype  = self   . DropInJSON   [ "Mime"                                  ]
+    UUIDs  = self   . DropInJSON   [ "UUIDs"                                 ]
+    title  = source . windowTitle  (                                         )
+    CNT    = len                   ( UUIDs                                   )
     ##########################################################################
-    if                               ( mtype in [ "people/uuids"         ] ) :
+    if                             ( mtype in [ "people/uuids"           ] ) :
       ########################################################################
-      if                             ( atItem not in self . EmptySet       ) :
-        ######################################################################
-        TXT  = atItem . text         ( 0                                     )
-        UID  = atItem . data         ( 0 , Qt . UserRole                     )
-        FMT  = self   . getMenuItem  ( "PeopleFrom"                          )
-        MSG  = FMT    . format       ( title , CNT , TXT , UID               )
-        self . ShowStatus            ( MSG                                   )
+      FMT  = self   . getMenuItem  ( "PeopleFrom"                            )
+      MSG  = FMT    . format       ( title , CNT                             )
+      self . ShowStatus            ( MSG                                     )
       ########################################################################
       return True
-    ##########################################################################
-    if                               ( self . isOriginal (               ) ) :
-      return False
-    ##########################################################################
-    if                               ( mtype not in [ "scenario/uuids" ]  ) :
-      return False
     ##########################################################################
     return RDN
   ############################################################################
@@ -574,282 +261,52 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     mtype  = self   . DropInJSON  [ "Mime"                                   ]
     UUIDs  = self   . DropInJSON  [ "UUIDs"                                  ]
-    atItem = self   . itemAt      ( mousePos                                 )
     title  = source . windowTitle (                                          )
     CNT    = len                  ( UUIDs                                    )
     ##########################################################################
     if                            ( mtype in [ "people/uuids"            ] ) :
       ########################################################################
-      if                          ( atItem in self . EmptySet              ) :
-        return False
-      ########################################################################
-      TXT  = atItem . text        ( 0                                        )
-      UID  = atItem . data        ( 0 , Qt . UserRole                        )
       FMT  = self   . getMenuItem ( "PeopleFrom"                             )
-      MSG  = FMT    . format      ( title , CNT , TXT , UID                  )
+      MSG  = FMT    . format      ( title , CNT                              )
       self . ShowStatus           ( MSG                                      )
       ########################################################################
       return True
-    ##########################################################################
-    if                            ( self . isOriginal (                  ) ) :
-      return False
-    ##########################################################################
-    if                            ( mtype not in [ "scenario/uuids" ]      ) :
-      return False
-    ##########################################################################
-    if                            ( source == self                         ) :
-      ########################################################################
-      FMT  = self   . getMenuItem ( "MoveScenarios"                          )
-      MSG  = FMT    . format      ( title , CNT                              )
-      self . ShowStatus           ( MSG                                      )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      FMT  = self   . getMenuItem ( "CopyScenarios"                          )
-      MSG  = FMT    . format      ( title , CNT                              )
-      self . ShowStatus           ( MSG                                      )
     ##########################################################################
     return True
   ############################################################################
   def acceptPeopleDrop ( self                                              ) :
     return True
   ############################################################################
-  def dropPeople           ( self , source , pos , JSOX                    ) :
+  def dropPeople ( self , source , pos , JSOX                              ) :
     ##########################################################################
-    if                     ( "UUIDs" not in JSOX                           ) :
+    if           ( "UUIDs" not in JSOX                                     ) :
       return True
     ##########################################################################
-    UUIDs  = JSOX          [ "UUIDs"                                         ]
-    if                     ( len ( UUIDs ) <= 0                            ) :
+    UUIDs = JSOX [ "UUIDs"                                                   ]
+    if           ( len ( UUIDs ) <= 0                                      ) :
       return True
     ##########################################################################
-    atItem = self . itemAt ( pos                                             )
-    if                     ( atItem in self . EmptySet                     ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data ( 0 , Qt . UserRole                               )
-    UUID   = int           ( UUID                                            )
-    ##########################################################################
-    if                     ( UUID <= 0                                     ) :
-      return True
-    ##########################################################################
-    VAL    =               ( UUID , UUIDs ,                                  )
-    self   . Go            ( self . AppendingCrowds , VAL                    )
+    self  . Go   ( self . AppendingCrowds , ( UUIDs , )                      )
     ##########################################################################
     return True
   ############################################################################
-  def AppendingCrowds           ( self , UUID , UUIDs                      ) :
+  def InsertItem               ( self                                      ) :
     ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    ##########################################################################
-    if                          ( COUNT <= 0                               ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      ########################################################################
-      self . setVacancy         (                                            )
-      self . GoRelax . emit     (                                            )
-      self . Notify             ( 1                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    FMT    = self . getMenuItem ( "JoinCrowds"                               )
-    MSG    = FMT  . format      ( COUNT                                      )
-    self   . ShowStatus         ( MSG                                        )
-    self   . TtsTalk            ( MSG , 1002                                 )
-    ##########################################################################
-    RELTAB = self . Tables      [ "RelationPeople"                           ]
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , UUID                             )
-    REL    . setT1              ( "Scenario"                                 )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( "Contains"                                 )
-    ##########################################################################
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    ##########################################################################
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
-    ##########################################################################
-    DB     . UnlockTables       (                                            )
-    ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def acceptScenariosDrop ( self                                           ) :
-    return True
-  ############################################################################
-  def dropScenarios        ( self , source , pos , JSOX                    ) :
-    ##########################################################################
-    if                     ( "UUIDs" not in JSOX                           ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX          [ "UUIDs"                                         ]
-    if                     ( len ( UUIDs ) <= 0                            ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt ( pos                                             )
-    if                     ( atItem in self . EmptySet                     ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data ( 0 , Qt . UserRole                               )
-    UUID   = int           ( UUID                                            )
-    ##########################################################################
-    if                     ( UUID <= 0                                     ) :
-      return True
-    ##########################################################################
-    VAL    =               ( UUID , UUIDs ,                                  )
-    ##########################################################################
-    if                     ( source == self                                ) :
-      ########################################################################
-      if                   ( atItem . isSelected ( )                       ) :
-        self . Notify      ( 2                                               )
-        return True
-      ########################################################################
-      self . Go            ( self . MovingScenarios    , VAL                 )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      self . Go            ( self . AppendingScenarios , VAL                 )
-    ##########################################################################
-    return True
-  ############################################################################
-  def MovingScenarios           ( self , UUID , UUIDs                      ) :
-    ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    ##########################################################################
-    if                          ( COUNT <= 0                               ) :
-      return
-    ##########################################################################
-    if                          ( self . isSubordination (               ) ) :
-      pass
-    elif                        ( self . isReverse       (               ) ) :
-      pass
-    else                                                                     :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      ########################################################################
-      self . setVacancy         (                                            )
-      self . GoRelax . emit     (                                            )
-      self . Notify             ( 1                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    RELTAB = self . Tables      [ "Relation"                                 ]
-    SCNTAB = self . Tables      [ "Scenarios"                                ]
-    ##########################################################################
-    if                          ( self . isSubordination (               ) ) :
-      ########################################################################
-      self . SCENE . MoveListsByFirst                                      ( \
-                                  DB                                       , \
-                                  SCNTAB                                   , \
-                                  RELTAB                                   , \
-                                  self . Relation                          , \
-                                  self . UsedOptions                       , \
-                                  UUID                                     , \
-                                  UUIDs                                      )
-      ########################################################################
-    elif                        ( self . isReverse       (               ) ) :
-      ########################################################################
-      self . SCENE . MoveListsBySecond                                     ( \
-                                  DB                                       , \
-                                  SCNTAB                                   , \
-                                  RELTAB                                   , \
-                                  self . Relation                          , \
-                                  self . UsedOptions                       , \
-                                  UUID                                     , \
-                                  UUIDs                                      )
-    ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def AppendingScenarios        ( self , UUID , UUIDs                      ) :
-    ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    ##########################################################################
-    if                          ( COUNT <= 0                               ) :
-      return
-    ##########################################################################
-    if                          ( self . isSubordination (               ) ) :
-      pass
-    elif                        ( self . isReverse       (               ) ) :
-      pass
-    else                                                                     :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      ########################################################################
-      self . setVacancy         (                                            )
-      self . GoRelax . emit     (                                            )
-      self . Notify             ( 1                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    FMT    = self . getMenuItem ( "JoinScenarios"                            )
-    MSG    = FMT  . format      ( COUNT                                      )
-    self   . ShowStatus         ( MSG                                        )
-    self   . TtsTalk            ( MSG , 1002                                 )
-    ##########################################################################
-    RELTAB = self . Tables      [ "RelationVideos"                           ]
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    ##########################################################################
-    if                          ( self . isSubordination (               ) ) :
-      ########################################################################
-      self . Relation . Joins   ( DB , RELTAB , UUIDs                        )
-      ########################################################################
-    elif                        ( self . isReverse       (               ) ) :
-      ########################################################################
-      for UUID in UUIDs                                                      :
-        ######################################################################
-        self . Relation . set   ( "first" , UUID                             )
-        self . Relation . Join  ( DB      , RELTAB                           )
-    ##########################################################################
-    DB     . UnlockTables       (                                            )
-    ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def InsertItem              ( self                                       ) :
-    ##########################################################################
-    item = QTreeWidgetItem    (                                              )
-    item . setData            ( 0 , Qt . UserRole , 0                        )
-    item . setData            ( 1 , Qt . UserRole , 0                        )
-    self . addTopLevelItem    ( item                                         )
-    line = self . setLineEdit ( item                                       , \
-                                1                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    NID  = self . AppendPeople (                                             )
+    item = QTreeWidgetItem     (                                             )
+    item . setText             ( 0 , str ( NID )                             )
+    item . setTextAlignment    ( 0 , Qt . AlignRight                         )
+    item . setData             ( 0 , Qt . UserRole , str ( NID )             )
+    self . addTopLevelItem     ( item                                        )
+    line = self . setLineEdit  ( item                                      , \
+                                 1                                         , \
+                                 "editingFinished"                         , \
+                                 self . nameChanged                          )
+    line . setFocus            ( Qt . TabFocusReason                         )
     ##########################################################################
     return
   ############################################################################
   def DeleteItems             ( self                                       ) :
-    ##########################################################################
-    if                        ( not self . isGrouping ( )                  ) :
-      return
     ##########################################################################
     self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
@@ -864,7 +321,7 @@ class SceneRolesEditor           ( TreeDock                                ) :
   def nameChanged               ( self                                     ) :
     ##########################################################################
     if                          ( not self . isItemPicked ( )              ) :
-      return False
+      return
     ##########################################################################
     item   = self . CurrentItem [ "Item"                                     ]
     column = self . CurrentItem [ "Column"                                   ]
@@ -875,1146 +332,257 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     self   . removeParked       (                                            )
     ##########################################################################
+    if                          ( text == msg                              ) :
+      return
+    ##########################################################################
     if                          ( 1 == column                              ) :
       ########################################################################
-      if                        ( len ( msg ) <= 0                         ) :
-        ######################################################################
-        if                      ( uuid <= 0                                ) :
-          ####################################################################
-          self . removeTopLevelItem ( item                                   )
-          ####################################################################
-          return
-      ########################################################################
       item . setText            ( column , msg                               )
-      VAL  =                    ( item , uuid , msg ,                        )
-      self . Go                 ( self . AssureUuidItem , VAL                )
-      ########################################################################
-    elif                        ( 3 == column                              ) :
-      ########################################################################
-      try                                                                    :
-        ######################################################################
-        stype = int             ( msg                                        )
-        item  . setText         ( column , msg                               )
-        VAL   =                 ( item , uuid , stype ,                      )
-        self  . Go              ( self . AssureItemType , VAL                )
-        ######################################################################
-      except                                                                 :
-        pass
-      ########################################################################
-    elif                        ( 4 == column                              ) :
-      ########################################################################
-      item . setText            ( column , msg                               )
-      VAL  =                    ( item , uuid , msg ,                        )
-      self . Go                 ( self . AssureItemName , VAL                )
-      ########################################################################
-    elif                        ( 5 == column                              ) :
-      ########################################################################
-      try                                                                    :
-        ######################################################################
-        states = int            ( msg                                        )
-        item   . setText        ( column , msg                               )
-        VAL    =                ( item , uuid , states ,                     )
-        self   . Go             ( self . AssureItemStates , VAL              )
-        ######################################################################
-      except                                                                 :
-        pass
-      ########################################################################
-    elif                        ( 6 == column                              ) :
-      ########################################################################
-      VAL  =                    ( item , uuid , msg ,                        )
-      self . Go                 ( self . UpdateItemDuration , VAL            )
-    ##########################################################################
-    elif                        ( 8 == column                              ) :
-      ########################################################################
-      VAL  =                    ( item , uuid , msg ,                        )
-      self . Go                 ( self . UpdateItemEnding , VAL              )
+      self . ModifyPeople       ( uuid   , msg                               )
+      self . setFocus           ( Qt . MouseFocusReason                      )
     ##########################################################################
     return
   ############################################################################
-  def usageChanged               ( self                                    ) :
+  def spinChanged               ( self                                     ) :
     ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    cb     = self . CurrentItem  [ "Widget"                                  ]
-    cbv    = self . CurrentItem  [ "Value"                                   ]
-    index  = cb   . currentIndex (                                           )
-    value  = cb   . itemData     ( index                                     )
-    ##########################################################################
-    if                           ( value != cbv                            ) :
-      ########################################################################
-      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
-      LL   = self . Translations [ self . ClassTag ] [ "Usage"               ]
-      msg  = LL                  [ str ( value )                             ]
-      ########################################################################
-      item . setText             ( column ,  msg                             )
-      item . setData             ( column , Qt . UserRole , value            )
-      ########################################################################
-      self . Go                  ( self . UpdateUsage                      , \
-                                   ( item , uuid , value , )                 )
-    ##########################################################################
-    self   . removeParked        (                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def RemoveItems                       ( self , UUIDs                     ) :
-    ##########################################################################
-    if                                  ( len ( UUIDs ) <= 0               ) :
-      self . Notify                     ( 1                                  )
+    if                          ( not self . isItemPicked ( )              ) :
       return
     ##########################################################################
-    if                                  ( not self . isGrouping (        ) ) :
-      self . Notify                     ( 1                                  )
-      return
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
+    nv     = sb   . value       (                                            )
     ##########################################################################
-    RELTAB = self . Tables              [ "Relation"                         ]
-    SQLs   =                            [                                    ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
+    if                          ( v != nv                                  ) :
       ########################################################################
-      if                                ( self . isSubordination (       ) ) :
-        self . Relation . set           ( "second" , UUID                    )
-      elif                              ( self . isReverse       (       ) ) :
-        self . Relation . set           ( "second" , UUID                    )
-      ########################################################################
-      QQ     = self . Relation . Delete ( RELTAB                             )
-      SQLs   . append                   ( QQ                                 )
+      self . ModifyId           ( item , v , nv                              )
     ##########################################################################
-    self     . OnBusy  . emit           (                                    )
-    self     . setBustle                (                                    )
-    ##########################################################################
-    DB       = self . ConnectDB         (                                    )
-    if                                  ( DB == None                       ) :
-      ########################################################################
-      self   . setVacancy               (                                    )
-      self   . GoRelax . emit           (                                    )
-      self   . Notify                   ( 1                                  )
-      ########################################################################
-      return
-    ##########################################################################
-    DB       . LockWrites               ( [ RELTAB                         ] )
-    ##########################################################################
-    TITLE    = "RemoveScenarioItems"
-    self     . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100            )
-    ##########################################################################
-    DB       . UnlockTables             (                                    )
-    self     . setVacancy               (                                    )
-    self     . GoRelax . emit           (                                    )
-    DB       . Close                    (                                    )
-    self     . loading                  (                                    )
+    self   . removeParked       (                                            )
+    self   . setFocus           ( Qt . MouseFocusReason                      )
     ##########################################################################
     return
   ############################################################################
-  def DoExportASS                        ( self , filename                 ) :
+  def RemoveItems   ( self , UUIDs                                         ) :
     ##########################################################################
-    FMT       = "Dialogue: 0,$(START),$(END),Default,,0,0,0,,$(MESSAGE)"
-    ROWS      = [ "[Events]" ,
-                  "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text" ]
+    for U in UUIDs                                                           :
+      self . TakeId ( U                                                      )
     ##########################################################################
-    LOC       = self . getLocality       (                                   )
-    TOTAL     = self . topLevelItemCount (                                   )
-    ##########################################################################
-    for id in range                      ( 0 , TOTAL                       ) :
-      ########################################################################
-      item    = self . topLevelItem      ( id                                )
-      BTS     = item . data              ( 7             , Qt . UserRole     )
-      JSOZ    = item . data              ( self . JsonAt , Qt . UserRole     )
-      DESC    = DescriptiveItem          (                                   )
-      DESC    . setJson                  ( JSOZ [ "Description" ]            )
-      DESC    . Locality = LOC
-      BT      = int                      ( BTS                               )
-      ########################################################################
-      for T in DESC . TIMESTAMPs                                             :
-        ######################################################################
-        OK , JJ = DESC . itemJson        ( T                                 )
-        ######################################################################
-        if                               ( not OK                          ) :
-          continue
-        ######################################################################
-        JOPTs = JJ                       [ "Options"                         ]
-        ######################################################################
-        if                               ( "Subtitle" not in JOPTs         ) :
-          continue
-        ######################################################################
-        SOPT  = JOPTs                    [ "Subtitle"                        ]
-        if                               ( not SOPT                        ) :
-          continue
-        ######################################################################
-        DT    = 0
-        if                               ( "Duration" in JOPTs             ) :
-          DT  = JOPTs                    [ "Duration"                        ]
-        ######################################################################
-        ST    = int                      ( T  + BT                           )
-        ET    = int                      ( ST + DT                           )
-        NAME  = JJ                       [ "Name"                            ]
-        ######################################################################
-        SS    = self . SCENE . toCTime   ( ST                                )
-        ES    = self . SCENE . toCTime   ( ET                                )
-        MSG   = FMT
-        MSG   = MSG  . replace           ( "$(START)"   , SS                 )
-        MSG   = MSG  . replace           ( "$(END)"     , ES                 )
-        MSG   = MSG  . replace           ( "$(MESSAGE)" , NAME               )
-        ROWS  . append                   ( MSG                               )
-    ##########################################################################
-    TEXT      = "\n" . join              ( ROWS                              )
-    ##########################################################################
-    with open ( filename , "w" , encoding="utf-8" ) as f                     :
-      f       . write                    ( TEXT                              )
-    ##########################################################################
-    self      . Notify                   ( 5                                 )
+    self   . reload (                                                        )
+    self   . Notify ( 5                                                      )
     ##########################################################################
     return
   ############################################################################
-  def ExportASS                        ( self                              ) :
+  def CopyToClipboard              ( self                                  ) :
+    ##########################################################################
+    TEXT = json . dumps            ( self . JSON                             )
+    qApp . clipboard ( ) . setText ( TEXT                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteJson                   ( self                                   ) :
+    ##########################################################################
+    TEXT       = qApp . clipboard ( ) . text (                               )
+    ##########################################################################
+    if                            ( len ( TEXT ) <= 0                      ) :
+      return                      {                                          }
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      JS       = json . loads     ( TEXT                                     )
+      ########################################################################
+      EXISTs   = True
+      ########################################################################
+      if                          ( "Listings" not in JS                   ) :
+        EXISTs = False
+      ########################################################################
+      if                          ( "Crowds"   not in JS                   ) :
+        EXISTs = False
+      ########################################################################
+      if                          ( EXISTs                                 ) :
+        ######################################################################
+        self   . JSON = JS
+        self   . JsonChanged      (                                          )
+        self   . reload           (                                          )
+        self   . Notify           ( 5                                        )
+      ########################################################################
+    except                                                                   :
+        self   . Notify           ( 1                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveCrowds                       ( self                              ) :
     ##########################################################################
     ROOT    = self . GetFilmRootFolder (                                     )
-    Title   = self . getMenuItem       ( "ExportASS"                         )
-    Filters = self . getMenuItem       ( "AssFilters"                        )
-    ASSFILE = f"{ROOT}/subtitle.ass"
+    Title   = self . getMenuItem       ( "ExportJSON"                        )
+    Filters = self . getMenuItem       ( "JsonFilters"                       )
+    JFILE   = f"{ROOT}/people.json"
     ##########################################################################
-    ( ASS , filter ) = QFileDialog . getSaveFileName                         (
+    ( PEO , filter ) = QFileDialog . getSaveFileName                         (
                          self                                              , \
                          Title                                             , \
-                         ASSFILE                                           , \
+                         JFILE                                             , \
                          Filters                                             )
     ##########################################################################
-    if                                 ( len ( ASS ) <= 0                  ) :
+    if                                 ( len ( PEO ) <= 0                  ) :
       self  . Notify                   ( 1                                   )
       return
     ##########################################################################
-    FDIR    = os . path . dirname      ( ASS                                 )
+    FDIR    = os . path . dirname      ( PEO                                 )
     self    . UpdateFilmRootFolder     ( FDIR                                )
     ##########################################################################
-    self    . Go                       ( self . DoExportASS , ( ASS , )      )
+    SaveJson                           ( PEO , self . JSON                   )
+    self    . Notify                   ( 5                                   )
     ##########################################################################
     return
   ############################################################################
-  def DoExportMeta               ( self , FILM , METAFILE                  ) :
+  def NextId    ( self                                                     ) :
     ##########################################################################
-    FFPROBE    = self . Settings [ "FFprobe"                                 ]
+    NID   = 1
     ##########################################################################
-    FI         = FilmItem        (                                           )
-    FJ         = FI . Probe      ( FILM , FFPROBE                            )
-    ##########################################################################
-    if                           ( "format"  not in FJ                     ) :
-      self     . Notify          ( 1                                         )
-      return
-    ##########################################################################
-    if                           ( "streams" not in FJ                     ) :
-      self     . Notify          ( 1                                         )
-      return
-    ##########################################################################
-    ROWS       =                 [ ";FFMETADATA1"                          , \
-                                   "composer=Foxman"                       , \
-                                   "encoder=CIOS Media Authoring Tool"       ]
-    ##########################################################################
-    FMJ        = FJ              [ "format"                                  ]
-    TMJ        = FMJ             [ "tags"                                    ]
-    MBRAND     = "isom"
-    MVER       = "512"
-    CBRAND     = "isomiso2avc1mp41"
-    FTITLE     = ""
-    FALBUM     = ""
-    GNAME      = ""
-    ##########################################################################
-    if                           ( "major_brand"       in TMJ              ) :
-      MBRAND   = TMJ             [ "major_brand"                             ]
-    if                           ( "minor_version"     in TMJ              ) :
-      MVER     = TMJ             [ "minor_version"                           ]
-    if                           ( "compatible_brands" in TMJ              ) :
-      CBRAND   = TMJ             [ "compatible_brands"                       ]
-    if                           ( "title"             in TMJ              ) :
-      FTITLE   = TMJ             [ "title"                                   ]
-    if                           ( "album"             in TMJ              ) :
-      FALBUM   = TMJ             [ "album"                                   ]
-    if                           ( "grouping"          in TMJ              ) :
-      GNAME    = TMJ             [ "grouping"                                ]
-    ##########################################################################
-    THEAD      = METAFILE
-    THEAD      = THEAD . replace ( "metadata.txt" , "head.txt"               )
-    THFILE     = Path            ( THEAD                                     )
-    ##########################################################################
-    if                           ( THFILE . is_file (                    ) ) :
+    if          ( len ( self . JSON [ "Listings" ] ) > 0                   ) :
       ########################################################################
-      LINEs    =                 [                                           ]
-      ########################################################################
-      with open                  ( THFILE , "r"                       ) as F :
-        LINEs  = F . readlines   (                                           )
-      ########################################################################
-      if                         ( len ( LINEs ) >= 3                      ) :
-        ######################################################################
-        HT     =                 [                                           ]
-        ######################################################################
-        for L in LINEs                                                       :
-          ####################################################################
-          S    = L . replace     ( "\n" , ""                                 )
-          S    = S . replace     ( "\r" , ""                                 )
-          S    = S . replace     ( "\t" , ""                                 )
-          ####################################################################
-          HT   . append          ( S                                         )
-        ######################################################################
-        if                       ( len ( FTITLE ) <= 0                     ) :
-          ####################################################################
-          FTITLE = HT            [ 0                                         ]
-        ######################################################################
-        if                       ( len ( FALBUM ) <= 0                     ) :
-          ####################################################################
-          FALBUM = HT            [ 1                                         ]
-        ######################################################################
-        if                       ( len ( GNAME  ) <= 0                     ) :
-          ####################################################################
-          GNAME  = HT            [ 2                                         ]
+      NID = int ( self . JSON [ "Listings" ] [ -1 ]                          )
+      NID = int ( NID + 1                                                    )
     ##########################################################################
-    ROWS       . append          ( f"major_brand={MBRAND}"                   )
-    ROWS       . append          ( f"minor_version={MVER}"                   )
-    ROWS       . append          ( f"compatible_brands={CBRAND}"             )
-    ROWS       . append          ( f"title={FTITLE}"                         )
-    ROWS       . append          ( f"album={FALBUM}"                         )
-    ROWS       . append          ( f"grouping={GNAME}"                       )
+    return NID
+  ############################################################################
+  def NewPeopleId                       ( self                             ) :
     ##########################################################################
-    TBS        = ""
-    DTS        = ""
+    NID  = self . NextId                (                                    )
+    self . JSON [ "Listings" ] . append ( NID                                )
+    self . JSON [ "Crowds"   ] [ f"{NID}" ] = {                              }
     ##########################################################################
-    for ST in FJ                [ "streams"                                ] :
+    for L in self . KEYs                                                     :
       ########################################################################
-      if                        ( "codec_type" in ST                       ) :
-        if                      ( "video" == ST [ "codec_type" ]           ) :
-          ####################################################################
-          if                    ( "time_base" in ST                        ) :
-            ##################################################################
-            TBS = ST            [ "time_base"                                ]
-            DTS = ST            [ "duration_ts"                              ]
+      self . JSON [ "Crowds" ] [ f"{NID}" ] [ f"{L}" ] = ""
     ##########################################################################
-    if                          ( "/" not in TBS                           ) :
-      self     . Notify         ( 1                                          )
-      return
+    return NID
+  ############################################################################
+  def AppendPeople           ( self                                        ) :
     ##########################################################################
-    try                                                                      :
-      ########################################################################
-      DFV      = TBS . split    ( "/"                                        )
-      ########################################################################
-      if                        ( 2 != len ( DFV )                         ) :
-        self   . Notify         ( 1                                          )
-        return
-      ########################################################################
-      DU       = int            ( DFV [ 0 ]                                  )
-      DU       = int            ( DU * 1000000                               )
-      DD       = int            ( DFV [ 1 ]                                  )
-      DTV      = int            ( DTS                                        )
-      ########################################################################
-    except                                                                   :
-      self     . Notify         ( 1                                          )
-      return
+    NID = self . NewPeopleId (                                               )
+    self       . JsonChanged (                                               )
     ##########################################################################
-    CHAPTERs   =                          [                                  ]
-    LOC        = self . getLocality       (                                  )
-    TOTAL      = self . topLevelItemCount (                                  )
+    return NID
+  ############################################################################
+  def ModifyPeople            ( self , NID , NAME                          ) :
     ##########################################################################
-    for id in range                       ( 0 , TOTAL                      ) :
-      ########################################################################
-      item     = self . topLevelItem      ( id                               )
-      BTS      = item . data              ( 7             , Qt . UserRole    )
-      JSOZ     = item . data              ( self . JsonAt , Qt . UserRole    )
-      DESC     = DescriptiveItem          (                                  )
-      DESC     . setJson                  ( JSOZ [ "Description" ]           )
-      DESC     . Locality = LOC
-      BT       = int                      ( BTS                              )
-      ########################################################################
-      for T in DESC . TIMESTAMPs                                             :
-        ######################################################################
-        OK , JJ = DESC . itemJson         ( T                                )
-        ######################################################################
-        if                                ( not OK                         ) :
-          continue
-        ######################################################################
-        JOPTs  = JJ                       [ "Options"                        ]
-        HC     =                          ( "Chapter"   in JOPTs             )
-        HP     =                          ( "Paragraph" in JOPTs             )
-        ######################################################################
-        if                                ( ( not HC  ) and ( not HP  )    ) :
-          continue
-        ######################################################################
-        HVC    = False
-        HVP    = False
-        ######################################################################
-        if                                ( HC                             ) :
-          HVC  = JOPTs                    [ "Chapter"                        ]
-        ######################################################################
-        if                                ( HP                             ) :
-          HVP  = JOPTs                    [ "Paragraph"                      ]
-        ######################################################################
-        if                                ( ( not HVC ) and ( not HVP )    ) :
-          continue
-        ######################################################################
-        ST     = int                      ( T  + BT                          )
-        PTS    = int                      ( int ( ST * DD ) / DU             )
-        NAME   = JJ                       [ "Name"                           ]
-        ######################################################################
-        if                                ( HVP                            ) :
-          NAME = f"* {NAME}"
-        ######################################################################
-        MJS    =                          { "Name" : NAME                  , \
-                                            "Time" : ST                    , \
-                                            "PTS"  : PTS                     }
-        ######################################################################
-        CHAPTERs . append                 ( MJS                              )
-    ##########################################################################
-    CNT        = len            ( CHAPTERs                                   )
-    ATX        = 0
-    ATC        = 1
-    ##########################################################################
-    while                       ( ATC <= CNT                               ) :
-      ########################################################################
-      NAME     = CHAPTERs       [ ATX ] [ "Name"                             ]
-      STS      = CHAPTERs       [ ATX ] [ "PTS"                              ]
-      ########################################################################
-      if                        ( ATC == CNT                               ) :
-        ######################################################################
-        LTS    = DTV
-        ######################################################################
-      else                                                                   :
-        ######################################################################
-        LTS    = CHAPTERs       [ ATC ] [ "PTS"                              ]
-      ########################################################################
-      ROWS     . append         ( "[CHAPTER]"                                )
-      ROWS     . append         ( f"TIMEBASE={TBS}"                          )
-      ROWS     . append         ( f"START={STS}"                             )
-      ROWS     . append         ( f"END={LTS}"                               )
-      ROWS     . append         ( f"title={NAME}"                            )
-      ########################################################################
-      ATX      = int            ( ATX + 1                                    )
-      ATC      = int            ( ATC + 1                                    )
-    ##########################################################################
-    TEXT       = "\n" . join    ( ROWS                                       )
-    ##########################################################################
-    with open                   ( METAFILE , "w" , encoding="utf-8" ) as f   :
-      f        . write          ( TEXT                                       )
-    ##########################################################################
-    self       . Notify         ( 5                                          )
+    LOC  = self . getLocality (                                              )
+    self . JSON [ "Crowds" ]  [ f"{NID}" ] [ f"{LOC}" ] = NAME
+    self . JsonChanged        (                                              )
     ##########################################################################
     return
   ############################################################################
-  def ExportMetadata                ( self                                 ) :
+  def ModifyId           ( self , item , NID , VID                         ) :
     ##########################################################################
-    ROOT     = self . GetFilmRootFolder (                                    )
-    Title    = self . Translations  [ "Main::PickFilm"                       ]
-    Filters  = self . Translations  [ "Main::MP4Filters"                     ]
+    L      = self . JSON [ "Listings"                                        ]
     ##########################################################################
-    ( FILM , filter ) = QFileDialog . getOpenFileName                        (
-                           self                                            , \
-                           Title                                           , \
-                           ROOT                                            , \
-                           Filters                                           )
-    ##########################################################################
-    if                              ( len ( FILM ) <= 0                    ) :
+    if                   ( VID     in L                                    ) :
+      ########################################################################
+      self . Notify      ( 1                                                 )
+      ########################################################################
       return
     ##########################################################################
-    FDIR     = os . path . dirname  ( FILM                                   )
-    self     . UpdateFilmRootFolder ( FDIR                                   )
-    ##########################################################################
-    Title    = self . getMenuItem   ( "ExportMetadata"                       )
-    Filters  = self . getMenuItem   ( "MetaFilters"                          )
-    METAFILE = f"{FDIR}/metadata.txt"
-    ##########################################################################
-    ( META , filter ) = QFileDialog . getSaveFileName                        (
-                          self                                             , \
-                          Title                                            , \
-                          METAFILE                                         , \
-                          Filters                                            )
-    ##########################################################################
-    if                              ( len ( META ) <= 0                    ) :
-      self  . Notify                ( 1                                      )
+    if                   ( NID not in L                                    ) :
+      ########################################################################
+      self . Notify      ( 1                                                 )
+      ########################################################################
       return
     ##########################################################################
-    ARGs    =                       ( FILM , META ,                          )
-    self    . Go                    ( self . DoExportMeta , ARGs             )
+    self . JSON [ "Crowds" ] [ f"{VID}" ] = self . JSON [ "Crowds" ] [ f"{NID}" ]
+    ##########################################################################
+    L    . remove        ( NID                                               )
+    L    . append        ( VID                                               )
+    L    . sort          (                                                   )
+    ##########################################################################
+    self . JSON [ "Listings" ] = L
+    ##########################################################################
+    item . setData       ( 0 , Qt . UserRole , str ( VID )                   )
+    item . setText       ( 0 ,                 str ( VID )                   )
+    ##########################################################################
+    self . JsonChanged   (                                                   )
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem          ( self , item , uuid , name                  ) :
+  def TakeId ( self , NID                                                  ) :
     ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
+    if       ( NID in self . JSON [ "Listings"                           ] ) :
+      self . JSON [ "Listings" ] . remove ( NID                              )
     ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    ##########################################################################
-    if                        ( self . NotOkay ( DB )                      ) :
-      ########################################################################
-      self . setVacancy       (                                              )
-      self . GoRelax . emit   (                                              )
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB = self . Tables    [ "Scenarios"                                  ]
-    RELTAB = self . Tables    [ "RelationVideos"                             ]
-    NAMTAB = self . Tables    [ "NamesEditing"                               ]
-    ##########################################################################
-    DB     . LockWrites       ( [ SCNTAB , RELTAB , NAMTAB                 ] )
-    ##########################################################################
-    uuid   = int              ( uuid                                         )
-    ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      ########################################################################
-      uuid = DB . LastUuid    ( SCNTAB , "uuid" , 2800008000000000000        )
-      DB   . AppendUuid       ( SCNTAB , uuid                                )
-      ########################################################################
-      JJ   =                  { "Id"          : -1                         , \
-                                "Uuid"        : uuid                       , \
-                                "Name"        : name                       , \
-                                "Used"        :  1                         , \
-                                "States"      :  0                         , \
-                                "Type"        :  0                         , \
-                                "Scope"       : ""                         , \
-                                "Duration"    :  0                         , \
-                                "Description" : {                          } }
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      JJ   = item . data      ( self . JsonAt , Qt . UserRole                )
-    ##########################################################################
-    self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
-    ##########################################################################
-    if                        ( self . isSubordination ( )                 ) :
-      ########################################################################
-      self . Relation . set   ( "second" , uuid                              )
-      self . Relation . Join  ( DB       , RELTAB                            )
-      ########################################################################
-    elif                      ( self . isReverse       ( )                 ) :
-      ########################################################################
-      self . Relation . set   ( "first"  , uuid                              )
-      self . Relation . Join  ( DB       , RELTAB                            )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . loading          (                                              )
+    if       ( NID in self . JSON [ "Crowds"                             ] ) :
+      del self . JSON [ "Crowds" ]        [ f"{NID}"                         ]
     ##########################################################################
     return
   ############################################################################
-  def AssureItemType          ( self , item , uuid , stype                 ) :
+  def JsonChanged                    ( self                                ) :
     ##########################################################################
-    uuid   = int              ( uuid                                         )
-    ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      ########################################################################
-      self . Notify           ( 1                                            )
-      ########################################################################
+    if                               ( self . DESC in self . EmptySet      ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    ##########################################################################
-    if                        ( self . NotOkay ( DB )                      ) :
-      ########################################################################
-      self . setVacancy       (                                              )
-      self . GoRelax . emit   (                                              )
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB = self . Tables    [ "Scenarios"                                  ]
-    ##########################################################################
-    DB     . LockWrites       ( [ SCNTAB                                   ] )
-    ##########################################################################
-    QQ     = f"""update {SCNTAB}
-                 set `type` = {stype}
-                 where ( `uuid` = {uuid} ) ;"""
-    QQ     = " " . join       ( QQ . split (                               ) )
-    DB     . Query            ( QQ                                           )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . Notify           ( 5                                            )
+    self . DESC . SyncCrowdsMappings ( self . JSON                           )
     ##########################################################################
     return
   ############################################################################
-  def AssureItemName          ( self , item , uuid , name                  ) :
+  def UpdateLocalityUsage ( self                                           ) :
     ##########################################################################
-    uuid   = int              ( uuid                                         )
-    ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      ########################################################################
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    ##########################################################################
-    if                        ( self . NotOkay ( DB )                      ) :
-      ########################################################################
-      self . setVacancy       (                                              )
-      self . GoRelax . emit   (                                              )
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    try                                                                      :
-      ########################################################################
-      BB   = name . encode    ( "utf-8"                                      )
-      ########################################################################
-    except                                                                   :
-      ########################################################################
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB = self . Tables    [ "Scenarios"                                  ]
-    ##########################################################################
-    DB     . LockWrites       ( [ SCNTAB                                   ] )
-    ##########################################################################
-    QQ     = f"""update {SCNTAB}
-                 set `name` = %s
-                 where ( `uuid` = {uuid} ) ;"""
-    QQ     = " " . join       ( QQ . split (                               ) )
-    DB     . QueryValues      ( QQ ,       ( BB ,                          ) )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . Notify           ( 5                                            )
+    self . reload         (                                                  )
     ##########################################################################
     return
   ############################################################################
-  def AssureItemStates        ( self , item , uuid , states                ) :
-    ##########################################################################
-    uuid   = int              ( uuid                                         )
-    ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      ########################################################################
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    ##########################################################################
-    if                        ( self . NotOkay ( DB )                      ) :
-      ########################################################################
-      self . setVacancy       (                                              )
-      self . GoRelax . emit   (                                              )
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB = self . Tables    [ "Scenarios"                                  ]
-    ##########################################################################
-    DB     . LockWrites       ( [ SCNTAB                                   ] )
-    ##########################################################################
-    QQ     = f"""update {SCNTAB}
-                 set `states` = {states}
-                 where ( `uuid` = {uuid} ) ;"""
-    QQ     = " " . join       ( QQ . split (                               ) )
-    DB     . Query            ( QQ                                           )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . Notify           ( 5                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def UpdateItemDuration                   ( self , item , uuid , name     ) :
-    ##########################################################################
-    uuid        = int                      ( uuid                            )
-    ##########################################################################
-    if                                     ( uuid <= 0                     ) :
-      ########################################################################
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    OKAY , SLEN = self . SCENE . FromFTime ( name                            )
-    ##########################################################################
-    if                                     ( not OKAY                      ) :
-      ########################################################################
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    self        . OnBusy  . emit           (                                 )
-    self        . setBustle                (                                 )
-    ##########################################################################
-    DB          = self . ConnectDB         (                                 )
-    ##########################################################################
-    if                                     ( self . NotOkay ( DB )         ) :
-      ########################################################################
-      self      . setVacancy               (                                 )
-      self      . GoRelax . emit           (                                 )
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB      = self . Tables            [ "Scenarios"                     ]
-    ##########################################################################
-    DB          . LockWrites               ( [ SCNTAB                      ] )
-    ##########################################################################
-    QQ          = f"""update {SCNTAB}
-                      set `duration` = {SLEN}
-                      where ( `uuid` = {uuid} ) ;"""
-    DB          . Query                    ( " " . join ( QQ . split (   ) ) )
-    ##########################################################################
-    DB          . Close                    (                                 )
-    self        . setVacancy               (                                 )
-    self        . GoRelax . emit           (                                 )
-    self        . loading                  (                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def UpdateItemEnding                     ( self , item , uuid , name     ) :
-    ##########################################################################
-    uuid        = int                      ( uuid                            )
-    ##########################################################################
-    if                                     ( uuid <= 0                     ) :
-      ########################################################################
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    BLEN        = item . data              ( 7 , Qt . UserRole               )
-    OKAY , ZLEN = self . SCENE . FromFTime ( name                            )
-    SLEN        = int                      ( ZLEN - int ( BLEN )             )
-    ##########################################################################
-    if                                     ( not OKAY                      ) :
-      ########################################################################
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    self        . OnBusy  . emit           (                                 )
-    self        . setBustle                (                                 )
-    ##########################################################################
-    DB          = self . ConnectDB         (                                 )
-    ##########################################################################
-    if                                     ( self . NotOkay ( DB )         ) :
-      ########################################################################
-      self      . setVacancy               (                                 )
-      self      . GoRelax . emit           (                                 )
-      self      . Notify                   ( 1                               )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB      = self . Tables            [ "Scenarios"                     ]
-    ##########################################################################
-    DB          . LockWrites               ( [ SCNTAB                      ] )
-    ##########################################################################
-    QQ          = f"""update {SCNTAB}
-                      set `duration` = {SLEN}
-                      where ( `uuid` = {uuid} ) ;"""
-    DB          . Query                    ( " " . join ( QQ . split (   ) ) )
-    ##########################################################################
-    DB          . Close                    (                                 )
-    self        . setVacancy               (                                 )
-    self        . GoRelax . emit           (                                 )
-    self        . loading                  (                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def UpdateUsage             ( self , item , uuid , usage                 ) :
-    ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( self . NotOkay ( DB )                      ) :
-      ########################################################################
-      self . setVacancy       (                                              )
-      self . GoRelax . emit   (                                              )
-      self . Notify           ( 1                                            )
-      ########################################################################
-      return
-    ##########################################################################
-    SCNTAB = self . Tables    [ "Scenarios"                                  ]
-    ##########################################################################
-    DB     . LockWrites       ( [ SCNTAB                                   ] )
-    ##########################################################################
-    QQ     = f"""update {SCNTAB}
-                 set `used` = {usage}
-                 where ( `uuid` = {uuid} ) ;"""
-    DB     . Query            ( " " . join ( QQ . split (                ) ) )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . Notify           ( 5                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def CopyToClipboard        ( self                                        ) :
-    ##########################################################################
-    self . DoCopyToClipboard (                                               )
-    ##########################################################################
-    return
-  ############################################################################
-  def Prepare             ( self                                           ) :
-    ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 10                             )
-    ##########################################################################
-    self . LoopRunning = False
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenItemDescriptive          ( self , item                           ) :
-    ##########################################################################
-    LOC  = self . getLocality      (                                         )
-    uuid = item . data             ( 0             , Qt . UserRole           )
-    dlen = item . data             ( 6             , Qt . UserRole           )
-    slen = item . data             ( 7             , Qt . UserRole           )
-    jsoz = item . data             ( self . JsonAt , Qt . UserRole           )
-    uuid = int                     ( uuid                                    )
-    uxid = str                     ( uuid                                    )
-    head = item . text             ( 1                                       )
-    icon = self . windowIcon       (                                         )
-    JJ   =                         { "Uuid"        : uuid                  , \
-                                     "Album"       : self . AlbumUuid      , \
-                                     "Fragment"    : self . FragmentUuid   , \
-                                     "Name"        : head                  , \
-                                     "BaseTime"    : int  ( slen         ) , \
-                                     "Duration"    : int  ( dlen         ) , \
-                                     "Locality"    : LOC                   , \
-                                     "Description" : jsoz [ "Description"  ] }
-    ##########################################################################
-    self . emitDescriptives . emit ( self                                  , \
-                                     head                                  , \
-                                     uxid                                  , \
-                                     JJ                                    , \
-                                     icon                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def GotoItemDescriptive        ( self                                    ) :
-    ##########################################################################
-    atItem = self . currentItem  (                                           )
-    if                           ( self . NotOkay ( atItem )               ) :
-      return
-    ##########################################################################
-    self   . OpenItemDescriptive ( atItem                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenItemCrowds                    ( self , item                      ) :
-    ##########################################################################
-    uuid = item . data                  ( 0 , Qt . UserRole                  )
-    uuid = int                          ( uuid                               )
-    xsid = str                          ( uuid                               )
-    text = item . text                  ( 1                                  )
-    relz = "Contains"
-    ##########################################################################
-    self . ShowPeopleGroupRelate . emit ( text , self . GType , xsid , relz  )
-    ##########################################################################
-    return
-  ############################################################################
-  def GotoItemCrowds            ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self   . OpenItemCrowds     ( atItem                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def BuildBriefScenario              ( self , item                        ) :
-    ##########################################################################
-    FS          = self . Translations [ self . ClassTag ] [ "Finish"         ]
-    uuid        = item . data         ( 0 , Qt . UserRole                    )
-    uuid        = int                 ( uuid                                 )
-    stime       = item . data         ( 7 , Qt . UserRole                    )
-    stime       = int                 ( stime                                )
-    etime       = item . data         ( 8 , Qt . UserRole                    )
-    etime       = int                 ( etime                                )
-    ztime       = int                 ( etime - stime                        )
-    ##########################################################################
-    if                                ( ztime <= 0                         ) :
-      ########################################################################
-      self      . Notify              ( 1                                    )
-      ########################################################################
-      return
-    ##########################################################################
-    self        . OnBusy  . emit      (                                      )
-    self        . setBustle           (                                      )
-    ##########################################################################
-    DB          = self . ConnectDB    (                                      )
-    if                                ( self . NotOkay ( DB )              ) :
-      ########################################################################
-      self      . setVacancy          (                                      )
-      self      . GoRelax . emit      (                                      )
-      self      . Notify              ( 1                                    )
-      ########################################################################
-      return
-    ##########################################################################
-    RCODE       = 5
-    DESC        = DescriptiveItem     (                                      )
-    LANGs       =                     [ 1001 , 1002 , 1003 , 1006            ]
-    NAMEs       =                     {                                      }
-    NAMTAB      = self . Tables       [ "Names"                              ]
-    SCNTAB      = self . Tables       [ "Scenarios"                          ]
-    ##########################################################################
-    DB          . LockWrites          ( [ NAMTAB , SCNTAB                  ] )
-    ##########################################################################
-    for L in LANGs                                                           :
-      ########################################################################
-      NAMEs [ L ] = self . GetNameByLocality                               ( \
-                                        DB                                 , \
-                                        NAMTAB                             , \
-                                        uuid                               , \
-                                        L                                  , \
-                                        "Default"                            )
-      ########################################################################
-      if                              ( 0 == len ( NAMEs [ L ] )           ) :
-        RCODE   = 1
-    ##########################################################################
-    if                                ( 5 == RCODE                         ) :
-      ########################################################################
-      QQ        = f"""select `description` from {SCNTAB}
-                      where ( `uuid` = {uuid} ) ;"""
-      DB        . Query                ( " " . join ( QQ . split ( ) )       )
-      RR        = DB . FetchOne        (                                     )
-      ########################################################################
-      if                               ( None == RR                        ) :
-        RCODE   = 1
-      ########################################################################
-      if                               ( ( 5==RCODE ) and ( len( RR )<=0 ) ) :
-        RCODE   = 1
-      ########################################################################
-      if                               ( 5 == RCODE                        ) :
-        ######################################################################
-        RJ      = RR                   [ 0                                   ]
-        ######################################################################
-        if                             ( len ( RJ ) > 2                    ) :
-          RCODE = 1
-    ##########################################################################
-    if                                 ( 5 == RCODE                        ) :
-      ########################################################################
-      DESC    . addItem                ( 0     , ""                          )
-      DESC    . addItem                ( ztime , ""                          )
-      ########################################################################
-      for L in LANGs                                                         :
-        ######################################################################
-        DESC  . setLocalityContext     ( 0     , L , NAMEs [ L             ] )
-        DESC  . setOption              ( 0     , "Chapter"  , True           )
-        DESC  . setOption              ( 0     , "Subtitle" , True           )
-        DESC  . setOption              ( 0     , "Duration" , 5000000        )
-        DESC  . setLocalityContext     ( ztime , L , FS    [ f"{L}"        ] )
-      ########################################################################
-      DJSON   = DESC  . toJson         (                                     )
-      SJSON   = json  . dumps          ( DJSON                               )
-      RJSON   = SJSON . encode         ( "utf-8"                             )
-      ########################################################################
-      QQ      = f"""update {SCNTAB}
-                    set `description` = %s
-                    where ( `uuid` = {uuid} ) ;"""
-      QQ      = " " . join             ( QQ . split (                      ) )
-      DB      . QueryValues            ( QQ , ( RJSON ,                    ) )
-    ##########################################################################
-    DB        . UnlockTables           (                                     )
-    DB        . Close                  (                                     )
-    self      . setVacancy             (                                     )
-    self      . GoRelax . emit         (                                     )
-    self      . Notify                 ( RCODE                               )
-    self      . loading                (                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def CreateBriefScenario     ( self                                       ) :
-    ##########################################################################
-    CIT  = self . currentItem (                                              )
-    ##########################################################################
-    if                        ( CIT in self . EmptySet                     ) :
-      ########################################################################
-      return
-    ##########################################################################
-    self . Go                 ( self . BuildBriefScenario , ( CIT , )        )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenItemNamesEditor             ( self , item                        ) :
-    ##########################################################################
-    self . defaultOpenItemNamesEditor ( item                               , \
-                                        0                                  , \
-                                        "Scenario"                         , \
-                                        "NamesEditing"                       )
-    ##########################################################################
-    return
-  ############################################################################
-  def UpdateLocalityUsage       ( self                                     ) :
+  def AppendingCrowds           ( self , UUIDs                             ) :
     ##########################################################################
     self   . OnBusy  . emit     (                                            )
     self   . setBustle          (                                            )
     ##########################################################################
     DB     = self . ConnectDB   (                                            )
+    ##########################################################################
     if                          ( self . NotOkay ( DB )                    ) :
       ########################################################################
       self . setVacancy         (                                            )
       self . GoRelax . emit     (                                            )
       self . Notify             ( 1                                          )
       ########################################################################
-      return False
+      return
     ##########################################################################
-    PAMTAB = self . Tables      [ "Parameters"                               ]
-    DB     . LockWrites         ( [ PAMTAB                                 ] )
+    NAMTAB = self . Tables      [ "Names"                                    ]
     ##########################################################################
-    self   . SetLocalityByUuid  ( DB                                       , \
-                                  PAMTAB                                   , \
-                                  0                                        , \
-                                  self . GType                             , \
-                                  self . ClassTag                            )
+    DB     . LockWrites         ( [ NAMTAB                                 ] )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NS   =                    {                                            }
+      ########################################################################
+      for L in self . KEYs                                                   :
+        ######################################################################
+        NS [ f"{L}" ] = self . GetNameByLocality                           ( \
+                                  DB                                       , \
+                                  NAMTAB                                   , \
+                                  UUID                                     , \
+                                  L                                        , \
+                                  "Default"                                  )
+      ########################################################################
+      NID  = self . NewPeopleId (                                            )
+      self . JSON [ "Crowds" ]  [ f"{NID}" ] = NS
     ##########################################################################
     DB     . UnlockTables       (                                            )
     DB     . Close              (                                            )
     self   . setVacancy         (                                            )
-    self   . GoRelax     . emit (                                            )
-    self   . emitRestart . emit (                                            )
-    ##########################################################################
-    return True
-  ############################################################################
-  def ReloadLocality           ( self , DB                                 ) :
-    ##########################################################################
-    PAMTAB = self . Tables     [ "Parameters"                                ]
-    self   . GetLocalityByUuid ( DB                                        , \
-                                 PAMTAB                                    , \
-                                 0                                         , \
-                                 self . GType                              , \
-                                 self . ClassTag                             )
+    self   . GoRelax . emit     (                                            )
+    self   . Notify             ( 5                                          )
+    self   . JsonChanged        (                                            )
+    self   . reload             (                                            )
     ##########################################################################
     return
   ############################################################################
-  def CommandParser ( self , language , message , timestamp                ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    TRX = self . Translations
+    self . defaultPrepare ( self . ClassTag , 2                              )
     ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    return          { "Match" : False                                        }
-  ############################################################################
-  def ShowAllColumns         ( self                                        ) :
-    ##########################################################################
-    for i in range           ( 2 , self . columnCount (                  ) ) :
-      ########################################################################
-      self . setColumnHidden ( i , False                                     )
+    self . LoopRunning = False
     ##########################################################################
     return
-  ############################################################################
-  def ColumnsMenu                   ( self , mm                            ) :
-    ##########################################################################
-    TRX     = self . Translations
-    head    = self . headerItem     (                                        )
-    COL     = mm   . addMenu        ( TRX [ "UI::Columns" ]                  )
-    ##########################################################################
-    msg     = self . getMenuItem    ( "ShowAllColumns"                       )
-    icon    = QIcon                 ( ":/images/task.png"                    )
-    mm      . addActionFromMenuWithIcon ( COL , 9501 , icon , msg            )
-    ##########################################################################
-    mm      . addSeparatorFromMenu  ( COL                                    )
-    ##########################################################################
-    for i in range                  ( 2 , self . columnCount ( )           ) :
-      ########################################################################
-      msg   = head . text           ( i                                      )
-      if                            ( len ( msg ) <= 0                     ) :
-        msg = TRX                   [ "UI::Whitespace"                       ]
-      ########################################################################
-      hid   = self . isColumnHidden ( i                                      )
-      mm    . addActionFromMenu     ( COL , 9000 + i , msg , True , not hid  )
-    ##########################################################################
-    return mm
-  ############################################################################
-  def RunColumnsMenu                 ( self , at                           ) :
-    ##########################################################################
-    if                               ( 9501 == at                          ) :
-      ########################################################################
-      self   . ShowAllColumns        (                                       )
-      ########################################################################
-      return
-    ##########################################################################
-    DCOLs    = self . columnCount    (                                       )
-    MCOLs    = int                   ( 9000 + DCOLs                          )
-    ##########################################################################
-    if                               ( ( at >= 9002 ) and ( at <= MCOLs )  ) :
-      ########################################################################
-      col    = at - 9000
-      hid    = self . isColumnHidden ( col                                   )
-      self   . setColumnHidden       ( col , not hid                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
-  def GroupsMenu                     ( self , mm , item                    ) :
-    ##########################################################################
-    if                               ( self . NotOkay ( item )             ) :
-      return mm
-    ##########################################################################
-    msg  = self . getMenuItem        ( "GroupFunctions"                      )
-    COL  = mm . addMenu              ( msg                                   )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "CopyScenarioUuid"                    )
-    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "OpenDescriptives"                    )
-    icon = QIcon                     ( ":/images/descriptions.png"           )
-    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "ScenarioCrowds"                      )
-    icon = QIcon                     ( ":/images/buddy.png"                  )
-    mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "CreateBrief"                         )
-    icon = QIcon                     ( ":/images/descriptive-chapters.png"   )
-    mm   . addActionFromMenuWithIcon ( COL , 38522003 , icon , msg           )
-    ##########################################################################
-    return mm
-  ############################################################################
-  def RunGroupsMenu                 ( self , at , item                     ) :
-    ##########################################################################
-    if                              ( at == 38521001                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522001                       ) :
-      ########################################################################
-      self . OpenItemDescriptive    ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522002                       ) :
-      ########################################################################
-      self . OpenItemCrowds         ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522003                       ) :
-      ########################################################################
-      self . CreateBriefScenario    ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    return   False
   ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
@@ -2029,28 +597,13 @@ class SceneRolesEditor           ( TreeDock                                ) :
     items  , atItem , uuid = self . GetMenuDetails ( 0                       )
     mm     = MenuManager               ( self                                )
     ##########################################################################
-    mm     = self . AmountIndexMenu    ( mm , True                           )
-    mm     . addSeparator              (                                     )
-    ##########################################################################
-    msg    = self . getMenuItem        ( "ExportMetadata"                    )
-    icon   = QIcon                     ( ":/images/correctness.png"          )
-    mm     . addActionWithIcon         ( 3501 , icon , msg                   )
-    ##########################################################################
-    msg    = self . getMenuItem        ( "ExportASS"                         )
-    icon   = QIcon                     ( ":/images/saveall.png"              )
-    mm     . addActionWithIcon         ( 3502 , icon , msg                   )
-    ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1102                           )
     self   . AppendRenameAction        ( mm , 1103                           )
     self   . AppendDeleteAction        ( mm , 1104                           )
-    self   . TryAppendEditNamesAction  ( atItem , mm , 1601                  )
     ##########################################################################
     mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . GroupsMenu                ( mm ,        atItem                  )
-    self   . ColumnsMenu               ( mm                                  )
-    self   . SortingMenu               ( mm                                  )
     self   . LocalityMenu              ( mm                                  )
     self   . DockingMenu               ( mm                                  )
     ##########################################################################
@@ -2062,13 +615,6 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
-    OKAY   = self . RunAmountIndexMenu ( at                                  )
-    if                                 ( OKAY                              ) :
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return
-    ##########################################################################
     OKAY   = self . RunDocking         ( mm , aa                             )
     if                                 ( OKAY                              ) :
       return True
@@ -2077,25 +623,9 @@ class SceneRolesEditor           ( TreeDock                                ) :
     if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    OKAY   = self . RunSortingMenu     ( at                                  )
-    if                                 ( OKAY                              ) :
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu      ( at , atItem                         )
-    ##########################################################################
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
     if                                 ( at == 1001                        ) :
       ########################################################################
-      self . restart                   (                                     )
+      self . reload                    (                                     )
       ########################################################################
       return True
     ##########################################################################
@@ -2109,19 +639,6 @@ class SceneRolesEditor           ( TreeDock                                ) :
     ##########################################################################
     if                                 ( at == 1104                        ) :
       self . DeleteItems               (                                     )
-      return True
-    ##########################################################################
-    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
-    ##########################################################################
-    if                                 ( OKAY                              ) :
-      return True
-    ##########################################################################
-    if                                 ( 3501 == at                        ) :
-      self . ExportMetadata            (                                     )
-      return True
-    ##########################################################################
-    if                                 ( 3502 == at                        ) :
-      self . ExportASS                 (                                     )
       return True
     ##########################################################################
     return True
