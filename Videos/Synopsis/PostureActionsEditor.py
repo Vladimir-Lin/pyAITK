@@ -435,7 +435,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
       return
     ##########################################################################
     LOC    = self . getLocality   (                                          )
-    self   . JSON [ "Translations" ] [ f"{key}" ] [ f"{LOC}" ] = msg
+    self   . JSON [ "Translations" ] [ f"{key}" ] [ "Actions" ] [ f"{LOC}" ] = msg
     ##########################################################################
     self   . OnBusy  . emit       (                                          )
     self   . setBustle            (                                          )
