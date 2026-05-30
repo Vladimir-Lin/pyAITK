@@ -101,6 +101,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     self . CLI                = None
     self . EstablishWidget    = None
     self . EditingWidget      = None
+    self . GetFilmRootFolder  = None
+    self . UpdateFilmRootFolder = None
     ##########################################################################
     self . emitEstablish     . connect ( self . DoEstablish                  )
     self . emitEditing       . connect ( self . DoEditing                    )
@@ -890,6 +892,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     VIDS  = VideoListings     ( None , self . PlanFunc                       )
     VIDS  . setMinimumHeight  ( 160                                          )
     VIDS  . resize            ( 400 , 200                                    )
+    VIDS  . GetFilmRootFolder    = self . GetFilmRootFolder
+    VIDS  . UpdateFilmRootFolder = self . UpdateFilmRootFolder
     ##########################################################################
     KEY   = "VideoListings"
     VIDS  . DB           = self . DB
