@@ -1582,7 +1582,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
         ######################################################################
         ATS = ATS . replace          ( P [ "Key" ] , P [ "Name" ]            )
       ########################################################################
-      self  . DESCRIBE . setLocalityContext ( pid , LOC , ATS              ) :
+      self  . DESCRIBE . setLocalityContext ( pid , LOC , ATS                )
       item  . setText                ( 2 , ATS                               )
     ##########################################################################
     self    . emitItemChanged . emit (                                       )
