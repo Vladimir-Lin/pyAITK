@@ -590,19 +590,19 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return None
   ############################################################################
-  def isItemPicked              ( self                                     ) :
+  def isItemPicked         ( self                                          ) :
     ##########################################################################
-    if                          ( not hasattr ( self , 'CurrentItem' )     ) :
-      self . CurrentItem =      {                                            }
+    if                     ( not hasattr ( self , 'CurrentItem' )          ) :
+      self . CurrentItem = {                                                 }
     ##########################################################################
-    if                          ( "Item"   not in self . CurrentItem       ) :
+    if                     ( "Item"   not in self . CurrentItem            ) :
       return False
-    if                          ( "Column" not in self . CurrentItem       ) :
+    if                     ( "Column" not in self . CurrentItem            ) :
       return False
-    if                          ( "Widget" not in self . CurrentItem       ) :
+    if                     ( "Widget" not in self . CurrentItem            ) :
       return False
     ##########################################################################
-    return True
+    return   True
   ############################################################################
   def removeParked              ( self                                     ) :
     ##########################################################################
