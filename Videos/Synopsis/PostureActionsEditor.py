@@ -137,6 +137,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
     COMMENT = TK                 [ "Comment"                                 ]
     ##########################################################################
     IT      = QTreeWidgetItem    (                                           )
+    IT      . setData            ( 0 , Qt . UserRole , 0                     )
     IT      . setText            ( 0 , KEY                                   )
     IT      . setText            ( 1 , NAME                                  )
     IT      . setText            ( 2 , COMMENT                               )
@@ -264,6 +265,7 @@ class PostureActionsEditor ( TreeDock                                      ) :
   def InsertItem                ( self                                     ) :
     ##########################################################################
     item   = QTreeWidgetItem    (                                            )
+    item   . setData            ( 0 , Qt . UserRole , 0                      )
     item   . setText            ( 0 , ""                                     )
     ##########################################################################
     if                          ( 0 == self . topLevelItemCount ( )        ) :
@@ -556,6 +558,12 @@ class PostureActionsEditor ( TreeDock                                      ) :
     self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     self . LoopRunning = False
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateLocalityUsage ( self                                           ) :
+    ##########################################################################
+    self . reload         (                                                  )
     ##########################################################################
     return
   ############################################################################
