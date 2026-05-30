@@ -545,23 +545,49 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def ParkOrganizationVideos  ( self                                       ) :
+  def ParkOrganizationVideos   ( self                                      ) :
     ##########################################################################
-    DB     = Connection       (                                              )
+    DB     = Connection        (                                             )
     ##########################################################################
-    if                        ( not DB . ConnectTo ( self . DbConf )       ) :
+    if                         ( not DB . ConnectTo ( self . DbConf )      ) :
       ########################################################################
-      self . LOG              ( json . dumps  ( TABLEs )                     )
+      self . LOG               ( json . dumps  ( TABLEs )                    )
       ########################################################################
       return
     ##########################################################################
-    DB     . Prepare          (                                              )
+    DB     . Prepare           (                                             )
     ##########################################################################
     VIDREL =   "`affiliations`.`relations_videos_0008`"
     LTRELs = [ "`affiliations`.`relations_videos_0010`"                      ]
     COLS   = "`first`,`t1`,`second`,`t2`,`relation`,`position`,`reverse`,`prefer`,`membership`,`description`,`ltime`"
     ##########################################################################
+    QQ     = f"""select `first` from {VIDREL}
+                 where ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 )
+                   group by `first` asc ;"""
+    QQ     = " " . join        ( QQ . split (                              ) )
+    self   . LOG               ( QQ                                          )
+    ORGs   = DB  . ObtainUuids ( QQ                                          )
+    ##########################################################################
     for TAGREL in LTRELs                                                     :
+      ########################################################################
+      for RUID in ORGs                                                       :
+        ######################################################################
+        TT = f"""select `second` from {VIDREL}
+                 where ( `first` = {RUID} )
+                   and ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 )"""
+        QQ = f"""delete from {TAGREL}
+                 where ( `first` = {RUID} )
+                   and ( `second` in ( {TT} ) )
+                   and ( `t1` = 38 )
+                   and ( `t2` = 76 )
+                   and ( `relation` = 1 ) ;"""
+        QQ = " " . join        ( QQ . split (                              ) )
+        self . LOG             ( QQ                                          )
+        DB . Query             ( QQ                                          )
       ########################################################################
       QQ   = f"""insert into {VIDREL} ( {COLS} )
                  select {COLS} from {TAGREL}
@@ -569,22 +595,22 @@ class CliParser  (                                                         ) :
                    and ( `t2` = 76 )
                    and ( `relation` = 1 )
                  order by `id` asc ;"""
-      QQ   = " " . join       ( QQ . split (                               ) )
-      self . LOG              ( QQ                                           )
-      DB   . Query            ( QQ                                           )
+      QQ   = " " . join        ( QQ . split (                              ) )
+      self . LOG               ( QQ                                          )
+      DB   . Query             ( QQ                                          )
       ########################################################################
       QQ   = f"""delete  from {TAGREL}
                  where ( `t1` = 38 )
                    and ( `t2` = 76 )
                    and ( `relation` = 1 ) ;"""
-      QQ   = " " . join       ( QQ . split (                               ) )
-      self . LOG              ( QQ                                           )
-      DB   . Query            ( QQ                                           )
-      DB   . Optimize         ( TAGREL                                       )
+      QQ   = " " . join        ( QQ . split (                              ) )
+      self . LOG               ( QQ                                          )
+      DB   . Query             ( QQ                                          )
+      DB   . Optimize          ( TAGREL                                      )
     ##########################################################################
-    DB     . Optimize         ( VIDREL                                       )
-    DB     . Close            (                                              )
-    self   . LOG              ( "ParkOrganizationVideos Completed"           )
+    DB     . Optimize          ( VIDREL                                      )
+    DB     . Close             (                                             )
+    self   . LOG               ( "ParkOrganizationVideos Completed"          )
     ##########################################################################
     return
   ############################################################################
