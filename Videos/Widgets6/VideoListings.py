@@ -26,48 +26,50 @@ from   AITK    . People     . People   import People
 from   AITK    . Videos     . Album    import Album as AlbumItem
 from   AITK    . Videos     . Film     import Film  as FilmItem
 ##############################################################################
-class VideoListings          ( TreeDock                                    ) :
+class VideoListings               ( TreeDock                               ) :
   ############################################################################
   HavingMenu        = 1371434312
   ############################################################################
-  emitNamesShow     = Signal (                                               )
-  emitAllNames      = Signal ( list                                          )
-  AddToPlayList     = Signal ( str                                           )
-  CreateAnalysis    = Signal ( str                                           )
-  PlayAnalysis      = Signal ( str                                           )
-  JoinCurrentEditor = Signal ( str                                           )
-  OpenLogHistory    = Signal ( str , str , str , str , str                   )
+  emitNamesShow     = Signal      (                                          )
+  emitAllNames      = Signal      ( list                                     )
+  AddToPlayList     = Signal      ( str                                      )
+  CreateAnalysis    = Signal      ( str                                      )
+  PlayAnalysis      = Signal      ( str                                      )
+  JoinCurrentEditor = Signal      ( str                                      )
+  OpenLogHistory    = Signal      ( str , str , str , str , str              )
   ############################################################################
-  def __init__               ( self , parent = None , plan = None          ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__     (        parent        , plan                   )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
-    self . EditAllNames       = None
+    self . EditAllNames         = None
     ##########################################################################
-    self . GType              = 11
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 40
-    self . SortOrder          = "asc"
-    self . SearchLine         = None
-    self . SearchKey          = ""
-    self . Method             = ""
-    self . ClipJson           = {                                            }
-    self . UUIDs              = [                                            ]
+    self . GType                = 11
+    self . Total                = 0
+    self . StartId              = 0
+    self . Amount               = 40
+    self . SortOrder            = "asc"
+    self . SearchLine           = None
+    self . SearchKey            = ""
+    self . Method               = ""
+    self . ClipJson             = {                                          }
+    self . UUIDs                = [                                          ]
+    self . GetFilmRootFolder    = None
+    self . UpdateFilmRootFolder = None
     ##########################################################################
-    self . Grouping           = "Original"
-    self . OldGrouping        = "Original"
-    ## self . Grouping           = "Subordination"
-    ## self . Grouping           = "Reverse"
+    self . Grouping             = "Original"
+    self . OldGrouping          = "Original"
+    ## self . Grouping             = "Subordination"
+    ## self . Grouping             = "Reverse"
     ##########################################################################
-    self . FetchTableKey      = "VideoListings"
+    self . FetchTableKey        = "VideoListings"
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . BottomDockWidgetArea
-    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
-                                Qt . BottomDockWidgetArea                  | \
-                                Qt . LeftDockWidgetArea                    | \
-                                Qt . RightDockWidgetArea
+    self . dockingOrientation   = Qt . Vertical
+    self . dockingPlace         = Qt . BottomDockWidgetArea
+    self . dockingPlaces        = Qt . TopDockWidgetArea                   | \
+                                  Qt . BottomDockWidgetArea                | \
+                                  Qt . LeftDockWidgetArea                  | \
+                                  Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "Video"                                 )
@@ -87,7 +89,6 @@ class VideoListings          ( TreeDock                                    ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
-    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -719,9 +720,75 @@ class VideoListings          ( TreeDock                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateFilmItem ( self , item                                         ) :
+  def SyncFilmDetails          ( self , UUID , VIF                         ) :
     ##########################################################################
-    print            ( "UpdateFilmItem"                                      )
+    FFPROBE = self . Settings  [ "FFprobe"                                   ]
+    ##########################################################################
+    VFI     = FilmItem         (                                             )
+    VJI     = VFI . Probe      ( VIF , FFPROBE                               )
+    ##########################################################################
+    if                         ( not VFI . Parse ( "" , VJI              ) ) :
+      ########################################################################
+      self  . Notify           ( 1                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    VFI     . Uuid = UUID
+    ##########################################################################
+    self    . OnBusy  . emit   (                                             )
+    self    . setBustle        (                                             )
+    ##########################################################################
+    DB      = self . ConnectDB (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      ########################################################################
+      self  . setVacancy       (                                             )
+      self  . GoRelax . emit   (                                             )
+      self  . Notify           ( 1                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    VIDTAB  = self . Tables    [ "Videos"                                    ]
+    ##########################################################################
+    DB      . LockWrites       ( [ VIDTAB                                  ] )
+    ##########################################################################
+    VFI     . Sync             ( DB , VIDTAB                               ) :
+    ##########################################################################
+    DB      . Close            (                                             )
+    self    . setVacancy       (                                             )
+    self    . GoRelax . emit   (                                             )
+    self    . loading          (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateFilmItem                   ( self , item                       ) :
+    ##########################################################################
+    UUID   = self . itemUuid           ( item , 0                            )
+    ##########################################################################
+    if                                 ( UUID <= 0                         ) :
+      ########################################################################
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    ROOT    = self . GetFilmRootFolder (                                     )
+    Title   = self . getMenuItem       ( "UpdateFilmDetails"                 )
+    Filters = self . Translations      [ "Main::VideoFilters"                ]
+    ##########################################################################
+    ( VIF , filter ) = QFileDialog . getOpenFileName                         (
+                                         self                              , \
+                                         Title                             , \
+                                         ""                                , \
+                                         Filters                             )
+    ##########################################################################
+    if                                 ( len ( VIF ) <= 0                  ) :
+      self  . Notify                   ( 1                                   )
+      return
+    ##########################################################################
+    FDIR    = os . path . dirname      ( VIF                                 )
+    self    . UpdateFilmRootFolder     ( FDIR                                )
+    ##########################################################################
+    VAL     =                          ( UUID , VIF ,                        )
+    self    . Go                       ( self . SyncFilmDetails , VAL        )
     ##########################################################################
     return
   ############################################################################
