@@ -24,17 +24,17 @@ from   AITK    . Qt6                       import *
 from   AITK    . Linguistics . Translator  import Translate
 from   AITK    . Documents   . Name        import Name        as NameItem
 ##############################################################################
-class NamesEditor            ( TreeDock , NameItem                         ) :
+class NamesEditor          ( TreeDock , NameItem                           ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu      = 1371434312
   ############################################################################
-  emitNamesShow     = Signal (                                               )
-  emitAllNames      = Signal ( list                                          )
-  emitNewItem       = Signal ( list                                          )
-  emitRefreshItem   = Signal ( QTreeWidgetItem , list                        )
-  CloseMyself       = Signal ( QWidget , str                                 )
+  emitNamesShow   = Signal (                                                 )
+  emitAllNames    = Signal ( list                                            )
+  emitNewItem     = Signal ( list                                            )
+  emitRefreshItem = Signal ( QTreeWidgetItem , list                          )
+  CloseMyself     = Signal ( QWidget , str                                   )
   ############################################################################
-  def __init__               ( self , parent = None , plan = None          ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
@@ -49,10 +49,12 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     self . setFunction     ( self . FunctionDocking , True                   )
     self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
+    self . setMinimumSize  ( 120 , 60                                        )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 800 , 360 )                       )
+    return self . SizeSuggestion ( QSize ( 800 , 300 )                       )
   ############################################################################
   def PrepareForActions                    ( self                          ) :
     ##########################################################################
@@ -151,9 +153,9 @@ class NamesEditor            ( TreeDock , NameItem                         ) :
     self     . setCentralLabels    ( LABELs                                  )
     ##########################################################################
     self     . setColumnWidth      ( 1         , 400                         )
-    self     . setColumnWidth      ( 2         , 140                         )
+    self     . setColumnWidth      ( 2         , 120                         )
     self     . setColumnWidth      ( 3         , 100                         )
-    self     . setColumnWidth      ( 4         ,  80                         )
+    self     . setColumnWidth      ( 4         ,  60                         )
     self     . setColumnWidth      ( 6         ,  60                         )
     self     . setColumnWidth      ( 7         ,  60                         )
     self     . setColumnWidth      ( TOTAL     , 3                           )

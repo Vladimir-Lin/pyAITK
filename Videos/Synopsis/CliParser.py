@@ -3288,6 +3288,21 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return                       ( True  , False ,                           )
   ############################################################################
+  def ReportCommands ( self                                                ) :
+    ##########################################################################
+    MSG  = """OrganizeNamesByWestern
+OrganizeNamesByJapanese
+ParkPeopleVideos
+ParkVideoByIdentifiers
+ParkOrganizationVideos
+UncatalogIdentifiers
+ParkPictureDescriptions
+MovePictureDescriptions
+"""
+    self . LOG       ( MSG                                                   )
+    ##########################################################################
+    return
+  ############################################################################
   def decodeRun                  ( self , cmd , sequences                  ) :
     ##########################################################################
     TM     = self . Translations [ "CMD::Key::Run"                           ]
@@ -3303,6 +3318,13 @@ class CliParser  (                                                         ) :
     ##########################################################################
     anchor = sequences           [ 1                                         ]
     anchor = anchor . lower      (                                           )
+    ##########################################################################
+    if                           ( "reportcommands" == anchor              ) :
+      ########################################################################
+      threading . Thread         ( target = self . ReportCommands          ) \
+                . start          (                                           )
+      ########################################################################
+      return                     ( True  , False ,                           )
     ##########################################################################
     if                           ( "organizenamesbywestern" == anchor      ) :
       ########################################################################
