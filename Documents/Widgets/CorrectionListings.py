@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## DocumentListings
+## CorrectionListings
 ##############################################################################
 import os
 import sys
@@ -56,7 +56,7 @@ from   AITK  . UUIDs      . UuidListings import appendUuid
 from   AITK  . UUIDs      . UuidListings import appendUuids
 from   AITK  . UUIDs      . UuidListings import getUuids
 ##############################################################################
-class DocumentListings             ( TreeDock                              ) :
+class CorrectionListings           ( TreeDock                              ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
@@ -69,7 +69,7 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . CKEY               = "DocumentListings"
+    self . CKEY               = "CorrectionListings"
     self . GType              = 48
     self . Total              = 0
     self . StartId            = 0
