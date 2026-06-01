@@ -1081,7 +1081,20 @@ class ScenarioEditor             ( TreeDock                                ) :
     ROOT    = self . GetFilmRootFolder (                                     )
     Title   = self . getMenuItem       ( "ExportASS"                         )
     Filters = self . getMenuItem       ( "AssFilters"                        )
-    ASSFILE = f"{ROOT}/subtitle.ass"
+    LOC     = self . getLocality       (                                     )
+    ##########################################################################
+    SUBF    = "subtitle"
+    ##########################################################################
+    if                                 ( 1001 == LOC                       ) :
+      SUBF  = "EN"
+    elif                               ( 1002 == LOC                       ) :
+      SUBF  = "TW"
+    elif                               ( 1003 == LOC                       ) :
+      SUBF  = "CN"
+    elif                               ( 1006 == LOC                       ) :
+      SUBF  = "JP"
+    ##########################################################################
+    ASSFILE = f"{ROOT}/{SUBF}.ass"
     ##########################################################################
     ( ASS , filter ) = QFileDialog . getSaveFileName                         (
                          self                                              , \
