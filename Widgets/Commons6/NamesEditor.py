@@ -22,7 +22,8 @@ from   PySide6 . QtWidgets                 import *
 from   AITK    . Qt6                       import *
 ##############################################################################
 from   AITK    . Linguistics . Translator  import Translate
-from   AITK    . Documents   . Name        import Name        as NameItem
+from   AITK    . Documents   . Name        import Name as NameItem
+from   AITK    . Documents   . JSON        import Load as LoadJson
 ##############################################################################
 class NamesEditor          ( TreeDock , NameItem                           ) :
   ############################################################################
@@ -40,6 +41,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
     self . ClassTag           = "NamesEditor"
+    self . Replacements       =          {                                   }
     self . dockingOrientation = 0
     ## self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -70,6 +72,12 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
                                              False                           )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
+    self . AppendSideActionWithIcon        ( "ReloadReplacements"          , \
+                                             ":/images/reload.png"         , \
+                                             self . ReloadReplacements     , \
+                                             True                          , \
+                                             False                           )
+    self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     self . AppendSideActionWithIcon        ( "AddItem"                     , \
                                              ":/images/plus.png"           , \
@@ -92,6 +100,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Replace"    , self . GoReplacements  , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
@@ -636,6 +645,10 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     icon   = QIcon                    ( ":/images/add.png"                   )
     mm     . addActionWithIcon        ( 2001 , icon , msg                    )
     ##########################################################################
+    msg    = self . getMenuItem       ( "ReloadReplacements"                 )
+    icon   = QIcon                    ( ":/images/reload.png"                )
+    mm     . addActionWithIcon        ( 2002 , icon , msg                    )
+    ##########################################################################
     if                                ( len ( items ) > 0                  ) :
       self . AppendDeleteAction       ( mm , 1102                            )
       if ( self . canSpeak ( ) ) and  ( len ( items ) == 1 )                 :
@@ -663,6 +676,11 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     mm     = self . ColumnsMenu       ( mm                                   )
     ##########################################################################
     if                                ( len ( items ) == 1                 ) :
+      ########################################################################
+      msg  = self . getMenuItem       ( "Replacement"                        )
+      icon = QIcon                    ( ":/images/replace.png"               )
+      mm   . addActionWithIcon        ( 4003 , icon , msg                    )
+      ########################################################################
       mm   = self . TranslateMenu     ( mm                                   )
       mm   = self . TranslationsMenu  ( mm                                   )
     ##########################################################################
@@ -729,6 +747,12 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     if                                ( 2001 == at                         ) :
       ########################################################################
       self . Go                       ( self . QuickAppending                )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( 2002 == at                         ) :
+      ########################################################################
+      self . Go                       ( self . ReloadReplacements            )
       ########################################################################
       return True
     ##########################################################################
@@ -1191,6 +1215,40 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
+  def GoReplacements                    ( self                             ) :
+    ##########################################################################
+    item    = self . currentItem        (                                    )
+    if                                  ( item in self . EmptySet          ) :
+      return
+    ##########################################################################
+    OTEXT   = item . text               ( 1                                  )
+    NTEXT   = OTEXT
+    ##########################################################################
+    for W in self . Replacements . keys (                                  ) :
+      NTEXT = NTEXT . replace           ( W , self . Replacements [ W ]      )
+    ##########################################################################
+    pid     = item . text               ( 0                                  )
+    pid     = int                       ( pid                                )
+    UTF8    = len                       ( NTEXT                              )
+    LENZ    = 0
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      S     = NTEXT . encode            ( "utf-8"                            )
+      LENZ  = len                       ( S                                  )
+      ########################################################################
+    except                                                                   :
+      return
+    ##########################################################################
+    item    . setText                  ( 1 , NTEXT                           )
+    item    . setText                  ( 6 , str ( UTF8 )                    )
+    item    . setText                  ( 7 , str ( LENZ )                    )
+    ##########################################################################
+    VAL     =                          ( item , pid , NTEXT ,                )
+    self    . Go                       ( self . UpdateUuidName , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
   def JsonToDatabase               ( self , LISTs                          ) :
     ##########################################################################
     if                             ( len ( LISTs ) <= 0                    ) :
@@ -1486,11 +1544,18 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
+  def ReloadReplacements           ( self                                  ) :
+    ##########################################################################
+    self . Replacements = LoadJson ( self . Settings [ "Replacements" ]      )
+    ##########################################################################
+    return
+  ############################################################################
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
       self . Prepare             (                                           )
     ##########################################################################
+    self   . ReloadReplacements  (                                           )
     self   . Go                  ( self . loading                            )
     ##########################################################################
     return
