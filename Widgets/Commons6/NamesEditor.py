@@ -680,15 +680,17 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
     icon   = QIcon                    ( ":/images/importdatabase.png"        )
     mm     . addActionWithIcon        ( 4002 , icon , msg                    )
     ##########################################################################
-    mm     . addSeparator             (                                      )
-    ##########################################################################
-    mm     = self . ColumnsMenu       ( mm                                   )
-    ##########################################################################
     if                                ( len ( items ) == 1                 ) :
       ########################################################################
       msg  = self . getMenuItem       ( "Replacement"                        )
       icon = QIcon                    ( ":/images/replace.png"               )
       mm   . addActionWithIcon        ( 4003 , icon , msg                    )
+    ##########################################################################
+    mm     . addSeparator             (                                      )
+    ##########################################################################
+    mm     = self . ColumnsMenu       ( mm                                   )
+    ##########################################################################
+    if                                ( len ( items ) == 1                 ) :
       ########################################################################
       mm   = self . TranslateMenu     ( mm                                   )
       mm   = self . TranslationsMenu  ( mm                                   )
