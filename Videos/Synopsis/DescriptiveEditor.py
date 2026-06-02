@@ -1485,10 +1485,10 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def AskQuit ( self                                                       ) :
+  def AskQuit                       ( self                                 ) :
     ##########################################################################
-    T      = self . getMenuItem ( "QuitDescriptive"                          )
-    M      = self . getMenuItem ( "AskQuit"                                  )
+    T      = self . getMenuItem     ( "QuitDescriptive"                      )
+    M      = self . getMenuItem     ( "AskQuit"                              )
     A      = QMessageBox . StandardButton . Yes                            | \
              QMessageBox . StandardButton . No
     R      = QMessageBox . question ( self                                 , \
@@ -1497,11 +1497,17 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       A                                    , \
                                       QMessageBox . StandardButton . No      )
     ##########################################################################
-    if        ( R == QMessageBox.StandardButton.Yes == R                   ) :
+    if                              ( R == QMessageBox.StandardButton.Yes  ) :
       ########################################################################
       self . WantSave = False
       ########################################################################
-      ## self . close (                                                         )
+      PW   = self . parentWidget    (                                        )
+      ########################################################################
+      if                            ( PW not in self . EmptySet            ) :
+        ######################################################################
+        PW . close                  (                                        )
+      ########################################################################
+      self . close                  (                                        )
     ##########################################################################
     return
   ############################################################################
