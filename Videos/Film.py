@@ -599,6 +599,16 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     return True
   ############################################################################
+  def UpdateAlbumUsed ( self , DB , TABLE , UUID , USED                    ) :
+    ##########################################################################
+    QQ = f"""update {TABLE}
+             set `used` = {USED}
+             where ( `uuid` = {UUID} ) ;"""
+    QQ = " " . join   ( QQ . split ( )                                       )
+    DB . Query        ( QQ                                                   )
+    ##########################################################################
+    return
+  ############################################################################
   def Locate                 ( self , DB , VIDTAB                          ) :
     ##########################################################################
     if                       ( self . FileSize <= 0                        ) :
@@ -768,35 +778,61 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def MergeParameters                ( self , DB , PUID , MERGER           ) :
+  def MergeParameters      ( self , DB , PUID , MERGER                     ) :
     ##########################################################################
-    PAMTAB = self . Tables           [ "Parameters"                          ]
+    PAMTAB = self . Tables [ "Parameters"                                    ]
     ##########################################################################
-    DB     . LockWrites              ( [ PAMTAB                            ] )
+    DB     . LockWrites    ( [ PAMTAB                                      ] )
     ##########################################################################
     QQ     = f"""update {PAMTAB}
                  set `uuid` = {PUID}
                  where ( `uuid` = {MERGER} ) ;"""
-    QQ     = " " . join              ( QQ . split ( )                        )
-    DB     . Query                   ( QQ                                    )
+    QQ     = " " . join    ( QQ . split (                                  ) )
+    DB     . Query         ( QQ                                              )
     ##########################################################################
-    DB     . UnlockTables            (                                       )
+    DB     . UnlockTables  (                                                 )
     ##########################################################################
     return
   ############################################################################
-  def MergeNotes                     ( self , DB , PUID , MERGER           ) :
+  def MergeIdentifiers     ( self , DB , PUID , MERGER                     ) :
     ##########################################################################
-    NOXTAB = self . Tables           [ "Notes"                               ]
+    IDFTAB = self . Tables [ "Identifiers"                                   ]
     ##########################################################################
-    DB     . LockWrites              ( [ NOXTAB                            ] )
+    DB     . LockWrites    ( [ IDFTAB                                      ] )
+    ##########################################################################
+    NN     = f"""select `name` from {IDFTAB}
+                 where ( `uuid` = {PUID} )
+                   and ( `type` = 76 )"""
+    QQ     = f"""delete from {IDFTAB}
+                 where ( `uuid` = {MERGER} )
+                   and ( `type` = 76 )
+                   and ( `name` in ( {NN} ) ) ;"""
+    QQ     = " " . join    ( QQ . split (                                  ) )
+    DB     . Query         ( QQ                                              )
+    ##########################################################################
+    QQ     = f"""update {IDFTAB}
+                 set `uuid` = {PUID}
+                 where ( `uuid` = {MERGER} ) ;"""
+    QQ     = " " . join    ( QQ . split (                                  ) )
+    DB     . Query         ( QQ                                              )
+    ##########################################################################
+    DB     . UnlockTables  (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def MergeNotes           ( self , DB , PUID , MERGER                     ) :
+    ##########################################################################
+    NOXTAB = self . Tables [ "Notes"                                         ]
+    ##########################################################################
+    DB     . LockWrites    ( [ NOXTAB                                      ] )
     ##########################################################################
     QQ     = f"""update {NOXTAB}
                  set `uuid` = {PUID}
                  where ( `uuid` = {MERGER} ) ;"""
-    QQ     = " " . join              ( QQ . split ( )                        )
-    DB     . Query                   ( QQ                                    )
+    QQ     = " " . join    ( QQ . split (                                  ) )
+    DB     . Query         ( QQ                                              )
     ##########################################################################
-    DB     . UnlockTables            (                                       )
+    DB     . UnlockTables  (                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -1660,17 +1696,16 @@ class Film               ( Columns                                         ) :
   ############################################################################
   def Merge                   ( self , DB , PUID , MERGER                  ) :
     ##########################################################################
-    return
+    self   . MergeVariables   (        DB , PUID , MERGER                    )
+    self   . MergeParameters  (        DB , PUID , MERGER                    )
+    self   . MergeIdentifiers (        DB , PUID , MERGER                    )
+    self   . MergeNotes       (        DB , PUID , MERGER                    )
+    self   . MergeNames       (        DB , PUID , MERGER                    )
+    self   . MergeRelations   (        DB , PUID , MERGER                    )
     ##########################################################################
-    ## self   . MergeVariables   (        DB , PUID , MERGER                    )
-    ## self   . MergeParameters  (        DB , PUID , MERGER                    )
-    ## self   . MergeNotes       (        DB , PUID , MERGER                    )
-    ## self   . MergeNames       (        DB , PUID , MERGER                    )
-    ## self   . MergeRelations   (        DB , PUID , MERGER                    )
-    ##########################################################################
-    PEOTAB = self . Tables    [ "People"                                     ]
-    DB     . LockWrites       ( [ PEOTAB                                   ] )
-    ## self   . UpdatePeopleUsed ( DB , PEOTAB , MERGER , 3                     )
+    ALMTAB = self . Tables    [ "Albums"                                     ]
+    DB     . LockWrites       ( [ ALMTAB                                   ] )
+    self   . UpdateAlbumUsed  ( DB , ALMTAB , MERGER , 0                     )
     DB     . UnlockTables     (                                              )
     ##########################################################################
     return
@@ -1692,7 +1727,7 @@ class Film               ( Columns                                         ) :
         ######################################################################
         PXID = PXIDs           [ 0                                           ]
     ##########################################################################
-    ## 合併人物資訊
+    ## 合併影片資訊
     ##########################################################################
     for MERGER in MERGERs                                                    :
       self . Merge             (        DB , PUID , MERGER                   )
