@@ -40,7 +40,6 @@ class DescriptiveEditor        ( TreeDock                                  ) :
   emitUpdatePtsItem   = Signal (                                             )
   emitItemChanged     = Signal (                                             )
   emitItemsSaved      = Signal (                                             )
-  emitAskQuit         = Signal (                                             )
   emitFocusIn         = Signal ( int                                         )
   emitGoItem          = Signal ( int                                         )
   emitSegments        = Signal ( QWidget , str , str , dict , QIcon          )
@@ -117,7 +116,6 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . emitUpdatePtsItem . connect ( self . PtsUpdateItem                )
     self . emitItemChanged   . connect ( self . ItemChanged                  )
     self . emitItemsSaved    . connect ( self . ItemsSaved                   )
-    self . emitAskQuit       . connect ( self . AskQuit                      )
     ##########################################################################
     self . setFunction                 ( self . FunctionDocking , True       )
     self . setFunction                 ( self . HavingMenu      , True       )
