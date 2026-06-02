@@ -1278,7 +1278,7 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
         continue
       ########################################################################
       self   . set                       ( "name"      , ""                  )
-      self   . set                       ( "locality"  , LC                  )
+      self   . set                       ( "locality"  , L                   )
       self   . set                       ( "relevance" , RELEV               )
       self   . set                       ( "priority"  , 0                   )
       self   . set                       ( "flags"     , 0                   )
