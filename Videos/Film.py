@@ -956,7 +956,7 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     QQ     = f"""select `t2`,`relation` from {RELTAB}
                  where ( `first` = {MERGER} )
-                 and ( `t1` = 7 )
+                 and ( `t1` = 76 )
                  group by `t2` asc ,`relation` asc ;"""
     QQ     = " " . join           ( QQ . split ( )                           )
     DB     . Query                ( QQ                                       )
@@ -988,12 +988,12 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     FF     = f"""select `second` from {RELTAB} as TT
                    where ( `first` = {PUID} )
-                   and ( `t1` = 7 )
+                   and ( `t1` = 76 )
                    and ( `t2` = {T2} )
                    and ( `relation` = {REL} )"""
     QQ     = f"""delete from {RELTAB}
                    where ( `first` = {MERGER} )
-                   and ( `t1` = 7 )
+                   and ( `t1` = 76 )
                    and ( `t2` = {T2} )
                    and ( `relation` = {REL} )
                    and ( `second` in ( {FF} ) ) ;"""
@@ -1003,7 +1003,7 @@ class Film               ( Columns                                         ) :
     POS    = -1
     QQ     = f"""select `position` from {RELTAB} as TT
                  where ( `first` = {PUID} )
-                   and ( `t1` = 7 )
+                   and ( `t1` = 76 )
                    and ( `t2` = {T2} )
                    and ( `relation` = {REL} )
                    order by `position` desc
@@ -1017,7 +1017,7 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     QQ     = f"""select `second` from {RELTAB} as TT
                    where ( `first` = {MERGER} )
-                   and ( `t1` = 7 )
+                   and ( `t1` = 76 )
                    and ( `t2` = {T2} )
                    and ( `relation` = {REL} )
                    order by `position` asc ;"""
@@ -1029,7 +1029,7 @@ class Film               ( Columns                                         ) :
       QQ   = f"""update {RELTAB}
                    set `first` = {PUID} , `position` = {POS}
                    where ( `first` = {MERGER} )
-                   and ( `t1` = 7 )
+                   and ( `t1` = 76 )
                    and ( `t2` = {T2} )
                    and ( `relation` = {REL} )
                    and ( `second` = {UUID} ) ;"""
@@ -1061,7 +1061,7 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     QQ     = f"""select `t1`,`relation` from {RELTAB}
                  where ( `second` = {MERGER} )
-                 and ( `t2` = 7 )
+                 and ( `t2` = 76 )
                  group by `t1` asc ,`relation` asc ;"""
     QQ     = " " . join           ( QQ . split ( )                           )
     DB     . Query                ( QQ                                       )
@@ -1094,12 +1094,12 @@ class Film               ( Columns                                         ) :
     FF      = f"""select `first` from {RELTAB} as TT
                    where ( `second` = {PUID} )
                    and ( `t1` = {T1} )
-                   and ( `t2` = 7 )
+                   and ( `t2` = 76 )
                    and ( `relation` = {REL} )"""
     QQ      = f"""delete from {RELTAB}
                    where ( `second` = {MERGER} )
                    and ( `t1` = {T1} )
-                   and ( `t2` = 7 )
+                   and ( `t2` = 76 )
                    and ( `relation` = {REL} )
                    and ( `first` in ( {FF} ) ) ;"""
     QQ      = " " . join       ( QQ . split ( )                              )
@@ -1108,7 +1108,7 @@ class Film               ( Columns                                         ) :
     QQ      = f"""select `first` from {RELTAB} as TT
                    where ( `second` = {MERGER} )
                    and ( `t1` = {T1} )
-                   and ( `t2` = 7 )
+                   and ( `t2` = 76 )
                    and ( `relation` = {REL} )
                    order by `position` asc ;"""
     QQ      = " " . join       ( QQ . split ( )                              )
@@ -1120,7 +1120,7 @@ class Film               ( Columns                                         ) :
       QQ    = f"""select `position` from {RELTAB} as TT
                    where ( `first` = {UUID} )
                      and ( `t1` = {T1} )
-                     and ( `t2` = 7 )
+                     and ( `t2` = 76 )
                      and ( `relation` = {REL} )
                      order by `position` desc
                      limit 0 , 1 ;"""
@@ -1135,7 +1135,7 @@ class Film               ( Columns                                         ) :
                    set `second` = {PUID} , `position` = {POS}
                    where ( `second` = {MERGER} )
                    and ( `t1` = {T1} )
-                   and ( `t2` = 7 )
+                   and ( `t2` = 76 )
                    and ( `relation` = {REL} )
                    and ( `first` = {UUID} ) ;"""
       QQ    = " " . join       ( QQ . split ( )                              )
