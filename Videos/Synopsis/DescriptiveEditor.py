@@ -67,6 +67,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self . ConvertAllCC       = True
     self . SortOrder          = "asc"
     self . BaseTimeEditor     = None
+    self . GapTimeEditor      = None
     self . ConnectedFilmJson  = {                                            }
     self . CurrentPTS         = -1
     self . PlayerConnected    = False
@@ -285,9 +286,13 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     if                               ( self . WantSave                     ) :
       ########################################################################
-      self . emitAskQuit . emit      (                                       )
+      PC   = self . AskQuit          (                                       )
       ########################################################################
-      return False
+      if                             ( not PC                              ) :
+        return
+      ## self . emitAskQuit . emit      (                                       )
+      ########################################################################
+      ## return False
     ##########################################################################
     if ( self . FilmRoles not in self . EmptySet                           ) :
       ########################################################################
@@ -1498,10 +1503,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
                                       QMessageBox . StandardButton . No      )
     ##########################################################################
     if                            ( R == QMessageBox . StandardButton . No ) :
-      return
+      return False
     ##########################################################################
     self . WantSave = False
     ##########################################################################
+    """
     WADC = Qt . WidgetAttribute . WA_DeleteOnClose
     PW   = self . parentWidget    (                                          )
     ##########################################################################
@@ -1512,8 +1518,9 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     self . setAttribute           ( WADC , True                              )
     self . close                  (                                          )
+    """
     ##########################################################################
-    return
+    return True
   ############################################################################
   def isPosture ( self                                                     ) :
     return      ( 4 == self . getLocality ( )                                )
@@ -2011,6 +2018,11 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self  . BaseTimeEditor . setText   ( FTIME                               )
     mm    . addWidget                  ( 9929991 , self . BaseTimeEditor     )
     ##########################################################################
+    GTIME = self . SCENE . toFTime     ( TimeGap                             )
+    self  . GapTimeEditor  = QLineEdit (                                     )
+    self  . GapTimeEditor  . setText   ( GTIME                               )
+    mm    . addWidget                  ( 9929992 , self . GapTimeEditor      )
+    ##########################################################################
     return mm
   ############################################################################
   def RunBaseTime ( self                                                   ) :
@@ -2029,6 +2041,25 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       return False
     ##########################################################################
     self . DESCRIBE . BaseTime = RTIME
+    ##########################################################################
+    return True
+  ############################################################################
+  def RunGapTime  ( self                                                   ) :
+    ##########################################################################
+    if            ( None == self . GapTimeEditor                           ) :
+      return False
+    ##########################################################################
+    FTIME      = self . GapTimeEditor . text (                               )
+    OK , RTIME = self . SCENE . FromFTime    ( FTIME                         )
+    self       . GapTimeEditor = None
+    ##########################################################################
+    if            ( not OK                                                 ) :
+      return False
+    ##########################################################################
+    if            ( RTIME == TimeGap                                       ) :
+      return False
+    ##########################################################################
+    self . TimeGap = RTIME
     ##########################################################################
     return True
   ############################################################################
@@ -2198,19 +2229,22 @@ class DescriptiveEditor        ( TreeDock                                  ) :
       mm   . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
     msg    = self . getMenuItem         ( "OpenSegments"                     )
-    icon   = QIcon                      ( ":/images/descriptive-segments.png" )
+    ipat   = ":/images/descriptive-segments.png"
+    icon   = QIcon                      ( ipat                               )
     mm     . addActionWithIcon          ( 2002 , icon , msg                  )
     ##########################################################################
     if                                  ( self . PlayerConnected           ) :
       ########################################################################
       msg  = self . getMenuItem         ( "DisconnectPlayer"                 )
-      icon = QIcon                      ( ":/images/descriptive-player-disconnect.png" )
+      ipat = ":/images/descriptive-player-disconnect.png"
+      icon = QIcon                      ( ipat                               )
       mm   . addActionWithIcon          ( 3002 , icon , msg                  )
       ########################################################################
     else                                                                     :
       ########################################################################
       msg  = self . getMenuItem         ( "ConnectPlayer"                    )
-      icon = QIcon                      ( ":/images/descriptive-player-connect.png" )
+      ipat = ":/images/descriptive-player-connect.png"
+      icon = QIcon                      ( ipat                               )
       mm   . addActionWithIcon          ( 3001 , icon , msg                  )
     ##########################################################################
     mm     . addSeparator               (                                    )
@@ -2235,6 +2269,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     self   . AtMenu = False
     ##########################################################################
+    OKAY   = self . RunGapTime          (                                    )
     OKAY   = self . RunBaseTime         (                                    )
     if                                  ( OKAY                             ) :
       ########################################################################
