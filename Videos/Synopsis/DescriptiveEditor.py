@@ -1485,29 +1485,33 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def AskQuit                       ( self                                 ) :
+  def AskQuit                     ( self                                   ) :
     ##########################################################################
-    T      = self . getMenuItem     ( "QuitDescriptive"                      )
-    M      = self . getMenuItem     ( "AskQuit"                              )
-    A      = QMessageBox . StandardButton . Yes                            | \
-             QMessageBox . StandardButton . No
-    R      = QMessageBox . question ( self                                 , \
+    T    = self . getMenuItem     ( "QuitDescriptive"                        )
+    M    = self . getMenuItem     ( "AskQuit"                                )
+    A    = QMessageBox . StandardButton . Yes                              | \
+           QMessageBox . StandardButton . No
+    R    = QMessageBox . question ( self                                   , \
                                       T                                    , \
                                       M                                    , \
                                       A                                    , \
                                       QMessageBox . StandardButton . No      )
     ##########################################################################
-    if                              ( R == QMessageBox.StandardButton.Yes  ) :
+    if                            ( R == QMessageBox . StandardButton . No ) :
+      return
+    ##########################################################################
+    self . WantSave = False
+    ##########################################################################
+    WADC = Qt . WidgetAttribute . WA_DeleteOnClose
+    PW   = self . parentWidget    (                                          )
+    ##########################################################################
+    if                            ( PW not in self . EmptySet              ) :
       ########################################################################
-      self . WantSave = False
-      ########################################################################
-      PW   = self . parentWidget    (                                        )
-      ########################################################################
-      if                            ( PW not in self . EmptySet            ) :
-        ######################################################################
-        PW . close                  (                                        )
-      ########################################################################
-      self . close                  (                                        )
+      PW . setAttribute           ( WADC , True                              )
+      PW . close                  (                                          )
+    ##########################################################################
+    self . setAttribute           ( WADC , True                              )
+    self . close                  (                                          )
     ##########################################################################
     return
   ############################################################################
