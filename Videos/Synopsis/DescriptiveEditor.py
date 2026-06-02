@@ -2002,7 +2002,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     self  . BaseTimeEditor . setText   ( FTIME                               )
     mm    . addWidget                  ( 9929991 , self . BaseTimeEditor     )
     ##########################################################################
-    GTIME = self . SCENE . toFTime     ( TimeGap                             )
+    GTIME = self . SCENE . toFTime     ( self . TimeGap                      )
     self  . GapTimeEditor  = QLineEdit (                                     )
     self  . GapTimeEditor  . setText   ( GTIME                               )
     mm    . addWidget                  ( 9929992 , self . GapTimeEditor      )
@@ -2040,7 +2040,7 @@ class DescriptiveEditor        ( TreeDock                                  ) :
     if            ( not OK                                                 ) :
       return False
     ##########################################################################
-    if            ( RTIME == TimeGap                                       ) :
+    if            ( RTIME == self . TimeGap                                ) :
       return False
     ##########################################################################
     self . TimeGap = RTIME
