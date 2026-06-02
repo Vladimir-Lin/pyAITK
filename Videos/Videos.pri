@@ -11,6 +11,7 @@ SOURCES += $${PWD}/*.rb
 SOURCES += $${PWD}/*.rs
 SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
+SOURCES += $${PWD}/*.sql
 
 include ($${PWD}/Widgets/Widgets.pri)
 include ($${PWD}/Widgets6/Widgets6.pri)

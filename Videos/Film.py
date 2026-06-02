@@ -646,9 +646,9 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     return                   ( self . Uuid > 0                               )
   ############################################################################
-  def Sync             ( self , DB , VIDTAB                                ) :
+  def Sync               ( self , DB , VIDTAB                              ) :
     ##########################################################################
-    if                 ( self . Uuid <= 0                                  ) :
+    if                   ( self . Uuid <= 0                                ) :
       return False
     ##########################################################################
     UUID = self . Uuid
@@ -664,6 +664,8 @@ class Film               ( Columns                                         ) :
     ACO  = self . aCodec
     ASR  = self . SampleRate
     ABR  = self . aBitRate
+    JSB  = json . dumps  ( self . Details                                    )
+    JVB  = JSB  . encode ( "utf-8"                                           )
     ##########################################################################
     QQ   = f"""update {VIDTAB}
                set `filesize` = {VFS} ,
@@ -677,11 +679,12 @@ class Film               ( Columns                                         ) :
                    `vbitrate` = {VBR} ,
                      `acodec` = '{ACO}' ,
                  `samplerate` = {ASR} ,
-                   `abitrate` = {ABR}
+                   `abitrate` = {ABR} ,
+                   `json`     = %s
                where ( `uuid` = {UUID} )  ;"""
     ##########################################################################
-    QQ   =  " " . join ( QQ . split ( )                                      )
-    DB   . Query       ( QQ                                                  )
+    QQ   =  " " . join   ( QQ . split (                                    ) )
+    DB   . QueryValues   ( QQ ,       ( JVB ,                              ) )
     ##########################################################################
     return True
   ############################################################################
@@ -705,20 +708,23 @@ class Film               ( Columns                                         ) :
     ASR  = self . SampleRate
     ABR  = self . aBitRate
     ##########################################################################
+    self . Uuid               = UUID
+    self . Details [ "Uuid" ] = self . Uuid
+    JSB  = json . dumps  ( self . Details                                    )
+    JVB  = JSB  . encode ( "utf-8"                                           )
+    ##########################################################################
     QQ   = f"""insert into {VIDTAB}
                ( `uuid` , `used` , `type` , `filesize` , `duration`,
                  `width` , `height` , `frames` , `format` , `fps` ,
-                 `vcodec` , `vbitrate` , `acodec` , `samplerate` , `abitrate` )
+                 `vcodec` , `vbitrate` , `acodec` , `samplerate` ,
+                 `abitrate` , `json` )
                values
                ( {UUID} , 1 , 1 , {VFS} , {DUR} ,
                  {VW} , {VH} , {FRS} , '{FMT}' , '{FPS}' ,
-                 '{VCO}' , {VBR} , '{ACO}' , {ASR} , {ABR} ) ;"""
+                 '{VCO}' , {VBR} , '{ACO}' , {ASR} , {ABR} , %s ) ;"""
     ##########################################################################
-    QQ   =  " " . join   ( QQ . split ( )                                    )
-    DB   . Query         ( QQ                                                )
-    ##########################################################################
-    self . Uuid               = UUID
-    self . Details [ "Uuid" ] = self . Uuid
+    QQ   =  " " . join   ( QQ . split (                                    ) )
+    DB   . QueryValues   ( QQ ,       ( JVB ,                              ) )
     ##########################################################################
     return               ( self . Uuid > 0                                   )
   ############################################################################
