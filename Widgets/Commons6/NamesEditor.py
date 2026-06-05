@@ -785,6 +785,10 @@ class NamesEditor          ( TreeDock , NameItem                           ) :
       self . CopyAllFromClipboard     (                                      )
       return True
     ##########################################################################
+    if                                ( at == 4003                         ) :
+      self . GoReplacements           (                                      )
+      return True
+    ##########################################################################
     return True
   ############################################################################
   def TryClose                   ( self                                    ) :
