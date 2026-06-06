@@ -2409,7 +2409,9 @@ class CliParser  (                                                         ) :
       UUIDs . append        ( U                                              )
       UUIDz . append        ( f"{U}"                                         )
     ##########################################################################
-    if                      ( len ( UUIDs ) <= 0                           ) :
+    TOTAL   = len           ( UUIDs                                          )
+    ##########################################################################
+    if                      ( TOTAL <= 0                                   ) :
       ########################################################################
       MSG   = self . Translations [ f"CMD::{KEY}::NotFound"                  ]
       self  . LOG           ( MSG                                            )
@@ -2417,7 +2419,7 @@ class CliParser  (                                                         ) :
       return
     ##########################################################################
     MSG     = "\n" . join   ( UUIDz                                          )
-    self    . LOG           ( MSG                                            )
+    self    . LOG           ( f"{MSG}\nTotal : {TOTAL}"                      )
     ##########################################################################
     self    . CLI           [ "Action" ] = "FindPeopleByName"
     self    . CLI           [ KEY ] [ "Found" ] = UUIDs
@@ -3299,10 +3301,10 @@ UncatalogIdentifiers
 ParkPictureDescriptions
 MovePictureDescriptions
 group First T1 Relation
-group 2800004000000002167 158 1 / set crowd / 美國成人男優
-group 2800004000000003850 158 1 / set crowd / 日本成人男優
-group 2800004000000000047 158 1 / set crowd / 美國成人女優
-group 2800004000000000048 158 1 / set crowd / 日本成人女優
+group 1 158 2800004000000002167 / scope crowd / 美國成人男優
+group 1 158 2800004000000003850 / scope crowd / 日本成人男優
+group 1 158 2800004000000000047 / scope crowd / 美國成人女優
+group 1 158 2800004000000000048 / scope crowd / 日本成人女優
 """
     self . LOG       ( MSG                                                   )
     ##########################################################################
