@@ -221,7 +221,7 @@ class ScenarioEditor             ( TreeDock                                ) :
       ## 位序
       return
     ##########################################################################
-    if                              ( column in [ 1 , 3 , 4 , 5 ]          ) :
+    if                              ( column in [ 1 , 3 , 4 ]              ) :
       ########################################################################
       line = self . setLineEdit     ( item                                 , \
                                       column                               , \
@@ -242,6 +242,23 @@ class ScenarioEditor             ( TreeDock                                ) :
                                       column                               , \
                                       "activated"                          , \
                                       self . usageChanged                    )
+      cb   . addJson                ( LL , val                               )
+      cb   . setMaxVisibleItems     ( 10                                     )
+      cb   . showPopup              (                                        )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( column in [ 5 ]                      ) :
+      ########################################################################
+      ## 狀態
+      ########################################################################
+      LL   = self . Translations    [ self . ClassTag ] [ "States"           ]
+      val  = item . data            ( column , Qt . UserRole                 )
+      val  = int                    ( val                                    )
+      cb   = self . setComboBox     ( item                                 , \
+                                      column                               , \
+                                      "activated"                          , \
+                                      self . statesChanged                   )
       cb   . addJson                ( LL , val                               )
       cb   . setMaxVisibleItems     ( 10                                     )
       cb   . showPopup              (                                        )
@@ -281,12 +298,14 @@ class ScenarioEditor             ( TreeDock                                ) :
   def PrepareItem                    ( self , POS , BT , JSON , BRUSH      ) :
     ##########################################################################
     USAGE   = self . Translations    [ self . ClassTag ] [ "Usage"           ]
+    STATEz  = self . Translations    [ self . ClassTag ] [ "States"          ]
     UUID    = JSON                   [ "Uuid"                                ]
     NAME    = JSON                   [ "Name"                                ]
     STYPE   = JSON                   [ "Type"                                ]
     SCOPE   = JSON                   [ "Scope"                               ]
     USED    = int                    ( JSON [ "Used"                       ] )
     STATEs  = int                    ( JSON [ "States"                     ] )
+    STATEv  = STATEz                 [ f"{STATEs}"                           ]
     SLEN    = int                    ( JSON [ "Duration"                   ] )
     CPEO    = int                    ( JSON [ "People"                     ] )
     ELEN    = int                    ( SLEN + BT                             )
@@ -315,7 +334,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     IT      . setTextAlignment       ( 3 , Qt . AlignRight                   )
     IT      . setData                ( 3 , Qt . UserRole , STYPE             )
     IT      . setText                ( 4 , SCOPE                             )
-    IT      . setText                ( 5 , str ( STATEs )                    )
+    IT      . setText                ( 5 , STATEv                            )
     IT      . setTextAlignment       ( 5 , Qt . AlignRight                   )
     IT      . setData                ( 5 , Qt . UserRole , STATEs            )
     IT      . setText                ( 6 , DTIME                             )
@@ -916,18 +935,6 @@ class ScenarioEditor             ( TreeDock                                ) :
       VAL  =                    ( item , uuid , msg ,                        )
       self . Go                 ( self . AssureItemName , VAL                )
       ########################################################################
-    elif                        ( 5 == column                              ) :
-      ########################################################################
-      try                                                                    :
-        ######################################################################
-        states = int            ( msg                                        )
-        item   . setText        ( column , msg                               )
-        VAL    =                ( item , uuid , states ,                     )
-        self   . Go             ( self . AssureItemStates , VAL              )
-        ######################################################################
-      except                                                                 :
-        pass
-      ########################################################################
     elif                        ( 6 == column                              ) :
       ########################################################################
       VAL  =                    ( item , uuid , msg ,                        )
@@ -962,6 +969,34 @@ class ScenarioEditor             ( TreeDock                                ) :
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
       self . Go                  ( self . UpdateUsage                      , \
+                                   ( item , uuid , value , )                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def statesChanged              ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      LL   = self . Translations [ self . ClassTag ] [ "States"              ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . AssureItemStates                 , \
                                    ( item , uuid , value , )                 )
     ##########################################################################
     self   . removeParked        (                                           )
