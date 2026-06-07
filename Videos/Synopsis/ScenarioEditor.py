@@ -335,7 +335,7 @@ class ScenarioEditor             ( TreeDock                                ) :
     IT      . setData                ( 3 , Qt . UserRole , STYPE             )
     IT      . setText                ( 4 , SCOPE                             )
     IT      . setText                ( 5 , STATEv                            )
-    IT      . setTextAlignment       ( 5 , Qt . AlignRight                   )
+    IT      . setTextAlignment       ( 5 , Qt . AlignCenter                  )
     IT      . setData                ( 5 , Qt . UserRole , STATEs            )
     IT      . setText                ( 6 , DTIME                             )
     IT      . setTextAlignment       ( 6 , Qt . AlignRight                   )
