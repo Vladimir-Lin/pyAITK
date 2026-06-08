@@ -87,8 +87,8 @@ class VideoAlbumsView             ( IconDock                               ) :
     self . RefreshOpts        = True
     self . Watermarking       = True
     self . ReportDetails      = False
-    self . UsedOptions        = [ 1,2,3,4,5,6,7,8,9,10,11,12                 ]
-    self . IconOptions        = [   2,3,4,5,6,7,8,9,10,11,12                 ]
+    self . UsedOptions        = [ 1,2,3,4,5,6,7,8,9,10,11,12,13              ]
+    self . IconOptions        = [   2,3,4,5,6,7,8,9,10,11,12,13              ]
     self . UsedIcons          = {  2 : "help.png"                          , \
                                    3 : "flowend.png"                       , \
                                    4 : "geography.png"                     , \
@@ -99,8 +99,9 @@ class VideoAlbumsView             ( IconDock                               ) :
                                    9 : "descriptive-subtitles.png"         , \
                                   10 : "box.png"                           , \
                                   11 : "graphics.png"                      , \
-                                  12 : "blank.png"                         , \
-                                  12 : ""                                    }
+                                  12 : "animal.png"                        , \
+                                  13 : "blank.png"                         , \
+                                  14 : ""                                    }
     self . AlbumOPTs          = {                                            }
     ##########################################################################
     self . SearchLine         = None
