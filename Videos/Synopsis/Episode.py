@@ -323,14 +323,17 @@ class Episode    (                                                         ) :
     ##########################################################################
     FPATH = self . DIR
     SFILE = f"{VIDEOROOT}/Subtitles.bat"
+    MFILE = f"{VIDEOROOT}/MoveSubtitles.bat"
     BFILE = f"{FPATH}/scripts/Subtitles.bat"
     OFILE = f"{FPATH}/scripts/Subtitles-Original.bat"
+    TFILE = f"{FPATH}/scripts/MoveSubtitles.bat"
     ##########################################################################
     if                  ( not os . path . exists ( OFILE                 ) ) :
       shutil . copy2    ( SFILE , BFILE                                      )
-    ##########################################################################
-    if                  ( not os . path . exists ( OFILE                 ) ) :
       shutil . copy2    ( SFILE , OFILE                                      )
+    ##########################################################################
+    if                  ( not os . path . exists ( TFILE                 ) ) :
+      shutil . copy2    ( MFILE , TFILE                                      )
     ##########################################################################
     return
   ############################################################################
