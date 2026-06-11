@@ -524,6 +524,7 @@ class CliParser  (                                                         ) :
                      and ( `relation` = 1 )
                    group by `first` asc ;"""
     QQ       = " " . join       ( QQ . split (                             ) )
+    self     . LOG              ( QQ                                         )
     PUIDs    = DB . ObtainUuids ( QQ                                         )
     ##########################################################################
     for TAGREL in LTRELs                                                     :
