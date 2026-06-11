@@ -501,47 +501,72 @@ class CliParser  (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def ParkPeopleVideos        ( self                                       ) :
+  def ParkPeopleVideos          ( self                                     ) :
     ##########################################################################
-    DB     = Connection       (                                              )
+    DB       = Connection       (                                            )
     ##########################################################################
-    if                        ( not DB . ConnectTo ( self . DbConf )       ) :
+    if                          ( not DB . ConnectTo ( self . DbConf )     ) :
       ########################################################################
-      self . LOG              ( json . dumps  ( TABLEs )                     )
+      self   . LOG              ( json . dumps  ( TABLEs )                   )
       ########################################################################
       return
     ##########################################################################
-    DB     . Prepare          (                                              )
+    DB       . Prepare          (                                            )
     ##########################################################################
-    VIDREL =   "`affiliations`.`relations_videos_0005`"
-    LTRELs = [ "`affiliations`.`relations_videos_0010`"                    , \
-               "`affiliations`.`relations_people_0020`"                      ]
-    COLS   = "`first`,`t1`,`second`,`t2`,`relation`,`position`,`reverse`,`prefer`,`membership`,`description`,`ltime`"
+    VIDREL   =   "`affiliations`.`relations_videos_0005`"
+    LTRELs   = [ "`affiliations`.`relations_videos_0010`"                  , \
+                 "`affiliations`.`relations_people_0020`"                    ]
+    COLS     = "`first`,`t1`,`second`,`t2`,`relation`,`position`,`reverse`,`prefer`,`membership`,`description`,`ltime`"
+    ##########################################################################
+    QQ       = f"""select `first` from {VIDREL}
+                   where ( `t1` = 7 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 )
+                   group by `first` asc ;"""
+    QQ       = " " . join       ( QQ . split (                             ) )
+    PUIDs    = DB . ObtainUuids ( QQ                                         )
     ##########################################################################
     for TAGREL in LTRELs                                                     :
       ########################################################################
-      QQ   = f"""insert into {VIDREL} ( {COLS} )
-                 select {COLS} from {TAGREL}
-                 where ( `t1` = 7 )
-                   and ( `t2` = 76 )
-                   and ( `relation` = 1 )
-                 order by `id` asc ;"""
-      QQ   = " " . join       ( QQ . split (                               ) )
-      self . LOG              ( QQ                                           )
-      DB   . Query            ( QQ                                           )
-      ##########################################################################
-      QQ   = f"""delete  from {TAGREL}
-                 where ( `t1` = 7 )
-                   and ( `t2` = 76 )
-                   and ( `relation` = 1 ) ;"""
-      QQ   = " " . join       ( QQ . split (                               ) )
-      self . LOG              ( QQ                                           )
-      DB   . Query            ( QQ                                           )
-      DB   . Optimize         ( TAGREL                                       )
+      for PUID in PUIDs                                                      :
+        ######################################################################
+        QS   = f"""select `second` from {VIDREL}
+                   where ( `first` = {PUID} )
+                     and ( `t1` = 7 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 )"""
+        QQ   = f"""delete from {TAGREL}
+                   where ( `first` = {PUID} )
+                     and ( `t1` = 7 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 )
+                     and ( `second` in ( {QS} ) ) ;"""
+        QQ   = " " . join       ( QQ . split (                             ) )
+        self . LOG              ( QQ                                         )
+        DB   . Query            ( QQ                                         )
+      ########################################################################
+      QQ     = f"""insert into {VIDREL} ( {COLS} )
+                   select {COLS} from {TAGREL}
+                   where ( `t1` = 7 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 )
+                   order by `id` asc ;"""
+      QQ     = " " . join       ( QQ . split (                             ) )
+      self   . LOG              ( QQ                                         )
+      DB     . Query            ( QQ                                         )
+      ########################################################################
+      QQ     = f"""delete  from {TAGREL}
+                   where ( `t1` = 7 )
+                     and ( `t2` = 76 )
+                     and ( `relation` = 1 ) ;"""
+      QQ     = " " . join       ( QQ . split (                             ) )
+      self   . LOG              ( QQ                                         )
+      DB     . Query            ( QQ                                         )
+      DB     . Optimize         ( TAGREL                                     )
     ##########################################################################
-    DB     . Optimize         ( VIDREL                                       )
-    DB     . Close            (                                              )
-    self   . LOG              ( "ParkPeopleVideos Completed"                 )
+    DB       . Optimize         ( VIDREL                                     )
+    DB       . Close            (                                            )
+    self     . LOG              ( "ParkPeopleVideos Completed"               )
     ##########################################################################
     return
   ############################################################################
