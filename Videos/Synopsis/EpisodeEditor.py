@@ -202,6 +202,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
   def SaveAlbumJson           ( self                                       ) :
     ##########################################################################
     self . ALBUM . SaveToFile (                                              )
+    self . Notify             ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -1077,7 +1078,8 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     BODY = self . EditingWidget . DescriptionText . toPlainText (            )
     ##########################################################################
-    self . SaveDocument   ( DFIL , BODY                                      )
+    self . SaveDocument    ( DFIL , BODY                                     )
+    self . Notify          ( 5                                               )
     ##########################################################################
     return
   ############################################################################
@@ -1097,7 +1099,6 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     MSG  = self . getMenuItem  ( "SaveDescription"                           )
     ICON = QIcon               ( QPixmap ( ":/images/save.png"             ) )
     MACT = TOOL . addAction    ( ICON , MSG                                  )
-    ##########################################################################
     MACT . triggered . connect ( self . SaveAlbumDescription                 )
     ##########################################################################
     TEXT = QPlainTextEdit      (                                             )
@@ -1123,60 +1124,242 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def DoEditing                    ( self                                  ) :
+  def SaveAlbumHead     ( self                                             ) :
     ##########################################################################
-    self  . logMessage             ( "OpenEpisodeDetails"                    )
+    DKEY = "Head"
+    DDIR = self . ALBUM . DIR
+    DFIL = self . ALBUM . Album [ "Documents" ] [ DKEY                       ]
+    DFIL = f"{DDIR}/{DFIL}"
     ##########################################################################
-    self  . Method = "Editing"
-    TITLE = self . ALBUM . Album [ "Names" ] [ "Default"                     ]
+    BODY = self . EditingWidget . HeadText . toPlainText (                   )
     ##########################################################################
-    self  . setWindowTitle         ( TITLE                                   )
+    self . SaveDocument ( DFIL , BODY                                        )
+    self . Notify       ( 5                                                  )
     ##########################################################################
-    self . EditingWidget = QSplitter ( Qt . Vertical                         )
-    self . EditingWidget . BaseHeight = 600
-    self . EditingWidget . setChildrenCollapsible ( True                     )
-    ## self . EditingWidget . setHandleWidth   ( 5                              )
-    self . EditingWidget . Tick = datetime . datetime . now ( ) . timestamp ( ) - 1.0
+    return
+  ############################################################################
+  def addAlbumHead             ( self                                      ) :
     ##########################################################################
-    self . addEditingTools         (                                         )
-    self . addAlbumTitle           (                                         )
-    self . addAlbumCoverSection    (                                         )
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 200
     ##########################################################################
-    self . EditingWidget . NamesEditor      = None
-    self . EditingWidget . Organizations    = None
-    self . EditingWidget . Identifiers      = None
-    self . EditingWidget . PeopleView       = None
-    self . EditingWidget . CandidateView    = None
-    self . EditingWidget . MainVideos       = None
-    self . EditingWidget . MainVideoCombo   = None
-    self . EditingWidget . SecondVideos     = None
-    self . EditingWidget . SecondVideoCombo = None
+    TOOL = QToolBar            (                                             )
     ##########################################################################
-    if                             ( self . ALBUM . Uuid > 0               ) :
+    TOOL . setMinimumHeight    ( 32                                          )
+    TOOL . setMaximumHeight    ( 32                                          )
+    TOOL . setIconSize         ( QSize ( 32 , 32                           ) )
+    TOOL . setFloatable        ( False                                       )
+    TOOL . setMovable          ( False                                       )
+    TOOL . setToolButtonStyle  ( Qt . ToolButtonIconOnly                     )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SaveDescription"                           )
+    ICON = QIcon               ( QPixmap ( ":/images/save.png"             ) )
+    MACT = TOOL . addAction    ( ICON , MSG                                  )
+    MACT . triggered . connect ( self . SaveAlbumHead                        )
+    ##########################################################################
+    TEXT = QPlainTextEdit      (                                             )
+    TEXT . setMinimumHeight    ( 100                                         )
+    TEXT . resize              ( 400 , 160                                   )
+    ##########################################################################
+    DKEY = "Head"
+    DDIR = self . ALBUM . DIR
+    DFIL = self . ALBUM . Album [ "Documents" ] [ DKEY                       ]
+    DFIL = f"{DDIR}/{DFIL}"
+    DOC  = self . LoadDocument ( DFIL                                        )
+    ##########################################################################
+    TEXT . setPlainText        ( DOC                                         )
+    MSG  = self . getMenuItem  ( "TitleArena"                                )
+    TEXT . setToolTip          ( MSG                                         )
+    ##########################################################################
+    self . EditingWidget . HeadText = TEXT
+    self . EditingWidget . HeadTool = TOOL
+    ##########################################################################
+    self . setAllFont ( self . EditingWidget . HeadText , self . font ( )    )
+    self . EditingWidget . addWidget ( self . EditingWidget . HeadTool       )
+    self . EditingWidget . addWidget ( self . EditingWidget . HeadText       )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveAlbumBat      ( self                                             ) :
+    ##########################################################################
+    DKEY = "Subtitles"
+    DDIR = self . ALBUM . DIR
+    DFIL = self . ALBUM . Album [ "Documents" ] [ DKEY                       ]
+    DFIL = f"{DDIR}/{DFIL}"
+    ##########################################################################
+    BODY = self . EditingWidget . BatText . toPlainText (                    )
+    ##########################################################################
+    self . SaveDocument ( DFIL , BODY                                        )
+    self . Notify       ( 5                                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def WesternBat  ( self                                                   ) :
+    ##########################################################################
+    BODY = self . EditingWidget . BatText . toPlainText (                    )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    self . Notify ( 5                                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def JapaneseBat               ( self                                     ) :
+    ##########################################################################
+    BODY = self . EditingWidget . BatText . toPlainText (                    )
+    IDFs = self . ALBUM . Album [ "Identifiers"                              ]
+    ##########################################################################
+    if                          ( len ( BODY ) <= 0                        ) :
+      return
+    ##########################################################################
+    if                          ( 1 != len ( IDFs )                        ) :
+      return
+    ##########################################################################
+    IDF  = IDFs                 [ 0                                          ]
+    TEXT = BODY
+    ##########################################################################
+    A    =  "-i video.mp4 \\"
+    B    = f"-i {IDF}.mp4 \\"
+    TEXT = TEXT . replace       ( A , B                                      )
+    ##########################################################################
+    A    =  "-y video-subtitle.mp4"
+    B    = f"-i {IDF}-Subtitle.mp4"
+    TEXT = TEXT . replace       ( A , B                                      )
+    ##########################################################################
+    A    = """-i ..\subtitles\EN\EN.ass \\
+-i ..\subtitles\TW\TW.ass \\
+-i ..\subtitles\CN\CN.ass \\
+-i ..\subtitles\JP\JP.ass \\"""
+    B    = """-i ..\subtitles\JP\JP.ass \\
+-i ..\subtitles\TW\TW.ass \\
+-i ..\subtitles\CN\CN.ass \\
+-i ..\subtitles\EN\EN.ass \\"""
+    TEXT = TEXT . replace       ( A , B                                      )
+    ##########################################################################
+    A    = """-map 2 -c:s mov_text -metadata:s:s:0 language=eng \\
+-map 3 -c:s mov_text -metadata:s:s:1 language=zht \\
+-map 4 -c:s mov_text -metadata:s:s:2 language=zhs \\
+-map 5 -c:s mov_text -metadata:s:s:3 language=jpn \\"""
+    B    = """-map 2 -c:s mov_text -metadata:s:s:0 language=jpn \\
+-map 3 -c:s mov_text -metadata:s:s:1 language=zht \\
+-map 4 -c:s mov_text -metadata:s:s:2 language=zhs \\
+-map 5 -c:s mov_text -metadata:s:s:3 language=eng \\"""
+    TEXT = TEXT . replace       ( A , B                                      )
+    ##########################################################################
+    self . EditingWidget . BatText . setPlainText ( TEXT                     )
+    ##########################################################################
+    self . Notify               ( 5                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def addAlbumBat ( self                                                   ) :
+    ##########################################################################
+    self . EditingWidget . BaseHeight = self . EditingWidget . BaseHeight + 400
+    ##########################################################################
+    TOOL = QToolBar            (                                             )
+    ##########################################################################
+    TOOL . setMinimumHeight    ( 32                                          )
+    TOOL . setMaximumHeight    ( 32                                          )
+    TOOL . setIconSize         ( QSize ( 32 , 32                           ) )
+    TOOL . setFloatable        ( False                                       )
+    TOOL . setMovable          ( False                                       )
+    TOOL . setToolButtonStyle  ( Qt . ToolButtonIconOnly                     )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "SaveDescription"                           )
+    ICON = QIcon               ( QPixmap ( ":/images/save.png"             ) )
+    MACT = TOOL . addAction    ( ICON , MSG                                  )
+    MACT . triggered . connect ( self . SaveAlbumBat                         )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "WesternBat"                                )
+    ICON = QIcon               ( QPixmap ( ":/images/catalog.png"          ) )
+    MACT = TOOL . addAction    ( ICON , MSG                                  )
+    MACT . triggered . connect ( self . WesternBat                           )
+    ##########################################################################
+    MSG  = self . getMenuItem  ( "JapaneseBat"                               )
+    ICON = QIcon               ( QPixmap ( ":/images/company.png"          ) )
+    MACT = TOOL . addAction    ( ICON , MSG                                  )
+    MACT . triggered . connect ( self . JapaneseBat                          )
+    ##########################################################################
+    TEXT = QPlainTextEdit      (                                             )
+    TEXT . setMinimumHeight    ( 200                                         )
+    TEXT . resize              ( 400 , 400                                   )
+    ##########################################################################
+    DKEY = "Subtitles"
+    DDIR = self . ALBUM . DIR
+    DFIL = self . ALBUM . Album [ "Documents" ] [ DKEY                       ]
+    DFIL = f"{DDIR}/{DFIL}"
+    DOC  = self . LoadDocument ( DFIL                                        )
+    ##########################################################################
+    TEXT . setPlainText        ( DOC                                         )
+    MSG  = self . getMenuItem  ( "SubtitlesArena"                            )
+    TEXT . setToolTip          ( MSG                                         )
+    ##########################################################################
+    self . EditingWidget . BatText = TEXT
+    self . EditingWidget . BatTool = TOOL
+    ##########################################################################
+    self . setAllFont ( self . EditingWidget . BatText , self . font ( )     )
+    self . EditingWidget . addWidget ( self . EditingWidget . BatTool        )
+    self . EditingWidget . addWidget ( self . EditingWidget . BatText        )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoEditing                      ( self                                ) :
+    ##########################################################################
+    self   . logMessage              ( "OpenEpisodeDetails"                  )
+    ##########################################################################
+    self   . Method = "Editing"
+    TITLE  = self . ALBUM . Album    [ "Names" ] [ "Default"                 ]
+    ##########################################################################
+    self   . setWindowTitle          ( TITLE                                 )
+    ##########################################################################
+    self   . EditingWidget = QSplitter ( Qt . Vertical                       )
+    self   . EditingWidget . BaseHeight = 600
+    self   . EditingWidget . setChildrenCollapsible ( True                   )
+    ## self   . EditingWidget . setHandleWidth   ( 5                         )
+    self   . EditingWidget . Tick = datetime . datetime . now ( ) . timestamp ( ) - 1.0
+    ##########################################################################
+    self   . addEditingTools         (                                       )
+    self   . addAlbumTitle           (                                       )
+    self   . addAlbumCoverSection    (                                       )
+    ##########################################################################
+    self   . EditingWidget . NamesEditor      = None
+    self   . EditingWidget . Organizations    = None
+    self   . EditingWidget . Identifiers      = None
+    self   . EditingWidget . PeopleView       = None
+    self   . EditingWidget . CandidateView    = None
+    self   . EditingWidget . MainVideos       = None
+    self   . EditingWidget . MainVideoCombo   = None
+    self   . EditingWidget . SecondVideos     = None
+    self   . EditingWidget . SecondVideoCombo = None
+    ##########################################################################
+    if                               ( self . ALBUM . Uuid > 0             ) :
       ########################################################################
-      self . addCompanyAndNames    (                                         )
-      self . addAlbumIdentifiers   (                                         )
-      self . addPeopleView         (                                         )
-      self . addCandidateView      (                                         )
-      self . addAlbumGallery       (                                         )
-      self . addMainVideos         (                                         )
-      self . addSecondVideos       (                                         )
+      self . addCompanyAndNames      (                                       )
+      self . addAlbumIdentifiers     (                                       )
+      self . addPeopleView           (                                       )
+      self . addCandidateView        (                                       )
+      self . addAlbumGallery         (                                       )
+      self . addMainVideos           (                                       )
+      self . addSecondVideos         (                                       )
     ##########################################################################
-    self . addSketch               (                                         )
-    self . addAlbumChapters        (                                         )
-    self . addAlbumDescription     (                                         )
+    self   . addSketch               (                                       )
+    self   . addAlbumChapters        (                                       )
+    self   . addAlbumDescription     (                                       )
+    self   . addAlbumHead            (                                       )
+    self   . addAlbumBat             (                                       )
     ##########################################################################
-    self . EditingWidget . Tail = QWidget (                                  )
-    self . EditingWidget . Tail . resize           ( 100 , 5                 )
-    self . EditingWidget . Tail . setMinimumHeight (  5                      )
-    self . EditingWidget . Tail . setMaximumHeight ( 40                      )
-    self . EditingWidget . addWidget ( self . EditingWidget . Tail           )
+    self   . EditingWidget . Tail = QWidget          (                       )
+    self   . EditingWidget . Tail . resize           ( 100 , 5               )
+    self   . EditingWidget . Tail . setMinimumHeight (  5                    )
+    self   . EditingWidget . Tail . setMaximumHeight ( 40                    )
+    self   . EditingWidget . addWidget ( self . EditingWidget . Tail         )
     ##########################################################################
-    self . EditingWidget . setMinimumHeight ( self . EditingWidget . BaseHeight )
-    self . EditingWidget . setFont ( self . font (                         ) )
-    self . setWidget               ( self . EditingWidget                    )
-    self . setWidgetResizable      ( True                                    )
-    self . ResizeEditing           (                                         )
+    self   . EditingWidget . setMinimumHeight ( self . EditingWidget . BaseHeight )
+    self   . EditingWidget . setFont ( self . font (                       ) )
+    self   . setWidget               ( self . EditingWidget                  )
+    self   . setWidgetResizable      ( True                                  )
+    self   . ResizeEditing           (                                       )
     ##########################################################################
     return
   ############################################################################
