@@ -1224,7 +1224,7 @@ class EpisodeEditor          ( ScrollArea                                  ) :
     TEXT = TEXT . replace       ( A , B                                      )
     ##########################################################################
     A    =  "-y video-subtitle.mp4"
-    B    = f"-i {IDF}-Subtitle.mp4"
+    B    = f"-y {IDF}-Subtitle.mp4"
     TEXT = TEXT . replace       ( A , B                                      )
     ##########################################################################
     A    = """-i ..\subtitles\EN\EN.ass \\
