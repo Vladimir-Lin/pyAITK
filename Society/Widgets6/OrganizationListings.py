@@ -43,7 +43,7 @@ class OrganizationListings     ( TreeDock                                  ) :
   OpenVariantTables   = Signal ( str , str , int , str , dict                )
   OpenLogHistory      = Signal ( str , str , str , str , str                 )
   OpenIdentifiers     = Signal ( str , str , int                             )
-  emitVendorDirectory = Signal ( str                                         )
+  emitVendorDirectory = Signal ( str ,                   dict                )
   emitLog             = Signal ( str                                         )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
@@ -1366,6 +1366,49 @@ class OrganizationListings     ( TreeDock                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def GoVendorDirectory                    ( self , CUID                   ) :
+    ##########################################################################
+    DB        = self . ConnectDB           (                                 )
+    ##########################################################################
+    if                                     ( self . NotOkay ( DB )         ) :
+      return
+    ##########################################################################
+    NAMTAB    = self . Tables              [ "Names"                         ]
+    NAMEs     =                            [                                 ]
+    ##########################################################################
+    COLs      = "`locality`,`priority`,`relevance`,`name`"
+    QQ        = f"""select {COLs} from {NAMTAB}
+                    where ( `uuid` = {CUID} )
+                    order by `locality` asc ,
+                             `priority` asc ,
+                             `relevance` asc ;"""
+    QQ        = " " . join                 ( QQ . split (                  ) )
+    DB        . Query                      ( QQ                              )
+    RR        = DB . FetchAll              (                                 )
+    ##########################################################################
+    if                                     ( RR not in self . EmptySet     ) :
+      ########################################################################
+      for R in RR                                                            :
+        ######################################################################
+        LOC   = int                        ( R [ 0                         ] )
+        PRI   = int                        ( R [ 1                         ] )
+        REL   = int                        ( R [ 2                         ] )
+        NNN   = self . assureString        ( R [ 3                         ] )
+        ######################################################################
+        JS    =                            { "Name"      : NNN             , \
+                                             "Locality"  : LOC             , \
+                                             "Priority"  : PRI             , \
+                                             "Relevance" : REL               }
+        NAMEs . append                     ( JS                              )
+    ##########################################################################
+    DB        . Close                      (                                 )
+    ##########################################################################
+    INFO      =                            { "Names" : NAMEs                 }
+    ##########################################################################
+    self      . emitVendorDirectory . emit ( str ( CUID ) , INFO             )
+    ##########################################################################
+    return
+  ############################################################################
   def FunctionsMenu                  ( self , mm , uuid , item             ) :
     ##########################################################################
     msg  = self . getMenuItem        ( "Functions"                           )
@@ -1571,7 +1614,7 @@ class OrganizationListings     ( TreeDock                                  ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
-      self . emitVendorDirectory . emit ( str ( uuid )                       )
+      self . Go                    ( self . GoVendorDirectory , ( uuid , )   )
       ########################################################################
       return True
     ##########################################################################
