@@ -49,63 +49,96 @@ class Episode    (                                                         ) :
   def __del__ ( self                                                       ) :
     return
   ############################################################################
-  def Clear                   ( self                                       ) :
+  def Clear                     ( self                                     ) :
     ##########################################################################
-    self . Album            = {                                              }
-    self . Settings         = {                                              }
-    self . Translations     = {                                              }
-    self . Messages         = {                                              }
-    self . Tables           = {                                              }
-    self . CoverOpts        = { "Base"       : 3800700000000000001                   , \
-                                "Prefer"     : 0                                     , \
-                                "Master"     : "`cios`.`pictures_covers`"            , \
-                                "Depot"      : "`cios`.`pictures_depot_covers`"      , \
-                                "Thumb"      : "`cios`.`thumbs_covers`"              , \
-                                "ThumbDepot" : "`cios`.`thumbs_depot_covers`"        , \
-                                "Hash"       : "`cios`.`pictureproperties_hash`"     , \
-                                "Histogram"  : "`cios`.`pictureproperties_statistics`" }
-    self . AlbumCoverTables = { "Pictures"          : "`cios`.`pictureorders`"            , \
-                                "Information"       : "`cios`.`pictures_covers`"          , \
-                                "Depot"             : "`cios`.`pictures_depot_covers`"    , \
-                                "Galleries"         : "`cios`.`galleries`"                , \
-                                "Contours"          : "`cios`.`contours`"                 , \
-                                "Parameters"        : "`cios`.`parameters`"               , \
-                                "Variables"         : "`cios`.`variables`"                , \
-                                "Names"             : "`cios`.`names_others`"             , \
-                                "NamesEditing"      : "`appellations`.`names_others_0013`" , \
-                                "Notes"             : "`cios`.`notes_materials`"          , \
-                                "ThumbsInformation" : "`cios`.`thumbs_covers`"            , \
-                                "Thumb"             : "`cios`.`thumbs_depot_covers`"      , \
-                                "Relation"          : "`cios`.`relations`"                , \
-                                "RelationPeople"    : "`cios`.`relations_people`"         , \
-                                "RelationPictures"  : "`cios`.`relations_pictures`"       , \
-                                "RelationVideos"    : "`affiliations`.`relations_videos_0003`" , \
-                                "RelationCovers"    : "`affiliations`.`relations_videos_0007`" , \
-                                "PictureHash"       : "`cios`.`pictureproperties_hash`"   , \
-                                "PictureStatistics" : "`cios`.`pictureproperties_statistics`" , \
-                                "BaseUuid"          : "3800700000000000001"                 }
-    self . PeopleViewTables = { "People"            : "`leagues`.`people_av`"             , \
-                                "Parameters"        : "`cios`.`parameters`"               , \
-                                "Variables"         : "`cios`.`variables`"                , \
-                                "Names"             : "`cios`.`names`"                    , \
-                                "NamesEditing"      : "`appellations`.`names_people`"     , \
-                                "Notes"             : "`cios`.`notes_descriptions`"       , \
-                                "Information"       : "`cios`.`pictures`"                 , \
-                                "Depot"             : "`cios`.`picturedepot`"             , \
-                                "ThumbsInformation" : "`cios`.`thumbs`"                   , \
-                                "Thumb"             : "`cios`.`thumbdepot`"               , \
-                                "FaceRegions"       : "`cios`.`faceregions`"              , \
-                                "FaceRecognitions"  : "`cios`.`facerecognitions`"         , \
-                                "Relation"          : "`cios`.`relations`"                , \
-                                "RelationPeople"    : "`affiliations`.`relations_videos`" , \
-                                "RelationPictures"  : "`cios`.`relations_pictures`"         }
-    self . Uuid             = 0
-    self . LogFunc          = None
-    self . Filename         = ""
-    self . DIR              = ""
-    self . TZ               = "Asia/Taipei"
-    self . BusyFunc         = None
-    self . RelaxFunc        = None
+    self . Album              = {                                            }
+    self . Settings           = {                                            }
+    self . Translations       = {                                            }
+    self . Messages           = {                                            }
+    self . Tables             = {                                            }
+    self . CoverOpts          =                                            { \
+      "Base"                  : 3800700000000000001                        , \
+      "Prefer"                : 0                                          , \
+      "Master"                : "`cios`.`pictures_covers`"                 , \
+      "Depot"                 : "`cios`.`pictures_depot_covers`"           , \
+      "Thumb"                 : "`cios`.`thumbs_covers`"                   , \
+      "ThumbDepot"            : "`cios`.`thumbs_depot_covers`"             , \
+      "Hash"                  : "`cios`.`pictureproperties_hash`"          , \
+      "Histogram"             : "`cios`.`pictureproperties_statistics`"      }
+    self . AlbumCoverTables   =                                            { \
+      "Pictures"              : "`cios`.`pictureorders`"                   , \
+      "Information"           : "`cios`.`pictures_covers`"                 , \
+      "Depot"                 : "`cios`.`pictures_depot_covers`"           , \
+      "Galleries"             : "`cios`.`galleries`"                       , \
+      "Contours"              : "`cios`.`contours`"                        , \
+      "Parameters"            : "`cios`.`parameters`"                      , \
+      "Variables"             : "`cios`.`variables`"                       , \
+      "Names"                 : "`cios`.`names_others`"                    , \
+      "NamesEditing"          : "`appellations`.`names_others_0013`"       , \
+      "Notes"                 : "`cios`.`notes_materials`"                 , \
+      "ThumbsInformation"     : "`cios`.`thumbs_covers`"                   , \
+      "Thumb"                 : "`cios`.`thumbs_depot_covers`"             , \
+      "Relation"              : "`cios`.`relations`"                       , \
+      "RelationPeople"        : "`cios`.`relations_people`"                , \
+      "RelationPictures"      : "`cios`.`relations_pictures`"              , \
+      "RelationVideos"        : "`affiliations`.`relations_videos_0003`"   , \
+      "RelationCovers"        : "`affiliations`.`relations_videos_0007`"   , \
+      "PictureHash"           : "`cios`.`pictureproperties_hash`"          , \
+      "PictureStatistics"     : "`cios`.`pictureproperties_statistics`"    , \
+      "BaseUuid"              : "3800700000000000001"                        }
+    self . PeopleImagesOpts   =                                            { \
+      "Base"                  : 3800000000000000001                        , \
+      "Prefer"                : 0                                          , \
+      "Master"                : "`cios`.`pictures`"                        , \
+      "Depot"                 : "`cios`.`picturedepot`"                    , \
+      "Thumb"                 : "`cios`.`thumbs`"                          , \
+      "ThumbDepot"            : "`cios`.`thumbdepot`"                      , \
+      "Hash"                  : "`cios`.`pictureproperties_hash`"          , \
+      "Histogram"             : "`cios`.`pictureproperties_statistics`"      }
+    self . PeopleImagesTables =                                            { \
+      "Pictures"              : "`cios`.`pictureorders`"                   , \
+      "Information"           : "`cios`.`pictures`"                        , \
+      "Depot"                 : "`cios`.`picturedepot`"                    , \
+      "Galleries"             : "`cios`.`galleries`"                       , \
+      "Contours"              : "`cios`.`contours`"                        , \
+      "Parameters"            : "`cios`.`parameters`"                      , \
+      "Variables"             : "`cios`.`variables`"                       , \
+      "Names"                 : "`cios`.`names_others`"                    , \
+      "NamesEditing"          : "`cios`.`names_others`"                    , \
+      "Notes"                 : "`cios`.`notes_materials`"                 , \
+      "ThumbsInformation"     : "`cios`.`thumbs`"                          , \
+      "Thumb"                 : "`cios`.`thumbdepot`"                      , \
+      "Relation"              : "`cios`.`relations`"                       , \
+      "RelationPeople"        : "`cios`.`relations_people`"                , \
+      "RelationPictures"      : "`cios`.`relations_pictures`"              , \
+      "RelationVideos"        : "`affiliations`.`relations_videos`"        , \
+      "RelationCovers"        : "`affiliations`.`relations_videos`"        , \
+      "PictureHash"           : "`cios`.`pictureproperties_hash`"          , \
+      "PictureStatistics"     : "`cios`.`pictureproperties_statistics`"    , \
+      "BaseUuid"              : "3800000000000000001"                        }
+    self . PeopleViewTables   =                                            { \
+      "People"                : "`leagues`.`people_av`"                    , \
+      "Parameters"            : "`cios`.`parameters`"                      , \
+      "Variables"             : "`cios`.`variables`"                       , \
+      "Names"                 : "`cios`.`names`"                           , \
+      "NamesEditing"          : "`appellations`.`names_people`"            , \
+      "Notes"                 : "`cios`.`notes_descriptions`"              , \
+      "Information"           : "`cios`.`pictures`"                        , \
+      "Depot"                 : "`cios`.`picturedepot`"                    , \
+      "ThumbsInformation"     : "`cios`.`thumbs`"                          , \
+      "Thumb"                 : "`cios`.`thumbdepot`"                      , \
+      "FaceRegions"           : "`cios`.`faceregions`"                     , \
+      "FaceRecognitions"      : "`cios`.`facerecognitions`"                , \
+      "Relation"              : "`cios`.`relations`"                       , \
+      "RelationPeople"        : "`affiliations`.`relations_videos`"        , \
+      "RelationPictures"      : "`cios`.`relations_pictures`"                }
+    self . Uuid               = 0
+    self . LogFunc            = None
+    self . Filename           = ""
+    self . DIR                = ""
+    self . TZ                 = "Asia/Taipei"
+    self . BusyFunc           = None
+    self . RelaxFunc          = None
     ##########################################################################
     return
   ############################################################################
@@ -1152,80 +1185,120 @@ class Episode    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncActorsFromDatabase         ( self , DB                           ) :
+  def SyncActorsFromDatabase             ( self , DB                       ) :
     ##########################################################################
-    self   . logMessage              ( "PullActors..."                       )
+    self       . logMessage              ( "PullActors..."                   )
     ##########################################################################
-    RELTAB = self . PeopleViewTables [ "RelationPeople"                      ]
-    NAMTAB = self . PeopleViewTables [ "Names"                               ]
-    VUID   = self . Uuid
-    DDIR   = self . DIR
-    self   . Album [ "Roles" ] =     {                                       }
+    TABLEs     = self . PeopleImagesTables
+    RELTAB     = self . PeopleViewTables [ "Relation"                        ]
+    NAMTAB     = self . PeopleViewTables [ "Names"                           ]
+    PICTAB     = TABLEs                  [ "Information"                     ]
+    DOPTAB     = TABLEs                  [ "Depot"                           ]
+    VUID       = self . Uuid
+    DDIR       = self . DIR
+    self       . Album [ "Roles" ] =     {                                   }
     ##########################################################################
-    QQ     = f"""select `first` from {RELTAB}
-                 where ( `second` = {VUID} )
-                   and ( `t1` = 7 )
-                   and ( `t2` = 76 )
-                   and ( `relation` = 1 )
-                 order by `reverse` asc ;"""
-    PUIDs  = DB . ObtainUuids        ( " " . join ( QQ . split (         ) ) )
+    QQ         = f"""select `first` from {RELTAB}
+                     where ( `second` = {VUID} )
+                       and ( `t1` = 7 )
+                       and ( `t2` = 76 )
+                       and ( `relation` = 1 )
+                     order by `reverse` asc ;"""
+    PUIDs      = DB . ObtainUuids        ( " " . join ( QQ . split (     ) ) )
     ##########################################################################
-    if                               ( len ( PUIDs ) <= 0                  ) :
+    if                                   ( len ( PUIDs ) <= 0              ) :
       return
     ##########################################################################
-    CNT    = 0
+    CNT        = 0
     ##########################################################################
-    DB     . LockWrites              ( [ RELTAB                            ] )
-    for PUID in PUIDs                                                        :
-      ########################################################################
-      QQ   = f"""update {RELTAB}
-                 set `reverse` = {CNT}
-                 where ( `first` = {PUID} )
-                   and ( `second` = {VUID} )
-                   and ( `t1` = 7 )
-                   and ( `t2` = 76 )
-                   and ( `relation` = 1 ) ;"""
-      DB   . Query                   ( " " . join ( QQ . split (         ) ) )
-      ########################################################################
-      CNT  = CNT + 1
-    ##########################################################################
-    DB     . UnlockTables            (                                       )
-    ##########################################################################
-    self   . Album [ "Roles" ] [ "Actors" ] = PUIDs
+    DB         . LockWrites              ( [ RELTAB                        ] )
     ##########################################################################
     for PUID in PUIDs                                                        :
       ########################################################################
-      PXID = f"{PUID}"
-      NDBS = self . GetEntityNamesFromDatabase ( DB , NAMTAB , PUID          )
+      QQ       = f"""update {RELTAB}
+                     set `reverse` = {CNT}
+                     where ( `first` = {PUID} )
+                       and ( `second` = {VUID} )
+                       and ( `t1` = 7 )
+                       and ( `t2` = 76 )
+                       and ( `relation` = 1 ) ;"""
+      DB       . Query                   ( " " . join ( QQ . split (     ) ) )
       ########################################################################
-      self . Album [ "Roles" ] [ PXID ] = NDBS
+      CNT      = CNT + 1
+    ##########################################################################
+    DB         . UnlockTables            (                                   )
+    ##########################################################################
+    self       . Album [ "Roles" ] [ "Actors" ] = PUIDs
+    ##########################################################################
+    for PUID in PUIDs                                                        :
       ########################################################################
-      SDIR =                         [ "images" , "faces" , "data" , "test"  ]
-      FDIR = f"{DDIR}/roles/{PXID}"
-      FJSN = f"{FDIR}/actor.json"
+      PXID     = f"{PUID}"
+      NDBS     = self . GetEntityNamesFromDatabase ( DB , NAMTAB , PUID      )
       ########################################################################
-      if                             ( not Path ( FDIR ) . is_dir  (     ) ) :
+      self     . Album [ "Roles" ] [ PXID ] = NDBS
+      ########################################################################
+      SDIR     = [ "images" , "faces" , "data" , "test"                      ]
+      FDIR     = f"{DDIR}/roles/{PXID}"
+      FJSN     = f"{FDIR}/actor.json"
+      ########################################################################
+      if                                 ( not Path ( FDIR ) . is_dir (  ) ) :
         ######################################################################
-        os . mkdir                   ( FDIR                                  )
+        os     . mkdir                   ( FDIR                              )
         ######################################################################
         for S in SDIR                                                        :
           ####################################################################
-          K = f"{FDIR}/{S}"
+          K    = f"{FDIR}/{S}"
           ####################################################################
-          if                         ( not Path ( K    ) . is_dir  (     ) ) :
+          if                             ( not Path ( K    ) . is_dir (  ) ) :
             ##################################################################
-            os . mkdir               ( K                                     )
+            os . mkdir                   ( K                                 )
       ########################################################################
-      if                             ( not Path ( FJSN ) . is_file (     ) ) :
-        ######################################################################
-        PJ =                         { "People" : PUID                     , \
-                                       "Names"  : NDBS                       }
-        ######################################################################
-        SaveJson                     ( FJSN , PJ                             )
+      MSG      = self . getMessage       ( "CreateActorInfos"                )
+      MSG      = MSG  . replace          ( "$(UUID)" , PXID                  )
+      self     . LOG                     ( MSG                               )
       ########################################################################
-      MSG  = self . getMessage       ( "CreateActorInfos"                    )
-      MSG  = MSG  . replace          ( "$(UUID)" , PXID                      )
-      self . LOG                     ( MSG                                   )
+      QQ       = f"""select `second` from {RELTAB}
+                     where ( `first` = {PUID} )
+                       and ( `t1` = 7 )
+                       and ( `t2` = 9 )
+                       and ( `relation` in ( 1 , 2 ) )
+                     group by `second` asc ;"""
+      QQ       = " " . join              ( QQ . split (                    ) )
+      PCIDs    = DB . ObtainUuids        ( QQ                                )
+      PZIDs    =                         [                                   ]
+      FCIDs    =                         [                                   ]
+      ########################################################################
+      for PCID in PCIDs                                                      :
+        ######################################################################
+        PIC    = PictureItem             (                                   )
+        PIC    . UUID = PCID
+        SUFFIX = ""
+        INFO   = PIC . GetInformation    ( DB , PICTAB , PCID                )
+        ######################################################################
+        if                               ( INFO in [ False , None ]        ) :
+          continue
+        ######################################################################
+        SUFFIX = INFO                    [ "Suffix"                          ]
+        ######################################################################
+        if                               ( len ( SUFFIX ) <= 0             ) :
+          continue
+        ######################################################################
+        FCID   = f"{PCID}.{SUFFIX}"
+        FNAM   = f"{FDIR}/images/{FCID}"
+        PIC    . Export                  ( DB , DOPTAB , FNAM                )
+        PZIDs  . append                  ( int ( PCID )                      )
+        FCIDs  . append                  ( FCID                              )
+        ######################################################################
+        MSG    = self . getMessage       ( "AppendImageToActor"              )
+        MSG    = MSG  . replace          ( "$(PUID)" , f"{PUID}"             )
+        MSG    = MSG  . replace          ( "$(PCID)" , f"{PCID}"             )
+        self   . LOG                     ( MSG                               )
+      ########################################################################
+      PJ       =                         { "People"     : PUID             , \
+                                           "Names"      : NDBS             , \
+                                           "Images"     : PZIDs            , \
+                                           "ImageFiles" : FCIDs              }
+      SaveJson                           ( FJSN , PJ                         )
     ##########################################################################
     return
   ############################################################################
