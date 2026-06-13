@@ -112,7 +112,7 @@ class PeopleView                  ( IconDock                               ) :
     self . setDragEnabled          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
-    self . setMinimumSize          ( 144 , 200                               )
+    self . setMinimumSize          ( 144 , 192                               )
     ##########################################################################
     return
   ############################################################################
