@@ -151,6 +151,11 @@ class ScenarioEditor             ( TreeDock                                ) :
                                       self . ExportASS                     , \
                                       True                                 , \
                                       False                                  )
+    self . AppendSideActionWithIcon ( "ExportAllASS"                       , \
+                                      ":/images/episode.png"               , \
+                                      self . ExportAllASS                  , \
+                                      True                                 , \
+                                      False                                  )
     self . AppendWindowToolSeparatorAction (                                 )
     self . AppendSideActionWithIcon ( "ShowAllColumns"                     , \
                                       ":/images/task.png"                  , \
@@ -1051,13 +1056,12 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     return
   ############################################################################
-  def DoExportASS                        ( self , filename                 ) :
+  def ExportAssByLocality                ( self , filename , LOC           ) :
     ##########################################################################
     FMT       = "Dialogue: 0,$(START),$(END),Default,,0,0,0,,$(MESSAGE)"
     ROWS      = [ "[Events]" ,
                   "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text" ]
     ##########################################################################
-    LOC       = self . getLocality       (                                   )
     TOTAL     = self . topLevelItemCount (                                   )
     ##########################################################################
     for id in range                      ( 0 , TOTAL                       ) :
@@ -1107,7 +1111,12 @@ class ScenarioEditor             ( TreeDock                                ) :
     with open ( filename , "w" , encoding="utf-8" ) as f                     :
       f       . write                    ( TEXT                              )
     ##########################################################################
-    self      . Notify                   ( 5                                 )
+    return
+  ############################################################################
+  def DoExportASS              ( self , filename                           ) :
+    ##########################################################################
+    self . ExportAssByLocality (        filename , self . getLocality (    ) )
+    self . Notify              ( 5                                           )
     ##########################################################################
     return
   ############################################################################
@@ -1145,6 +1154,45 @@ class ScenarioEditor             ( TreeDock                                ) :
     self    . UpdateFilmRootFolder     ( FDIR                                )
     ##########################################################################
     self    . Go                       ( self . DoExportASS , ( ASS , )      )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoExportAllASS             ( self , DIR                              ) :
+    ##########################################################################
+    LOCs   =                     [ 1001 , 1002 , 1003 , 1006                 ]
+    ASSs   =                     { 1001 : "EN.ass"                         , \
+                                   1002 : "TW.ass"                         , \
+                                   1003 : "CN.ass"                         , \
+                                   1006 : "JP.ass"                           }
+    ##########################################################################
+    for LOC in LOCs :
+      ########################################################################
+      FNS  = ASSs                [ LOC                                       ]
+      ASS  = f"{DIR}/{FNS}"
+      ########################################################################
+      self . ExportAssByLocality ( ASS , LOC                                 )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportAllASS                     ( self                              ) :
+    ##########################################################################
+    ROOT    = self . GetFilmRootFolder (                                     )
+    Title   = self . getMenuItem       ( "ExportAllASS"                      )
+    ##########################################################################
+    DIR     = QFileDialog . getExistingDirectory                           ( \
+                self                                                       , \
+                Title                                                      , \
+                ROOT                                                       , \
+                QFileDialog . ShowDirsOnly                                 | \
+                QFileDialog . DontResolveSymlinks                            )
+    ##########################################################################
+    if                                 ( len ( DIR ) <= 0                  ) :
+      return
+    ##########################################################################
+    self . UpdateFilmRootFolder        ( DIR                                 )
+    self . Go                          ( self . DoExportAllASS , ( DIR , )   )
     ##########################################################################
     return
   ############################################################################
@@ -2097,6 +2145,10 @@ class ScenarioEditor             ( TreeDock                                ) :
     icon   = QIcon                     ( ":/images/saveall.png"              )
     mm     . addActionWithIcon         ( 3502 , icon , msg                   )
     ##########################################################################
+    msg    = self . getMenuItem        ( "ExportAllASS"                      )
+    icon   = QIcon                     ( ":/images/episode.png"              )
+    mm     . addActionWithIcon         ( 3503 , icon , msg                   )
+    ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1102                           )
     self   . AppendRenameAction        ( mm , 1103                           )
@@ -2179,6 +2231,10 @@ class ScenarioEditor             ( TreeDock                                ) :
     ##########################################################################
     if                                 ( 3502 == at                        ) :
       self . ExportASS                 (                                     )
+      return True
+    ##########################################################################
+    if                                 ( 3503 == at                        ) :
+      self . ExportAllASS              (                                     )
       return True
     ##########################################################################
     return True
